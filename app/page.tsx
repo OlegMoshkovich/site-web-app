@@ -34,6 +34,7 @@ export default function Home() {
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedObservations, setSelectedObservations] = useState<Set<string>>(new Set());
 
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
@@ -53,6 +54,25 @@ export default function Home() {
     },
     [supabase]
   );
+
+  const handleGenerateReport = useCallback(() => {
+    if (selectedObservations.size === 0) return;
+    
+    const selectedObs = observations.filter(obs => selectedObservations.has(obs.id));
+    
+    console.log(`Generating report for ${selectedObs.length} observations:`, selectedObs.map(obs => ({
+      id: obs.id,
+      note: obs.note,
+      photo_url: obs.photo_url,
+      date: obs.photo_date || obs.created_at,
+      location: obs.gps_lat && obs.gps_lng 
+        ? `${obs.gps_lat}, ${obs.gps_lng}` 
+        : 'No location data'
+    })));
+    
+    // TODO: Implement actual report generation
+    // This could open a modal, navigate to a report page, or trigger an API call
+  }, [selectedObservations, observations]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,6 +140,24 @@ export default function Home() {
 
           <div className="flex-1 flex flex-col gap-0 max-w-5xl p-5" >
             <div className="w-full">   
+              {/* Action Buttons - Only shows when cards are selected */}
+              {selectedObservations.size > 0 && (
+                <div className="mb-6 flex justify-end gap-3">
+                  <button
+                    onClick={() => setSelectedObservations(new Set())}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 rounded-lg  transition-colors"
+                  >
+                    Clear Selection
+                  </button>
+                  <button
+                    onClick={handleGenerateReport}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg transition-colors"
+                  >
+                    Generate Report ({selectedObservations.size} selected)
+                  </button>
+                </div>
+              )}
+              
               {isLoading ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">Loading observations...</p>
@@ -167,7 +205,23 @@ export default function Home() {
                             const labels = observation.labels ?? [];
 
                             return (
-                              <Card key={observation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                              <Card 
+                                key={observation.id} 
+                                className={`overflow-hidden hover:shadow-lg transition-all cursor-pointer ${
+                                  selectedObservations.has(observation.id)
+                                    ? 'ring-2 ring-blue-500 shadow-lg scale-105' 
+                                    : ''
+                                }`}
+                                onClick={() => {
+                                  const newSelected = new Set(selectedObservations);
+                                  if (newSelected.has(observation.id)) {
+                                    newSelected.delete(observation.id);
+                                  } else {
+                                    newSelected.add(observation.id);
+                                  }
+                                  setSelectedObservations(newSelected);
+                                }}
+                              >
                                 {hasPhoto ? (
                                   <div className="relative h-48 w-full">
                                     <img
