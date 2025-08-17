@@ -119,21 +119,13 @@ export default function Home() {
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Simple site</Link>
+              Simple site
             </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButtonClient />}
           </div>
         </nav>
-        
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          {!user ? (
-            // Show hero when not logged in
-            <Hero />
-          ) : (
-            // Show observations when logged in
-            <div className="w-full">
-              <h2 className="text-3xl font-bold mb-8">Observations</h2>
-              
+
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl ">
+            <div className="w-full">   
               {isLoading ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">Loading observations...</p>
@@ -230,7 +222,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-          )}
         </div>
       </div>
     </main>
