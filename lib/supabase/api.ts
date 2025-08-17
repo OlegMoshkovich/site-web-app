@@ -1,5 +1,5 @@
 // src/lib/observations.ts
-import { supabase } from './client';
+import { createClient } from './client';
 import type { Observation } from '../../types/supabase';
 
 /**
@@ -8,6 +8,7 @@ import type { Observation } from '../../types/supabase';
 export async function fetchUserObservations(userId: string): Promise<Observation[]> {
   if (!userId) throw new Error('User ID is required to fetch user observations');
 
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('observations')
     .select('*')
@@ -22,6 +23,7 @@ export async function fetchUserObservations(userId: string): Promise<Observation
  * Fetch all unique observation dates (YYYY-MM-DD) for a user, sorted descending.
  */
 export async function fetchObservationDates(userId: string): Promise<string[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('observations')
     .select('created_at')
@@ -57,6 +59,7 @@ export async function downloadPhoto(path: string) {
       return null;
     }
 
+    const supabase = createClient();
     const { data, error } = await supabase.storage.from('photos').download(path);
     console.log('data from process photo', data);
 
@@ -81,6 +84,7 @@ export async function downloadPhoto(path: string) {
  * Get the currently authenticated user.
  */
 export async function getCurrentUser() {
+  const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   return data.user ?? null;

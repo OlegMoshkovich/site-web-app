@@ -1,12 +1,25 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-// Create a single client instance
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
-);
+// Create a lazy client instance to avoid build-time execution
+let supabaseInstance: ReturnType<typeof createBrowserClient> | null = null;
 
-// Keep the function for backward compatibility if needed
 export function createClient() {
-  return supabase;
+  if (!supabaseInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY;
+    
+    if (!url || !key) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    supabaseInstance = createBrowserClient(url, key);
+  }
+  return supabaseInstance;
 }
+
+// For backward compatibility, but this will throw if accessed during build
+export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient>, {
+  get() {
+    throw new Error('Direct supabase import not allowed. Use createClient() instead.');
+  }
+});
