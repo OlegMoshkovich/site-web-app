@@ -39,7 +39,7 @@ export function LoginForm({
       });
       if (error) throw error;
       // Redirect to observations page after successful login
-      router.push("/observations");
+      router.push("/");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
