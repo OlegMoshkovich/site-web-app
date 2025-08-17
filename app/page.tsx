@@ -126,7 +126,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
+        <nav className="w-full flex justify-center  h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
               Simple site
@@ -135,13 +135,13 @@ export default function Home() {
           </div>
         </nav>
 
-          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-5" >
+          <div className="flex-1 flex flex-col gap-0 max-w-5xl" >
             <div className="w-full">   
               {!user ? (
                 // Show Hero when not logged in
                 <div className="text-center py-12">
-                  <h1 className="text-4xl font-bold mb-4">Welcome to Simple Site</h1>
-                  <p className="text-muted-foreground text-lg">Please sign in</p>
+                  <h1 className="text-4xl font-bold mb-4">Welcome</h1>
+                  <p className="text-muted-foreground text-lg">please sign in</p>
                 </div>
               ) : isLoading ? (
                 <div className="text-center py-12">
@@ -151,6 +151,7 @@ export default function Home() {
                 <div className="text-red-500">{error}</div>
               ) : observations.length > 0 ? (
                 <div className="space-y-8">
+                   <div className="text-muted-foreground text-sm text-right">Select observations to generate a report.</div>
                   {(() => {
                     // Group observations by date
                     const groupedObservations = observations.reduce((groups, observation) => {
@@ -168,6 +169,7 @@ export default function Home() {
                     const sortedDates = Object.keys(groupedObservations).sort((a, b) => 
                       new Date(b).getTime() - new Date(a).getTime()
                     );
+                   
 
                     return sortedDates.map((dateKey) => (
                       <div key={dateKey} className="space-y-4">
