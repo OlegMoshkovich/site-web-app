@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
+import { AuthButtonClient } from "@/components/auth-button-client";
 
 interface Observation {
   id: string;
@@ -135,29 +136,12 @@ export default function Home() {
             <div className="flex gap-5 items-center font-semibold">
               Simple site
             </div>
+            <AuthButtonClient />
           </div>
         </nav>
 
           <div className="flex-1 flex flex-col gap-0 max-w-5xl p-5" >
             <div className="w-full">   
-              {/* Action Buttons - Only shows when cards are selected */}
-              {selectedObservations.size > 0 && (
-                <div className="mb-6 flex justify-end gap-3">
-                  <button
-                    onClick={() => setSelectedObservations(new Set())}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 rounded-lg  transition-colors"
-                  >
-                    Clear Selection
-                  </button>
-                  <button
-                    onClick={handleGenerateReport}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg transition-colors"
-                  >
-                    Generate Report ({selectedObservations.size} selected)
-                  </button>
-                </div>
-              )}
-              
               {isLoading ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">Loading observations...</p>
@@ -307,9 +291,27 @@ export default function Home() {
                   <p className="text-muted-foreground text-lg">No observations found.</p>
                 </div>
               )}
-            </div>
-          </div>
+                      </div>
+        </div>
       </div>
+      
+      {/* Action Buttons - Absolutely positioned at bottom right */}
+      {selectedObservations.size > 0 && (
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+          <button
+            onClick={() => setSelectedObservations(new Set())}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg transition-colors shadow-lg"
+          >
+            Clear Selection
+          </button>
+          <button
+            onClick={handleGenerateReport}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors shadow-lg"
+          >
+            Generate Report ({selectedObservations.size} selected)
+          </button>
+        </div>
+      )}
     </main>
   );
 }
