@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, User, Image as ImageIcon, ArrowLeft } from "lucide-react";
+import { Calendar, MapPin, User, Image as ImageIcon, ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -59,6 +59,215 @@ export default function ReportPage() {
     }
     return data.signedUrl;
   };
+
+  const handlePrint = useCallback(() => {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to print this report');
+      return;
+    }
+
+    // Generate the print content
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Report</title>
+          <style>
+                         @media print {
+               body { 
+                 margin: 0; 
+                 padding: 0; 
+                 font-family: Arial, sans-serif; 
+                 -webkit-print-color-adjust: exact;
+                 color-adjust: exact;
+               }
+               .header { 
+                 text-align: center; 
+                 margin: 0 0 20px 0; 
+                 padding: 20px 0; 
+                 border-bottom: 2px solid #333; 
+               }
+               .header h1 { 
+                 font-size: 28px; 
+                 margin: 0 0 15px 0; 
+                 color: #000; 
+                 font-weight: bold;
+               }
+               .header p { 
+                 font-size: 16px; 
+                 margin: 0; 
+                 color: #333; 
+                 font-weight: 500;
+               }
+               .grid { 
+                 display: grid; 
+                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+                 gap: 15px; 
+                 margin-top: 20px; 
+               }
+               .observation { 
+                 border: 1px solid #ccc; 
+                 padding: 12px; 
+                 border-radius: 6px; 
+                 page-break-inside: avoid; 
+                 background: white;
+               }
+               .photo { 
+                 width: 100%; 
+                 height: 180px; 
+                 object-fit: cover; 
+                 border-radius: 4px; 
+                 margin-bottom: 12px; 
+                 border: 1px solid #eee;
+               }
+               .no-photo { 
+                 width: 100%; 
+                 height: 180px; 
+                 background: #f8f8f8; 
+                 border: 2px dashed #ddd; 
+                 border-radius: 4px; 
+                 display: flex; 
+                 align-items: center; 
+                 justify-content: center; 
+                 margin-bottom: 12px; 
+               }
+               .no-photo-text { 
+                 color: #999; 
+                 font-size: 14px; 
+               }
+               .note { 
+                 font-size: 14px; 
+                 margin-bottom: 12px; 
+                 color: #000; 
+                 line-height: 1.4; 
+                 font-weight: 500;
+               }
+               .labels { 
+                 margin-bottom: 12px; 
+               }
+               .label { 
+                 display: inline-block; 
+                 background: #f0f0f0; 
+                 padding: 3px 8px; 
+                 margin: 2px; 
+                 border-radius: 3px; 
+                 font-size: 11px; 
+                 color: #555; 
+                 border: 1px solid #ddd;
+               }
+               @page { 
+                 margin: 1.5cm; 
+                 size: A4;
+               }
+               /* Hide browser elements */
+               @page :first {
+                 margin-top: 0;
+               }
+               @page :left {
+                 margin-left: 1.5cm;
+               }
+               @page :right {
+                 margin-right: 1.5cm;
+               }
+               /* Additional print optimizations */
+               * {
+                 -webkit-print-color-adjust: exact !important;
+                 color-adjust: exact !important;
+               }
+               /* Ensure clean page breaks */
+               .observation:nth-child(4n) {
+                 page-break-after: always;
+               }
+               /* Hide any potential browser elements */
+               body::before,
+               body::after {
+                 display: none !important;
+               }
+               /* Ensure no browser UI elements show */
+               html {
+                 background: white !important;
+               }
+               /* Remove any default browser margins */
+               * {
+                 box-sizing: border-box;
+               }
+               /* Ensure clean text rendering */
+               h1, p, span, div {
+                 text-rendering: optimizeLegibility;
+                 -webkit-font-smoothing: antialiased;
+               }
+             }
+            @media screen {
+              body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; background: white; padding: 20px; border-radius: 8px; }
+              .header h1 { font-size: 24px; margin: 0 0 10px 0; color: #333; }
+              .header p { font-size: 14px; margin: 0; color: #666; }
+              .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+              .observation { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+              .photo { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 15px; }
+              .no-photo { width: 100%; height: 200px; background: #f5f5f5; border: 2px dashed #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+              .no-photo-text { color: #999; font-size: 14px; }
+              .note { font-size: 14px; margin-bottom: 15px; color: #333; line-height: 1.4; }
+              .labels { margin-bottom: 15px; }
+              .label { display: inline-block; background: #f0f0f0; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 12px; color: #666; }
+              .metadata { font-size: 12px; color: #666; }
+              .metadata-item { margin-bottom: 5px; }
+              .metadata-icon { display: inline-block; width: 12px; margin-right: 5px; }
+              .print-button { position: fixed; top: 20px; right: 20px; background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+              .print-button:hover { background: #0056b3; }
+            }
+          </style>
+        </head>
+        <body>
+          
+                     <div class="header">
+             <h1>Report</h1>
+             <p>${new Date().toLocaleDateString()}</p>
+           </div>
+          <div class="grid">
+            ${observations.map((observation) => {
+              const hasPhoto = Boolean(observation.signedUrl);
+              const labels = observation.labels ?? [];
+              const note = observation.note || 'No description available';
+              const date = formatDate(observation.photo_date || observation.created_at);
+              const gps = observation.gps_lat != null && observation.gps_lng != null 
+                ? `${observation.gps_lat.toFixed(4)}, ${observation.gps_lng.toFixed(4)}`
+                : null;
+
+              return `
+                <div class="observation">
+                  ${hasPhoto 
+                    ? `<img src="${observation.signedUrl}" alt="Observation photo" class="photo" />`
+                    : `<div class="no-photo"><span class="no-photo-text">No photo available</span></div>`
+                  }
+                  <div class="note">${note}</div>
+                  ${labels.length > 0 
+                    ? `<div class="labels">${labels.map(label => `<span class="label">${label}</span>`).join('')}</div>`
+                    : ''
+                  }
+                  
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Write content to the new window
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for images to load before printing
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+    };
+  }, [observations]);
 
   const fetchSelectedObservations = useCallback(async () => {
     if (memoizedSelectedIds.length === 0) {
@@ -127,7 +336,7 @@ export default function ReportPage() {
         <div className="w-full max-w-7xl p-5">
           {/* Header - Always visible */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
               <Link 
                 href="/" 
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
@@ -135,6 +344,15 @@ export default function ReportPage() {
                 <ArrowLeft className="h-5 w-5" />
                 Back to Observations
               </Link>
+              
+              {/* Print Button - Disabled during loading */}
+              <button
+                disabled
+                className="flex items-center gap-2 bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed opacity-50"
+              >
+                <Printer className="h-4 w-4" />
+                Print Report
+              </button>
             </div>
             <h1 className="text-3xl font-bold">Report</h1>
             <p className="text-muted-foreground">
@@ -169,7 +387,7 @@ export default function ReportPage() {
         <div className="w-full max-w-7xl p-5">
           {/* Header - Always visible */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
               <Link 
                 href="/" 
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
@@ -177,6 +395,15 @@ export default function ReportPage() {
                 <ArrowLeft className="h-5 w-5" />
                 Back to Observations
               </Link>
+              
+              {/* Print Button - Disabled during error */}
+              <button
+                disabled
+                className="flex items-center gap-2 bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed opacity-50"
+              >
+                <Printer className="h-4 w-4" />
+                Print Report
+              </button>
             </div>
             <h1 className="text-3xl font-bold">Report</h1>
             <p className="text-muted-foreground">
@@ -210,7 +437,7 @@ export default function ReportPage() {
       <div className="w-full max-w-7xl p-5">
         {/* Header - Stable section */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
             <Link 
               href="/" 
               className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
@@ -218,6 +445,15 @@ export default function ReportPage() {
               <ArrowLeft className="h-5 w-5" />
               Back to Observations
             </Link>
+            
+            {/* Print Button */}
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors shadow-lg"
+            >
+              <Printer className="h-4 w-4" />
+              Print Report
+            </button>
           </div>
           <h1 className="text-3xl font-bold">Report</h1>
           <p className="text-muted-foreground">
