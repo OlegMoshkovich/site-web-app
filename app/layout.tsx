@@ -26,11 +26,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Force light theme and clear any stored preferences
+              localStorage.removeItem('theme');
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('light');
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           {children}

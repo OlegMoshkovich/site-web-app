@@ -195,7 +195,7 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-4 items-center">
         <nav className="w-full flex justify-center  h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
+          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
               simple site
             </div>
@@ -203,7 +203,7 @@ export default function Home() {
           </div>
         </nav>
 
-          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-2" >
+          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4" >
             <div className="w-full">   
               {!user ? (
                 // Show Hero when not logged in
@@ -222,10 +222,10 @@ export default function Home() {
               ) : observations.length > 0 ? (
                 <div className="space-y-8">
                   {/* Date Range Selection */}
-                  <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 rounded-lg border">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                           Start:
                         </label>
                         <input
@@ -243,11 +243,11 @@ export default function Home() {
                           }}
                           min={getAvailableDateRange().min}
                           max={endDate || getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
                         />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                           End:
                         </label>
                         <input
@@ -265,26 +265,30 @@ export default function Home() {
                           }}
                           min={startDate || getAvailableDateRange().min}
                           max={getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
                         />
                       </div>
-                      <Button
-                        onClick={startDate && endDate ? handleClearDateRange : handleSelectByDateRange}
-                        disabled={!startDate || !endDate}
-                        size="sm"
-                        variant="outline"
-                      >
-                        {startDate && endDate ? 'Clear' : 'Select Range'}
-                      </Button>
-                      <Button
-                        onClick={handleSelectAll}
-                        size="sm"
-                        variant="outline"
-                      >
-                        {selectedObservations.size === observations.length ? 'Unselect All' : 'Select All'}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                        <Button
+                          onClick={startDate && endDate ? handleClearDateRange : handleSelectByDateRange}
+                          disabled={!startDate || !endDate}
+                          size="sm"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          {startDate && endDate ? 'Clear' : 'Select Range'}
+                        </Button>
+                        <Button
+                          onClick={handleSelectAll}
+                          size="sm"
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          {selectedObservations.size === observations.length ? 'Unselect All' : 'Select All'}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="text-muted-foreground text-sm">
+                    <div className="text-muted-foreground text-sm text-center sm:text-right">
                       Click on observations to select them.
                     </div>
                   </div>
@@ -329,7 +333,7 @@ export default function Home() {
                         </div>
                         
                         {/* Observations for this date */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                           {groupedObservations[dateKey].map((observation) => {
                             const hasPhoto = Boolean(observation.signedUrl);
                             const labels = observation.labels ?? [];
@@ -353,7 +357,7 @@ export default function Home() {
                                 }}
                               >
                                 {hasPhoto ? (
-                                  <div className="relative h-48 w-full">
+                                  <div className="relative h-48 sm:h-56 md:h-64 w-full">
                                     <img
                                       src={observation.signedUrl as string}
                                       alt={`Photo for ${observation.plan ?? "observation"}`}
@@ -362,7 +366,7 @@ export default function Home() {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
+                                  <div className="h-48 sm:h-56 md:h-64 w-full bg-gray-100 flex items-center justify-center">
                                     <div className="text-center text-gray-500">
                                       <ImageIcon className="h-12 w-12 mx-auto mb-2" />
                                       <p className="text-sm">No photo available</p>
