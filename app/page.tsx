@@ -1,11 +1,5 @@
 "use client";
 
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButtonClient } from "@/components/auth-button-client";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDate } from "@/lib/utils";
@@ -124,7 +118,7 @@ export default function Home() {
           </div>
         </nav>
 
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl ">
+          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-5" >
             <div className="w-full">   
               {isLoading ? (
                 <div className="text-center py-12">
@@ -133,88 +127,126 @@ export default function Home() {
               ) : error ? (
                 <div className="text-red-500">{error}</div>
               ) : observations.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {observations.map((observation) => {
-                    const hasPhoto = Boolean(observation.signedUrl);
-                    const labels = observation.labels ?? [];
+                <div className="space-y-8">
+                  {(() => {
+                    // Group observations by date
+                    const groupedObservations = observations.reduce((groups, observation) => {
+                      const date = observation.photo_date || observation.created_at;
+                      const dateKey = new Date(date).toDateString();
+                      
+                      if (!groups[dateKey]) {
+                        groups[dateKey] = [];
+                      }
+                      groups[dateKey].push(observation);
+                      return groups;
+                    }, {} as Record<string, typeof observations>);
 
-                    return (
-                      <Card key={observation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                        {hasPhoto ? (
-                          <div className="relative h-48 w-full">
-                            <img
-                              src={observation.signedUrl as string}
-                              alt={`Photo for ${observation.plan ?? "observation"}`}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
-                            <div className="text-center text-gray-500">
-                              <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                              <p className="text-sm">No photo available</p>
-                              {observation.photo_url && (
-                                <p className="text-xs text-gray-400 mt-1">
-                                  Path: {normalizePath(observation.photo_url)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        <CardHeader>
-                          <CardDescription className="line-clamp-2">
-                            {observation.note ?? ""}
-                          </CardDescription>
-                        </CardHeader>
-
-                        <CardContent className="space-y-3">
-                          {labels.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {labels.map((label, idx) => (
-                                <Badge key={`${observation.id}-label-${idx}`} variant="secondary" className="text-xs">
-                                  {label}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>{formatDate(observation.photo_date || observation.created_at)}</span>
-                          </div>
-
-                          {observation.gps_lat != null && observation.gps_lng != null && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              <span>
-                                {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <User className="h-4 w-4" />
-                            <span>User ID: {observation.user_id.slice(0, 8)}...</span>
-                          </div>
-
-                          {observation.plan_url && (
-                            <div className="pt-2">
-                              <a
-                                href={observation.plan_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 text-sm underline"
-                              >
-                                View Plan
-                              </a>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                    // Sort dates in descending order (newest first)
+                    const sortedDates = Object.keys(groupedObservations).sort((a, b) => 
+                      new Date(b).getTime() - new Date(a).getTime()
                     );
-                  })}
+
+                    return sortedDates.map((dateKey) => (
+                      <div key={dateKey} className="space-y-4">
+                        {/* Date Header */}
+                        <div className="border-b border-gray-200 pb-2">
+                          <div className="text-l ">
+                            {new Date(dateKey).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </div>
+                        </div>
+                        
+                        {/* Observations for this date */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {groupedObservations[dateKey].map((observation) => {
+                            const hasPhoto = Boolean(observation.signedUrl);
+                            const labels = observation.labels ?? [];
+
+                            return (
+                              <Card key={observation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                                {hasPhoto ? (
+                                  <div className="relative h-48 w-full">
+                                    <img
+                                      src={observation.signedUrl as string}
+                                      alt={`Photo for ${observation.plan ?? "observation"}`}
+                                      className="w-full h-full object-cover"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
+                                    <div className="text-center text-gray-500">
+                                      <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                                      <p className="text-sm">No photo available</p>
+                                      {observation.photo_url && (
+                                        <p className="text-xs text-gray-400 mt-1">
+                                          Path: {normalizePath(observation.photo_url)}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                <CardHeader>
+                                  <CardDescription className="line-clamp-2">
+                                    {observation.note ?? ""}
+                                  </CardDescription>
+                                </CardHeader>
+
+                                <CardContent className="space-y-3">
+                                  {labels.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                      {labels.map((label, idx) => (
+                                        <Badge key={`${observation.id}-label-${idx}`} variant="secondary" className="text-xs">
+                                          {label}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{formatDate(observation.photo_date || observation.created_at)}</span>
+                                  </div>
+
+                                  {observation.gps_lat != null && observation.gps_lng != null && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <MapPin className="h-4 w-4" />
+                                      <span>
+                                        {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <User className="h-4 w-4" />
+                                    <span>User ID: {observation.user_id.slice(0, 8)}...</span>
+                                  </div>
+
+                                  {observation.plan_url && (
+                                    <div className="pt-2">
+                                      <a
+                                        href={observation.plan_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                      >
+                                        View Plan
+                                      </a>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -222,7 +254,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-        </div>
+          </div>
       </div>
     </main>
   );
