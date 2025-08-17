@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, User, Image as ImageIcon, ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -30,16 +27,30 @@ interface ObservationWithUrl extends Observation {
 
 const BUCKET = "photos";
 
-export default function ReportPage() {
+function ReportPageContent() {
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const searchParams = useSearchParams();
-  const selectedIds = searchParams.get('ids')?.split(',') || [];
   
   // Memoize the selected IDs to prevent unnecessary re-renders
-  const memoizedSelectedIds = useMemo(() => selectedIds, [selectedIds]);
+  const memoizedSelectedIds = useMemo(() => {
+    try {
+      if (!searchParams) {
+        console.warn('Search params not available yet');
+        return [];
+      }
+      const ids = searchParams.get('ids');
+      if (!ids) {
+        return [];
+      }
+      return ids.split(',').filter(id => id.trim());
+    } catch (err) {
+      console.error('Error parsing search params:', err);
+      return [];
+    }
+  }, [searchParams]);
   
   // Create supabase client only once
   const supabase = useMemo(() => createClient(), []);
@@ -47,18 +58,7 @@ export default function ReportPage() {
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
 
-  const getSignedPhotoUrl = async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
-    const key = normalizePath(filenameOrPath);
-    if (!key) return null;
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .createSignedUrl(key, expiresIn);
-    if (error) {
-      console.error("createSignedUrl error", { key, error });
-      return null;
-    }
-    return data.signedUrl;
-  };
+
 
   const handlePrint = useCallback(() => {
     // Create a new window for printing
@@ -228,26 +228,19 @@ export default function ReportPage() {
            </div>
           <div class="grid">
             ${observations.map((observation) => {
-              const hasPhoto = Boolean(observation.signedUrl);
-              const labels = observation.labels ?? [];
               const note = observation.note || 'No description available';
-              const date = formatDate(observation.photo_date || observation.created_at);
-              const gps = observation.gps_lat != null && observation.gps_lng != null 
-                ? `${observation.gps_lat.toFixed(4)}, ${observation.gps_lng.toFixed(4)}`
-                : null;
 
               return `
                 <div class="observation">
-                  ${hasPhoto 
+                  ${observation.signedUrl 
                     ? `<img src="${observation.signedUrl}" alt="Observation photo" class="photo" />`
                     : `<div class="no-photo"><span class="no-photo-text">No photo available</span></div>`
                   }
                   <div class="note">${note}</div>
-                  ${labels.length > 0 
-                    ? `<div class="labels">${labels.map(label => `<span class="label">${label}</span>`).join('')}</div>`
+                  ${observation.labels && observation.labels.length > 0 
+                    ? `<div class="labels">${observation.labels.map((label: string) => `<span class="label">${label}</span>`).join('')}</div>`
                     : ''
                   }
-                  
                 </div>
               `;
             }).join('')}
@@ -270,8 +263,8 @@ export default function ReportPage() {
   }, [observations]);
 
   const fetchSelectedObservations = useCallback(async () => {
-    if (memoizedSelectedIds.length === 0) {
-      setError("No observations selected");
+    if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
+      setError("No observations selected. Please go back and select some observations first.");
       setIsLoading(false);
       setIsInitialized(true);
       return;
@@ -305,7 +298,18 @@ export default function ReportPage() {
       const withUrls: ObservationWithUrl[] = await Promise.all(
         base.map(async (o) => {
           const signedUrl = o.photo_url
-            ? await getSignedPhotoUrl(o.photo_url, 3600)
+            ? await (async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
+                const key = normalizePath(filenameOrPath);
+                if (!key) return null;
+                const { data, error } = await supabase.storage
+                  .from(BUCKET)
+                  .createSignedUrl(key, expiresIn);
+                if (error) {
+                  console.error("createSignedUrl error", { key, error });
+                  return null;
+                }
+                return data.signedUrl;
+              })(o.photo_url, 3600)
             : null;
           return { ...o, signedUrl };
         })
@@ -414,17 +418,26 @@ export default function ReportPage() {
           <div className="text-center py-12">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
               <p className="text-red-600 font-medium">{error}</p>
-              <button 
-                onClick={() => {
-                  setError(null);
-                  setIsLoading(true);
-                  setIsInitialized(false);
-                  fetchSelectedObservations();
-                }}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-              >
-                Try Again
-              </button>
+              {memoizedSelectedIds.length > 0 ? (
+                <button 
+                  onClick={() => {
+                    setError(null);
+                    setIsLoading(true);
+                    setIsInitialized(false);
+                    fetchSelectedObservations();
+                  }}
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              ) : (
+                <Link 
+                  href="/"
+                  className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Go Back to Observations
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -461,23 +474,34 @@ export default function ReportPage() {
           </p>
         </div>
 
-                       {/* Photos in a row */}
-               {observations.length > 0 ? (
-                 <div key="observations-content" className="space-y-6">
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Photos in a row */}
+        {observations.length > 0 ? (
+          <div key="observations-content" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {observations.map((observation) => {
-                const hasPhoto = Boolean(observation.signedUrl);
-                const labels = observation.labels ?? [];
-
                 return (
-                    <img
-                    key={observation.id}
-                          src={observation.signedUrl as string}
-                          alt={`Photo for ${observation.plan ?? "observation"}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                  
+                  <div key={observation.id} className="observation">
+                    {observation.signedUrl ? (
+                      <img
+                        src={observation.signedUrl}
+                        alt={`Photo for ${observation.plan ?? "observation"}`}
+                        className="photo"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="no-photo">
+                        <span className="no-photo-text">No photo available</span>
+                      </div>
+                    )}
+                    <div className="note">{observation.note || 'No description available'}</div>
+                    {observation.labels && observation.labels.length > 0 && (
+                      <div className="labels">
+                        {observation.labels.map((label, idx) => (
+                          <span key={idx} className="label">{label}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -489,5 +513,21 @@ export default function ReportPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ReportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center">
+        <div className="w-full max-w-7xl p-5">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Loading report...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ReportPageContent />
+    </Suspense>
   );
 }

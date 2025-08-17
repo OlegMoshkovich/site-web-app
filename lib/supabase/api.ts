@@ -1,6 +1,6 @@
 // src/lib/observations.ts
 import { supabase } from './client';
-import type { ObservationInsert, Observation } from '../../types/supabase';
+import type { Observation } from '../../types/supabase';
 
 /**
  * Fetch all observations for a user, newest first.

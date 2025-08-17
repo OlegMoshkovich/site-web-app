@@ -33,7 +33,7 @@ const BUCKET = "photos";
 export default function Home() {
   const supabase = createClient();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +135,13 @@ export default function Home() {
 
           <div className="flex-1 flex flex-col gap-0 max-w-5xl p-5" >
             <div className="w-full">   
-              {isLoading ? (
+              {!user ? (
+                // Show Hero when not logged in
+                <div className="text-center py-12">
+                  <h1 className="text-4xl font-bold mb-4">Welcome to Observations</h1>
+                  <p className="text-muted-foreground text-lg">Please sign in to view your observations</p>
+                </div>
+              ) : isLoading ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">Loading observations...</p>
                 </div>

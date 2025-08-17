@@ -13,7 +13,7 @@ export const hasEnvVars =
 /**
  * Download photo and convert to data URL
  */
-export async function getPhotoDataUrl(photoUrl: string, supabase: any): Promise<string | null> {
+export async function getPhotoDataUrl(photoUrl: string, supabase: { storage: { from: (bucket: string) => { download: (path: string) => Promise<{ data: Blob | null; error: { message: string } | null }> } } }): Promise<string | null> {
   if (!photoUrl) return null;
   
   console.log(`Starting download for photo: ${photoUrl}`);
