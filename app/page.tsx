@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
+import { useRouter } from "next/navigation";
 
 interface Observation {
   id: string;
@@ -31,6 +32,7 @@ const BUCKET = "photos";
 
 export default function Home() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,21 +61,12 @@ export default function Home() {
   const handleGenerateReport = useCallback(() => {
     if (selectedObservations.size === 0) return;
     
-    const selectedObs = observations.filter(obs => selectedObservations.has(obs.id));
+    const selectedIds = Array.from(selectedObservations);
+    const queryString = selectedIds.join(',');
     
-    console.log(`Generating report for ${selectedObs.length} observations:`, selectedObs.map(obs => ({
-      id: obs.id,
-      note: obs.note,
-      photo_url: obs.photo_url,
-      date: obs.photo_date || obs.created_at,
-      location: obs.gps_lat && obs.gps_lng 
-        ? `${obs.gps_lat}, ${obs.gps_lng}` 
-        : 'No location data'
-    })));
-    
-    // TODO: Implement actual report generation
-    // This could open a modal, navigate to a report page, or trigger an API call
-  }, [selectedObservations, observations]);
+    // Navigate to the report page with selected observation IDs
+    router.push(`/report?ids=${queryString}`);
+  }, [selectedObservations, router]);
 
   useEffect(() => {
     const fetchData = async () => {
