@@ -194,16 +194,16 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-4 items-center">
-        <nav className="w-full flex justify-center  h-16">
+        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              simple site
+              SIMPLE SITE
             </div>
             <AuthButtonClient />
           </div>
         </nav>
 
-          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4" >
+          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4 bg-gray-50/30" >
             <div className="w-full">   
               {!user ? (
                 // Show Hero when not logged in
@@ -222,7 +222,7 @@ export default function Home() {
               ) : observations.length > 0 ? (
                 <div className="space-y-8">
                   {/* Date Range Selection */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 border">
+                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
@@ -289,16 +289,14 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="text-muted-foreground text-sm text-center sm:text-right">
-                      Click on observations to select them.
+                      {selectedObservations.size > 0 
+                        ? `${selectedObservations.size} observation${selectedObservations.size !== 1 ? 's' : ''} selected`
+                        : "Click on observations to select them."
+                      }
                     </div>
                   </div>
                   
-                  {/* Selection Status */}
-                  {selectedObservations.size > 0 && (
-                    <div className="text-sm text-muted-foreground text-center">
-                      {selectedObservations.size} observation{selectedObservations.size !== 1 ? 's' : ''} selected
-                    </div>
-                  )}
+
                   {(() => {
                     // Group observations by date
                     const groupedObservations = observations.reduce((groups, observation) => {
@@ -321,14 +319,14 @@ export default function Home() {
                     return sortedDates.map((dateKey) => (
                       <div key={dateKey} className="space-y-4">
                         {/* Date Header */}
-                        <div className="border-b border-gray-200 pb-2">
-                          <div className="text-l ">
+                        <div className="border-b border-gray-200 pb-1">
+                          <div className="text-sm ">
                             {new Date(dateKey).toLocaleDateString('en-US', {
                               weekday: 'long',
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric'
-                            })}
+                            }).toUpperCase()}
                           </div>
                         </div>
                         
