@@ -223,8 +223,8 @@ export default function Home() {
                 <div className="space-y-8">
                   {/* Date Range Selection */}
                   <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <div className="flex flex-row items-start gap-3 sm:gap-4">
+                      <div className="flex flex-col items-start gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                           Start:
                         </label>
@@ -243,10 +243,10 @@ export default function Home() {
                           }}
                           min={getAvailableDateRange().min}
                           max={endDate || getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-primary w-24 sm:w-auto"
                         />
                       </div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                      <div className="flex flex-col items-start gap-2">
                         <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                           End:
                         </label>
@@ -265,7 +265,7 @@ export default function Home() {
                           }}
                           min={startDate || getAvailableDateRange().min}
                           max={getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-primary w-24 sm:w-auto"
                         />
                       </div>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
