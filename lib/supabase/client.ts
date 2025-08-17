@@ -5,6 +5,12 @@ let supabaseInstance: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createClient() {
   if (!supabaseInstance) {
+    // Only check environment variables in browser context
+    if (typeof window === 'undefined') {
+      // Server-side: return a mock client that will be replaced at runtime
+      return {} as ReturnType<typeof createBrowserClient>;
+    }
+    
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY;
     
