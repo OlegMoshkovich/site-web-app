@@ -140,8 +140,8 @@ export default function Home() {
               {!user ? (
                 // Show Hero when not logged in
                 <div className="text-center py-12">
-                  <h1 className="text-4xl font-bold mb-4">Welcome to Observations</h1>
-                  <p className="text-muted-foreground text-lg">Please sign in to view your observations</p>
+                  <h1 className="text-4xl font-bold mb-4">Welcome to Simple Site</h1>
+                  <p className="text-muted-foreground text-lg">Please sign in</p>
                 </div>
               ) : isLoading ? (
                 <div className="text-center py-12">
