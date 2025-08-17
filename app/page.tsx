@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(new Set());
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
@@ -69,6 +72,71 @@ export default function Home() {
     // Navigate to the report page with selected observation IDs
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
+
+  const handleSelectByDateRange = useCallback(() => {
+    if (!startDate || !endDate) return;
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Find observations within the date range
+    const observationsInRange = observations.filter(observation => {
+      const observationDate = new Date(observation.photo_date || observation.created_at);
+      return observationDate >= start && observationDate <= end;
+    });
+    
+    // Select all observations in the range
+    const observationIds = observationsInRange.map(obs => obs.id);
+    setSelectedObservations(new Set(observationIds));
+  }, [startDate, endDate, observations]);
+
+  const handleSelectByDateRangeWithDates = useCallback((start: string, end: string) => {
+    if (!start || !end) return;
+    
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    // Find observations within the date range
+    const observationsInRange = observations.filter(observation => {
+      const observationDate = new Date(observation.photo_date || observation.created_at);
+      return observationDate >= startDate && observationDate <= endDate;
+    });
+    
+    // Select all observations in the range
+    const observationIds = observationsInRange.map(obs => obs.id);
+    setSelectedObservations(new Set(observationIds));
+  }, [observations]);
+
+  const handleClearDateRange = useCallback(() => {
+    setStartDate('');
+    setEndDate('');
+    setSelectedObservations(new Set());
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    const allIds = observations.map(obs => obs.id);
+    
+    // If all observations are already selected, unselect all
+    if (selectedObservations.size === allIds.length) {
+      setSelectedObservations(new Set());
+    } else {
+      // Otherwise, select all observations
+      setSelectedObservations(new Set(allIds));
+    }
+  }, [observations, selectedObservations]);
+
+  const getAvailableDateRange = useCallback(() => {
+    if (observations.length === 0) return { min: '', max: '' };
+    
+    const dates = observations.map(obs => new Date(obs.photo_date || obs.created_at));
+    const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    
+    return {
+      min: minDate.toISOString().split('T')[0],
+      max: maxDate.toISOString().split('T')[0]
+    };
+  }, [observations]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,33 +193,108 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
+      <div className="flex-1 w-full flex flex-col gap-4 items-center">
         <nav className="w-full flex justify-center  h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              Simple site
+              simple site
             </div>
             <AuthButtonClient />
           </div>
         </nav>
 
-          <div className="flex-1 flex flex-col gap-0 max-w-5xl" >
+          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-2" >
             <div className="w-full">   
               {!user ? (
                 // Show Hero when not logged in
                 <div className="text-center py-12">
-                  <h1 className="text-4xl font-bold mb-4">Welcome</h1>
-                  <p className="text-muted-foreground text-lg">please sign in</p>
+                  <h1 className="text-lg ">welcome to simple site</h1>
+                  <p className="text-muted-foreground text-sm">please sign in</p>
                 </div>
               ) : isLoading ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">Loading observations...</p>
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
                 </div>
               ) : error ? (
                 <div className="text-red-500">{error}</div>
               ) : observations.length > 0 ? (
                 <div className="space-y-8">
-                   <div className="text-muted-foreground text-sm text-right">Select observations to generate a report.</div>
+                  {/* Date Range Selection */}
+                  <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">
+                          Start:
+                        </label>
+                        <input
+                          type="date"
+                          id="startDate"
+                          value={startDate}
+                          onChange={(e) => {
+                            const newStartDate = e.target.value;
+                            setStartDate(newStartDate);
+                            
+                            // Auto-trigger selection when both dates are set
+                            if (newStartDate && endDate) {
+                              handleSelectByDateRangeWithDates(newStartDate, endDate);
+                            }
+                          }}
+                          min={getAvailableDateRange().min}
+                          max={endDate || getAvailableDateRange().max}
+                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground">
+                          End:
+                        </label>
+                        <input
+                          type="date"
+                          id="endDate"
+                          value={endDate}
+                          onChange={(e) => {
+                            const newEndDate = e.target.value;
+                            setEndDate(newEndDate);
+                            
+                            // Auto-trigger selection when both dates are set
+                            if (startDate && newEndDate) {
+                              handleSelectByDateRangeWithDates(startDate, newEndDate);
+                            }
+                          }}
+                          min={startDate || getAvailableDateRange().min}
+                          max={getAvailableDateRange().max}
+                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <Button
+                        onClick={startDate && endDate ? handleClearDateRange : handleSelectByDateRange}
+                        disabled={!startDate || !endDate}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {startDate && endDate ? 'Clear' : 'Select Range'}
+                      </Button>
+                      <Button
+                        onClick={handleSelectAll}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {selectedObservations.size === observations.length ? 'Unselect All' : 'Select All'}
+                      </Button>
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      Click on observations to select them.
+                    </div>
+                  </div>
+                  
+                  {/* Selection Status */}
+                  {selectedObservations.size > 0 && (
+                    <div className="text-sm text-muted-foreground text-center">
+                      {selectedObservations.size} observation{selectedObservations.size !== 1 ? 's' : ''} selected
+                    </div>
+                  )}
                   {(() => {
                     // Group observations by date
                     const groupedObservations = observations.reduce((groups, observation) => {
@@ -194,10 +337,10 @@ export default function Home() {
                             return (
                               <Card 
                                 key={observation.id} 
-                                className={`overflow-hidden hover:shadow-lg transition-all cursor-pointer ${
+                                className={`overflow-hidden hover:shadow-lg transition-all cursor-pointer group ${
                                   selectedObservations.has(observation.id)
-                                    ? 'ring-2 ring-blue-500 shadow-lg scale-105' 
-                                    : ''
+                                    ? 'ring-2 ring-primary shadow-lg scale-102 bg-primary/5' 
+                                    : 'hover:bg-muted/50'
                                 }`}
                                 onClick={() => {
                                   const newSelected = new Set(selectedObservations);
@@ -301,18 +444,21 @@ export default function Home() {
       {/* Action Buttons - Absolutely positioned at bottom right */}
       {selectedObservations.size > 0 && (
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-          <button
+          <Button
             onClick={() => setSelectedObservations(new Set())}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg transition-colors shadow-lg"
+            variant="secondary"
+            size="lg"
+            className="shadow-lg hover:shadow-xl transition-all"
           >
             Clear Selection
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleGenerateReport}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors shadow-lg"
+            size="lg"
+            className="shadow-lg hover:shadow-xl transition-all"
           >
             Generate Report ({selectedObservations.size} selected)
-          </button>
+          </Button>
         </div>
       )}
     </main>

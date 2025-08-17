@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface Observation {
   id: string;
@@ -352,13 +353,14 @@ function ReportPageContent() {
               </Link>
               
               {/* Print Button - Disabled during loading */}
-              <button
+              <Button
                 disabled
-                className="flex items-center gap-2 bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed opacity-50"
+                variant="secondary"
+                className="opacity-50"
               >
-                <Printer className="h-4 w-4" />
+                <Printer className="h-4 w-4 mr-2" />
                 Print Report
-              </button>
+              </Button>
             </div>
             <h1 className="text-3xl font-bold">Report</h1>
             <p className="text-muted-foreground">
@@ -403,13 +405,14 @@ function ReportPageContent() {
               </Link>
               
               {/* Print Button - Disabled during error */}
-              <button
+              <Button
                 disabled
-                className="flex items-center gap-2 bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed opacity-50"
+                variant="secondary"
+                className="opacity-50"
               >
-                <Printer className="h-4 w-4" />
+                <Printer className="h-4 w-4 mr-2" />
                 Print Report
-              </button>
+              </Button>
             </div>
             <h1 className="text-3xl font-bold">Report</h1>
             <p className="text-muted-foreground">
@@ -421,24 +424,24 @@ function ReportPageContent() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
               <p className="text-red-600 font-medium">{error}</p>
               {memoizedSelectedIds.length > 0 ? (
-                <button 
+                <Button 
                   onClick={() => {
                     setError(null);
                     setIsLoading(true);
                     setIsInitialized(false);
                     fetchSelectedObservations();
                   }}
-                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  variant="destructive"
+                  className="mt-4"
                 >
                   Try Again
-                </button>
+                </Button>
               ) : (
-                <Link 
-                  href="/"
-                  className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  Go Back to Observations
-                </Link>
+                <Button asChild className="mt-4">
+                  <Link href="/">
+                    Go Back to Observations
+                  </Link>
+                </Button>
               )}
             </div>
           </div>
@@ -462,13 +465,13 @@ function ReportPageContent() {
             </Link>
             
             {/* Print Button */}
-            <button
+            <Button
               onClick={handlePrint}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors shadow-lg"
+              className="shadow-lg hover:shadow-xl transition-all"
             >
-              <Printer className="h-4 w-4" />
+              <Printer className="h-4 w-4 mr-2" />
               Print Report
-            </button>
+            </Button>
           </div>
           <h1 className="text-3xl font-bold">Report</h1>
           <p className="text-muted-foreground">
