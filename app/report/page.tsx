@@ -152,13 +152,12 @@ function ReportPageContent() {
                }
                .label { 
                  display: inline-block; 
-                 background: #f0f0f0; 
-                 padding: 3px 8px; 
+                 background: #ffffff; 
+                 padding: 4px 8px; 
                  margin: 2px; 
-                 border-radius: 3px; 
                  font-size: 11px; 
-                 color: #555; 
-                 border: 1px solid #ddd;
+                 color: #333; 
+                 border: 1px solid #ccc;
                }
                @page { 
                  margin: 1.5cm; 
@@ -214,7 +213,7 @@ function ReportPageContent() {
               .no-photo-text { color: #999; font-size: 14px; }
               .note { font-size: 14px; margin-bottom: 15px; color: #333; line-height: 1.4; }
               .labels { margin-bottom: 15px; }
-              .label { display: inline-block; background: #f0f0f0; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 12px; color: #666; }
+              .label { display: inline-block; background: #ffffff; padding: 4px 8px; margin: 2px; font-size: 12px; color: #333; border: 1px solid #ccc; }
               .metadata { font-size: 12px; color: #666; }
               .metadata-item { margin-bottom: 5px; }
               .metadata-icon { display: inline-block; width: 12px; margin-right: 5px; }
@@ -500,10 +499,39 @@ function ReportPageContent() {
                     )}
                     <div className="note">{observation.note || 'No description available'}</div>
                     {observation.labels && observation.labels.length > 0 && (
-                      <div className="labels">
-                        {observation.labels.map((label, idx) => (
-                          <span key={idx} className="label">{label}</span>
-                        ))}
+                      <div className="flex flex-wrap gap-2 p-2 border border-gray-200 bg-gray-50">
+                        {observation.labels.map((label, idx) => {
+                          // Clean up the label - remove extra spaces and split if it's concatenated
+                          const cleanLabel = label.trim();
+                          
+                          // More aggressive splitting for concatenated strings
+                          let processedLabel = cleanLabel;
+                          
+                          // First, try to split by common separators
+                          if (cleanLabel.includes(' ')) {
+                            processedLabel = cleanLabel;
+                          } else if (cleanLabel.includes('_')) {
+                            processedLabel = cleanLabel.replace(/_/g, ' ');
+                          } else if (cleanLabel.includes('-')) {
+                            processedLabel = cleanLabel.replace(/-/g, ' ');
+                          } else {
+                            // Split camelCase and PascalCase more aggressively
+                            processedLabel = cleanLabel
+                              .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
+                              .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2') // PascalCase
+                              .replace(/([a-z])([0-9])/g, '$1 $2') // letters to numbers
+                              .replace(/([0-9])([a-zA-Z])/g, '$1 $2'); // numbers to letters
+                          }
+                          
+                          // Clean up multiple spaces and trim
+                          processedLabel = processedLabel.replace(/\s+/g, ' ').trim();
+                          
+                          return (
+                            <span key={idx} className="inline-block px-2 py-1 text-xs bg-white border border-gray-300 text-gray-700">
+                              {processedLabel}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

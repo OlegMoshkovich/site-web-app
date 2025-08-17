@@ -222,7 +222,7 @@ export default function Home() {
               ) : observations.length > 0 ? (
                 <div className="space-y-8">
                   {/* Date Range Selection */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 rounded-lg border">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 border">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
@@ -243,7 +243,7 @@ export default function Home() {
                           }}
                           min={getAvailableDateRange().min}
                           max={endDate || getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
                         />
                       </div>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -265,7 +265,7 @@ export default function Home() {
                           }}
                           min={startDate || getAvailableDateRange().min}
                           max={getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
+                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-2 focus:ring-primary w-full sm:w-auto"
                         />
                       </div>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
@@ -380,19 +380,46 @@ export default function Home() {
                                 )}
 
                                 <CardHeader>
-                                  <CardDescription className="line-clamp-2">
-                                    {observation.note ?? ""}
+                                  <CardDescription className={`line-clamp-2 ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
+                                    {observation.note || "No description available"}
                                   </CardDescription>
                                 </CardHeader>
 
                                 <CardContent className="space-y-3">
-                                  {labels.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {labels.map((label, idx) => (
-                                        <Badge key={`${observation.id}-label-${idx}`} variant="secondary" className="text-xs">
-                                          {label}
-                                        </Badge>
-                                      ))}
+                                  {labels && labels.length > 0 && (
+                                    <div className="flex flex-wrap gap-3 p-3 border border-gray-200 bg-gray-50">
+                                      {labels.map((label, idx) => {
+                                        // Clean up the label - remove extra spaces and split if it's concatenated
+                                        const cleanLabel = label.trim();
+                                        
+                                        // More aggressive splitting for concatenated strings
+                                        let processedLabel = cleanLabel;
+                                        
+                                        // First, try to split by common separators
+                                        if (cleanLabel.includes(' ')) {
+                                          processedLabel = cleanLabel;
+                                        } else if (cleanLabel.includes('_')) {
+                                          processedLabel = cleanLabel.replace(/_/g, ' ');
+                                        } else if (cleanLabel.includes('-')) {
+                                          processedLabel = cleanLabel.replace(/-/g, ' ');
+                                        } else {
+                                          // Split camelCase and PascalCase more aggressively
+                                          processedLabel = cleanLabel
+                                            .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
+                                            .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2') // PascalCase
+                                            .replace(/([a-z])([0-9])/g, '$1 $2') // letters to numbers
+                                            .replace(/([0-9])([a-zA-Z])/g, '$1 $2'); // numbers to letters
+                                        }
+                                        
+                                        // Clean up multiple spaces and trim
+                                        processedLabel = processedLabel.replace(/\s+/g, ' ').trim();
+                                        
+                                        return (
+                                          <Badge key={`${observation.id}-label-${idx}`} variant="outline" className="text-xs px-3 py-1 border-2 bg-white hover:bg-gray-100 transition-colors">
+                                            {processedLabel}
+                                          </Badge>
+                                        );
+                                      })}
                                     </div>
                                   )}
 
