@@ -1,11 +1,118 @@
+"use client";
+
 import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
+import { AuthButtonClient } from "@/components/auth-button-client";
 import { Hero } from "@/components/hero";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { formatDate } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
+
+interface Observation {
+  id: string;
+  plan: string | null;
+  labels: string[] | null;
+  user_id: string;
+  note: string | null;
+  gps_lat: number | null;
+  gps_lng: number | null;
+  photo_url: string | null;
+  plan_url: string | null;
+  plan_anchor: Record<string, unknown> | null;
+  photo_date: string | null;
+  created_at: string;
+}
+
+interface ObservationWithUrl extends Observation {
+  signedUrl: string | null;
+}
+
+const BUCKET = "photos";
 
 export default function Home() {
+  const supabase = createClient();
+  const [user, setUser] = useState<any>(null);
+  const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const normalizePath = (v?: string | null) =>
+    (v ?? "").trim().replace(/^\/+/, "") || null;
+
+  const getSignedPhotoUrl = useCallback(
+    async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
+      const key = normalizePath(filenameOrPath);
+      if (!key) return null;
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(key, expiresIn);
+      if (error) {
+        console.error("createSignedUrl error", { key, error });
+        return null;
+      }
+      return data.signedUrl;
+    },
+    [supabase]
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // 1) Auth
+        const { data: authData, error: userError } = await supabase.auth.getUser();
+        if (userError || !authData.user) {
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+        setUser(authData.user);
+
+        // 2) Fetch observations for current user (newest first)
+        const { data: obsData, error: obsError } = await supabase
+          .from("observations")
+          .select("*")
+          .eq("user_id", authData.user.id)
+          .order("created_at", { ascending: false });
+
+        if (obsError) {
+          console.error("Error fetching observations:", obsError);
+          setError(`Error loading observations: ${obsError.message}`);
+          setIsLoading(false);
+          return;
+        }
+
+        const base = (obsData ?? []) as Observation[];
+
+        // 3) In parallel, create signed URLs for each photo (bucket is private)
+        const withUrls: ObservationWithUrl[] = await Promise.all(
+          base.map(async (o) => {
+            const signedUrl = o.photo_url
+              ? await getSignedPhotoUrl(o.photo_url, 3600) // 1 hour
+              : null;
+            return { ...o, signedUrl };
+          })
+        );
+
+        setObservations(withUrls);
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Error in fetchData:", e);
+        setError("An unexpected error occurred.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [supabase, getSignedPhotoUrl]);
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
@@ -14,12 +121,116 @@ export default function Home() {
             <div className="flex gap-5 items-center font-semibold">
               <Link href={"/"}>Simple site</Link>
             </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
-    
+            {!hasEnvVars ? <EnvVarWarning /> : <AuthButtonClient />}
           </div>
         </nav>
+        
         <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
+          {!user ? (
+            // Show hero when not logged in
+            <Hero />
+          ) : (
+            // Show observations when logged in
+            <div className="w-full">
+              <h2 className="text-3xl font-bold mb-8">Observations</h2>
+              
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">Loading observations...</p>
+                </div>
+              ) : error ? (
+                <div className="text-red-500">{error}</div>
+              ) : observations.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {observations.map((observation) => {
+                    const hasPhoto = Boolean(observation.signedUrl);
+                    const labels = observation.labels ?? [];
+
+                    return (
+                      <Card key={observation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        {hasPhoto ? (
+                          <div className="relative h-48 w-full">
+                            <img
+                              src={observation.signedUrl as string}
+                              alt={`Photo for ${observation.plan ?? "observation"}`}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                              <p className="text-sm">No photo available</p>
+                              {observation.photo_url && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Path: {normalizePath(observation.photo_url)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <CardHeader>
+                          <CardDescription className="line-clamp-2">
+                            {observation.note ?? ""}
+                          </CardDescription>
+                        </CardHeader>
+
+                        <CardContent className="space-y-3">
+                          {labels.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {labels.map((label, idx) => (
+                                <Badge key={`${observation.id}-label-${idx}`} variant="secondary" className="text-xs">
+                                  {label}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>{formatDate(observation.photo_date || observation.created_at)}</span>
+                          </div>
+
+                          {observation.gps_lat != null && observation.gps_lng != null && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              <span>
+                                {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <User className="h-4 w-4" />
+                            <span>User ID: {observation.user_id.slice(0, 8)}...</span>
+                          </div>
+
+                          {observation.plan_url && (
+                            <div className="pt-2">
+                              <a
+                                href={observation.plan_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 text-sm underline"
+                              >
+                                View Plan
+                              </a>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">No observations found.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </main>
