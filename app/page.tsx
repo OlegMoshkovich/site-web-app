@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, User, Image as ImageIcon, Globe } from "lucide-react";
+import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { useRouter } from "next/navigation";
 import { translations, type Language } from "@/lib/translations";
