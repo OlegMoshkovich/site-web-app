@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -71,206 +71,89 @@ function ReportPageContent() {
 
 
 
-  const handlePrint = useCallback(() => {
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Please allow popups to print this report');
-      return;
+  const handleCreateGoogleDoc = useCallback(async () => {
+    console.log('🚀 handleCreateGoogleDoc called');
+    
+    try {
+      // Prepare data for Zapier webhook
+      const currentDate = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+      
+      // Format observations as text
+      const observationsText = observations.map((observation, index) => {
+        const note = observation.note || t('noDescription');
+        const labels = observation.labels?.length ? observation.labels.join(', ') : t('noLabels');
+        const photoLine = observation.signedUrl ? `\nPhoto: ${observation.signedUrl}` : '';
+        
+        return `${index + 1}. ${note}\nLabels: ${labels}${photoLine}\n---`;
+      }).join('\n\n');
+      
+      const contentText = `${t('report')} - ${currentDate}
+Generated on: ${currentDate}
+
+Total Observations: ${observations.length}
+
+OBSERVATIONS:
+
+${observationsText}
+
+End of Report`;
+
+      const docData = {
+        title: `${t('report')} - ${currentDate}`,
+        date: currentDate,
+        total_observations: observations.length,
+        content: contentText
+      };
+
+      console.log('📝 Document data prepared:', docData);
+
+      // Show loading state
+      const button = document.querySelector('[data-create-doc-btn]') as HTMLButtonElement;
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Creating Google Doc...';
+      }
+
+      // Send data to our API route which forwards to Zapier
+      console.log('📡 Making API call to /api/create-google-doc');
+      const response = await fetch('/api/create-google-doc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(docData)
+      });
+
+      console.log('📨 API response status:', response.status);
+      console.log('📨 API response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create Google Doc');
+      }
+
+      const result = await response.json();
+      
+      // If the API returns a document URL from Zapier, open it
+      if (result.data?.document_url) {
+        window.open(result.data.document_url, '_blank');
+        alert('Google Doc created successfully! Opening in new tab.');
+      } else {
+        alert('Google Doc creation initiated! Check your Google Drive in a few moments.');
+      }
+
+    } catch (error) {
+      console.error('Error creating Google Doc:', error);
+      alert('Failed to create Google Doc. Please try again.');
+    } finally {
+      // Reset button state
+      const button = document.querySelector('[data-create-doc-btn]') as HTMLButtonElement;
+      if (button) {
+        button.disabled = false;
+        button.textContent = t('createGoogleDoc');
+      }
     }
-
-    // Generate the print content
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Report</title>
-          <style>
-                         @media print {
-               body { 
-                 margin: 0; 
-                 padding: 0; 
-                 font-family: Arial, sans-serif; 
-                 -webkit-print-color-adjust: exact;
-                 color-adjust: exact;
-               }
-               .header { 
-                 text-align: center; 
-                 margin: 0 0 20px 0; 
-                 padding: 20px 0; 
-                 border-bottom: 2px solid #333; 
-               }
-               .header h1 { 
-                 font-size: 28px; 
-                 margin: 0 0 15px 0; 
-                 color: #000; 
-                 font-weight: bold;
-               }
-               .header p { 
-                 font-size: 16px; 
-                 margin: 0; 
-                 color: #333; 
-                 font-weight: 500;
-               }
-               .grid { 
-                 display: grid; 
-                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-                 gap: 15px; 
-                 margin-top: 20px; 
-               }
-               .observation { 
-                 border: 1px solid #ccc; 
-                 padding: 12px; 
-                 border-radius: 6px; 
-                 page-break-inside: avoid; 
-                 background: white;
-               }
-               .photo { 
-                 width: 100%; 
-                 height: 180px; 
-                 object-fit: cover; 
-                 border-radius: 4px; 
-                 margin-bottom: 12px; 
-                 border: 1px solid #eee;
-               }
-               .no-photo { 
-                 width: 100%; 
-                 height: 180px; 
-                 background: #f8f8f8; 
-                 border: 2px dashed #ddd; 
-                 border-radius: 4px; 
-                 display: flex; 
-                 align-items: center; 
-                 justify-content: center; 
-                 margin-bottom: 12px; 
-               }
-               .no-photo-text { 
-                 color: #999; 
-                 font-size: 14px; 
-               }
-               .note { 
-                 font-size: 14px; 
-                 margin-bottom: 12px; 
-                 color: #000; 
-                 line-height: 1.4; 
-                 font-weight: 500;
-               }
-               .labels { 
-                 margin-bottom: 12px; 
-               }
-               .label { 
-                 display: inline-block; 
-                 background: #ffffff; 
-                 padding: 4px 8px; 
-                 margin: 2px; 
-                 font-size: 11px; 
-                 color: #333; 
-                 border: 1px solid #ccc;
-               }
-               @page { 
-                 margin: 1.5cm; 
-                 size: A4;
-               }
-               /* Hide browser elements */
-               @page :first {
-                 margin-top: 0;
-               }
-               @page :left {
-                 margin-left: 1.5cm;
-               }
-               @page :right {
-                 margin-right: 1.5cm;
-               }
-               /* Additional print optimizations */
-               * {
-                 -webkit-print-color-adjust: exact !important;
-                 color-adjust: exact !important;
-               }
-               /* Ensure clean page breaks */
-               .observation:nth-child(4n) {
-                 page-break-after: always;
-               }
-               /* Hide any potential browser elements */
-               body::before,
-               body::after {
-                 display: none !important;
-               }
-               /* Ensure no browser UI elements show */
-               html {
-                 background: white !important;
-               }
-               /* Remove any default browser margins */
-               * {
-                 box-sizing: border-box;
-               }
-               /* Ensure clean text rendering */
-               h1, p, span, div {
-                 text-rendering: optimizeLegibility;
-                 -webkit-font-smoothing: antialiased;
-               }
-             }
-            @media screen {
-              body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; background: white; padding: 20px; border-radius: 8px; }
-              .header h1 { font-size: 24px; margin: 0 0 10px 0; color: #333; }
-              .header p { font-size: 14px; margin: 0; color: #666; }
-              .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-              .observation { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-              .photo { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 15px; }
-              .no-photo { width: 100%; height: 200px; background: #f5f5f5; border: 2px dashed #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-              .no-photo-text { color: #999; font-size: 14px; }
-              .note { font-size: 14px; margin-bottom: 15px; color: #333; line-height: 1.4; }
-              .labels { margin-bottom: 15px; }
-              .label { display: inline-block; background: #ffffff; padding: 4px 8px; margin: 2px; font-size: 12px; color: #333; border: 1px solid #ccc; }
-              .metadata { font-size: 12px; color: #666; }
-              .metadata-item { margin-bottom: 5px; }
-              .metadata-icon { display: inline-block; width: 12px; margin-right: 5px; }
-              .print-button { position: fixed; top: 20px; right: 20px; background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-              .print-button:hover { background: #0056b3; }
-            }
-          </style>
-        </head>
-        <body>
-          
-                     <div class="header">
-             <h1>${t('report')}</h1>
-             <p>${new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}</p>
-           </div>
-          <div class="grid">
-            ${observations.map((observation) => {
-              const note = observation.note || t('noDescription');
-
-              return `
-                <div class="observation">
-                  ${observation.signedUrl 
-                    ? `<img src="${observation.signedUrl}" alt="Observation photo" class="photo" />`
-                    : `<div class="no-photo"><span class="no-photo-text">${t('noPhotoAvailable')}</span></div>`
-                  }
-                  <div class="note">${note}</div>
-                  ${observation.labels && observation.labels.length > 0 
-                    ? `<div class="labels">${observation.labels.map((label: string) => `<span class="label">${label}</span>`).join('')}</div>`
-                    : ''
-                  }
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </body>
-      </html>
-    `;
-
-    // Write content to the new window
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-
-    // Wait for images to load before printing
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 1000);
-    };
-  }, [observations]);
+  }, [observations, t, language]);
 
   const fetchSelectedObservations = useCallback(async () => {
     if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
@@ -370,14 +253,14 @@ function ReportPageContent() {
                   <option value="de">DE</option>
                 </select>
                 
-                {/* Print Button - Disabled during loading */}
+                {/* Create Google Doc Button - Disabled during loading */}
                 <Button
                   disabled
                   variant="secondary"
                   className="opacity-50"
                 >
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('printReport')}
+                  <FileText className="h-4 w-4 mr-2" />
+                  Create Google Doc
                 </Button>
               </div>
             </div>
@@ -423,14 +306,14 @@ function ReportPageContent() {
                 {t('backToObservations')}
               </Link>
               
-              {/* Print Button - Disabled during error */}
+              {/* Create Google Doc Button - Disabled during error */}
               <Button
                 disabled
                 variant="secondary"
                 className="opacity-50"
               >
-                <Printer className="h-4 w-4 mr-2" />
-                {t('printReport')}
+                <FileText className="h-4 w-4 mr-2" />
+                Create Google Doc
               </Button>
             </div>
             <h1 className="text-3xl font-bold">{t('report')}</h1>
@@ -483,18 +366,19 @@ function ReportPageContent() {
               Back to Observations
             </Link>
             
-            {/* Print Button */}
+            {/* Create Google Doc Button */}
             <Button
-              onClick={handlePrint}
+              onClick={handleCreateGoogleDoc}
+              data-create-doc-btn
               className="shadow-lg hover:shadow-xl transition-all"
             >
-              <Printer className="h-4 w-4 mr-2" />
-              Print Report
+              <FileText className="h-4 w-4 mr-2" />
+              Create Google Doc
             </Button>
           </div>
           <h1 className="text-3xl font-bold">Report</h1>
           <p className="text-muted-foreground">
-            {observations.length} observation{observations.length !== 1 ? 's' : ''} selected
+            {observations.length} observation{observations.length !== 1 ? 's' : ''} selected • Click "Create Google Doc" to generate a shareable document
           </p>
         </div>
 
