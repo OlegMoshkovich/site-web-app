@@ -5,7 +5,7 @@ export const translations = {
     
     // Hero section
     welcomeTitle: "welcome",
-    pleaseSignIn: "please sign in to generate report",
+    pleaseSignIn: "please sign in to generate reports",
     
     // Date selection
     start: "Start:",
