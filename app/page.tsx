@@ -8,9 +8,10 @@ import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
+import { Calendar, MapPin, User, Image as ImageIcon, Globe } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { useRouter } from "next/navigation";
+import { translations, type Language } from "@/lib/translations";
 
 interface Observation {
   id: string;
@@ -43,6 +44,13 @@ export default function Home() {
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(new Set());
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [language, setLanguage] = useState<Language>('en');
+
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => {
+    const value = translations[language][key];
+    return typeof value === 'string' ? value : '';
+  };
 
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
@@ -162,7 +170,7 @@ export default function Home() {
 
         if (obsError) {
           console.error("Error fetching observations:", obsError);
-          setError(`Error loading observations: ${obsError.message}`);
+                           setError(`${t('errorLoading')} ${obsError.message}`);
           setIsLoading(false);
           return;
         }
@@ -183,7 +191,7 @@ export default function Home() {
         setIsLoading(false);
       } catch (e) {
         console.error("Error in fetchData:", e);
-        setError("An unexpected error occurred.");
+                       setError(t('unexpectedError'));
         setIsLoading(false);
       }
     };
@@ -197,9 +205,21 @@ export default function Home() {
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              SIMPLE SITE
+              {t('siteTitle')}
             </div>
-            <AuthButtonClient />
+                          <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value as Language)}
+                    className="text-sm border-0 bg-transparent focus:outline-none focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <option value="en">EN</option>
+                    <option value="de">DE</option>
+                  </select>
+                </div>
+                <AuthButtonClient />
+              </div>
           </div>
         </nav>
 
@@ -208,8 +228,8 @@ export default function Home() {
               {!user ? (
                 // Show Hero when not logged in
                 <div className="text-center py-12">
-                  <h1 className="text-lg ">welcome to simple site</h1>
-                  <p className="text-muted-foreground text-sm">please sign in</p>
+                  <h1 className="text-lg ">{t('welcomeTitle')}</h1>
+                  <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p>
                 </div>
               ) : isLoading ? (
                 <div className="text-center py-12">
@@ -226,7 +246,7 @@ export default function Home() {
                     <div className="flex flex-row items-start gap-3 sm:gap-4">
                       <div className="flex flex-row items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                          Start:
+                          {t('start')}
                         </label>
                         <input
                           type="date"
@@ -248,7 +268,7 @@ export default function Home() {
                       </div>
                       <div className="flex flex-row items-center gap-2">
                         <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                          End:
+                          {t('end')}
                         </label>
                         <input
                           type="date"
@@ -276,7 +296,7 @@ export default function Home() {
                           variant="outline"
                           className="w-full sm:w-auto"
                         >
-                          {startDate && endDate ? 'Clear' : 'Select Range'}
+                          {startDate && endDate ? t('clear') : t('selectRange')}
                         </Button>
                         <Button
                           onClick={handleSelectAll}
@@ -284,14 +304,14 @@ export default function Home() {
                           variant="outline"
                           className="w-full sm:w-auto"
                         >
-                          {selectedObservations.size === observations.length ? 'Unselect All' : 'Select All'}
+                          {selectedObservations.size === observations.length ? t('unselectAll') : t('selectAll')}
                         </Button>
                       </div>
                     </div>
                     <div className="text-muted-foreground text-sm text-center sm:text-right">
                       {selectedObservations.size > 0 
-                        ? `${selectedObservations.size} observation${selectedObservations.size !== 1 ? 's' : ''} selected`
-                        : "Click on observations to select them."
+                        ? `${selectedObservations.size} ${t('observationsSelected')}`
+                        : t('clickToSelect')
                       }
                     </div>
                   </div>
@@ -320,14 +340,14 @@ export default function Home() {
                       <div key={dateKey} className="space-y-4">
                         {/* Date Header */}
                         <div className="border-b border-gray-200 pb-1">
-                          <div className="text-sm ">
-                            {new Date(dateKey).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            }).toUpperCase()}
-                          </div>
+                                                           <div className="text-sm ">
+                                   {new Date(dateKey).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
+                                     weekday: 'long',
+                                     year: 'numeric',
+                                     month: 'long',
+                                     day: 'numeric'
+                                   }).toUpperCase()}
+                                 </div>
                         </div>
                         
                         {/* Observations for this date */}
@@ -379,7 +399,7 @@ export default function Home() {
 
                                 <CardHeader>
                                   <CardDescription className={`line-clamp-2 ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
-                                    {observation.note || "No description available"}
+                                    {observation.note || t('noDescription')}
                                   </CardDescription>
                                 </CardHeader>
 
@@ -448,7 +468,7 @@ export default function Home() {
                                         rel="noopener noreferrer"
                                         className="text-blue-600 hover:text-blue-800 text-sm underline"
                                       >
-                                        View Plan
+                                        {t('viewPlan')}
                                       </a>
                                     </div>
                                   )}
@@ -463,7 +483,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">No observations found.</p>
+                  <p className="text-muted-foreground text-lg">{t('noObservationsFound')}</p>
                 </div>
               )}
                       </div>
@@ -479,14 +499,14 @@ export default function Home() {
             size="lg"
             className="shadow-lg hover:shadow-xl transition-all"
           >
-            Clear Selection
+            {t('clearSelection')}
           </Button>
           <Button
             onClick={handleGenerateReport}
             size="lg"
             className="shadow-lg hover:shadow-xl transition-all"
           >
-            Generate Report ({selectedObservations.size} selected)
+            {t('generateReportSelected').replace('{count}', selectedObservations.size.toString())}
           </Button>
         </div>
       )}

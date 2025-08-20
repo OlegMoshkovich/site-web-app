@@ -8,6 +8,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { translations, type Language } from "@/lib/translations";
 
 interface Observation {
   id: string;
@@ -35,7 +36,14 @@ function ReportPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [language, setLanguage] = useState<Language>('en');
   const searchParams = useSearchParams();
+  
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => {
+    const value = translations[language][key];
+    return typeof value === 'string' ? value : '';
+  };
   
   // Memoize the selected IDs to prevent unnecessary re-renders
   const memoizedSelectedIds = useMemo(() => {
@@ -225,18 +233,18 @@ function ReportPageContent() {
         <body>
           
                      <div class="header">
-             <h1>Report</h1>
-             <p>${new Date().toLocaleDateString()}</p>
+             <h1>${t('report')}</h1>
+             <p>${new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}</p>
            </div>
           <div class="grid">
             ${observations.map((observation) => {
-              const note = observation.note || 'No description available';
+              const note = observation.note || t('noDescription');
 
               return `
                 <div class="observation">
                   ${observation.signedUrl 
                     ? `<img src="${observation.signedUrl}" alt="Observation photo" class="photo" />`
-                    : `<div class="no-photo"><span class="no-photo-text">No photo available</span></div>`
+                    : `<div class="no-photo"><span class="no-photo-text">${t('noPhotoAvailable')}</span></div>`
                   }
                   <div class="note">${note}</div>
                   ${observation.labels && observation.labels.length > 0 
@@ -348,22 +356,34 @@ function ReportPageContent() {
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                Back to Observations
+                {t('backToObservations')}
               </Link>
               
-              {/* Print Button - Disabled during loading */}
-              <Button
-                disabled
-                variant="secondary"
-                className="opacity-50"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Report
-              </Button>
+              <div className="flex items-center gap-3">
+                {/* Language Selector */}
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+                
+                {/* Print Button - Disabled during loading */}
+                <Button
+                  disabled
+                  variant="secondary"
+                  className="opacity-50"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  {t('printReport')}
+                </Button>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold">Report</h1>
+            <h1 className="text-3xl font-bold">{t('report')}</h1>
             <p className="text-muted-foreground">
-              Loading selected observations...
+              {t('loadingSelectedObservations')}
             </p>
           </div>
           
@@ -400,7 +420,7 @@ function ReportPageContent() {
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                Back to Observations
+                {t('backToObservations')}
               </Link>
               
               {/* Print Button - Disabled during error */}
@@ -410,12 +430,12 @@ function ReportPageContent() {
                 className="opacity-50"
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Print Report
+                {t('printReport')}
               </Button>
             </div>
-            <h1 className="text-3xl font-bold">Report</h1>
+            <h1 className="text-3xl font-bold">{t('report')}</h1>
             <p className="text-muted-foreground">
-              Error loading report
+              {t('errorLoadingReport')}
             </p>
           </div>
           
@@ -433,12 +453,12 @@ function ReportPageContent() {
                   variant="destructive"
                   className="mt-4"
                 >
-                  Try Again
+                  {t('tryAgain')}
                 </Button>
               ) : (
                 <Button asChild className="mt-4">
                   <Link href="/">
-                    Go Back to Observations
+                    {t('goBackToObservations')}
                   </Link>
                 </Button>
               )}
@@ -497,7 +517,7 @@ function ReportPageContent() {
                         <span className="no-photo-text">No photo available</span>
                       </div>
                     )}
-                    <div className="note">{observation.note || 'No description available'}</div>
+                                            <div className="note">{observation.note || t('noDescription')}</div>
                     {observation.labels && observation.labels.length > 0 && (
                       <div className="flex flex-wrap gap-2 p-2 border border-gray-200 bg-gray-50">
                         {observation.labels.map((label, idx) => {
