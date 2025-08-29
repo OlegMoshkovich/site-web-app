@@ -69,6 +69,8 @@ export default function Home() {
   const [endDate, setEndDate] = useState<string>('');
   // Current language for internationalization
   const [language, setLanguage] = useState<Language>('en');
+  // Toggle state for showing/hiding the date selector
+  const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -268,7 +270,8 @@ export default function Home() {
             <div className="flex gap-5 items-center font-semibold">
               {t('siteTitle')}
             </div>
-                          <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
+                {/* Toggle button for date selector */}
                 <div className="flex items-center gap-2">
                   <select
                     value={language}
@@ -279,6 +282,16 @@ export default function Home() {
                     <option value="de">DE</option>
                   </select>
                 </div>
+                <Button
+                  onClick={() => setShowDateSelector(!showDateSelector)}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs px-2 py-1 h-8 border-gray-300"
+                >
+                  {showDateSelector ? 'Hide Filter' : 'Show Filter'}
+                </Button>
+                
+                
                 <AuthButtonClient />
               </div>
           </div>
@@ -306,8 +319,9 @@ export default function Home() {
               <div className="text-red-500">{error}</div>
             ) : observations.length > 0 ? (
                 <div className="space-y-8">
-                  {/* Date Range Selection */}
-                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
+                  {/* Date Range Selection - Conditionally rendered */}
+                  {showDateSelector && 
+                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-0 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
                     <div className="flex flex-row items-start gap-3 sm:gap-4">
                       <div className="flex flex-row items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
@@ -379,7 +393,8 @@ export default function Home() {
                         : t('clickToSelect')
                       }
                     </div>
-                  </div>
+                    </div>
+                  }
                   
 
                   {(() => {
