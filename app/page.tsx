@@ -81,39 +81,48 @@ export default function Home() {
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
 
-  const handleSelectByDateRange = useCallback(() => {
-    if (!startDate || !endDate) return;
-    
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    // Find observations within the date range
-    const observationsInRange = observations.filter(observation => {
-      const observationDate = new Date(observation.photo_date || observation.created_at);
-      return observationDate >= start && observationDate <= end;
-    });
-    
-    // Select all observations in the range
-    const observationIds = observationsInRange.map(obs => obs.id);
-    setSelectedObservations(new Set(observationIds));
-  }, [startDate, endDate, observations]);
-
   const handleSelectByDateRangeWithDates = useCallback((start: string, end: string) => {
     if (!start || !end) return;
     
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    // Normalize dates to start and end of day to ensure we capture all observations
+    const startDate = new Date(start + 'T00:00:00');
+    const endDate = new Date(end + 'T23:59:59.999');
+    
+    console.log('Date range selection:', { start, end, startDate, endDate });
     
     // Find observations within the date range
     const observationsInRange = observations.filter(observation => {
       const observationDate = new Date(observation.photo_date || observation.created_at);
-      return observationDate >= startDate && observationDate <= endDate;
+      const isInRange = observationDate >= startDate && observationDate <= endDate;
+      
+      // Debug logging for boundary cases
+      if (observationDate.toDateString() === startDate.toDateString() || 
+          observationDate.toDateString() === endDate.toDateString()) {
+        console.log('Boundary observation:', {
+          id: observation.id,
+          date: observationDate,
+          isInRange,
+          photo_date: observation.photo_date,
+          created_at: observation.created_at
+        });
+      }
+      
+      return isInRange;
     });
+    
+    console.log(`Found ${observationsInRange.length} observations in date range ${start} to ${end}`);
     
     // Select all observations in the range
     const observationIds = observationsInRange.map(obs => obs.id);
     setSelectedObservations(new Set(observationIds));
   }, [observations]);
+
+  const handleSelectByDateRange = useCallback(() => {
+    if (!startDate || !endDate) return;
+    
+    // Use the improved date range function
+    handleSelectByDateRangeWithDates(startDate, endDate);
+  }, [startDate, endDate, handleSelectByDateRangeWithDates]);
 
   const handleClearDateRange = useCallback(() => {
     setStartDate('');
