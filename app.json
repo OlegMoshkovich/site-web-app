@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "2883ae50-7e61-40dc-9a12-942aa1f258d2"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.cadencedaydev.sitewebapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

@@ -4,11 +4,14 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, Download, FileText } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language } from "@/lib/translations";
+import jsPDF from 'jspdf';
+import { Document, Paragraph, ImageRun, TextRun, HeadingLevel, AlignmentType, Packer } from 'docx';
+import { saveAs } from 'file-saver';
 
 interface Observation {
   id: string;
@@ -40,10 +43,10 @@ function ReportPageContent() {
   const searchParams = useSearchParams();
   
   // Helper function to get translated text
-  const t = (key: keyof typeof translations.en) => {
+  const t = useCallback((key: keyof typeof translations.en) => {
     const value = translations[language][key];
     return typeof value === 'string' ? value : '';
-  };
+  }, [language]);
   
   // Memoize the selected IDs to prevent unnecessary re-renders
   const memoizedSelectedIds = useMemo(() => {
@@ -270,7 +273,294 @@ function ReportPageContent() {
         printWindow.close();
       }, 1000);
     };
-  }, [observations]);
+  }, [observations, t, language]);
+
+  const handleDownloadPDF = useCallback(async () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = margin;
+
+      // Add title
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(t('report'), pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
+
+      // Add date
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      const dateText = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+      pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 20;
+
+      // Process each observation
+      for (let i = 0; i < observations.length; i++) {
+        const observation = observations[i];
+        
+        // Check if we need a new page
+        if (yPosition > pageHeight - 60) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        // Add observation number
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Observation ${i + 1}`, margin, yPosition);
+        yPosition += 10;
+
+        // Add note
+        if (observation.note) {
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
+          pdf.text(noteLines, margin, yPosition);
+          yPosition += noteLines.length * 5 + 5;
+        }
+
+        // Add labels
+        if (observation.labels && observation.labels.length > 0) {
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'italic');
+          pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
+          yPosition += 10;
+        }
+
+        // Add plan if available
+        if (observation.plan) {
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Plan: ' + observation.plan, margin, yPosition);
+          yPosition += 8;
+        }
+
+        // Add GPS coordinates
+        if (observation.gps_lat && observation.gps_lng) {
+          pdf.setFontSize(9);
+          pdf.text(`GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, margin, yPosition);
+          yPosition += 8;
+        }
+
+        // Add plan anchor coordinates
+        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
+          pdf.setFontSize(9);
+          pdf.text(`Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, margin, yPosition);
+          yPosition += 8;
+        }
+
+        // Add photo if available
+        if (observation.signedUrl) {
+          try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = observation.signedUrl!;
+            });
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx?.drawImage(img, 0, 0);
+            
+            const imgData = canvas.toDataURL('image/jpeg', 0.7);
+            const imgWidth = 80;
+            const imgHeight = (img.height / img.width) * imgWidth;
+            
+            // Check if image fits on current page
+            if (yPosition + imgHeight > pageHeight - margin) {
+              pdf.addPage();
+              yPosition = margin;
+            }
+            
+            pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 10;
+          } catch (error) {
+            console.error('Error adding image to PDF:', error);
+          }
+        }
+
+        yPosition += 10; // Space between observations
+      }
+
+      // Save the PDF
+      pdf.save(`report-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  }, [observations, t, language]);
+
+  const handleDownloadWord = useCallback(async () => {
+    try {
+      const children = [];
+
+      // Add title
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: t('report'), bold: true, size: 32 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 300 }
+        })
+      );
+
+      // Add date
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 600 }
+        })
+      );
+
+      // Process each observation
+      for (let i = 0; i < observations.length; i++) {
+        const observation = observations[i];
+
+        // Observation heading
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: `Observation ${i + 1}`, bold: true, size: 24 })],
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 400, after: 200 }
+          })
+        );
+
+        // Add photo first if available
+        if (observation.signedUrl) {
+          try {
+            console.log('Fetching image from:', observation.signedUrl);
+            const response = await fetch(observation.signedUrl, {
+              method: 'GET',
+              mode: 'cors',
+              headers: {
+                'Accept': 'image/*'
+              }
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            console.log('Image buffer size:', arrayBuffer.byteLength);
+            
+            if (arrayBuffer.byteLength > 0) {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new ImageRun({
+                      data: arrayBuffer,
+                      transformation: {
+                        width: 400,
+                        height: 300
+                      },
+                      type: 'png'
+                    })
+                  ],
+                  spacing: { after: 200 }
+                })
+              );
+            } else {
+              console.warn('Empty image buffer for observation:', observation.id);
+              // Add placeholder text instead of image
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: '[Image not available]', size: 16, italics: true })],
+                  spacing: { after: 200 }
+                })
+              );
+            }
+          } catch (imageError) {
+            console.error('Error adding image to Word doc:', imageError);
+            // Add placeholder text instead of breaking the entire document
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: '[Image could not be loaded]', size: 16, italics: true })],
+                spacing: { after: 200 }
+              })
+            );
+          }
+        }
+
+        // Add note
+        if (observation.note) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: observation.note, size: 20 })],
+              spacing: { after: 200 }
+            })
+          );
+        }
+
+        // Add labels
+        if (observation.labels && observation.labels.length > 0) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 18, italics: true })],
+              spacing: { after: 150 }
+            })
+          );
+        }
+
+        // Add plan
+        if (observation.plan) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 18 })],
+              spacing: { after: 150 }
+            })
+          );
+        }
+
+        // Add GPS coordinates
+        if (observation.gps_lat && observation.gps_lng) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 18 })],
+              spacing: { after: 150 }
+            })
+          );
+        }
+
+        // Add plan anchor coordinates
+        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 18 })],
+              spacing: { after: 150 }
+            })
+          );
+        }
+
+        // Add spacing between observations
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: '', size: 20 })],
+            spacing: { after: 400 }
+          })
+        );
+      }
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }]
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), `report-${new Date().toISOString().split('T')[0]}.docx`);
+    } catch (error) {
+      console.error('Error generating Word document:', error);
+      alert('Error generating Word document. Please try again.');
+    }
+  }, [observations, t, language]);
 
   const fetchSelectedObservations = useCallback(async () => {
     if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
@@ -370,15 +660,33 @@ function ReportPageContent() {
                   <option value="de">DE</option>
                 </select>
                 
-                {/* Print Button - Disabled during loading */}
-                <Button
-                  disabled
-                  variant="secondary"
-                  className="opacity-50"
-                >
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('printReport')}
-                </Button>
+                {/* Action Buttons - Disabled during loading */}
+                <div className="flex gap-2">
+                  <Button
+                    disabled
+                    variant="secondary"
+                    className="opacity-50"
+                  >
+                    <Printer className="h-4 w-4 mr-2" />
+                    {t('printReport')}
+                  </Button>
+                  <Button
+                    disabled
+                    variant="outline"
+                    className="opacity-50"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF
+                  </Button>
+                  <Button
+                    disabled
+                    variant="outline"
+                    className="opacity-50"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Word
+                  </Button>
+                </div>
               </div>
             </div>
             <h1 className="text-3xl font-bold">{t('report')}</h1>
@@ -423,15 +731,33 @@ function ReportPageContent() {
                 {t('backToObservations')}
               </Link>
               
-              {/* Print Button - Disabled during error */}
-              <Button
-                disabled
-                variant="secondary"
-                className="opacity-50"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                {t('printReport')}
-              </Button>
+              {/* Action Buttons - Disabled during error */}
+              <div className="flex gap-2">
+                <Button
+                  disabled
+                  variant="secondary"
+                  className="opacity-50"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  {t('printReport')}
+                </Button>
+                <Button
+                  disabled
+                  variant="outline"
+                  className="opacity-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  PDF
+                </Button>
+                <Button
+                  disabled
+                  variant="outline"
+                  className="opacity-50"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Word
+                </Button>
+              </div>
             </div>
             <h1 className="text-3xl font-bold">{t('report')}</h1>
             <p className="text-muted-foreground">
@@ -483,14 +809,33 @@ function ReportPageContent() {
               Back to Observations
             </Link>
             
-            {/* Print Button */}
-            <Button
-              onClick={handlePrint}
-              className="shadow-lg hover:shadow-xl transition-all"
-            >
-              <Printer className="h-4 w-4 mr-2" />
-              Print Report
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={handlePrint}
+                className="shadow-lg hover:shadow-xl transition-all"
+                variant="secondary"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Print Report
+              </Button>
+              <Button
+                onClick={handleDownloadPDF}
+                className="shadow-lg hover:shadow-xl transition-all"
+                variant="outline"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                PDF
+              </Button>
+              <Button
+                onClick={handleDownloadWord}
+                className="shadow-lg hover:shadow-xl transition-all"
+                variant="outline"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Word
+              </Button>
+            </div>
           </div>
           <h1 className="text-3xl font-bold">Report</h1>
           <p className="text-muted-foreground">

@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, User, Image as ImageIcon } from "lucide-react";
+import { Calendar, MapPin, Image as ImageIcon } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { useRouter } from "next/navigation";
 import { translations, type Language } from "@/lib/translations";
@@ -47,10 +47,10 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>('en');
 
   // Helper function to get translated text
-  const t = (key: keyof typeof translations.en) => {
+  const t = useCallback((key: keyof typeof translations.en) => {
     const value = translations[language][key];
     return typeof value === 'string' ? value : '';
-  };
+  }, [language]);
 
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
@@ -197,7 +197,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, [supabase, getSignedPhotoUrl]);
+  }, [supabase, getSignedPhotoUrl, t]);
 
   return (
     <main className="min-h-screen flex flex-col items-center">
@@ -441,6 +441,13 @@ export default function Home() {
                                     </div>
                                   )}
 
+                                  {observation.plan && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <span className="font-medium">Plan:</span>
+                                      <span>{observation.plan}</span>
+                                    </div>
+                                  )}
+
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Calendar className="h-4 w-4" />
                                     <span>{formatDate(observation.photo_date || observation.created_at)}</span>
@@ -455,10 +462,19 @@ export default function Home() {
                                     </div>
                                   )}
 
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <User className="h-4 w-4" />
-                                    <span>User ID: {observation.user_id.slice(0, 8)}...</span>
-                                  </div>
+                                  {observation.plan_anchor && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <MapPin className="h-4 w-4" />
+                                      <span className="font-medium">Plan Anchor:</span>
+                                      <span>
+                                        {typeof observation.plan_anchor === 'object' && observation.plan_anchor !== null && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor
+                                          ? `${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`
+                                          : JSON.stringify(observation.plan_anchor)
+                                        }
+                                      </span>
+                                    </div>
+                                  )}
+
 
                                   {observation.plan_url && (
                                     <div className="pt-2">
