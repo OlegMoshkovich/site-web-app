@@ -1,101 +1,142 @@
 "use client";
 
+// Force dynamic rendering to ensure fresh data on each request
 export const dynamic = 'force-dynamic';
 
+// React hooks for state management and side effects
 import { useEffect, useState, useCallback } from "react";
+// Supabase client for database operations
 import { createClient } from "@/lib/supabase/client";
+// Utility function for formatting dates
 import { formatDate } from "@/lib/utils";
+// UI components from shadcn/ui
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+// Lucide React icons
 import { Calendar, MapPin, Image as ImageIcon } from "lucide-react";
+// Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
+// Next.js router for navigation
 import { useRouter } from "next/navigation";
+// Translation system
 import { translations, type Language } from "@/lib/translations";
 
+// Core observation data structure from Supabase database
 interface Observation {
-  id: string;
-  plan: string | null;
-  labels: string[] | null;
-  user_id: string;
-  note: string | null;
-  gps_lat: number | null;
-  gps_lng: number | null;
-  photo_url: string | null;
-  plan_url: string | null;
-  plan_anchor: Record<string, unknown> | null;
-  photo_date: string | null;
-  created_at: string;
+  id: string;                    // Unique identifier for the observation
+  plan: string | null;           // Plan name/identifier this observation belongs to
+  labels: string[] | null;       // Array of tags/labels for categorization
+  user_id: string;               // ID of the user who created this observation
+  note: string | null;           // Text description/notes about the observation
+  gps_lat: number | null;        // GPS latitude coordinate
+  gps_lng: number | null;        // GPS longitude coordinate
+  photo_url: string | null;      // Storage path to the photo file
+  plan_url: string | null;       // URL to view the associated plan
+  plan_anchor: Record<string, unknown> | null; // Position coordinates on the plan
+  photo_date: string | null;     // When the photo was taken
+  created_at: string;            // When the observation was created in the system
 }
 
+// Extended observation with signed URL for secure photo access
 interface ObservationWithUrl extends Observation {
-  signedUrl: string | null;
+  signedUrl: string | null;      // Temporary signed URL for viewing the photo
 }
 
+// Supabase storage bucket name for photos
 const BUCKET = "photos";
 
+// Main component for the observations page
 export default function Home() {
+  // Initialize Supabase client for database operations
   const supabase = createClient();
+  // Next.js router for programmatic navigation
   const router = useRouter();
+  
+  // ===== STATE MANAGEMENT =====
+  // Current authenticated user (null if not logged in)
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  // Array of observations with signed photo URLs
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
+  // Loading state for async operations
   const [isLoading, setIsLoading] = useState(true);
+  // Error message if something goes wrong
   const [error, setError] = useState<string | null>(null);
+  // Set of selected observation IDs for bulk operations
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(new Set());
+  // Date range selection for filtering observations
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  // Current language for internationalization
   const [language, setLanguage] = useState<Language>('en');
 
-  // Helper function to get translated text
+  // ===== UTILITY FUNCTIONS =====
+  // Helper function to get translated text based on current language
   const t = useCallback((key: keyof typeof translations.en) => {
     const value = translations[language][key];
     return typeof value === 'string' ? value : '';
   }, [language]);
 
+  // Clean up file paths by removing leading slashes and empty strings
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
 
+  // ===== PHOTO MANAGEMENT =====
+  // Generate a temporary signed URL for viewing a photo from Supabase storage
+  // This is necessary because photos are stored privately and need authentication
   const getSignedPhotoUrl = useCallback(
     async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
+      // Clean up the file path
       const key = normalizePath(filenameOrPath);
       if (!key) return null;
+      
+      // Request a signed URL from Supabase storage
       const { data, error } = await supabase.storage
         .from(BUCKET)
         .createSignedUrl(key, expiresIn);
+      
       if (error) {
         console.error("createSignedUrl error", { key, error });
         return null;
       }
+      
       return data.signedUrl;
     },
     [supabase]
   );
 
+  // ===== ACTION HANDLERS =====
+  // Navigate to the report generation page with selected observations
   const handleGenerateReport = useCallback(() => {
     if (selectedObservations.size === 0) return;
     
+    // Convert selected observation IDs to a comma-separated string
     const selectedIds = Array.from(selectedObservations);
     const queryString = selectedIds.join(',');
     
-    // Navigate to the report page with selected observation IDs
+    // Navigate to the report page with selected observation IDs as URL parameters
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
 
+  // ===== DATE RANGE SELECTION =====
+  // Filter and select observations within a specific date range
   const handleSelectByDateRangeWithDates = useCallback((start: string, end: string) => {
     if (!start || !end) return;
     
     // Normalize dates to start and end of day to ensure we capture all observations
-    const startDate = new Date(start + 'T00:00:00');
-    const endDate = new Date(end + 'T23:59:59.999');
+    // This prevents missing observations that might fall on boundary dates
+    const startDate = new Date(start + 'T00:00:00');    // Start of the start date
+    const endDate = new Date(end + 'T23:59:59.999');    // End of the end date
     
     console.log('Date range selection:', { start, end, startDate, endDate });
     
-    // Find observations within the date range
+    // Filter observations to find those within the selected date range
     const observationsInRange = observations.filter(observation => {
+      // Use photo_date if available, otherwise fall back to created_at
       const observationDate = new Date(observation.photo_date || observation.created_at);
       const isInRange = observationDate >= startDate && observationDate <= endDate;
       
-      // Debug logging for boundary cases
+      // Debug logging for boundary cases to help troubleshoot date selection issues
       if (observationDate.toDateString() === startDate.toDateString() || 
           observationDate.toDateString() === endDate.toDateString()) {
         console.log('Boundary observation:', {
@@ -112,7 +153,7 @@ export default function Home() {
     
     console.log(`Found ${observationsInRange.length} observations in date range ${start} to ${end}`);
     
-    // Select all observations in the range
+    // Select all observations that fall within the date range
     const observationIds = observationsInRange.map(obs => obs.id);
     setSelectedObservations(new Set(observationIds));
   }, [observations]);
@@ -142,26 +183,34 @@ export default function Home() {
     }
   }, [observations, selectedObservations]);
 
+  // ===== UTILITY FUNCTIONS =====
+  // Calculate the minimum and maximum dates available in the observations
+  // This is used to set the min/max values for date input fields
   const getAvailableDateRange = useCallback(() => {
     if (observations.length === 0) return { min: '', max: '' };
     
+    // Extract all dates from observations (photo_date or created_at)
     const dates = observations.map(obs => new Date(obs.photo_date || obs.created_at));
+    // Find the earliest and latest dates
     const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
     const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
     
+    // Return dates in YYYY-MM-DD format for HTML date inputs
     return {
-      min: minDate.toISOString().split('T')[0],
-      max: maxDate.toISOString().split('T')[0]
+      min: minDate.toISOString().split('T')[0],  // Earliest available date
+      max: maxDate.toISOString().split('T')[0]   // Latest available date
     };
   }, [observations]);
 
+  // ===== DATA FETCHING =====
+  // Main effect that runs when the component mounts to fetch user data and observations
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // 1) Auth
+        // Step 1: Authenticate the current user
         const { data: authData, error: userError } = await supabase.auth.getUser();
         if (userError || !authData.user) {
           setUser(null);
@@ -170,7 +219,7 @@ export default function Home() {
         }
         setUser(authData.user);
 
-        // 2) Fetch observations for current user (newest first)
+        // Step 2: Fetch observations for the current user (newest first)
         const { data: obsData, error: obsError } = await supabase
           .from("observations")
           .select("*")
@@ -179,18 +228,19 @@ export default function Home() {
 
         if (obsError) {
           console.error("Error fetching observations:", obsError);
-                           setError(`${t('errorLoading')} ${obsError.message}`);
+          setError(`${t('errorLoading')} ${obsError.message}`);
           setIsLoading(false);
           return;
         }
 
         const base = (obsData ?? []) as Observation[];
 
-        // 3) In parallel, create signed URLs for each photo (bucket is private)
+        // Step 3: Generate signed URLs for each photo in parallel
+        // This is necessary because photos are stored privately in Supabase
         const withUrls: ObservationWithUrl[] = await Promise.all(
           base.map(async (o) => {
             const signedUrl = o.photo_url
-              ? await getSignedPhotoUrl(o.photo_url, 3600) // 1 hour
+              ? await getSignedPhotoUrl(o.photo_url, 3600) // 1 hour expiration
               : null;
             return { ...o, signedUrl };
           })
@@ -200,7 +250,7 @@ export default function Home() {
         setIsLoading(false);
       } catch (e) {
         console.error("Error in fetchData:", e);
-                       setError(t('unexpectedError'));
+        setError(t('unexpectedError'));
         setIsLoading(false);
       }
     };
@@ -208,9 +258,11 @@ export default function Home() {
     fetchData();
   }, [supabase, getSignedPhotoUrl, t]);
 
+  // ===== MAIN RENDER =====
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-4 items-center">
+        {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
@@ -232,23 +284,27 @@ export default function Home() {
           </div>
         </nav>
 
-          <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4 bg-gray-50/30" >
-            <div className="w-full">   
-              {!user ? (
-                // Show Hero when not logged in
-                <div className="text-center py-12">
-                  <h1 className="text-lg ">{t('welcomeTitle')}</h1>
-                  <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p>
+                  {/* Main content area with responsive padding */}
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4 bg-gray-50/30" >
+          <div className="w-full">   
+            {/* Conditional rendering based on app state */}
+            {!user ? (
+              // Show welcome message when user is not logged in
+              <div className="text-center py-12">
+                <h1 className="text-lg ">{t('welcomeTitle')}</h1>
+                <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p>
+              </div>
+            ) : isLoading ? (
+              // Show loading spinner while fetching data
+              <div className="text-center py-12">
+                <div className="flex justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>
-              ) : isLoading ? (
-                <div className="text-center py-12">
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  </div>
-                </div>
-              ) : error ? (
-                <div className="text-red-500">{error}</div>
-              ) : observations.length > 0 ? (
+              </div>
+            ) : error ? (
+              // Show error message if something went wrong
+              <div className="text-red-500">{error}</div>
+            ) : observations.length > 0 ? (
                 <div className="space-y-8">
                   {/* Date Range Selection */}
                   <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
