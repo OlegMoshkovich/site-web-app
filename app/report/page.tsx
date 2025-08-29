@@ -555,7 +555,9 @@ function ReportPageContent() {
       });
 
       const buffer = await Packer.toBuffer(doc);
-      saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), `report-${new Date().toISOString().split('T')[0]}.docx`);
+      // Convert Buffer to Uint8Array for Blob compatibility
+      const uint8Array = new Uint8Array(buffer);
+      saveAs(new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), `report-${new Date().toISOString().split('T')[0]}.docx`);
     } catch (error) {
       console.error('Error generating Word document:', error);
       alert('Error generating Word document. Please try again.');
