@@ -320,8 +320,8 @@ export default function Home() {
             ) : observations.length > 0 ? (
                 <div className="space-y-8">
                   {/* Date Range Selection - Conditionally rendered */}
-                  {showDateSelector && 
-                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-0 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
+                  {showDateSelector && (
+                    <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-0 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
                     <div className="flex flex-row items-start gap-3 sm:gap-4">
                       <div className="flex flex-row items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
@@ -394,7 +394,7 @@ export default function Home() {
                       }
                     </div>
                     </div>
-                  }
+                  )}
                   
 
                   {(() => {
