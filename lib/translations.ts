@@ -65,7 +65,7 @@ export const translations = {
     
     // Hero section
     welcomeTitle: "willkommen",
-    pleaseSignIn: "Bitte melden Sie sich an, um einen Bericht zu erstellen",
+    pleaseSignIn: "bitte anmelden um berichte zu generieren",
     
     // Date selection
     start: "Start:",
@@ -80,9 +80,9 @@ export const translations = {
     observationsSelected: "Beobachtung(en) ausgewählt",
     
     // Buttons
-    generateReport: "Bericht erstellen",
+    generateReport: "Bericht generieren",
     clearSelection: "Auswahl löschen",
-    generateReportSelected: "Bericht erstellen ({count} ausgewählt)",
+    generateReportSelected: "Bericht generieren ({count} ausgewählt)",
     
     // Date headers
     dateFormat: {
@@ -102,7 +102,7 @@ export const translations = {
     noObservationsFound: "Keine Beobachtungen gefunden.",
     
     // Labels
-    labels: "Beschriftungen",
+    labels: "Labels",
     viewPlan: "Plan anzeigen",
     
     // Report page
@@ -122,3 +122,11 @@ export const translations = {
 
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof typeof translations.en;
+
+// Hook for accessing translations
+export function useTranslations(language: Language) {
+  return function t(key: TranslationKey): string {
+    const value = translations[language][key];
+    return typeof value === 'string' ? value : '';
+  };
+}
