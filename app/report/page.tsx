@@ -12,6 +12,7 @@ import { translations, type Language } from "@/lib/translations";
 import jsPDF from 'jspdf';
 import { Document, Paragraph, ImageRun, TextRun, HeadingLevel, AlignmentType, Packer } from 'docx';
 import { saveAs } from 'file-saver';
+import PlanDisplayWidget from '@/components/plan-display-widget';
 
 interface Observation {
   id: string;
@@ -564,6 +565,64 @@ function ReportPageContent() {
     }
   }, [observations, t, language]);
 
+  // Helper function to get anchor point (same as PlanDisplayWidget)
+  const getAnchorPoint = (item: any) => {
+    if (item.plan_anchor && 
+        typeof item.plan_anchor === 'object' && 
+        item.plan_anchor.x !== null && 
+        item.plan_anchor.x !== undefined && 
+        item.plan_anchor.y !== null && 
+        item.plan_anchor.y !== undefined &&
+        !(item.plan_anchor.x === 0 && item.plan_anchor.y === 0)) {
+      return { x: item.plan_anchor.x, y: item.plan_anchor.y };
+    }
+    
+    if (item.anchor_x !== null && 
+        item.anchor_x !== undefined && 
+        item.anchor_y !== null && 
+        item.anchor_y !== undefined &&
+        !(item.anchor_x === 0 && item.anchor_y === 0)) {
+      return { x: item.anchor_x, y: item.anchor_y };
+    }
+    
+    return null;
+  };
+
+  // Create the same anchor data structure as PlanDisplayWidget
+  const anchorData = useMemo(() => {
+    const planMap = new Map<string, Array<{ observationId: string; index: number }>>();
+    let globalIndex = 0;
+    
+    observations.forEach((obs) => {
+      const anchor = getAnchorPoint(obs);
+      const obsPlan = obs.plan || 'plan1';
+      
+      if (anchor && obsPlan) {
+        if (!planMap.has(obsPlan)) {
+          planMap.set(obsPlan, []);
+        }
+        globalIndex++;
+        planMap.get(obsPlan)!.push({
+          observationId: obs.id,
+          index: globalIndex
+        });
+      }
+    });
+    
+    // Create a flat map of observation ID to index
+    const anchorIndexMap = new Map<string, number>();
+    planMap.forEach((anchors) => {
+      anchors.forEach(({ observationId, index }) => {
+        anchorIndexMap.set(observationId, index);
+      });
+    });
+    
+    return {
+      hasAnchors: anchorIndexMap.size > 0,
+      anchorIndexMap
+    };
+  }, [observations]);
+
   const fetchSelectedObservations = useCallback(async () => {
     if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
       setError("No observations selected. Please go back and select some observations first.");
@@ -799,6 +858,39 @@ function ReportPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col items-center">
+      <style jsx>{`
+        .observation {
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          overflow: hidden;
+          background: white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .photo {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+        }
+        .no-photo {
+          width: 100%;
+          height: 200px;
+          background: #f5f5f5;
+          border: 2px dashed #ddd;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .no-photo-text {
+          color: #999;
+          font-size: 14px;
+        }
+        .note {
+          padding: 15px;
+          font-size: 14px;
+          color: #333;
+          line-height: 1.4;
+        }
+      `}</style>
       <div className="w-full max-w-7xl p-5">
         {/* Header - Stable section */}
         <div className="mb-8">
@@ -812,15 +904,7 @@ function ReportPageContent() {
             </Link>
             
             {/* Action Buttons */}
-            <div className="flex gap-2">
-              <Button
-                onClick={handlePrint}
-                className="shadow-lg hover:shadow-xl transition-all"
-                variant="secondary"
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Report
-              </Button>
+            <div className="flex flex-col gap-2">
               <Button
                 onClick={handleDownloadPDF}
                 className="shadow-lg hover:shadow-xl transition-all"
@@ -845,13 +929,33 @@ function ReportPageContent() {
           </p>
         </div>
 
+        {/* Plan Display Widget - Show if any observations have anchors */}
+        {anchorData.hasAnchors && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Plan Overview</h2>
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <PlanDisplayWidget
+                observations={observations}
+                plan="plan1"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Photos in a row */}
         {observations.length > 0 ? (
           <div key="observations-content" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {observations.map((observation) => {
+                const anchorNumber = anchorData.anchorIndexMap.get(observation.id);
                 return (
-                  <div key={observation.id} className="observation">
+                  <div key={observation.id} className="observation relative">
+                    {/* Anchor number indicator */}
+                    {anchorNumber && (
+                      <div className="absolute top-2 left-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-md">
+                        {anchorNumber}
+                      </div>
+                    )}
                     {observation.signedUrl ? (
                       <img
                         src={observation.signedUrl}

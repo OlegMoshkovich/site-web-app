@@ -134,6 +134,8 @@ export interface PlanWidgetProps {
   onAnchorChange?: (anchor: { x: number; y: number } | null) => void;
   selectedPlan?: string;
   onPlanChange?: (plan: string) => void;
+  anchors?: Array<{ x: number; y: number; observationId: string; note?: string }>;
+  isReportMode?: boolean;
 }
 
 export interface CreateObservationWidgetProps {
