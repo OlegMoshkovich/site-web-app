@@ -19,6 +19,8 @@ import { Calendar, MapPin, Image as ImageIcon } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
+// Next.js Image component for optimized images
+import Image from "next/image";
 // Translation system
 import { translations, type Language } from "@/lib/translations";
 
@@ -282,15 +284,16 @@ export default function Home() {
                     <option value="de">DE</option>
                   </select>
                 </div>
-                <Button
-                  onClick={() => setShowDateSelector(!showDateSelector)}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs px-2 py-1 h-8 border-gray-300"
-                >
-                  {showDateSelector ? 'Hide Filter' : 'Show Filter'}
-                </Button>
-                
+                {user && (
+                  <Button
+                    onClick={() => setShowDateSelector(!showDateSelector)}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs px-2 py-1 h-8 border-gray-300"
+                  >
+                    {showDateSelector ? 'Hide Filter' : 'Show Filter'}
+                  </Button>
+                )}
                 
                 <AuthButtonClient />
               </div>
@@ -428,8 +431,8 @@ export default function Home() {
                                      day: 'numeric'
                                    }).toUpperCase()}
                                  </div>
-                        </div>
-                        
+        </div>
+
                         {/* Observations for this date */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                           {groupedObservations[dateKey].map((observation) => {
@@ -456,11 +459,12 @@ export default function Home() {
                               >
                                 {hasPhoto ? (
                                   <div className="relative h-48 sm:h-56 md:h-64 w-full">
-                                    <img
+                                    <Image
                                       src={observation.signedUrl as string}
                                       alt={`Photo for ${observation.plan ?? "observation"}`}
-                                      className="w-full h-full object-cover"
-                                      loading="lazy"
+                                      fill
+                                      className="object-cover"
+                                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                                     />
                                   </div>
                                 ) : (
@@ -560,7 +564,7 @@ export default function Home() {
                                     <div className="pt-2">
                                       <a
                                         href={observation.plan_url}
-                                        target="_blank"
+              target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-600 hover:text-blue-800 text-sm underline"
                                       >

@@ -20,7 +20,6 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
   const imageHeight = 280;
   
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [capturedUri, setCapturedUri] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string>(propSelectedPlan || 'plan1');
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -349,15 +348,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
                 Close
               </Button>
             </div>
-            {capturedUri && (
-              <Image
-                src={capturedUri}
-                alt="Captured plan"
-                width={800}
-                height={600}
-                className="w-full max-w-[60vw] max-h-[40vh] object-contain border border-red-500 rounded-lg"
-              />
-            )}
+
           </div>
         </div>
       )}
