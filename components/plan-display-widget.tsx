@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 
 interface AnchorPoint {
   x: number;
@@ -21,7 +20,12 @@ interface PlanData {
 }
 
 interface PlanDisplayWidgetProps {
-  observations: any[];
+  observations: Array<{
+    id: string;
+    plan_anchor?: Record<string, unknown> | null;
+    anchor_x?: number | null;
+    anchor_y?: number | null;
+  }>;
   plan: string;
 }
 
@@ -34,7 +38,7 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
     return `/plans/${planName}.png`;
   };
 
-  const getAnchorPoint = (item: any): AnchorPoint | null => {
+  const getAnchorPoint = (item: PlanDisplayWidgetProps['observations'][0]): AnchorPoint | null => {
     if (item.plan_anchor && 
         typeof item.plan_anchor === 'object' && 
         item.plan_anchor.x !== null && 

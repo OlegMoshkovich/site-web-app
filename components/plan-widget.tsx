@@ -7,12 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { usePlanStore } from '@/lib/store/plan-store';
 import { PlanWidgetProps } from '@/types/types';
 
-interface AnchorWithObservation {
-  x: number;
-  y: number;
-  observationId: string;
-  note?: string;
-}
+
 
 const PlanWidget: React.FC<PlanWidgetProps> = ({ 
   onAnchorChange, 
@@ -57,13 +52,13 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
     if (propSelectedPlan && propSelectedPlan !== selectedPlan) {
       setSelectedPlan(propSelectedPlan);
     }
-  }, [propSelectedPlan]);
+  }, [propSelectedPlan, selectedPlan]);
 
   useEffect(() => {
     const initialPos = getInitialPosition();
     setPlanPosition(initialPos);
     setZoomScale(1);
-  }, []);
+  }, [setPlanPosition, setZoomScale]);
 
   const handlePlanChange = (plan: string) => {
     setSelectedPlan(plan);
@@ -117,19 +112,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
     return `/plans/${plan}.png`;
   };
 
-  const handleCapture = async () => {
-    if (!containerRef.current) return;
-    
-    try {
-      const { default: html2canvas } = await import('html2canvas');
-      const canvas = await html2canvas(containerRef.current);
-      const uri = canvas.toDataURL('image/png');
-      setCapturedUri(uri);
-      setDialogVisible(true);
-    } catch (error) {
-      console.error('Failed to capture screenshot:', error);
-    }
-  };
+
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -367,9 +350,11 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
               </Button>
             </div>
             {capturedUri && (
-              <img
+              <Image
                 src={capturedUri}
                 alt="Captured plan"
+                width={800}
+                height={600}
                 className="w-full max-w-[60vw] max-h-[40vh] object-contain border border-red-500 rounded-lg"
               />
             )}
