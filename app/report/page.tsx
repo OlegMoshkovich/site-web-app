@@ -25,6 +25,8 @@ interface Observation {
   photo_url: string | null;
   plan_url: string | null;
   plan_anchor: Record<string, unknown> | null;
+  anchor_x: number | null;
+  anchor_y: number | null;
   photo_date: string | null;
   created_at: string;
 }
@@ -297,6 +299,144 @@ function ReportPageContent() {
       pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 20;
 
+      // Add plan overview if there are observations with anchors
+      const observationsWithAnchors = observations.filter(obs => 
+        (obs.plan_anchor && 
+         typeof obs.plan_anchor === 'object' && 
+         'x' in obs.plan_anchor && 
+         'y' in obs.plan_anchor) ||
+        (obs.anchor_x !== null && obs.anchor_y !== null)
+      );
+
+      if (observationsWithAnchors.length > 0) {
+        // Group by plan
+        const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
+        let globalIndex = 0;
+        
+        observationsWithAnchors.forEach((obs) => {
+          const obsPlan = obs.plan || 'plan1';
+          let anchor = null;
+          
+          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor) {
+            anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
+          } else if (obs.anchor_x !== null && obs.anchor_y !== null) {
+            anchor = { x: obs.anchor_x, y: obs.anchor_y };
+          }
+          
+          if (anchor) {
+            if (!planGroups.has(obsPlan)) {
+              planGroups.set(obsPlan, []);
+            }
+            globalIndex++;
+            planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
+          }
+        });
+
+        // Add plan overview section
+        if (planGroups.size > 0) {
+          pdf.setFontSize(18);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Plan Overview', margin, yPosition);
+          yPosition += 15;
+
+          for (const [planName, anchors] of planGroups) {
+            // Check if we need a new page
+            if (yPosition > pageHeight - 80) {
+              pdf.addPage();
+              yPosition = margin;
+            }
+
+            pdf.setFontSize(14);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, margin, yPosition);
+            yPosition += 10;
+
+            // Add plan image
+            try {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = 320;
+              canvas.height = 280;
+              
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = `/plans/${planName}.png`;
+              });
+
+              // Clear canvas with white background and use object-contain behavior
+              if (ctx) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 320, 280);
+                
+                // Calculate aspect ratios for object-contain behavior
+                const imgAspect = img.width / img.height;
+                const canvasAspect = 320 / 280;
+                
+                let drawWidth, drawHeight, offsetX, offsetY;
+                
+                if (imgAspect > canvasAspect) {
+                  drawWidth = 320;
+                  drawHeight = 320 / imgAspect;
+                  offsetX = 0;
+                  offsetY = (280 - drawHeight) / 2;
+                } else {
+                  drawHeight = 280;
+                  drawWidth = 280 * imgAspect;
+                  offsetX = (320 - drawWidth) / 2;
+                  offsetY = 0;
+                }
+                
+                // Draw the plan image with object-contain behavior
+                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                
+                // Draw anchors on the canvas
+                anchors.forEach((anchor) => {
+                  const x = anchor.x * 320;
+                  const y = anchor.y * 280;
+                  
+                  // Draw black circle with white border
+                  ctx.beginPath();
+                  ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                  ctx.fillStyle = 'black';
+                  ctx.fill();
+                  ctx.strokeStyle = 'white';
+                  ctx.lineWidth = 2;
+                  ctx.stroke();
+                  
+                  // Draw white number
+                  ctx.fillStyle = 'white';
+                  ctx.font = 'bold 10px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(anchor.index.toString(), x, y);
+                });
+              }
+              
+              const planImageData = canvas.toDataURL('image/jpeg', 0.8);
+              const planWidth = 130;
+              const planHeight = 100; // Increased height for better visibility
+              
+              // Check if image fits on current page
+              if (yPosition + planHeight > pageHeight - margin) {
+                pdf.addPage();
+                yPosition = margin;
+              }
+              
+              pdf.addImage(planImageData, 'JPEG', margin, yPosition, planWidth, planHeight);
+              yPosition += planHeight + 15;
+            } catch (error) {
+              console.error('Error adding plan to PDF:', error);
+              yPosition += 10;
+            }
+          }
+          
+          yPosition += 10; // Extra space after plans
+        }
+      }
+
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
@@ -418,6 +558,158 @@ function ReportPageContent() {
           spacing: { after: 600 }
         })
       );
+
+      // Add plan overview if there are observations with anchors
+      const observationsWithAnchors = observations.filter(obs => 
+        (obs.plan_anchor && 
+         typeof obs.plan_anchor === 'object' && 
+         'x' in obs.plan_anchor && 
+         'y' in obs.plan_anchor) ||
+        (obs.anchor_x !== null && obs.anchor_y !== null)
+      );
+
+      if (observationsWithAnchors.length > 0) {
+        // Group by plan
+        const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
+        let globalIndex = 0;
+        
+        observationsWithAnchors.forEach((obs) => {
+          const obsPlan = obs.plan || 'plan1';
+          let anchor = null;
+          
+          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor) {
+            anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
+          } else if (obs.anchor_x !== null && obs.anchor_y !== null) {
+            anchor = { x: obs.anchor_x, y: obs.anchor_y };
+          }
+          
+          if (anchor) {
+            if (!planGroups.has(obsPlan)) {
+              planGroups.set(obsPlan, []);
+            }
+            globalIndex++;
+            planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
+          }
+        });
+
+        // Add plan overview section
+        if (planGroups.size > 0) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: 'Plan Overview', bold: true, size: 28 })],
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 300 }
+            })
+          );
+
+          for (const [planName, anchors] of planGroups) {
+            // Add plan title
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, bold: true, size: 20 })],
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 300, after: 200 }
+              })
+            );
+
+            // Add plan image with anchors
+            try {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = 320;
+              canvas.height = 280;
+              
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = `/plans/${planName}.png`;
+              });
+
+              // Clear canvas with white background and use object-contain behavior
+              if (ctx) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 320, 280);
+                
+                // Calculate aspect ratios for object-contain behavior
+                const imgAspect = img.width / img.height;
+                const canvasAspect = 320 / 280;
+                
+                let drawWidth, drawHeight, offsetX, offsetY;
+                
+                if (imgAspect > canvasAspect) {
+                  drawWidth = 320;
+                  drawHeight = 320 / imgAspect;
+                  offsetX = 0;
+                  offsetY = (280 - drawHeight) / 2;
+                } else {
+                  drawHeight = 280;
+                  drawWidth = 280 * imgAspect;
+                  offsetX = (320 - drawWidth) / 2;
+                  offsetY = 0;
+                }
+                
+                // Draw the plan image with object-contain behavior
+                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                
+                // Draw anchors on the canvas
+                anchors.forEach((anchor) => {
+                  const x = anchor.x * 320;
+                  const y = anchor.y * 280;
+                  
+                  // Draw black circle with white border
+                  ctx.beginPath();
+                  ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                  ctx.fillStyle = 'black';
+                  ctx.fill();
+                  ctx.strokeStyle = 'white';
+                  ctx.lineWidth = 2;
+                  ctx.stroke();
+                  
+                  // Draw white number
+                  ctx.fillStyle = 'white';
+                  ctx.font = 'bold 10px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(anchor.index.toString(), x, y);
+                });
+              }
+              
+              // Convert canvas to blob and add to document
+              const planImageBlob = await new Promise<Blob>((resolve) => {
+                canvas.toBlob((blob) => resolve(blob!), 'image/png');
+              });
+              
+              const arrayBuffer = await planImageBlob.arrayBuffer();
+              
+              children.push(
+                new Paragraph({
+                  children: [
+                    new ImageRun({
+                      data: arrayBuffer,
+                      transformation: {
+                        width: 320, // Match the original canvas width
+                        height: 220  // Reduced height for better document layout
+                      },
+                      type: 'png'
+                    })
+                  ],
+                  spacing: { after: 400 }
+                })
+              );
+            } catch (error) {
+              console.error('Error adding plan to Word doc:', error);
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
+                  spacing: { after: 200 }
+                })
+              );
+            }
+          }
+        }
+      }
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
@@ -558,7 +850,7 @@ function ReportPageContent() {
       const buffer = await Packer.toBuffer(doc);
       // Convert Buffer to Uint8Array for Blob compatibility
       const uint8Array = new Uint8Array(buffer);
-      saveAs(new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), `report-${new Date().toISOString().split('T')[0]}.docx`);
+      saveAs(new Blob([uint8Array.buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }), `report-${new Date().toISOString().split('T')[0]}.docx`);
     } catch (error) {
       console.error('Error generating Word document:', error);
       alert('Error generating Word document. Please try again.');
@@ -722,15 +1014,7 @@ function ReportPageContent() {
                 </select>
                 
                 {/* Action Buttons - Disabled during loading */}
-                <div className="flex gap-2">
-                  <Button
-                    disabled
-                    variant="secondary"
-                    className="opacity-50"
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    {t('printReport')}
-                  </Button>
+                <div className="flex flex-col gap-2">
                   <Button
                     disabled
                     variant="outline"
@@ -793,15 +1077,7 @@ function ReportPageContent() {
               </Link>
               
               {/* Action Buttons - Disabled during error */}
-              <div className="flex gap-2">
-                <Button
-                  disabled
-                  variant="secondary"
-                  className="opacity-50"
-                >
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('printReport')}
-                </Button>
+              <div className="flex flex-col gap-2">
                 <Button
                   disabled
                   variant="outline"
@@ -907,7 +1183,7 @@ function ReportPageContent() {
             <div className="flex flex-col gap-2">
               <Button
                 onClick={handleDownloadPDF}
-                className="shadow-lg hover:shadow-xl transition-all"
+                className="transition-all"
                 variant="outline"
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -915,7 +1191,7 @@ function ReportPageContent() {
               </Button>
               <Button
                 onClick={handleDownloadWord}
-                className="shadow-lg hover:shadow-xl transition-all"
+                className="transition-all"
                 variant="outline"
               >
                 <FileText className="h-4 w-4 mr-2" />
