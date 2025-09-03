@@ -22,6 +22,8 @@ interface PlanData {
 interface PlanDisplayWidgetProps {
   observations: Array<{
     id: string;
+    plan?: string | null;
+    note?: string | null;
     plan_anchor?: Record<string, unknown> | null;
     anchor_x?: number | null;
     anchor_y?: number | null;
@@ -46,7 +48,7 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
         item.plan_anchor.y !== null && 
         item.plan_anchor.y !== undefined &&
         !(item.plan_anchor.x === 0 && item.plan_anchor.y === 0)) {
-      return { x: item.plan_anchor.x, y: item.plan_anchor.y };
+      return { x: Number(item.plan_anchor.x), y: Number(item.plan_anchor.y) };
     }
     
     if (item.anchor_x !== null && 
@@ -84,7 +86,7 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
         planMap.get(obsPlan)!.push({
           ...anchor,
           observationId: obs.id,
-          note: obs.note,
+          note: obs.note || undefined,
           index: globalIndex
         });
       }
