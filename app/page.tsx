@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 // Lucide React icons
-import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2, Grid3X3, List } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js router for navigation
@@ -76,6 +76,8 @@ export default function Home() {
   // Edit state for inline note editing
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>('');
+  // View mode state
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -380,6 +382,34 @@ export default function Home() {
                   </Button>
                 )}
                 
+                {/* View Mode Toggle */}
+                {user && (
+                  <div className="flex gap-1 border border-gray-200 rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode('card')}
+                      className={`p-2 rounded transition-colors ${
+                        viewMode === 'card'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                      title="Card view"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 rounded transition-colors ${
+                        viewMode === 'list'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                      title="List view"
+                    >
+                      <List className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                
                 <AuthButtonClient />
               </div>
           </div>
@@ -519,10 +549,172 @@ export default function Home() {
         </div>
 
                         {/* Observations for this date */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+                        <div className={viewMode === 'card' 
+                          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6" 
+                          : "space-y-2"
+                        }>
                           {groupedObservations[dateKey].map((observation) => {
                             const hasPhoto = Boolean(observation.signedUrl);
                             const labels = observation.labels ?? [];
+
+                            if (viewMode === 'list') {
+                              return (
+                                <div
+                                  key={observation.id}
+                                  className={`flex items-center gap-4 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer group ${
+                                    selectedObservations.has(observation.id)
+                                      ? 'ring-2 ring-primary shadow-md bg-primary/5' 
+                                      : 'hover:bg-muted/50'
+                                  }`}
+                                  onClick={() => {
+                                    const newSelected = new Set(selectedObservations);
+                                    if (newSelected.has(observation.id)) {
+                                      newSelected.delete(observation.id);
+                                    } else {
+                                      newSelected.add(observation.id);
+                                    }
+                                    setSelectedObservations(newSelected);
+                                  }}
+                                >
+                                  {/* Small photo thumbnail */}
+                                  <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden group/photo">
+                                    {hasPhoto ? (
+                                      <Image
+                                        src={observation.signedUrl as string}
+                                        alt={`Photo for ${observation.plan ?? "observation"}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="64px"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                                      </div>
+                                    )}
+                                    
+                                    {/* Delete button for list view */}
+                                    <button
+                                      onClick={(e) => handleDeleteObservation(observation.id, e)}
+                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg"
+                                      title="Delete observation"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="flex-1 min-w-0">
+                                    {editingNoteId === observation.id ? (
+                                      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                                        <textarea
+                                          value={editNoteValue}
+                                          onChange={(e) => setEditNoteValue(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                              e.preventDefault();
+                                              handleSaveNote(observation.id);
+                                            }
+                                            if (e.key === 'Escape') {
+                                              e.preventDefault();
+                                              handleCancelEdit();
+                                            }
+                                          }}
+                                          className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          rows={2}
+                                          placeholder="Add a note..."
+                                          autoFocus
+                                        />
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex gap-2">
+                                            <button
+                                              onClick={(e) => handleSaveNote(observation.id, e)}
+                                              className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                            >
+                                              <Check className="h-3 w-3" />
+                                              Save
+                                            </button>
+                                            <button
+                                              onClick={handleCancelEdit}
+                                              className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                                            >
+                                              <X className="h-3 w-3" />
+                                              Cancel
+                                            </button>
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            Ctrl+Enter to save • Esc to cancel
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="flex items-start justify-between gap-2">
+                                          <p className={`text-sm flex-1 truncate ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
+                                            {observation.note || t('noDescription')}
+                                          </p>
+                                          <button
+                                            onClick={(e) => handleEditNote(observation.id, observation.note || '', e)}
+                                            className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-gray-500 hover:text-blue-600 transition-all"
+                                            title="Edit note"
+                                          >
+                                            <Edit3 className="h-3 w-3" />
+                                          </button>
+                                        </div>
+
+                                        {/* Labels and metadata in compact form */}
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                          {labels && labels.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              {labels.slice(0, 2).map((label, idx) => {
+                                                const cleanLabel = label.trim();
+                                                let processedLabel = cleanLabel;
+                                                
+                                                if (cleanLabel.includes(' ')) {
+                                                  processedLabel = cleanLabel;
+                                                } else if (cleanLabel.includes('_')) {
+                                                  processedLabel = cleanLabel.replace(/_/g, ' ');
+                                                } else if (cleanLabel.includes('-')) {
+                                                  processedLabel = cleanLabel.replace(/-/g, ' ');
+                                                } else {
+                                                  processedLabel = cleanLabel
+                                                    .replace(/([a-z])([A-Z])/g, '$1 $2')
+                                                    .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+                                                    .replace(/([a-z])([0-9])/g, '$1 $2')
+                                                    .replace(/([0-9])([a-zA-Z])/g, '$1 $2');
+                                                }
+                                                
+                                                processedLabel = processedLabel.replace(/\s+/g, ' ').trim();
+                                                
+                                                return (
+                                                  <span key={idx} className="inline-block px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 text-gray-600 rounded">
+                                                    {processedLabel}
+                                                  </span>
+                                                );
+                                              })}
+                                              {labels.length > 2 && (
+                                                <span className="text-xs text-gray-500">+{labels.length - 2} more</span>
+                                              )}
+                                            </div>
+                                          )}
+                                          
+                                          {observation.plan && (
+                                            <span className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3" />
+                                              {observation.plan}
+                                            </span>
+                                          )}
+                                          
+                                          <span className="flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {new Date(observation.photo_date || observation.created_at).toLocaleDateString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
 
                             return (
                               <Card 
