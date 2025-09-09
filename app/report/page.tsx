@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language } from "@/lib/translations";
 import jsPDF from 'jspdf';
-import { Document, Paragraph, ImageRun, TextRun, HeadingLevel, AlignmentType, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
+import { Document, Paragraph, ImageRun, TextRun, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
 import PlanDisplayWidget from '@/components/plan-display-widget';
 
