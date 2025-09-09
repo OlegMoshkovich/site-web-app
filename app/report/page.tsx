@@ -357,7 +357,7 @@ function ReportPageContent() {
         new Paragraph({
           children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20 })],
           alignment: AlignmentType.CENTER,
-          spacing: { after: 600 }
+          spacing: { after: 100 }
         })
       );
 
@@ -400,7 +400,7 @@ function ReportPageContent() {
             new Paragraph({
               children: [new TextRun({ text: 'Plan Overview', bold: true, size: 28 })],
               heading: HeadingLevel.HEADING_1,
-              spacing: { before: 400, after: 300 }
+              spacing: { before: 100, after: 100 }
             })
           );
 
@@ -410,7 +410,7 @@ function ReportPageContent() {
               new Paragraph({
                 children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, bold: true, size: 20 })],
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 }
+                spacing: { before: 100, after: 100 }
               })
             );
 
@@ -419,7 +419,7 @@ function ReportPageContent() {
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
               canvas.width = 320;
-              canvas.height = 280;
+              canvas.height = 220;
               
               const img = new window.Image();
               img.crossOrigin = 'anonymous';
@@ -497,7 +497,7 @@ function ReportPageContent() {
                       type: 'png'
                     })
                   ],
-                  spacing: { after: 400 }
+                  spacing: { after: 100 }
                 })
               );
             } catch (error) {
@@ -505,7 +505,7 @@ function ReportPageContent() {
               children.push(
                 new Paragraph({
                   children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
-                  spacing: { after: 200 }
+                  spacing: { after: 100 }
                 })
               );
             }
@@ -520,9 +520,9 @@ function ReportPageContent() {
         // Observation heading
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: `Observation ${i + 1}`, bold: true, size: 24 })],
+            children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
             heading: HeadingLevel.HEADING_2,
-            spacing: { before: 400, after: 200 }
+            spacing: { before: 100, after: 100 }
           })
         );
 
@@ -530,6 +530,21 @@ function ReportPageContent() {
         if (observation.signedUrl) {
           try {
             console.log('Fetching image from:', observation.signedUrl);
+            
+            // Create an image element to get dimensions
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            
+            // Load the image to get its natural dimensions
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = observation.signedUrl!;
+            });
+            
+            console.log('Image dimensions:', { width: img.width, height: img.height });
+            
+            // Fetch the image data
             const response = await fetch(observation.signedUrl, {
               method: 'GET',
               mode: 'cors',
@@ -546,19 +561,38 @@ function ReportPageContent() {
             console.log('Image buffer size:', arrayBuffer.byteLength);
             
             if (arrayBuffer.byteLength > 0) {
+              // Calculate dynamic dimensions maintaining aspect ratio
+              const maxWidth = 500; // Maximum width for Word document
+              const maxHeight = 400; // Maximum height for Word document
+              
+              let targetWidth = img.width;
+              let targetHeight = img.height;
+              
+              // Scale down if image is too large
+              if (targetWidth > maxWidth || targetHeight > maxHeight) {
+                const widthRatio = maxWidth / targetWidth;
+                const heightRatio = maxHeight / targetHeight;
+                const scale = Math.min(widthRatio, heightRatio);
+                
+                targetWidth = Math.round(targetWidth * scale);
+                targetHeight = Math.round(targetHeight * scale);
+              }
+              
+              console.log('Calculated dimensions for Word doc:', { width: targetWidth, height: targetHeight });
+              
               children.push(
                 new Paragraph({
                   children: [
                     new ImageRun({
                       data: arrayBuffer,
                       transformation: {
-                        width: 400,
-                        height: 300
+                        width: targetWidth/2,
+                        height: targetHeight/2
                       },
                       type: 'png'
                     })
                   ],
-                  spacing: { after: 200 }
+                  spacing: { after: 100 }
                 })
               );
             } else {
@@ -566,8 +600,8 @@ function ReportPageContent() {
               // Add placeholder text instead of image
               children.push(
                 new Paragraph({
-                  children: [new TextRun({ text: '[Image not available]', size: 16, italics: true })],
-                  spacing: { after: 200 }
+                  children: [new TextRun({ text: '[Image not available]', size: 12})],
+                  spacing: { after: 100 }
                 })
               );
             }
@@ -576,8 +610,8 @@ function ReportPageContent() {
             // Add placeholder text instead of breaking the entire document
             children.push(
               new Paragraph({
-                children: [new TextRun({ text: '[Image could not be loaded]', size: 16, italics: true })],
-                spacing: { after: 200 }
+                children: [new TextRun({ text: '[Image could not be loaded]', size: 12 })],
+                spacing: { after: 100 }
               })
             );
           }
@@ -587,8 +621,8 @@ function ReportPageContent() {
         if (observation.note) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: observation.note, size: 20 })],
-              spacing: { after: 200 }
+              children: [new TextRun({ text: observation.note, size: 12 })],
+              spacing: { after: 100 }
             })
           );
         }
@@ -597,8 +631,8 @@ function ReportPageContent() {
         if (observation.labels && observation.labels.length > 0) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 18, italics: true })],
-              spacing: { after: 150 }
+              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 12 })],
+              spacing: { after: 100 }
             })
           );
         }
@@ -607,8 +641,8 @@ function ReportPageContent() {
         if (observation.plan) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 18 })],
-              spacing: { after: 150 }
+              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 12 })],
+              spacing: { after: 100 }
             })
           );
         }
@@ -617,8 +651,8 @@ function ReportPageContent() {
         if (observation.gps_lat && observation.gps_lng) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 18 })],
-              spacing: { after: 150 }
+              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 12 })],
+              spacing: { after: 100 }
             })
           );
         }
@@ -627,8 +661,8 @@ function ReportPageContent() {
         if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 18 })],
-              spacing: { after: 150 }
+              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 12 })],
+              spacing: { after: 100 }
             })
           );
         }
@@ -636,8 +670,8 @@ function ReportPageContent() {
         // Add spacing between observations
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: '', size: 20 })],
-            spacing: { after: 400 }
+            children: [new TextRun({ text: '', size: 12 })],
+            spacing: { after: 200 }
           })
         );
       }
