@@ -44,6 +44,16 @@ function ReportPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
+  
+  // Display toggles
+  const [displaySettings, setDisplaySettings] = useState({
+    photo: true,
+    note: true,
+    labels: true,
+    plan: true,
+    gps: true,
+    planAnchor: true
+  });
   const searchParams = useSearchParams();
   
   // Helper function to get translated text
@@ -76,10 +86,6 @@ function ReportPageContent() {
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
 
-
-
-
-
   const handleDownloadPDF = useCallback(async () => {
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -100,6 +106,7 @@ function ReportPageContent() {
       const dateText = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
       pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 20;
+
 
       // Add plan overview if there are observations with meaningful anchors (not 0,0)
       const observationsWithAnchors = observations.filter(obs => 
@@ -258,8 +265,8 @@ function ReportPageContent() {
         pdf.text(`Observation ${i + 1}`, margin, yPosition);
         yPosition += 10;
 
-        // Add note
-        if (observation.note) {
+        // Add note (if enabled)
+        if (displaySettings.note && observation.note) {
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'normal');
           const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
@@ -267,31 +274,32 @@ function ReportPageContent() {
           yPosition += noteLines.length * 5 + 5;
         }
 
-        // Add labels
-        if (observation.labels && observation.labels.length > 0) {
+        // Add labels (if enabled)
+        if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'italic');
           pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
           yPosition += 10;
         }
 
-        // Add plan if available (only if it exists and is meaningful)
-        if (observation.plan && observation.plan.trim() !== '') {
+        // Add plan if available (only if enabled and meaningful)
+        if (displaySettings.plan && observation.plan && observation.plan.trim() !== '') {
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'normal');
           pdf.text('Plan: ' + observation.plan, margin, yPosition);
           yPosition += 8;
         }
 
-        // Add GPS coordinates
-        if (observation.gps_lat && observation.gps_lng) {
+        // Add GPS coordinates (if enabled)
+        if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
           pdf.setFontSize(9);
           pdf.text(`GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, margin, yPosition);
           yPosition += 8;
         }
 
-        // Add plan anchor coordinates (only if they exist and are not 0,0)
-        if (observation.plan_anchor && 
+        // Add plan anchor coordinates (if enabled and meaningful)
+        if (displaySettings.planAnchor && 
+            observation.plan_anchor && 
             typeof observation.plan_anchor === 'object' && 
             'x' in observation.plan_anchor && 
             'y' in observation.plan_anchor &&
@@ -301,8 +309,8 @@ function ReportPageContent() {
           yPosition += 8;
         }
 
-        // Add photo if available
-        if (observation.signedUrl) {
+        // Add photo if available and enabled
+        if (displaySettings.photo && observation.signedUrl) {
           try {
             const img = new window.Image();
             img.crossOrigin = 'anonymous';
@@ -344,10 +352,11 @@ function ReportPageContent() {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
     }
-  }, [observations, t, language]);
+  }, [observations, t, language, displaySettings]);
 
   const handleDownloadWord = useCallback(async () => {
     try {
+      
       const children = [];
 
       // Add title
@@ -542,6 +551,7 @@ function ReportPageContent() {
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
+        
 
         // // Observation heading
         // children.push(
@@ -555,8 +565,8 @@ function ReportPageContent() {
         // Create content for text column
         const textContent = [];
         
-        // Add note
-        if (observation.note) {
+        // Add note (if enabled)
+        if (displaySettings.note && observation.note) {
           textContent.push(
             new Paragraph({
               children: [new TextRun({ text: observation.note, size: 20, font: 'Arial' })],
@@ -565,8 +575,8 @@ function ReportPageContent() {
           );
         }
 
-        // Add labels
-        if (observation.labels && observation.labels.length > 0) {
+        // Add labels (if enabled)
+        if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
           textContent.push(
             new Paragraph({
               children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 20, font: 'Arial' })],
@@ -575,8 +585,8 @@ function ReportPageContent() {
           );
         }
 
-        // Add plan (only if it exists and is meaningful)
-        if (observation.plan && observation.plan.trim() !== '') {
+        // Add plan (if enabled and meaningful)
+        if (displaySettings.plan && observation.plan && observation.plan.trim() !== '') {
           textContent.push(
             new Paragraph({
               children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 20, font: 'Arial' })],
@@ -585,8 +595,8 @@ function ReportPageContent() {
           );
         }
 
-        // Add GPS coordinates
-        if (observation.gps_lat && observation.gps_lng) {
+        // Add GPS coordinates (if enabled)
+        if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
           textContent.push(
             new Paragraph({
               children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 20, font: 'Arial' })],
@@ -595,8 +605,9 @@ function ReportPageContent() {
           );
         }
 
-        // Add plan anchor coordinates (only if they exist and are not 0,0)
-        if (observation.plan_anchor && 
+        // Add plan anchor coordinates (if enabled and meaningful)
+        if (displaySettings.planAnchor && 
+            observation.plan_anchor && 
             typeof observation.plan_anchor === 'object' && 
             'x' in observation.plan_anchor && 
             'y' in observation.plan_anchor &&
@@ -609,8 +620,9 @@ function ReportPageContent() {
           );
         }
 
-        // Create a table row with image on left and text on right
-        if (observation.signedUrl) {
+
+        // Create layout based on whether photo is enabled and available
+        if (displaySettings.photo && observation.signedUrl) {
           try {
             console.log('Fetching image from:', observation.signedUrl);
             
@@ -735,10 +747,11 @@ function ReportPageContent() {
             // Add only text content if image fails
             children.push(...textContent);
           }
-        } else {
-          // No image, just add text content
+        } else if (textContent.length > 0) {
+          // No image, but we have text content - add it directly
           children.push(...textContent);
         }
+        // If no image and no text content, skip this observation entirely
 
         // Add spacing between observations
         children.push(
@@ -764,7 +777,7 @@ function ReportPageContent() {
       console.error('Error generating Word document:', error);
       alert('Error generating Word document. Please try again.');
     }
-  }, [observations, t, language]);
+  }, [observations, t, language, displaySettings]);
 
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
@@ -912,6 +925,31 @@ function ReportPageContent() {
               </Link>
               
               <div className="flex items-center gap-3">
+                {/* Display Toggles */}
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {[
+                    { key: 'photo', label: 'Photo' },
+                    { key: 'note', label: 'Note' },
+                    { key: 'labels', label: 'Labels' },
+                    { key: 'plan', label: 'Plan' },
+                    { key: 'gps', label: 'GPS' },
+                    { key: 'planAnchor', label: 'Anchors' }
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={displaySettings[key as keyof typeof displaySettings]}
+                        onChange={(e) => setDisplaySettings(prev => ({
+                          ...prev,
+                          [key]: e.target.checked
+                        }))}
+                        className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-gray-700">{label}</span>
+                    </label>
+                  ))}
+                </div>
+                
                 {/* Language Selector */}
                 <select
                   value={language}
@@ -1112,6 +1150,31 @@ function ReportPageContent() {
           <p className="text-muted-foreground">
             {observations.length} observation{observations.length !== 1 ? 's' : ''} selected
           </p>
+          
+          {/* Display Toggles */}
+          <div className="flex flex-wrap gap-3 mt-4 mb-2">
+            {[
+              { key: 'photo', label: 'Photo' },
+              { key: 'note', label: 'Note' },
+              { key: 'labels', label: 'Labels' },
+              { key: 'plan', label: 'Plan' },
+              { key: 'gps', label: 'GPS' },
+              { key: 'planAnchor', label: 'Anchors' }
+            ].map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-1 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  checked={displaySettings[key as keyof typeof displaySettings]}
+                  onChange={(e) => setDisplaySettings(prev => ({
+                    ...prev,
+                    [key]: e.target.checked
+                  }))}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="text-gray-700">{label}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* Plan Display Widget - Show if any observations have anchors */}
@@ -1141,57 +1204,88 @@ function ReportPageContent() {
                         {anchorNumber}
                       </div>
                     )}
-                    {observation.signedUrl ? (
-                      <Image
-                        src={observation.signedUrl}
-                        alt={`Photo for ${observation.plan ?? "observation"}`}
-                        width={400}
-                        height={200}
-                        className="photo"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div className="no-photo">
-                        <span className="no-photo-text">No photo available</span>
-                      </div>
+                    {displaySettings.photo && (
+                      observation.signedUrl ? (
+                        <Image
+                          src={observation.signedUrl}
+                          alt={`Photo for ${observation.plan ?? "observation"}`}
+                          width={400}
+                          height={200}
+                          className="photo"
+                          style={{ objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div className="no-photo">
+                          <span className="no-photo-text">No photo available</span>
+                        </div>
+                      )
                     )}
-                                            <div className="note">{observation.note || t('noDescription')}</div>
-                    {observation.labels && observation.labels.length > 0 && (
-                      <div className="flex flex-wrap gap-2 p-2 border border-gray-200 bg-gray-50">
-                        {observation.labels.map((label, idx) => {
-                          // Clean up the label - remove extra spaces and split if it's concatenated
-                          const cleanLabel = label.trim();
-                          
-                          // More aggressive splitting for concatenated strings
-                          let processedLabel = cleanLabel;
-                          
-                          // First, try to split by common separators
-                          if (cleanLabel.includes(' ')) {
-                            processedLabel = cleanLabel;
-                          } else if (cleanLabel.includes('_')) {
-                            processedLabel = cleanLabel.replace(/_/g, ' ');
-                          } else if (cleanLabel.includes('-')) {
-                            processedLabel = cleanLabel.replace(/-/g, ' ');
-                          } else {
-                            // Split camelCase and PascalCase more aggressively
-                            processedLabel = cleanLabel
-                              .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
-                              .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2') // PascalCase
-                              .replace(/([a-z])([0-9])/g, '$1 $2') // letters to numbers
-                              .replace(/([0-9])([a-zA-Z])/g, '$1 $2'); // numbers to letters
-                          }
-                          
-                          // Clean up multiple spaces and trim
-                          processedLabel = processedLabel.replace(/\s+/g, ' ').trim();
-                          
-                          return (
-                            <span key={idx} className="inline-block px-2 py-1 text-xs bg-white border border-gray-300 text-gray-700">
-                              {processedLabel}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
+                    
+                    {/* Display observation details */}
+                    <div className="p-4 space-y-2">
+                      {displaySettings.note && (
+                        <div className="note">{observation.note || t('noDescription')}</div>
+                      )}
+                      
+                      {displaySettings.labels && observation.labels && observation.labels.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {observation.labels.map((label, idx) => {
+                            // Clean up the label - remove extra spaces and split if it's concatenated
+                            const cleanLabel = label.trim();
+                            
+                            // More aggressive splitting for concatenated strings
+                            let processedLabel = cleanLabel;
+                            
+                            // First, try to split by common separators
+                            if (cleanLabel.includes(' ')) {
+                              processedLabel = cleanLabel;
+                            } else if (cleanLabel.includes('_')) {
+                              processedLabel = cleanLabel.replace(/_/g, ' ');
+                            } else if (cleanLabel.includes('-')) {
+                              processedLabel = cleanLabel.replace(/-/g, ' ');
+                            } else {
+                              // Split camelCase and PascalCase more aggressively
+                              processedLabel = cleanLabel
+                                .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase
+                                .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2') // PascalCase
+                                .replace(/([a-z])([0-9])/g, '$1 $2') // letters to numbers
+                                .replace(/([0-9])([a-zA-Z])/g, '$1 $2'); // numbers to letters
+                            }
+                            
+                            // Clean up multiple spaces and trim
+                            processedLabel = processedLabel.replace(/\s+/g, ' ').trim();
+                            
+                            return (
+                              <span key={idx} className="inline-block px-2 py-1 text-xs bg-gray-100 border border-gray-300 text-gray-700 rounded">
+                                {processedLabel}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {displaySettings.plan && observation.plan && observation.plan.trim() !== '' && (
+                        <div className="text-sm text-gray-600">
+                          <strong>Plan:</strong> {observation.plan}
+                        </div>
+                      )}
+                      
+                      {displaySettings.gps && observation.gps_lat && observation.gps_lng && (
+                        <div className="text-sm text-gray-600">
+                          <strong>GPS:</strong> {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
+                        </div>
+                      )}
+                      
+                      {displaySettings.planAnchor && observation.plan_anchor && 
+                       typeof observation.plan_anchor === 'object' && 
+                       'x' in observation.plan_anchor && 
+                       'y' in observation.plan_anchor &&
+                       !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0) && (
+                        <div className="text-sm text-gray-600">
+                          <strong>Plan Anchor:</strong> {Number(observation.plan_anchor.x).toFixed(6)}, {Number(observation.plan_anchor.y).toFixed(6)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
