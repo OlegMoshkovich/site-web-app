@@ -101,13 +101,15 @@ function ReportPageContent() {
       pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 20;
 
-      // Add plan overview if there are observations with anchors
+      // Add plan overview if there are observations with meaningful anchors (not 0,0)
       const observationsWithAnchors = observations.filter(obs => 
         (obs.plan_anchor && 
          typeof obs.plan_anchor === 'object' && 
          'x' in obs.plan_anchor && 
-         'y' in obs.plan_anchor) ||
-        (obs.anchor_x !== null && obs.anchor_y !== null)
+         'y' in obs.plan_anchor &&
+         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
+        (obs.anchor_x !== null && obs.anchor_y !== null &&
+         !(obs.anchor_x === 0 && obs.anchor_y === 0))
       );
 
       if (observationsWithAnchors.length > 0) {
@@ -119,9 +121,10 @@ function ReportPageContent() {
           const obsPlan = obs.plan || 'plan1';
           let anchor = null;
           
-          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor) {
+          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
+              !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
             anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-          } else if (obs.anchor_x !== null && obs.anchor_y !== null) {
+          } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
             anchor = { x: obs.anchor_x, y: obs.anchor_y };
           }
           
@@ -272,8 +275,8 @@ function ReportPageContent() {
           yPosition += 10;
         }
 
-        // Add plan if available
-        if (observation.plan) {
+        // Add plan if available (only if it exists and is meaningful)
+        if (observation.plan && observation.plan.trim() !== '') {
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'normal');
           pdf.text('Plan: ' + observation.plan, margin, yPosition);
@@ -287,8 +290,12 @@ function ReportPageContent() {
           yPosition += 8;
         }
 
-        // Add plan anchor coordinates
-        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
+        // Add plan anchor coordinates (only if they exist and are not 0,0)
+        if (observation.plan_anchor && 
+            typeof observation.plan_anchor === 'object' && 
+            'x' in observation.plan_anchor && 
+            'y' in observation.plan_anchor &&
+            !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0)) {
           pdf.setFontSize(9);
           pdf.text(`Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, margin, yPosition);
           yPosition += 8;
@@ -346,7 +353,7 @@ function ReportPageContent() {
       // Add title
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: t('report'),  size: 32 })],
+          children: [new TextRun({ text: t('report'), size: 32, font: 'Arial' })],
           // alignment: AlignmentType.CENTER,
           // spacing: { after: 300 }
         })
@@ -355,176 +362,195 @@ function ReportPageContent() {
       // Add date
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20 })],
+          children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20, font: 'Arial' })],
           // alignment: AlignmentType.CENTER,
-          // spacing: { after: 100 }
         })
       );
 
-      // Add plan overview if there are observations with anchors
-      const observationsWithAnchors = observations.filter(obs => 
-        (obs.plan_anchor && 
-         typeof obs.plan_anchor === 'object' && 
-         'x' in obs.plan_anchor && 
-         'y' in obs.plan_anchor) ||
-        (obs.anchor_x !== null && obs.anchor_y !== null)
+      // Add spacing after date (3 empty lines)
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: '' })],
+        })
+      );
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: '' })],
+        })
+      );
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: '' })],
+        })
       );
 
-      if (observationsWithAnchors.length > 0) {
-        // Group by plan
-        const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
-        let globalIndex = 0;
+      // // Add plan overview if there are observations with meaningful anchors (not 0,0)
+      // const observationsWithAnchors = observations.filter(obs => 
+      //   (obs.plan_anchor && 
+      //    typeof obs.plan_anchor === 'object' && 
+      //    'x' in obs.plan_anchor && 
+      //    'y' in obs.plan_anchor &&
+      //    !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
+      //   (obs.anchor_x !== null && obs.anchor_y !== null &&
+      //    !(obs.anchor_x === 0 && obs.anchor_y === 0))
+      // );
+
+      // if (observationsWithAnchors.length > 0) {
+      //   // Group by plan
+      //   const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
+      //   let globalIndex = 0;
         
-        observationsWithAnchors.forEach((obs) => {
-          const obsPlan = obs.plan || 'plan1';
-          let anchor = null;
+      //   observationsWithAnchors.forEach((obs) => {
+      //     const obsPlan = obs.plan || 'plan1';
+      //     let anchor = null;
           
-          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor) {
-            anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-          } else if (obs.anchor_x !== null && obs.anchor_y !== null) {
-            anchor = { x: obs.anchor_x, y: obs.anchor_y };
-          }
+      //     if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
+      //         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
+      //       anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
+      //     } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
+      //       anchor = { x: obs.anchor_x, y: obs.anchor_y };
+      //     }
           
-          if (anchor) {
-            if (!planGroups.has(obsPlan)) {
-              planGroups.set(obsPlan, []);
-            }
-            globalIndex++;
-            planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
-          }
-        });
+      //     if (anchor) {
+      //       if (!planGroups.has(obsPlan)) {
+      //         planGroups.set(obsPlan, []);
+      //       }
+      //       globalIndex++;
+      //       planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
+      //     }
+      //   });
 
-        // Add plan overview section
-        if (planGroups.size > 0) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: 'Plan Overview',  size: 20 })],
+      //   // Add plan overview section
+      //   if (planGroups.size > 0) {
+      //     children.push(
+      //       new Paragraph({
+      //         children: [new TextRun({ text: 'Plan Overview',  size: 20 })],
   
-              spacing: { before: 200 }
-            })
-          );
+      //         spacing: { before: 200 }
+      //       })
+      //     );
 
-          for (const [planName, anchors] of planGroups) {
-            // Add plan title
-            children.push(
-              new Paragraph({
-                children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`,  size: 20 })],
-                // heading: HeadingLevel.HEADING_2,
-                // spacing: { before: 100, after: 100 }
-              })
-            );
+      //     for (const [planName, anchors] of planGroups) {
+      //       // Add plan title
+      //       children.push(
+      //         new Paragraph({
+      //           children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`,  size: 20 })],
+      //           // heading: HeadingLevel.HEADING_2,
+      //           // spacing: { before: 100, after: 100 }
+      //         })
+      //       );
 
-            // Add plan image with anchors
-            try {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = 320;
-              canvas.height = 220;
+      //       // Add plan image with anchors
+      //       try {
+      //         const canvas = document.createElement('canvas');
+      //         const ctx = canvas.getContext('2d');
+      //         canvas.width = 320;
+      //         canvas.height = 220;
               
-              const img = new window.Image();
-              img.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = `/plans/${planName}.png`;
-              });
+      //         const img = new window.Image();
+      //         img.crossOrigin = 'anonymous';
+      //         await new Promise((resolve, reject) => {
+      //           img.onload = resolve;
+      //           img.onerror = reject;
+      //           img.src = `/plans/${planName}.png`;
+      //         });
 
-              // Clear canvas with white background and use object-contain behavior
-              if (ctx) {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, 320, 280);
+      //         // Clear canvas with white background and use object-contain behavior
+      //         if (ctx) {
+      //           ctx.fillStyle = 'white';
+      //           ctx.fillRect(0, 0, 320, 280);
                 
-                // Calculate aspect ratios for object-contain behavior
-                const imgAspect = img.width / img.height;
-                const canvasAspect = 320 / 280;
+      //           // Calculate aspect ratios for object-contain behavior
+      //           const imgAspect = img.width / img.height;
+      //           const canvasAspect = 320 / 280;
                 
-                let drawWidth, drawHeight, offsetX, offsetY;
+      //           let drawWidth, drawHeight, offsetX, offsetY;
                 
-                if (imgAspect > canvasAspect) {
-                  drawWidth = 320;
-                  drawHeight = 320 / imgAspect;
-                  offsetX = 0;
-                  offsetY = (280 - drawHeight) / 2;
-                } else {
-                  drawHeight = 280;
-                  drawWidth = 280 * imgAspect;
-                  offsetX = (320 - drawWidth) / 2;
-                  offsetY = 0;
-                }
+      //           if (imgAspect > canvasAspect) {
+      //             drawWidth = 320;
+      //             drawHeight = 320 / imgAspect;
+      //             offsetX = 0;
+      //             offsetY = (280 - drawHeight) / 2;
+      //           } else {
+      //             drawHeight = 280;
+      //             drawWidth = 280 * imgAspect;
+      //             offsetX = (320 - drawWidth) / 2;
+      //             offsetY = 0;
+      //           }
                 
-                // Draw the plan image with object-contain behavior
-                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      //           // Draw the plan image with object-contain behavior
+      //           ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
                 
-                // Draw anchors on the canvas
-                anchors.forEach((anchor) => {
-                  const x = anchor.x * 320;
-                  const y = anchor.y * 280;
+      //           // Draw anchors on the canvas
+      //           anchors.forEach((anchor) => {
+      //             const x = anchor.x * 320;
+      //             const y = anchor.y * 280;
                   
-                  // Draw black circle with white border
-                  ctx.beginPath();
-                  ctx.arc(x, y, 8, 0, 2 * Math.PI);
-                  ctx.fillStyle = 'black';
-                  ctx.fill();
-                  ctx.strokeStyle = 'white';
-                  ctx.lineWidth = 2;
-                  ctx.stroke();
+      //             // Draw black circle with white border
+      //             ctx.beginPath();
+      //             ctx.arc(x, y, 8, 0, 2 * Math.PI);
+      //             ctx.fillStyle = 'black';
+      //             ctx.fill();
+      //             ctx.strokeStyle = 'white';
+      //             ctx.lineWidth = 2;
+      //             ctx.stroke();
                   
-                  // Draw white number
-                  ctx.fillStyle = 'white';
-                  ctx.font = 'bold 10px Arial';
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText(anchor.index.toString(), x, y);
-                });
-              }
+      //             // Draw white number
+      //             ctx.fillStyle = 'white';
+      //             ctx.font = 'bold 10px Arial';
+      //             ctx.textAlign = 'center';
+      //             ctx.textBaseline = 'middle';
+      //             ctx.fillText(anchor.index.toString(), x, y);
+      //           });
+      //         }
               
-              // Convert canvas to blob and add to document
-              const planImageBlob = await new Promise<Blob>((resolve) => {
-                canvas.toBlob((blob) => resolve(blob!), 'image/png');
-              });
+      //         // Convert canvas to blob and add to document
+      //         const planImageBlob = await new Promise<Blob>((resolve) => {
+      //           canvas.toBlob((blob) => resolve(blob!), 'image/png');
+      //         });
               
-              const arrayBuffer = await planImageBlob.arrayBuffer();
+      //         const arrayBuffer = await planImageBlob.arrayBuffer();
               
-              children.push(
-                new Paragraph({
-                  children: [
-                    new ImageRun({
-                      data: arrayBuffer,
-                      transformation: {
-                        width: 320*1.5, // Match the original canvas width
-                        height: 220*1.5  // Reduced height for better document layout
-                      },
-                      type: 'png'
-                    })
-                  ],
-                  // spacing: { after: 100 }
-                })
-              );
-            } catch (error) {
-              console.error('Error adding plan to Word doc:', error);
-              children.push(
-                new Paragraph({
-                  children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
-                  // spacing: { after: 100 }
-                })
-              );
-            }
-          }
-        }
-      }
+      //         children.push(
+      //           new Paragraph({
+      //             children: [
+      //               new ImageRun({
+      //                 data: arrayBuffer,
+      //                 transformation: {
+      //                   width: 320*1.5, // Match the original canvas width
+      //                   height: 220*1.5  // Reduced height for better document layout
+      //                 },
+      //                 type: 'png'
+      //               })
+      //             ],
+      //             // spacing: { after: 100 }
+      //           })
+      //         );
+      //       } catch (error) {
+      //         console.error('Error adding plan to Word doc:', error);
+      //         children.push(
+      //           new Paragraph({
+      //             children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
+      //             // spacing: { after: 100 }
+      //           })
+      //         );
+      //       }
+      //     }
+      //   }
+      // }
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
 
-        // Observation heading
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
-            // heading: HeadingLevel.HEADING_2,
-            // spacing: { before: 100, after: 100 }
-          })
-        );
+        // // Observation heading
+        // children.push(
+        //   new Paragraph({
+        //     children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
+        //     // heading: HeadingLevel.HEADING_2,
+        //     // spacing: { before: 100, after: 100 }
+        //   })
+        // );
 
         // Create content for text column
         const textContent = [];
@@ -533,7 +559,7 @@ function ReportPageContent() {
         if (observation.note) {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: observation.note, size: 20 })],
+              children: [new TextRun({ text: observation.note, size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );
@@ -543,17 +569,17 @@ function ReportPageContent() {
         if (observation.labels && observation.labels.length > 0) {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 20 })],
+              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );
         }
 
-        // Add plan
-        if (observation.plan) {
+        // Add plan (only if it exists and is meaningful)
+        if (observation.plan && observation.plan.trim() !== '') {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 20 })],
+              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );
@@ -563,17 +589,21 @@ function ReportPageContent() {
         if (observation.gps_lat && observation.gps_lng) {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 20 })],
+              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );
         }
 
-        // Add plan anchor coordinates
-        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
+        // Add plan anchor coordinates (only if they exist and are not 0,0)
+        if (observation.plan_anchor && 
+            typeof observation.plan_anchor === 'object' && 
+            'x' in observation.plan_anchor && 
+            'y' in observation.plan_anchor &&
+            !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0)) {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 20 })],
+              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );
@@ -673,7 +703,7 @@ function ReportPageContent() {
                       new TableCell({
                         children: textContent.length > 0 ? textContent : [
                           new Paragraph({
-                            children: [new TextRun({ text: 'No additional information', size: 20, italics: true })],
+                            children: [new TextRun({ text: 'No additional information', size: 20, italics: true, font: 'Arial' })],
                           })
                         ],
                         verticalAlign: VerticalAlign.TOP,
