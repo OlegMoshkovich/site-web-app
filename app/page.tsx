@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 // Lucide React icons
-import { Calendar, MapPin, Image as ImageIcon } from "lucide-react";
+import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js router for navigation
@@ -73,6 +73,9 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>('en');
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
+  // Edit state for inline note editing
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteValue, setEditNoteValue] = useState<string>('');
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -121,6 +124,88 @@ export default function Home() {
     // Navigate to the report page with selected observation IDs as URL parameters
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
+
+  // ===== NOTE EDITING =====
+  // Handle note editing
+  const handleEditNote = useCallback((observationId: string, currentNote: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card selection
+    setEditingNoteId(observationId);
+    setEditNoteValue(currentNote || '');
+  }, []);
+
+  const handleSaveNote = useCallback(async (observationId: string, event?: React.MouseEvent) => {
+    if (event) event.stopPropagation(); // Prevent card selection
+    
+    try {
+      const { error } = await supabase
+        .from('observations')
+        .update({ note: editNoteValue })
+        .eq('id', observationId);
+
+      if (error) {
+        console.error('Error updating note:', error);
+        alert('Error updating note. Please try again.');
+        return;
+      }
+
+      // Update local state
+      setObservations(prev => prev.map(obs => 
+        obs.id === observationId 
+          ? { ...obs, note: editNoteValue }
+          : obs
+      ));
+      
+      setEditingNoteId(null);
+      setEditNoteValue('');
+    } catch (error) {
+      console.error('Error updating note:', error);
+      alert('Error updating note. Please try again.');
+    }
+  }, [supabase, editNoteValue]);
+
+  const handleCancelEdit = useCallback((event?: React.MouseEvent) => {
+    if (event) event.stopPropagation(); // Prevent card selection
+    setEditingNoteId(null);
+    setEditNoteValue('');
+  }, []);
+
+  // ===== DELETE FUNCTIONALITY =====
+  // Handle observation deletion with confirmation
+  const handleDeleteObservation = useCallback(async (observationId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card selection
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm('Are you sure you want to delete this observation? This action cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('observations')
+        .delete()
+        .eq('id', observationId);
+
+      if (error) {
+        console.error('Error deleting observation:', error);
+        alert('Error deleting observation. Please try again.');
+        return;
+      }
+
+      // Remove from local state
+      setObservations(prev => prev.filter(obs => obs.id !== observationId));
+      
+      // Remove from selected observations if it was selected
+      setSelectedObservations(prev => {
+        const newSelected = new Set(prev);
+        newSelected.delete(observationId);
+        return newSelected;
+      });
+
+      console.log(`Observation ${observationId} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting observation:', error);
+      alert('Error deleting observation. Please try again.');
+    }
+  }, [supabase]);
 
   // ===== DATE RANGE SELECTION =====
   // Filter and select observations within a specific date range
@@ -457,8 +542,8 @@ export default function Home() {
                                   setSelectedObservations(newSelected);
                                 }}
                               >
-                                {hasPhoto ? (
-                                  <div className="relative h-48 sm:h-56 md:h-64 w-full">
+                                <div className="relative h-48 sm:h-56 md:h-64 w-full group/photo">
+                                  {hasPhoto ? (
                                     <Image
                                       src={observation.signedUrl as string}
                                       alt={`Photo for ${observation.plan ?? "observation"}`}
@@ -466,25 +551,89 @@ export default function Home() {
                                       className="object-cover"
                                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                                     />
-                                  </div>
-                                ) : (
-                                  <div className="h-48 sm:h-56 md:h-64 w-full bg-gray-100 flex items-center justify-center">
-                                    <div className="text-center text-gray-500">
-                                      <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                                      <p className="text-sm">No photo available</p>
-                                      {observation.photo_url && (
-                                        <p className="text-xs text-gray-400 mt-1">
-                                          Path: {normalizePath(observation.photo_url)}
-                                        </p>
-                                      )}
+                                  ) : (
+                                    <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                                      <div className="text-center text-gray-500">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                                        <p className="text-sm">No photo available</p>
+                                        {observation.photo_url && (
+                                          <p className="text-xs text-gray-400 mt-1">
+                                            Path: {normalizePath(observation.photo_url)}
+                                          </p>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
+                                  
+                                  {/* Delete button positioned over photo */}
+                                  <button
+                                    onClick={(e) => handleDeleteObservation(observation.id, e)}
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
+                                    title="Delete observation"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
 
                                 <CardHeader>
-                                  <CardDescription className={`line-clamp-2 ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
-                                    {observation.note || t('noDescription')}
-                                  </CardDescription>
+                                  {editingNoteId === observation.id ? (
+                                    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                                      <textarea
+                                        value={editNoteValue}
+                                        onChange={(e) => setEditNoteValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                            e.preventDefault();
+                                            handleSaveNote(observation.id);
+                                          }
+                                          if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            handleCancelEdit();
+                                          }
+                                        }}
+                                        className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        rows={3}
+                                        placeholder="Add a note..."
+                                        autoFocus
+                                      />
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={(e) => handleSaveNote(observation.id, e)}
+                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                          >
+                                            <Check className="h-3 w-3" />
+                                            Save
+                                          </button>
+                                          <button
+                                            onClick={handleCancelEdit}
+                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                                          >
+                                            <X className="h-3 w-3" />
+                                            Cancel
+                                          </button>
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          Ctrl+Enter to save • Esc to cancel
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="relative group">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <CardDescription className={`line-clamp-2 flex-1 ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
+                                          {observation.note || t('noDescription')}
+                                        </CardDescription>
+                                        <button
+                                          onClick={(e) => handleEditNote(observation.id, observation.note || '', e)}
+                                          className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-gray-500 hover:text-blue-600 transition-all"
+                                          title="Edit note"
+                                        >
+                                          <Edit3 className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </CardHeader>
 
                                 <CardContent className="space-y-3">
