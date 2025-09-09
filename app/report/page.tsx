@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language } from "@/lib/translations";
 import jsPDF from 'jspdf';
-import { Document, Paragraph, ImageRun, TextRun, HeadingLevel, AlignmentType, Packer } from 'docx';
+import { Document, Paragraph, ImageRun, TextRun, HeadingLevel, AlignmentType, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
 import PlanDisplayWidget from '@/components/plan-display-widget';
 
@@ -95,7 +95,7 @@ function ReportPageContent() {
       yPosition += 15;
 
       // Add date
-      pdf.setFontSize(12);
+      pdf.setFontSize(20);
       pdf.setFont('helvetica', 'normal');
       const dateText = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
       pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
@@ -346,9 +346,9 @@ function ReportPageContent() {
       // Add title
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: t('report'), bold: true, size: 32 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 300 }
+          children: [new TextRun({ text: t('report'),  size: 32 })],
+          // alignment: AlignmentType.CENTER,
+          // spacing: { after: 300 }
         })
       );
 
@@ -356,8 +356,8 @@ function ReportPageContent() {
       children.push(
         new Paragraph({
           children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 100 }
+          // alignment: AlignmentType.CENTER,
+          // spacing: { after: 100 }
         })
       );
 
@@ -398,9 +398,9 @@ function ReportPageContent() {
         if (planGroups.size > 0) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Plan Overview', bold: true, size: 28 })],
-              heading: HeadingLevel.HEADING_1,
-              spacing: { before: 100, after: 100 }
+              children: [new TextRun({ text: 'Plan Overview',  size: 20 })],
+  
+              spacing: { before: 200 }
             })
           );
 
@@ -408,9 +408,9 @@ function ReportPageContent() {
             // Add plan title
             children.push(
               new Paragraph({
-                children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, bold: true, size: 20 })],
-                heading: HeadingLevel.HEADING_2,
-                spacing: { before: 100, after: 100 }
+                children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`,  size: 20 })],
+                // heading: HeadingLevel.HEADING_2,
+                // spacing: { before: 100, after: 100 }
               })
             );
 
@@ -491,13 +491,13 @@ function ReportPageContent() {
                     new ImageRun({
                       data: arrayBuffer,
                       transformation: {
-                        width: 320, // Match the original canvas width
-                        height: 220  // Reduced height for better document layout
+                        width: 320*1.5, // Match the original canvas width
+                        height: 220*1.5  // Reduced height for better document layout
                       },
                       type: 'png'
                     })
                   ],
-                  spacing: { after: 100 }
+                  // spacing: { after: 100 }
                 })
               );
             } catch (error) {
@@ -505,7 +505,7 @@ function ReportPageContent() {
               children.push(
                 new Paragraph({
                   children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
-                  spacing: { after: 100 }
+                  // spacing: { after: 100 }
                 })
               );
             }
@@ -521,12 +521,65 @@ function ReportPageContent() {
         children.push(
           new Paragraph({
             children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 100, after: 100 }
+            // heading: HeadingLevel.HEADING_2,
+            // spacing: { before: 100, after: 100 }
           })
         );
 
-        // Add photo first if available
+        // Create content for text column
+        const textContent = [];
+        
+        // Add note
+        if (observation.note) {
+          textContent.push(
+            new Paragraph({
+              children: [new TextRun({ text: observation.note, size: 20 })],
+              // spacing: { after: 100 }
+            })
+          );
+        }
+
+        // Add labels
+        if (observation.labels && observation.labels.length > 0) {
+          textContent.push(
+            new Paragraph({
+              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 20 })],
+              // spacing: { after: 100 }
+            })
+          );
+        }
+
+        // Add plan
+        if (observation.plan) {
+          textContent.push(
+            new Paragraph({
+              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 20 })],
+              // spacing: { after: 100 }
+            })
+          );
+        }
+
+        // Add GPS coordinates
+        if (observation.gps_lat && observation.gps_lng) {
+          textContent.push(
+            new Paragraph({
+              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 20 })],
+              // spacing: { after: 100 }
+            })
+          );
+        }
+
+        // Add plan anchor coordinates
+        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
+          textContent.push(
+            new Paragraph({
+              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 20 })],
+              // spacing: { after: 100 }
+            })
+          );
+        }
+
+        // Create a table row with image on left and text on right
         if (observation.signedUrl) {
           try {
             console.log('Fetching image from:', observation.signedUrl);
@@ -561,9 +614,9 @@ function ReportPageContent() {
             console.log('Image buffer size:', arrayBuffer.byteLength);
             
             if (arrayBuffer.byteLength > 0) {
-              // Calculate dynamic dimensions maintaining aspect ratio
-              const maxWidth = 500; // Maximum width for Word document
-              const maxHeight = 400; // Maximum height for Word document
+              // Calculate dynamic dimensions maintaining aspect ratio (smaller for table layout)
+              const maxWidth = 250; // Smaller max width for table cell
+              const maxHeight = 200; // Smaller max height for table cell
               
               let targetWidth = img.width;
               let targetHeight = img.height;
@@ -580,97 +633,87 @@ function ReportPageContent() {
               
               console.log('Calculated dimensions for Word doc:', { width: targetWidth, height: targetHeight });
               
-              children.push(
-                new Paragraph({
-                  children: [
-                    new ImageRun({
-                      data: arrayBuffer,
-                      transformation: {
-                        width: targetWidth/2,
-                        height: targetHeight/2
-                      },
-                      type: 'png'
-                    })
-                  ],
-                  spacing: { after: 100 }
-                })
-              );
+              // Create table with image and text side by side
+              const observationTable = new Table({
+                width: {
+                  size: 100,
+                  type: WidthType.PERCENTAGE,
+                },
+                columnWidths: [3000, 6000], // Fixed widths in twentieths of a point (3000/20 = 150pt, 6000/20 = 300pt)
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [
+                          new Paragraph({
+                            children: [
+                              new ImageRun({
+                                data: arrayBuffer,
+                                transformation: {
+                                  width: targetWidth,
+                                  height: targetHeight
+                                },
+                                type: 'png'
+                              })
+                            ]
+                          })
+                        ],
+                        verticalAlign: VerticalAlign.TOP,
+                        width: {
+                          size: 3000,
+                          type: WidthType.DXA,
+                        },
+                        margins: {
+                          top: 100,
+                          bottom: 100,
+                          left: 100,
+                          right: 200,
+                        },
+                      }),
+                      new TableCell({
+                        children: textContent.length > 0 ? textContent : [
+                          new Paragraph({
+                            children: [new TextRun({ text: 'No additional information', size: 20, italics: true })],
+                          })
+                        ],
+                        verticalAlign: VerticalAlign.TOP,
+                        width: {
+                          size: 6000,
+                          type: WidthType.DXA,
+                        },
+                        margins: {
+                          top: 100,
+                          bottom: 100,
+                          left: 200,
+                          right: 100,
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+              });
+              
+              children.push(observationTable);
+              
             } else {
               console.warn('Empty image buffer for observation:', observation.id);
-              // Add placeholder text instead of image
-              children.push(
-                new Paragraph({
-                  children: [new TextRun({ text: '[Image not available]', size: 12})],
-                  spacing: { after: 100 }
-                })
-              );
+              // Add only text content if no image
+              children.push(...textContent);
             }
           } catch (imageError) {
             console.error('Error adding image to Word doc:', imageError);
-            // Add placeholder text instead of breaking the entire document
-            children.push(
-              new Paragraph({
-                children: [new TextRun({ text: '[Image could not be loaded]', size: 12 })],
-                spacing: { after: 100 }
-              })
-            );
+            // Add only text content if image fails
+            children.push(...textContent);
           }
-        }
-
-        // Add note
-        if (observation.note) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: observation.note, size: 12 })],
-              spacing: { after: 100 }
-            })
-          );
-        }
-
-        // Add labels
-        if (observation.labels && observation.labels.length > 0) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 12 })],
-              spacing: { after: 100 }
-            })
-          );
-        }
-
-        // Add plan
-        if (observation.plan) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 12 })],
-              spacing: { after: 100 }
-            })
-          );
-        }
-
-        // Add GPS coordinates
-        if (observation.gps_lat && observation.gps_lng) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, size: 12 })],
-              spacing: { after: 100 }
-            })
-          );
-        }
-
-        // Add plan anchor coordinates
-        if (observation.plan_anchor && typeof observation.plan_anchor === 'object' && 'x' in observation.plan_anchor && 'y' in observation.plan_anchor) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 12 })],
-              spacing: { after: 100 }
-            })
-          );
+        } else {
+          // No image, just add text content
+          children.push(...textContent);
         }
 
         // Add spacing between observations
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: '', size: 12 })],
+            children: [new TextRun({ text: '', size: 20 })],
             spacing: { after: 200 }
           })
         );
@@ -938,7 +981,7 @@ function ReportPageContent() {
             </p>
           </div>
           
-          <div className="text-center py-12">
+          <div className="text-center py-20">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
               <p className="text-red-600 font-medium">{error}</p>
               {memoizedSelectedIds.length > 0 ? (
@@ -1125,7 +1168,7 @@ function ReportPageContent() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">No observations found.</p>
           </div>
         )}
@@ -1139,7 +1182,7 @@ export default function ReportPage() {
     <Suspense fallback={
       <div className="min-h-screen flex flex-col items-center">
         <div className="w-full max-w-7xl p-5">
-          <div className="text-center py-12">
+          <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">Loading report...</p>
           </div>
         </div>
