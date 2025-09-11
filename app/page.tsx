@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
+// Footer component
+import { Footer } from "@/components/footer";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -1318,6 +1320,8 @@ export default function Home() {
           </Button>
         </div>
       )}
+
+      <Footer />
     </main>
   );
 }
