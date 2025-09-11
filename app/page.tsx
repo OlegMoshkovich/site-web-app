@@ -341,7 +341,7 @@ export default function Home() {
       <div className="flex-1 w-full flex flex-col gap-4 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
+          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-md gap-5 items-center font-semibold">
               {t('siteTitle')}
             </div>
@@ -421,7 +421,7 @@ export default function Home() {
         </nav>
 
                   {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl p-2 sm:p-3 md:p-4 bg-gray-50/30" >
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-2 sm:py-3 md:py-4 bg-gray-50/30" >
           <div className="w-full">   
             {/* Conditional rendering based on app state */}
             {!user ? (
@@ -521,7 +521,7 @@ export default function Home() {
                   
                   {/* Search Input - Conditionally rendered */}
                   {showSearchSelector && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 w-full">
                       <label className="text-sm font-medium text-muted-foreground">
                         {t('search')}
                       </label>
