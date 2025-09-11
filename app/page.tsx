@@ -557,8 +557,8 @@ export default function Home() {
 
                 {/* App Screenshots */}
                 <div className="mt-8 max-w-lg mx-auto">
-                  <div className="flex justify-center items-center gap-0 space-x-1 w-[400px] mx-auto h-[240px]">
-                    <div className="relative overflow-hidden rounded-lg shadow-lg w-[130px] h-[240px] bg-gray-100">
+                  <div className="flex justify-center items-center gap-0 space-x-1 mx-auto">
+                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
                       <Image
                         src="/app_screens/Screen1.jpeg"
                         alt="App Screenshot 1"
@@ -570,7 +570,7 @@ export default function Home() {
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
                       />
                     </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg w-[130px] h-[240px] bg-gray-100">
+                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
                       <Image
                         src="/app_screens/Screen2.jpeg"
                         alt="App Screenshot 2"
@@ -582,7 +582,7 @@ export default function Home() {
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
                       />
                     </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg w-[130px] h-[240px] bg-gray-100">
+                    <div className="relative overflow-hidden rounded-lg shadow-lg  bg-gray-100">
                       <Image
                         src="/app_screens/Screen3.jpeg"
                         alt="App Screenshot 3"
