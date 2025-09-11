@@ -444,7 +444,7 @@ export default function Home() {
                 <div className="space-y-8">
                   {/* Date Range Selection - Conditionally rendered */}
                   {showDateSelector && (
-                    <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
                       <div className="flex flex-col gap-1">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">
