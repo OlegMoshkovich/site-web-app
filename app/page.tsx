@@ -503,7 +503,7 @@ export default function Home() {
             {/* Conditional rendering based on app state */}
             {!user ? (
               // Show welcome message when user is not logged in
-              <div className="text-center py-12">
+              <div className="text-center py-2">
                 <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">
                   {t("welcomeTitle")}
                 </h1>
@@ -516,7 +516,7 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen1.jpeg"
                         alt="App Screenshot 1"
-                        width={120}
+                        width={130}
                         height={240}
                         className="w-full h-auto object-cover"
                       />
@@ -525,7 +525,7 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen2.jpeg"
                         alt="App Screenshot 2"
-                        width={120}
+                        width={130}
                         height={240}
                         className="w-full h-auto object-cover"
                       />
@@ -534,7 +534,7 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen3.jpeg"
                         alt="App Screenshot 3"
-                        width={120}
+                        width={130}
                         height={240}
                         className="w-full h-auto object-cover"
                       />
@@ -542,7 +542,7 @@ export default function Home() {
                   </div>
                   
                   {/* App Store Badge */}
-                  <div className="mt-2 flex justify-center">
+                  <div className="mt-8 flex justify-center">
                     <div className="relative">
                       <Image
                         src="/app_screens/available-app-store.png"
