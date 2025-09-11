@@ -393,7 +393,8 @@ export default function Home() {
                                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as Language)}
-                  className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center flex items-center justify-center"
+                  className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
+                  style={{ textAlignLast: 'center' }}
                 >
                   <option value="en">EN</option>
                   <option value="de">DE</option>
