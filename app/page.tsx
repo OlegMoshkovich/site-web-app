@@ -339,6 +339,21 @@ export default function Home() {
     };
 
     fetchData();
+
+    // Listen for auth changes (including logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setObservations([]);
+        setSelectedObservations(new Set());
+        setIsLoading(false);
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        // Refetch data when user signs in
+        fetchData();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase, getSignedPhotoUrl, t]);
 
   // ===== MAIN RENDER =====
