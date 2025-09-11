@@ -356,40 +356,43 @@ export default function Home() {
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-3 sm:px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
+            <div className="flex text-md gap-5 items-center font-semibold">
               {t('siteTitle')}
             </div>
-              <div className="flex items-center gap-3">
-                {/* Toggle button for date selector */}
-                <div className="flex items-center gap-2">
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value as Language)}
-                    className="text-sm border-0 bg-transparent focus:outline-none focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <option value="en">EN</option>
-                    <option value="de">DE</option>
-                  </select>
-                </div>
+              <div className="flex items-center gap-2">
+                {/* Language selector */}
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  className="h-8 px-3 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none"
+                >
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+                
                 {user && (
                   <Button
                     onClick={() => setShowDateSelector(!showDateSelector)}
                     variant="outline"
                     size="sm"
-                    className="text-xs px-2 py-1 h-8 border-gray-300"
+                    className={`h-8 px-3 text-sm border-gray-300 ${
+                      showDateSelector 
+                        ? 'bg-gray-200 text-gray-700' 
+                        : 'bg-white'
+                    }`}
                   >
-                    {showDateSelector ? 'Hide Filter' : 'Show Filter'}
+                    {showDateSelector ? 'Filter' : 'Filter'}
                   </Button>
                 )}
                 
                 {/* View Mode Toggle */}
                 {user && (
-                  <div className="flex gap-1 border border-gray-200 rounded-lg p-1">
+                  <div className="flex border border-gray-300">
                     <button
                       onClick={() => setViewMode('card')}
-                      className={`p-2 rounded transition-colors ${
+                      className={`h-8 px-2 transition-colors ${
                         viewMode === 'card'
-                          ? 'bg-primary text-primary-foreground'
+                          ? 'bg-gray-200 text-gray-700'
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                       }`}
                       title="Card view"
@@ -398,9 +401,9 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`p-2 rounded transition-colors ${
+                      className={`h-8 px-2 border-l border-gray-300 transition-colors ${
                         viewMode === 'list'
-                          ? 'bg-primary text-primary-foreground'
+                          ? 'bg-gray-200 text-gray-700'
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                       }`}
                       title="List view"
@@ -440,9 +443,9 @@ export default function Home() {
                   {/* Date Range Selection - Conditionally rendered */}
                   {showDateSelector && (
                     <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
-                    <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
-                      <div className="flex flex-row items-center gap-2">
-                        <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground">
                           {t('start')}
                         </label>
                         <input
@@ -463,8 +466,8 @@ export default function Home() {
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
-                      <div className="flex flex-row items-center gap-2">
-                        <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="endDate" className="text-sm font-medium text-muted-foreground">
                           {t('end')}
                         </label>
                         <input
@@ -561,7 +564,7 @@ export default function Home() {
                               return (
                                 <div
                                   key={observation.id}
-                                  className={`flex items-start gap-3 p-4 rounded-lg border hover:shadow-md transition-all cursor-pointer group ${
+                                  className={`flex items-start gap-3 p-4 border hover:shadow-md transition-all cursor-pointer group ${
                                     selectedObservations.has(observation.id)
                                       ? 'ring-2 ring-primary shadow-md bg-primary/5' 
                                       : 'hover:bg-muted/50'
@@ -577,7 +580,7 @@ export default function Home() {
                                   }}
                                 >
                                   {/* Photo thumbnail - larger on mobile */}
-                                  <div className="relative w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 rounded-md overflow-hidden group/photo">
+                                  <div className="relative w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 overflow-hidden group/photo">
                                     {hasPhoto ? (
                                       <Image
                                         src={observation.signedUrl as string}

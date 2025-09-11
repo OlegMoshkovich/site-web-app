@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     // Navigation
-    siteTitle: "SIMPLE SITE",
+    siteTitle: "SITE",
     
     // Hero section
     welcomeTitle: "welcome",
@@ -61,7 +61,7 @@ export const translations = {
   
   de: {
     // Navigation
-    siteTitle: "EINFACHE SEITE",
+    siteTitle: "SEITE",
     
     // Hero section
     welcomeTitle: "willkommen",

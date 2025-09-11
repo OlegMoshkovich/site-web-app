@@ -47,10 +47,10 @@ export function AuthButtonClient() {
     </div>
   ) : (
     <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
+      <Button asChild size="sm" variant={"outline"} className="h-8 px-3 text-sm">
         <Link href="/auth/login">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={"default"}>
+      <Button asChild size="sm" variant={"default"} className="h-8 px-3 text-sm">
         <Link href="/auth/sign-up">Sign up</Link>
       </Button>
     </div>
