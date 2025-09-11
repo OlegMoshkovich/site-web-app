@@ -1330,8 +1330,9 @@ export default function Home() {
         </div>
       )}
 
-
-      <Footer />
+      {!isLoading && (
+        <Footer />
+      )}
     </main>
   );
 }
