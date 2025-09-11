@@ -77,7 +77,7 @@ export default function Home() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>('');
   // View mode state
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -416,7 +416,7 @@ export default function Home() {
         </nav>
 
                   {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl p-1 sm:p-3 md:p-4 bg-gray-50/30" >
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl p-2 sm:p-3 md:p-4 bg-gray-50/30" >
           <div className="w-full">   
             {/* Conditional rendering based on app state */}
             {!user ? (
@@ -439,8 +439,8 @@ export default function Home() {
                 <div className="space-y-8">
                   {/* Date Range Selection - Conditionally rendered */}
                   {showDateSelector && (
-                    <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-0 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm">
-                    <div className="flex flex-row items-start gap-3 sm:gap-4">
+                    <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
                       <div className="flex flex-row items-center gap-2">
                         <label htmlFor="startDate" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                           {t('start')}
@@ -460,7 +460,7 @@ export default function Home() {
                           }}
                           min={getAvailableDateRange().min}
                           max={endDate || getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-primary w-24 sm:w-auto"
+                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
                       <div className="flex flex-row items-center gap-2">
@@ -482,16 +482,16 @@ export default function Home() {
                           }}
                           min={startDate || getAvailableDateRange().min}
                           max={getAvailableDateRange().max}
-                          className="px-3 py-1 text-sm border focus:outline-none focus:ring-primary w-24 sm:w-auto"
+                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                      <div className="flex flex-row gap-1 sm:gap-3 w-full sm:w-auto">
                         <Button
                           onClick={startDate && endDate ? handleClearDateRange : handleSelectByDateRange}
                           disabled={!startDate || !endDate}
                           size="sm"
                           variant="outline"
-                          className="w-full sm:w-auto"
+                          className="flex-1 sm:w-auto text-xs px-2"
                         >
                           {startDate && endDate ? t('clear') : t('selectRange')}
                         </Button>
@@ -499,7 +499,7 @@ export default function Home() {
                           onClick={handleSelectAll}
                           size="sm"
                           variant="outline"
-                          className="w-full sm:w-auto"
+                          className="flex-1 sm:w-auto text-xs px-2"
                         >
                           {selectedObservations.size === observations.length ? t('unselectAll') : t('selectAll')}
                         </Button>
@@ -551,7 +551,7 @@ export default function Home() {
                         {/* Observations for this date */}
                         <div className={viewMode === 'card' 
                           ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6" 
-                          : "space-y-2"
+                          : "space-y-3 px-1 sm:px-0"
                         }>
                           {groupedObservations[dateKey].map((observation) => {
                             const hasPhoto = Boolean(observation.signedUrl);
@@ -561,7 +561,7 @@ export default function Home() {
                               return (
                                 <div
                                   key={observation.id}
-                                  className={`flex items-center gap-4 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer group ${
+                                  className={`flex items-start gap-3 p-4 rounded-lg border hover:shadow-md transition-all cursor-pointer group ${
                                     selectedObservations.has(observation.id)
                                       ? 'ring-2 ring-primary shadow-md bg-primary/5' 
                                       : 'hover:bg-muted/50'
@@ -576,15 +576,15 @@ export default function Home() {
                                     setSelectedObservations(newSelected);
                                   }}
                                 >
-                                  {/* Small photo thumbnail */}
-                                  <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden group/photo">
+                                  {/* Photo thumbnail - larger on mobile */}
+                                  <div className="relative w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 rounded-md overflow-hidden group/photo">
                                     {hasPhoto ? (
                                       <Image
                                         src={observation.signedUrl as string}
                                         alt={`Photo for ${observation.plan ?? "observation"}`}
                                         fill
                                         className="object-cover"
-                                        sizes="64px"
+                                        sizes="(max-width: 640px) 80px, 64px"
                                       />
                                     ) : (
                                       <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -649,7 +649,7 @@ export default function Home() {
                                     ) : (
                                       <div className="space-y-2">
                                         <div className="flex items-start justify-between gap-2">
-                                          <p className={`text-sm flex-1 truncate ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
+                                          <p className={`text-sm flex-1 ${!observation.note ? 'text-muted-foreground italic' : ''}`}>
                                             {observation.note || t('noDescription')}
                                           </p>
                                           <button
@@ -662,10 +662,10 @@ export default function Home() {
                                         </div>
 
                                         {/* Labels and metadata in compact form */}
-                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                                           {labels && labels.length > 0 && (
                                             <div className="flex flex-wrap gap-1">
-                                              {labels.slice(0, 2).map((label, idx) => {
+                                              {labels.slice(0, 3).map((label, idx) => {
                                                 const cleanLabel = label.trim();
                                                 let processedLabel = cleanLabel;
                                                 
@@ -691,23 +691,25 @@ export default function Home() {
                                                   </span>
                                                 );
                                               })}
-                                              {labels.length > 2 && (
-                                                <span className="text-xs text-gray-500">+{labels.length - 2} more</span>
+                                              {labels.length > 3 && (
+                                                <span className="text-xs text-gray-500">+{labels.length - 3} more</span>
                                               )}
                                             </div>
                                           )}
                                           
-                                          {observation.plan && (
-                                            <span className="flex items-center gap-1">
-                                              <MapPin className="h-3 w-3" />
-                                              {observation.plan}
+                                          <div className="flex items-center gap-3">
+                                            {observation.plan && (
+                                              <span className="flex items-center gap-1">
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate max-w-[100px]">{observation.plan}</span>
+                                              </span>
+                                            )}
+                                            
+                                            <span className="flex items-center gap-1 whitespace-nowrap">
+                                              <Calendar className="h-3 w-3" />
+                                              {new Date(observation.photo_date || observation.created_at).toLocaleDateString()}
                                             </span>
-                                          )}
-                                          
-                                          <span className="flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
-                                            {new Date(observation.photo_date || observation.created_at).toLocaleDateString()}
-                                          </span>
+                                          </div>
                                         </div>
                                       </div>
                                     )}
