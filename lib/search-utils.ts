@@ -64,6 +64,32 @@ export function groupObservationsByDate(observations: ObservationWithUrl[]) {
 }
 
 /**
+ * Filters observations based on date range
+ * Returns only observations that fall within the specified date range
+ */
+export function filterObservationsByDateRange(
+  observations: ObservationWithUrl[],
+  startDate: string,
+  endDate: string
+): ObservationWithUrl[] {
+  if (!startDate || !endDate) {
+    return observations;
+  }
+
+  // Normalize dates to start and end of day to ensure we capture all observations
+  const start = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T23:59:59.999");
+
+  return observations.filter((observation) => {
+    // Use photo_date if available, otherwise fall back to created_at
+    const observationDate = new Date(
+      observation.photo_date || observation.created_at,
+    );
+    return observationDate >= start && observationDate <= end;
+  });
+}
+
+/**
  * Processes labels for display by cleaning up concatenated strings
  */
 export function processLabel(label: string): string {

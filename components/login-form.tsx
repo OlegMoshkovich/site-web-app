@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -49,9 +50,10 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle className="text-md">SIMPLE SITE</CardTitle>
-        </CardHeader>
+      <CardHeader>
+          <CardTitle className="text-2xl">Simple Site </CardTitle>
+          <CardDescription>Login to your account</CardDescription>
+        </CardHeader>     
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">

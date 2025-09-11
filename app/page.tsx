@@ -43,6 +43,7 @@ import { translations, type Language } from "@/lib/translations";
 // Utility functions
 import {
   filterObservationsBySearch,
+  filterObservationsByDateRange,
   groupObservationsByDate,
 } from "@/lib/search-utils";
 // Types
@@ -237,80 +238,44 @@ export default function Home() {
     [supabase],
   );
 
-  // ===== DATE RANGE SELECTION =====
-  // Filter and select observations within a specific date range
-  const handleSelectByDateRangeWithDates = useCallback(
-    (start: string, end: string) => {
-      if (!start || !end) return;
-
-      // Normalize dates to start and end of day to ensure we capture all observations
-      // This prevents missing observations that might fall on boundary dates
-      const startDate = new Date(start + "T00:00:00"); // Start of the start date
-      const endDate = new Date(end + "T23:59:59.999"); // End of the end date
-
-      console.log("Date range selection:", { start, end, startDate, endDate });
-
-      // Filter observations to find those within the selected date range
-      const observationsInRange = observations.filter((observation) => {
-        // Use photo_date if available, otherwise fall back to created_at
-        const observationDate = new Date(
-          observation.photo_date || observation.created_at,
-        );
-        const isInRange =
-          observationDate >= startDate && observationDate <= endDate;
-
-        // Debug logging for boundary cases to help troubleshoot date selection issues
-        if (
-          observationDate.toDateString() === startDate.toDateString() ||
-          observationDate.toDateString() === endDate.toDateString()
-        ) {
-          console.log("Boundary observation:", {
-            id: observation.id,
-            date: observationDate,
-            isInRange,
-            photo_date: observation.photo_date,
-            created_at: observation.created_at,
-          });
-        }
-
-        return isInRange;
-      });
-
-      console.log(
-        `Found ${observationsInRange.length} observations in date range ${start} to ${end}`,
-      );
-
-      // Select all observations that fall within the date range
-      const observationIds = observationsInRange.map((obs) => obs.id);
-      setSelectedObservations(new Set(observationIds));
-    },
-    [observations],
-  );
-
-  const handleSelectByDateRange = useCallback(() => {
-    if (!startDate || !endDate) return;
-
-    // Use the improved date range function
-    handleSelectByDateRangeWithDates(startDate, endDate);
-  }, [startDate, endDate, handleSelectByDateRangeWithDates]);
 
   const handleClearDateRange = useCallback(() => {
     setStartDate("");
     setEndDate("");
-    setSelectedObservations(new Set());
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    const allIds = observations.map((obs) => obs.id);
-
-    // If all observations are already selected, unselect all
-    if (selectedObservations.size === allIds.length) {
-      setSelectedObservations(new Set());
-    } else {
-      // Otherwise, select all observations
-      setSelectedObservations(new Set(allIds));
+    // Get currently visible (filtered) observations
+    let filteredObservations = observations;
+    
+    // Apply date range filter if both dates are set
+    if (showDateSelector && startDate && endDate) {
+      filteredObservations = filterObservationsByDateRange(
+        filteredObservations,
+        startDate,
+        endDate
+      );
     }
-  }, [observations, selectedObservations]);
+    
+    // Then apply search filter if active
+    if (showSearchSelector && searchQuery.trim()) {
+      filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
+    }
+    
+    const visibleIds = filteredObservations.map((obs) => obs.id);
+
+    // If all visible observations are already selected, unselect all
+    if (visibleIds.every(id => selectedObservations.has(id))) {
+      const newSelected = new Set(selectedObservations);
+      visibleIds.forEach(id => newSelected.delete(id));
+      setSelectedObservations(newSelected);
+    } else {
+      // Otherwise, select all visible observations
+      const newSelected = new Set(selectedObservations);
+      visibleIds.forEach(id => newSelected.add(id));
+      setSelectedObservations(newSelected);
+    }
+  }, [observations, selectedObservations, showDateSelector, startDate, endDate, showSearchSelector, searchQuery]);
 
   // ===== UTILITY FUNCTIONS =====
   // Calculate the minimum and maximum dates available in the observations
@@ -428,7 +393,7 @@ export default function Home() {
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-            <div className="flex text-md gap-5 items-center font-semibold">
+            <div className="flex text-lg gap-5 items-center font-semibold">
               {t("siteTitle")}
             </div>
             <div className="flex items-center gap-2">
@@ -586,13 +551,7 @@ export default function Home() {
                             const newStartDate = e.target.value;
                             setStartDate(newStartDate);
 
-                            // Auto-trigger selection when both dates are set
-                            if (newStartDate && endDate) {
-                              handleSelectByDateRangeWithDates(
-                                newStartDate,
-                                endDate,
-                              );
-                            }
+                            // No longer auto-selecting - just filtering the display
                           }}
                           min={getAvailableDateRange().min}
                           max={endDate || getAvailableDateRange().max}
@@ -614,13 +573,7 @@ export default function Home() {
                             const newEndDate = e.target.value;
                             setEndDate(newEndDate);
 
-                            // Auto-trigger selection when both dates are set
-                            if (startDate && newEndDate) {
-                              handleSelectByDateRangeWithDates(
-                                startDate,
-                                newEndDate,
-                              );
-                            }
+                            // No longer auto-selecting - just filtering the display
                           }}
                           min={startDate || getAvailableDateRange().min}
                           max={getAvailableDateRange().max}
@@ -629,17 +582,13 @@ export default function Home() {
                       </div>
                       <div className="flex flex-row gap-1 sm:gap-3 w-full sm:w-auto">
                         <Button
-                          onClick={
-                            startDate && endDate
-                              ? handleClearDateRange
-                              : handleSelectByDateRange
-                          }
-                          disabled={!startDate || !endDate}
+                          onClick={handleClearDateRange}
+                          disabled={!startDate && !endDate}
                           size="sm"
                           variant="outline"
                           className="flex-1 sm:w-auto text-xs px-2"
                         >
-                          {startDate && endDate ? t("clear") : t("selectRange")}
+                          {t("clear")}
                         </Button>
                         <Button
                           onClick={handleSelectAll}
@@ -647,15 +596,35 @@ export default function Home() {
                           variant="outline"
                           className="flex-1 sm:w-auto text-xs px-2"
                         >
-                          {selectedObservations.size === observations.length
-                            ? t("unselectAll")
-                            : t("selectAll")}
+                          {(() => {
+                            // Get currently visible (filtered) observations count for button text
+                            let filteredObservations = observations;
+                            
+                            // Apply date range filter if both dates are set
+                            if (showDateSelector && startDate && endDate) {
+                              filteredObservations = filterObservationsByDateRange(
+                                filteredObservations,
+                                startDate,
+                                endDate
+                              );
+                            }
+                            
+                            // Then apply search filter if active
+                            if (showSearchSelector && searchQuery.trim()) {
+                              filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
+                            }
+                            
+                            const visibleIds = filteredObservations.map((obs) => obs.id);
+                            const allVisibleSelected = visibleIds.every(id => selectedObservations.has(id));
+                            
+                            return allVisibleSelected ? t("unselectAll") : t("selectAll");
+                          })()}
                         </Button>
                       </div>
                     </div>
                     <div className="text-muted-foreground text-sm text-center sm:text-right">
-                      {selectedObservations.size > 0
-                        ? `${selectedObservations.size} ${t("observationsSelected")}`
+                      {startDate && endDate
+                        ? "Klicken Sie auf Beobachtungen, um sie auszuwählen."
                         : t("clickToSelect")}
                     </div>
                   </div>
@@ -691,11 +660,22 @@ export default function Home() {
                 )}
 
                 {(() => {
-                  // First apply search filter if active
-                  const filteredObservations =
-                    showSearchSelector && searchQuery.trim()
-                      ? filterObservationsBySearch(observations, searchQuery)
-                      : observations;
+                  // Start with all observations
+                  let filteredObservations = observations;
+                  
+                  // Apply date range filter if both dates are set
+                  if (showDateSelector && startDate && endDate) {
+                    filteredObservations = filterObservationsByDateRange(
+                      filteredObservations,
+                      startDate,
+                      endDate
+                    );
+                  }
+                  
+                  // Then apply search filter if active
+                  if (showSearchSelector && searchQuery.trim()) {
+                    filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
+                  }
 
                   // Group filtered observations by date
                   const { groups: groupedObservations, sortedDates } =
