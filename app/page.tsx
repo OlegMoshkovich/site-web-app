@@ -53,7 +53,7 @@ export default function Home() {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   // Current language for internationalization
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('de');
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
   // Edit state for inline note editing
