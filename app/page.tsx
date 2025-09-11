@@ -651,7 +651,8 @@ export default function Home() {
                 {/* Search Input - Conditionally rendered */}
                 {showSearchSelector && (
                   <div className="flex flex-col gap-2 w-full">
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <label className="text-sm f
+                    ont-medium text-muted-foreground">
                       {t("search")}
                     </label>
                     <input
@@ -744,7 +745,7 @@ export default function Home() {
                                   {hasPhoto ? (
                                     <Image
                                       src={observation.signedUrl as string}
-                                      alt={`Photo for ${observation.plan ?? "observation"}`}
+                                      alt={`Photo for ${observation.site_name ?? "observation"}`}
                                       fill
                                       className="object-cover"
                                       sizes="(max-width: 640px) 80px, 64px"
@@ -915,11 +916,11 @@ export default function Home() {
                                         )}
 
                                         <div className="flex items-center gap-3">
-                                          {observation.plan && (
+                                          {observation.site_name && (
                                             <span className="flex items-center gap-1">
                                               <MapPin className="h-3 w-3" />
                                               <span className="truncate max-w-[100px]">
-                                                {observation.plan}
+                                                Site: {observation.site_name}
                                               </span>
                                             </span>
                                           )}
@@ -964,7 +965,7 @@ export default function Home() {
                                 {hasPhoto ? (
                                   <Image
                                     src={observation.signedUrl as string}
-                                    alt={`Photo for ${observation.plan ?? "observation"}`}
+                                    alt={`Photo for ${observation.site_name ?? "observation"}`}
                                     fill
                                     className="object-cover"
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -1133,10 +1134,10 @@ export default function Home() {
                                   </div>
                                 )}
 
-                                {observation.plan && (
+                                {observation.site_name && (
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <span className="font-medium">Plan:</span>
-                                    <span>{observation.plan}</span>
+                                    <span className="font-medium">Site:</span>
+                                    <span>{observation.site_name}</span>
                                   </div>
                                 )}
 

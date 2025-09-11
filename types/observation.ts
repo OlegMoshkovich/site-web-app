@@ -2,6 +2,7 @@
 export interface Observation {
   id: string;                    // Unique identifier for the observation
   plan: string | null;           // Plan name/identifier this observation belongs to
+  site_name: string | null;      // Name of the site/location
   labels: string[] | null;       // Array of tags/labels for categorization
   user_id: string;               // ID of the user who created this observation
   note: string | null;           // Text description/notes about the observation
