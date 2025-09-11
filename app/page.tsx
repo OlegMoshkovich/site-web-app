@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 // Lucide React icons
-import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2, Grid3X3, List, Search } from "lucide-react";
+import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2, Grid3X3, List, Search, Filter } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js router for navigation
@@ -346,15 +346,7 @@ export default function Home() {
               {t('siteTitle')}
             </div>
               <div className="flex items-center gap-2">
-                {/* Language selector */}
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
-                  className="h-8 px-3 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none"
-                >
-                  <option value="en">EN</option>
-                  <option value="de">DE</option>
-                </select>
+
                 
                 {user && (
                   <Button
@@ -383,7 +375,7 @@ export default function Home() {
                         : 'bg-white'
                     }`}
                   >
-                    {showDateSelector ? 'Hide Filter' : 'Show Filter'}
+                    <Filter className="h-4 w-4" />
                   </Button>
                 )}
                 
@@ -414,6 +406,15 @@ export default function Home() {
                     </button>
                   </div>
                 )}
+                                {/* Language selector */}
+                                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  className="h-8 px-3 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none"
+                >
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
                 
                 <AuthButtonClient />
               </div>

@@ -30,14 +30,7 @@ export function LogoutButton() {
       disabled={isLoading}
       className="h-8 px-3 text-sm"
     >
-      {isLoading ? (
-        <>
-          <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          Logging out...
-        </>
-      ) : (
-        "Logout"
-      )}
+      Logout
     </Button>
   );
 }
