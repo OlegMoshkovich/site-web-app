@@ -9,7 +9,12 @@ import { useEffect, useState } from "react";
 export function AuthButtonClient() {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
@@ -33,7 +38,7 @@ export function AuthButtonClient() {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return null;
   }
 

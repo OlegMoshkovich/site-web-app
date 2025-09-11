@@ -54,6 +54,7 @@ export default function Home() {
   const [endDate, setEndDate] = useState<string>('');
   // Current language for internationalization
   const [language, setLanguage] = useState<Language>('de');
+  const [mounted, setMounted] = useState(false);
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
   // Edit state for inline note editing
@@ -279,6 +280,11 @@ export default function Home() {
     };
   }, [observations]);
 
+  // ===== HYDRATION FIX =====
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
   useEffect(() => {
@@ -336,6 +342,10 @@ export default function Home() {
   }, [supabase, getSignedPhotoUrl, t]);
 
   // ===== MAIN RENDER =====
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-4 items-center">
