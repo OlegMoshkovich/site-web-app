@@ -412,8 +412,41 @@ export default function Home() {
             {!user ? (
               // Show welcome message when user is not logged in
               <div className="text-center py-12">
-                <h1 className="text-lg ">{t('welcomeTitle')}</h1>
-                <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p>
+                <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">{t('welcomeTitle')}</h1>
+                {/* <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p> */}
+                
+                {/* App Screenshots */}
+                <div className="mt-8 max-w-lg mx-auto">
+                  <div className="flex justify-center items-center gap-0 space-x-1">
+                    <div className="relative overflow-hidden rounded-lg shadow-lg">
+                      <Image
+                        src="/app_screens/Screen1.jpeg"
+                        alt="App Screenshot 1"
+                        width={130}
+                        height={240}
+                        className="w-full h-auto object-cover"
+                      />
+                    </div>
+                    <div className="relative overflow-hidden rounded-lg shadow-lg">
+                      <Image
+                        src="/app_screens/Screen2.jpeg"
+                        alt="App Screenshot 2"
+                        width={130}
+                        height={240}
+                        className="w-full h-auto object-cover"
+                      />
+                    </div>
+                    <div className="relative overflow-hidden rounded-lg shadow-lg">
+                      <Image
+                        src="/app_screens/Screen3.jpeg"
+                        alt="App Screenshot 3"
+                        width={130}
+                        height={240}
+                        className="w-full h-auto object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : isLoading ? (
               // Show loading spinner while fetching data

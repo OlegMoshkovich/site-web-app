@@ -3,22 +3,18 @@
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { LogOut } from "lucide-react";
 
 export function LogoutButton() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
 
   const logout = async () => {
-    setIsLoading(true);
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
       router.push("/auth/login");
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -27,10 +23,10 @@ export function LogoutButton() {
       onClick={logout} 
       variant="outline" 
       size="sm"
-      disabled={isLoading}
-      className="h-8 px-3 text-sm"
+      className="h-8 w-8 px-0 flex items-center justify-center"
+      title="Logout"
     >
-      Logout
+      <LogOut className="h-4 w-4" />
     </Button>
   );
 }

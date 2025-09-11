@@ -34,11 +34,7 @@ export function AuthButtonClient() {
   }, [supabase]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center gap-4">
-        <div className="animate-pulse bg-muted h-4 w-20 rounded"></div>
-      </div>
-    );
+    return null;
   }
 
   return user ? (

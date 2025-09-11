@@ -1,10 +1,10 @@
 export const translations = {
   en: {
     // Navigation
-    siteTitle: "SIMPLE SITE",
+    siteTitle: "Simple Site",
     
     // Hero section
-    welcomeTitle: "welcome",
+    welcomeTitle: "Simple solution for a digital construction site",
     pleaseSignIn: "please sign in to generate reports",
     
     // Date selection
@@ -65,10 +65,10 @@ export const translations = {
   
   de: {
     // Navigation
-    siteTitle: "SIMPLE SITE",
+    siteTitle: "Simple Site",
     
     // Hero section
-    welcomeTitle: "willkommen",
+    welcomeTitle: "Die Lösung für eine digitale Baustelle",
     pleaseSignIn: "bitte anmelden um berichte zu generieren",
     
     // Date selection
