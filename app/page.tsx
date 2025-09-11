@@ -542,7 +542,7 @@ export default function Home() {
                   </div>
                   
                   {/* App Store Badge */}
-                  <div className="flex justify-center">
+                  <div className="mt-2 flex justify-center">
                     <div className="relative">
                       <Image
                         src="/app_screens/available-app-store.png"
