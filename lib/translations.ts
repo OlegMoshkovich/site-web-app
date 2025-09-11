@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     // Navigation
-    siteTitle: "SIMPLE SITE",
+    siteTitle: "SITE",
     
     // Hero section
     welcomeTitle: "welcome",
@@ -45,6 +45,10 @@ export const translations = {
     labels: "Labels",
     viewPlan: "View Plan",
     
+    // Search
+    search: "Search",
+    searchObservations: "Search observations...",
+    
     // Report page
     observationsReport: "Observations Report",
     reportDate: "Report Date",
@@ -61,7 +65,7 @@ export const translations = {
   
   de: {
     // Navigation
-    siteTitle: "EINFACHE SEITE",
+    siteTitle: "SEITE",
     
     // Hero section
     welcomeTitle: "willkommen",
@@ -104,6 +108,10 @@ export const translations = {
     // Labels
     labels: "Labels",
     viewPlan: "Plan anzeigen",
+    
+    // Search
+    search: "Suchen",
+    searchObservations: "Beobachtungen suchen...",
     
     // Report page
     observationsReport: "Beobachtungsbericht",

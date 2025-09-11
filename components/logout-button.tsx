@@ -28,6 +28,7 @@ export function LogoutButton() {
       variant="outline" 
       size="sm"
       disabled={isLoading}
+      className="h-8 px-3 text-sm"
     >
       {isLoading ? (
         <>
