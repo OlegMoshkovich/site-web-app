@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Left Column - Company Information */}
           <div className="text-left">
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-xs text-gray-500 space-y-1">
               <div className="font-medium text-gray-900">clone:it GmbH</div>
               <div>Am Katzelbach 7, 8054 Graz</div>
               <div>Phone: +43 676 755 5310</div>
