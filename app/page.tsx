@@ -31,6 +31,7 @@ import {
   List,
   Search,
   Filter,
+  Download,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -142,6 +143,84 @@ export default function Home() {
     // Navigate to the report page with selected observation IDs as URL parameters
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
+
+  // Download photos for selected observations as a ZIP file
+  const handleDownloadPhotos = useCallback(async () => {
+    if (selectedObservations.size === 0) return;
+
+    try {
+      // Get selected observations
+      const selectedObs = observations.filter(obs => 
+        selectedObservations.has(obs.id)
+      );
+
+      // Filter only observations that have photos
+      const obsWithPhotos = selectedObs.filter(obs => obs.signedUrl);
+
+      if (obsWithPhotos.length === 0) {
+        alert("No photos found in selected observations");
+        return;
+      }
+
+      // Dynamically import JSZip
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      let downloadCount = 0;
+      
+      // Download each photo and add to ZIP
+      for (const obs of obsWithPhotos) {
+        try {
+          if (obs.signedUrl) {
+            // Fetch the image
+            const response = await fetch(obs.signedUrl);
+            if (!response.ok) continue;
+            
+            const blob = await response.blob();
+            
+            // Create a filename based on observation data
+            const date = obs.photo_date || obs.created_at;
+            const dateStr = new Date(date).toISOString().split('T')[0];
+            const site = obs.site_name ? `_${obs.site_name.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+            const extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' : 
+                            blob.type.includes('png') ? '.png' : '.jpg';
+            
+            const filename = `${dateStr}${site}_${obs.id.slice(0, 8)}${extension}`;
+            
+            // Add to ZIP
+            zip.file(filename, blob);
+            downloadCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to download photo for observation ${obs.id}:`, error);
+          // Continue with other photos
+        }
+      }
+
+      if (downloadCount === 0) {
+        alert("Failed to download any photos");
+        return;
+      }
+
+      // Generate ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      
+      // Download the ZIP file
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `observations_photos_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log(`Successfully downloaded ${downloadCount} photos in ZIP file`);
+    } catch (error) {
+      console.error("Error downloading photos:", error);
+      alert("Failed to download photos. Please try again.");
+    }
+  }, [selectedObservations, observations]);
 
   // ===== NOTE EDITING =====
   // Handle note editing
@@ -1217,6 +1296,15 @@ export default function Home() {
             className="shadow-lg hover:shadow-xl transition-all"
           >
             {t("clearSelection")}
+          </Button>
+          <Button
+            onClick={handleDownloadPhotos}
+            variant="outline"
+            size="lg"
+            className="shadow-lg hover:shadow-xl transition-all"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
           </Button>
           <Button
             onClick={handleGenerateReport}
