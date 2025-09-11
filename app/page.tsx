@@ -544,7 +544,7 @@ export default function Home() {
         </nav>
 
         {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-2 sm:py-3 md:py-4 bg-gray-50/30">
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-2 sm:py-3 md:py-4">
           <div className="w-full">
             {/* Conditional rendering based on app state */}
             {!user ? (
@@ -1321,8 +1321,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Footer - only show after content is loaded */}
-      {mounted && !isLoading && <Footer />}
+
+      <Footer />
     </main>
   );
 }
