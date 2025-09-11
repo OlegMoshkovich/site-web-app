@@ -1321,7 +1321,8 @@ export default function Home() {
         </div>
       )}
 
-      <Footer />
+      {/* Footer - only show after content is loaded */}
+      {mounted && !isLoading && <Footer />}
     </main>
   );
 }
