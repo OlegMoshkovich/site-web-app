@@ -516,7 +516,7 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen1.jpeg"
                         alt="App Screenshot 1"
-                        width={130}
+                        width={120}
                         height={240}
                         className="w-full h-auto object-cover"
                       />
@@ -525,7 +525,7 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen2.jpeg"
                         alt="App Screenshot 2"
-                        width={130}
+                        width={120}
                         height={240}
                         className="w-full h-auto object-cover"
                       />
@@ -534,9 +534,22 @@ export default function Home() {
                       <Image
                         src="/app_screens/Screen3.jpeg"
                         alt="App Screenshot 3"
-                        width={130}
+                        width={120}
                         height={240}
                         className="w-full h-auto object-cover"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* App Store Badge */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <Image
+                        src="/app_screens/available-app-store.png"
+                        alt="Available on the App Store"
+                        width={100}
+                        height={30}
+                        className="w-auto h-auto object-contain"
                       />
                     </div>
                   </div>
