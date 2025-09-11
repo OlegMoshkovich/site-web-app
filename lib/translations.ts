@@ -45,6 +45,10 @@ export const translations = {
     labels: "Labels",
     viewPlan: "View Plan",
     
+    // Search
+    search: "Search",
+    searchObservations: "Search observations...",
+    
     // Report page
     observationsReport: "Observations Report",
     reportDate: "Report Date",
@@ -104,6 +108,10 @@ export const translations = {
     // Labels
     labels: "Labels",
     viewPlan: "Plan anzeigen",
+    
+    // Search
+    search: "Suchen",
+    searchObservations: "Beobachtungen suchen...",
     
     // Report page
     observationsReport: "Beobachtungsbericht",

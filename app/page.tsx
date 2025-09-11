@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 // Lucide React icons
-import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2, Grid3X3, List } from "lucide-react";
+import { Calendar, MapPin, Image as ImageIcon, Edit3, Check, X, Trash2, Grid3X3, List, Search } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js router for navigation
@@ -23,27 +23,10 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 // Translation system
 import { translations, type Language } from "@/lib/translations";
-
-// Core observation data structure from Supabase database
-interface Observation {
-  id: string;                    // Unique identifier for the observation
-  plan: string | null;           // Plan name/identifier this observation belongs to
-  labels: string[] | null;       // Array of tags/labels for categorization
-  user_id: string;               // ID of the user who created this observation
-  note: string | null;           // Text description/notes about the observation
-  gps_lat: number | null;        // GPS latitude coordinate
-  gps_lng: number | null;        // GPS longitude coordinate
-  photo_url: string | null;      // Storage path to the photo file
-  plan_url: string | null;       // URL to view the associated plan
-  plan_anchor: Record<string, unknown> | null; // Position coordinates on the plan
-  photo_date: string | null;     // When the photo was taken
-  created_at: string;            // When the observation was created in the system
-}
-
-// Extended observation with signed URL for secure photo access
-interface ObservationWithUrl extends Observation {
-  signedUrl: string | null;      // Temporary signed URL for viewing the photo
-}
+// Utility functions
+import { filterObservationsBySearch, groupObservationsByDate } from "@/lib/search-utils";
+// Types
+import type { Observation, ObservationWithUrl } from "@/types/observation";
 
 // Supabase storage bucket name for photos
 const BUCKET = "photos";
@@ -78,6 +61,9 @@ export default function Home() {
   const [editNoteValue, setEditNoteValue] = useState<string>('');
   // View mode state
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  // Search state
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -372,6 +358,22 @@ export default function Home() {
                 
                 {user && (
                   <Button
+                    onClick={() => setShowSearchSelector(!showSearchSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 px-2 text-sm border-gray-300 ${
+                      showSearchSelector 
+                        ? 'bg-gray-200 text-gray-700' 
+                        : 'bg-white'
+                    }`}
+                    title="Toggle search"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                )}
+                
+                {user && (
+                  <Button
                     onClick={() => setShowDateSelector(!showDateSelector)}
                     variant="outline"
                     size="sm"
@@ -381,7 +383,7 @@ export default function Home() {
                         : 'bg-white'
                     }`}
                   >
-                    {showDateSelector ? 'Filter' : 'Filter'}
+                    {showDateSelector ? 'Hide Filter' : 'Show Filter'}
                   </Button>
                 )}
                 
@@ -517,24 +519,39 @@ export default function Home() {
                     </div>
                   )}
                   
+                  {/* Search Input - Conditionally rendered */}
+                  {showSearchSelector && (
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        {t('search')}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={t('searchObservations')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:border-gray-400"
+                      />
+                      {searchQuery && (
+                        <div className="text-xs text-muted-foreground">
+                          {(() => {
+                            const filteredCount = filterObservationsBySearch(observations, searchQuery).length;
+                            return `${filteredCount} result${filteredCount !== 1 ? 's' : ''} found`;
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
 
                   {(() => {
-                    // Group observations by date
-                    const groupedObservations = observations.reduce((groups, observation) => {
-                      const date = observation.photo_date || observation.created_at;
-                      const dateKey = new Date(date).toDateString();
-                      
-                      if (!groups[dateKey]) {
-                        groups[dateKey] = [];
-                      }
-                      groups[dateKey].push(observation);
-                      return groups;
-                    }, {} as Record<string, typeof observations>);
+                    // First apply search filter if active
+                    const filteredObservations = showSearchSelector && searchQuery.trim() 
+                      ? filterObservationsBySearch(observations, searchQuery)
+                      : observations;
 
-                    // Sort dates in descending order (newest first)
-                    const sortedDates = Object.keys(groupedObservations).sort((a, b) => 
-                      new Date(b).getTime() - new Date(a).getTime()
-                    );
+                    // Group filtered observations by date
+                    const { groups: groupedObservations, sortedDates } = groupObservationsByDate(filteredObservations);
                    
 
                     return sortedDates.map((dateKey) => (
