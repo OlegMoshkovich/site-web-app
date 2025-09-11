@@ -353,7 +353,7 @@ export default function Home() {
                     onClick={() => setShowSearchSelector(!showSearchSelector)}
                     variant="outline"
                     size="sm"
-                    className={`h-8 px-2 text-sm border-gray-300 ${
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
                       showSearchSelector 
                         ? 'bg-gray-200 text-gray-700' 
                         : 'bg-white'
@@ -369,7 +369,7 @@ export default function Home() {
                     onClick={() => setShowDateSelector(!showDateSelector)}
                     variant="outline"
                     size="sm"
-                    className={`h-8 px-3 text-sm border-gray-300 ${
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
                       showDateSelector 
                         ? 'bg-gray-200 text-gray-700' 
                         : 'bg-white'
@@ -381,36 +381,19 @@ export default function Home() {
                 
                 {/* View Mode Toggle */}
                 {user && (
-                  <div className="flex border border-gray-300">
-                    <button
-                      onClick={() => setViewMode('card')}
-                      className={`h-8 px-2 transition-colors ${
-                        viewMode === 'card'
-                          ? 'bg-gray-200 text-gray-700'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
-                      title="Card view"
-                    >
-                      <Grid3X3 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`h-8 px-2 border-l border-gray-300 transition-colors ${
-                        viewMode === 'list'
-                          ? 'bg-gray-200 text-gray-700'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
-                      title="List view"
-                    >
-                      <List className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+                    className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
+                    title={viewMode === 'list' ? 'Switch to card view' : 'Switch to list view'}
+                  >
+                    {viewMode === 'list' ? <Grid3X3 className="h-4 w-4" /> : <List className="h-4 w-4" />}
+                  </button>
                 )}
                                 {/* Language selector */}
                                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as Language)}
-                  className="h-8 px-3 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none"
+                  className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center flex items-center justify-center"
                 >
                   <option value="en">EN</option>
                   <option value="de">DE</option>
@@ -531,7 +514,8 @@ export default function Home() {
                         placeholder={t('searchObservations')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:border-gray-400"
+                        className="w-full px-3 py-2 text-base border border-gray-300 focus:outline-none focus:border-gray-400"
+                        style={{ fontSize: '16px' }}
                       />
                       {searchQuery && (
                         <div className="text-xs text-muted-foreground">
