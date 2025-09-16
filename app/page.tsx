@@ -32,6 +32,7 @@ import {
   Search,
   Filter,
   Download,
+  Settings,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -537,6 +538,19 @@ export default function Home() {
                 <option value="en">EN</option>
                 <option value="de">DE</option>
               </select>
+
+              {/* Settings gear icon */}
+              {user && (
+                <Button
+                  onClick={() => router.push('/settings')}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                  title="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
 
               <AuthButtonClient />
             </div>
