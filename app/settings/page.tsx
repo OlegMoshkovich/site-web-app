@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2 } from "lucide-react";
+import { Language, useTranslations } from "@/lib/translations";
 
 export default function SettingsPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [language] = useState<Language>('de'); // Default to German
+  const t = useTranslations(language);
 
   // Site management state
   const [sites, setSites] = useState<{name: string; id: string; description?: string | null}[]>([]);
@@ -311,9 +314,9 @@ export default function SettingsPage() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('back')}
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -322,41 +325,41 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
-                Site Management
+                {t('siteManagement')}
               </CardTitle>
               <CardDescription>
-                Create and manage observation sites
+                {t('createAndManageObservationSites')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="siteName">Site Name</Label>
+                <Label htmlFor="siteName">{t('siteName')}</Label>
                 <Input
                   id="siteName"
                   value={newSiteName}
                   onChange={(e) => setNewSiteName(e.target.value)}
-                  placeholder="Enter site name"
+                  placeholder={t('enterSiteName')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="siteDescription">Description (optional)</Label>
+                <Label htmlFor="siteDescription">{t('descriptionOptional')}</Label>
                 <Textarea
                   id="siteDescription"
                   value={newSiteDescription}
                   onChange={(e) => setNewSiteDescription(e.target.value)}
-                  placeholder="Enter site description"
+                  placeholder={t('enterSiteDescription')}
                   rows={3}
                 />
               </div>
               <Button onClick={handleCreateSite} className="w-full">
                 <Plus className="h-4 w-4 mr-2" />
-                Create Site
+                {t('createSite')}
               </Button>
 
               {/* Existing sites */}
               {sites.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Existing Sites</Label>
+                  <Label>{t('existingSites')}</Label>
                   <div className="space-y-2">
                     {sites.map((site, index) => (
                       <div key={index} className="flex items-center justify-between p-2 border rounded">
@@ -377,15 +380,15 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Invite People
+                {t('invitePeople')}
               </CardTitle>
               <CardDescription>
-                Invite users to collaborate on this site
+                {t('inviteUsersToCollaborate')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="inviteEmail">Email Address</Label>
+                <Label htmlFor="inviteEmail">{t('emailAddress')}</Label>
                 <Input
                   id="inviteEmail"
                   type="email"
@@ -396,7 +399,7 @@ export default function SettingsPage() {
               </div>
               <Button onClick={handleInviteUser} className="w-full">
                 <Users className="h-4 w-4 mr-2" />
-                Send Invitation
+                {t('sendInvitation')}
               </Button>
             </CardContent>
           </Card>
@@ -406,23 +409,23 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tags className="h-5 w-5" />
-                Label Management
+                {t('labelManagement')}
               </CardTitle>
               <CardDescription>
-                Create and manage hierarchical observation labels for your sites
+                {t('createAndManageHierarchicalLabels')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Site Selection */}
               <div className="space-y-2">
-                <Label htmlFor="siteSelect">Select Site</Label>
+                <Label htmlFor="siteSelect">{t('selectSite')}</Label>
                 <select
                   id="siteSelect"
                   value={selectedSiteForLabels}
                   onChange={(e) => setSelectedSiteForLabels(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
                 >
-                  <option value="">Choose a site...</option>
+                  <option value="">{t('chooseASite')}</option>
                   {sites.map((site) => (
                     <option key={site.id} value={site.id}>
                       {site.name}
@@ -435,39 +438,39 @@ export default function SettingsPage() {
                 <>
                   {/* Label Creation Form */}
                   <div className="border-t pt-4">
-                    <h3 className="text-lg font-medium mb-4">Create New Label</h3>
+                    <h3 className="text-lg font-medium mb-4">{t('createNewLabel')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="labelName">Label Name</Label>
+                        <Label htmlFor="labelName">{t('labelName')}</Label>
                         <Input
                           id="labelName"
                           value={newLabelName}
                           onChange={(e) => setNewLabelName(e.target.value)}
-                          placeholder="Enter label name"
+                          placeholder={t('enterLabelName')}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="labelCategory">Category</Label>
+                        <Label htmlFor="labelCategory">{t('category')}</Label>
                         <select
                           id="labelCategory"
                           value={newLabelCategory}
                           onChange={(e) => setNewLabelCategory(e.target.value as "location" | "gewerk" | "type")}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
                         >
-                          <option value="location">Location</option>
-                          <option value="gewerk">Gewerk</option>
-                          <option value="type">Type</option>
+                          <option value="location">{t('location')}</option>
+                          <option value="gewerk">{t('gewerk')}</option>
+                          <option value="type">{t('type')}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="labelParent">Parent Label (optional)</Label>
+                        <Label htmlFor="labelParent">{t('parentLabelOptional')}</Label>
                         <select
                           id="labelParent"
                           value={newLabelParent}
                           onChange={(e) => setNewLabelParent(e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
                         >
-                          <option value="">No parent (top-level)</option>
+                          <option value="">{t('noParentTopLevel')}</option>
                           {labels
                             .filter(label => label.category === newLabelCategory && !label.parent_id)
                             .map((label) => (
@@ -478,26 +481,26 @@ export default function SettingsPage() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="labelDescription">Description (optional)</Label>
+                        <Label htmlFor="labelDescription">{t('descriptionOptional')}</Label>
                         <Textarea
                           id="labelDescription"
                           value={newLabelDescription}
                           onChange={(e) => setNewLabelDescription(e.target.value)}
-                          placeholder="Enter label description"
+                          placeholder={t('enterLabelDescription')}
                           rows={2}
                         />
                       </div>
                     </div>
                     <Button onClick={handleCreateLabel} className="w-full mt-4">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Label
+                      {t('createLabel')}
                     </Button>
                   </div>
 
                   {/* Existing Labels Display */}
                   {labels.length > 0 && (
                     <div className="border-t pt-4">
-                      <h3 className="text-lg font-medium mb-4">Existing Labels</h3>
+                      <h3 className="text-lg font-medium mb-4">{t('existingLabels')}</h3>
                       {['location', 'gewerk', 'type'].map((category) => {
                         const categoryLabels = labels.filter(label => label.category === category);
                         const topLevelLabels = categoryLabels.filter(label => !label.parent_id);
@@ -529,7 +532,7 @@ export default function SettingsPage() {
                                     </div>
                                     {subLabels.length > 0 && (
                                       <div className="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
-                                        <p className="text-sm font-medium text-gray-500 mb-2">Sub-labels:</p>
+                                        <p className="text-sm font-medium text-gray-500 mb-2">{t('subLabels')}:</p>
                                         {subLabels.map((subLabel) => (
                                           <div key={subLabel.id} className="flex items-center justify-between py-1">
                                             <div>

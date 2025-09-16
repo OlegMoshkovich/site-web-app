@@ -60,7 +60,54 @@ export const translations = {
     loadingSelectedObservations: "Loading selected observations...",
     errorLoadingReport: "Error loading report",
     tryAgain: "Try Again",
-    noPhotoAvailable: "No photo available"
+    noPhotoAvailable: "No photo available",
+    
+    // Settings page
+    settings: "Settings",
+    back: "Back",
+    siteManagement: "Site Management",
+    createAndManageObservationSites: "Create and manage observation sites",
+    siteName: "Site Name",
+    enterSiteName: "Enter site name",
+    description: "Description",
+    descriptionOptional: "Description (optional)",
+    enterSiteDescription: "Enter site description",
+    createSite: "Create Site",
+    existingSites: "Existing Sites",
+    
+    // Invite people
+    invitePeople: "Invite People",
+    inviteUsersToCollaborate: "Invite users to collaborate on this site",
+    emailAddress: "Email Address",
+    sendInvitation: "Send Invitation",
+    
+    // Label management
+    labelManagement: "Label Management",
+    createAndManageHierarchicalLabels: "Create and manage hierarchical observation labels for your sites",
+    selectSite: "Select Site",
+    chooseASite: "Choose a site...",
+    createNewLabel: "Create New Label",
+    labelName: "Label Name",
+    enterLabelName: "Enter label name",
+    category: "Category",
+    location: "Location",
+    gewerk: "Gewerk",
+    type: "Type",
+    parentLabel: "Parent Label",
+    parentLabelOptional: "Parent Label (optional)",
+    noParentTopLevel: "No parent (top-level)",
+    enterLabelDescription: "Enter label description",
+    createLabel: "Create Label",
+    existingLabels: "Existing Labels",
+    subLabels: "Sub-labels",
+    
+    // Plan upload
+    uploadPlans: "Upload Plans",
+    uploadSitePlansAndMaps: "Upload site plans and maps for reference",
+    planName: "Plan Name",
+    enterPlanName: "Enter plan name",
+    planFile: "Plan File",
+    uploadPlan: "Upload Plan"
   },
   
   de: {
@@ -124,7 +171,54 @@ export const translations = {
     loadingSelectedObservations: "Lade ausgewählte Beobachtungen...",
     errorLoadingReport: "Fehler beim Laden des Berichts",
     tryAgain: "Erneut versuchen",
-    noPhotoAvailable: "Kein Foto verfügbar"
+    noPhotoAvailable: "Kein Foto verfügbar",
+    
+    // Settings page
+    settings: "Einstellungen",
+    back: "Zurück",
+    siteManagement: "Standortverwaltung",
+    createAndManageObservationSites: "Beobachtungsstandorte erstellen und verwalten",
+    siteName: "Standortname",
+    enterSiteName: "Standortname eingeben",
+    description: "Beschreibung",
+    descriptionOptional: "Beschreibung (optional)",
+    enterSiteDescription: "Standortbeschreibung eingeben",
+    createSite: "Standort erstellen",
+    existingSites: "Vorhandene Standorte",
+    
+    // Invite people
+    invitePeople: "Personen einladen",
+    inviteUsersToCollaborate: "Benutzer zur Zusammenarbeit an diesem Standort einladen",
+    emailAddress: "E-Mail-Adresse",
+    sendInvitation: "Einladung senden",
+    
+    // Label management
+    labelManagement: "Label-Verwaltung",
+    createAndManageHierarchicalLabels: "Hierarchische Beobachtungslabels für Ihre Standorte erstellen und verwalten",
+    selectSite: "Standort auswählen",
+    chooseASite: "Einen Standort wählen...",
+    createNewLabel: "Neues Label erstellen",
+    labelName: "Label-Name",
+    enterLabelName: "Label-Name eingeben",
+    category: "Kategorie",
+    location: "Ort",
+    gewerk: "Gewerk",
+    type: "Typ",
+    parentLabel: "Übergeordnetes Label",
+    parentLabelOptional: "Übergeordnetes Label (optional)",
+    noParentTopLevel: "Kein übergeordnetes Label (oberste Ebene)",
+    enterLabelDescription: "Label-Beschreibung eingeben",
+    createLabel: "Label erstellen",
+    existingLabels: "Vorhandene Labels",
+    subLabels: "Unter-Labels",
+    
+    // Plan upload
+    uploadPlans: "Pläne hochladen",
+    uploadSitePlansAndMaps: "Standortpläne und Karten als Referenz hochladen",
+    planName: "Plan-Name",
+    enterPlanName: "Plan-Name eingeben",
+    planFile: "Plan-Datei",
+    uploadPlan: "Plan hochladen"
   }
 };
 
