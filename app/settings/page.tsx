@@ -8,15 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings } from "lucide-react";
 import { Language, useTranslations } from "@/lib/translations";
+import { AuthButtonClient } from "@/components/auth-button-client";
 
 export default function SettingsPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [language] = useState<Language>('de'); // Default to German
+  const [language, setLanguage] = useState<Language>('de'); // Default to German
   const t = useTranslations(language);
 
   // Site management state
@@ -303,23 +304,69 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('back')}
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
-        </div>
+    <main className="min-h-screen flex flex-col items-center">
+      <div className="flex-1 w-full flex flex-col gap-4 items-center">
+        {/* Top navigation bar with site title, language selector, and auth */}
+        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+            <div className="flex text-lg gap-5 items-center font-semibold">
+              {t("siteTitle")}
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Language selector */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer text-center"
+                style={{ 
+                  textAlignLast: "center",
+                  backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                  backgroundSize: "8px 8px",
+                  backgroundPosition: "calc(100% - 2px) center",
+                  backgroundRepeat: "no-repeat",
+                  appearance: "none"
+                }}
+              >
+                <option value="en">EN</option>
+                <option value="de">DE</option>
+              </select>
 
-        <div className="grid gap-6 md:grid-cols-2">
+              {/* Settings gear icon */}
+              {user && (
+                <Button
+                  onClick={() => router.push('/settings')}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-gray-200 text-gray-700"
+                  title="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              )}
+
+              <AuthButtonClient />
+            </div>
+          </div>
+        </nav>
+
+        {/* Main content area with responsive padding */}
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-14 sm:py-3 md:py-4">
+          <div className="w-full">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {t('back')}
+              </Button>
+              <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
           {/* Site Management */}
           <Card>
             <CardHeader>
@@ -423,7 +470,14 @@ export default function SettingsPage() {
                   id="siteSelect"
                   value={selectedSiteForLabels}
                   onChange={(e) => setSelectedSiteForLabels(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
                 >
                   <option value="">{t('chooseASite')}</option>
                   {sites.map((site) => (
@@ -455,7 +509,14 @@ export default function SettingsPage() {
                           id="labelCategory"
                           value={newLabelCategory}
                           onChange={(e) => setNewLabelCategory(e.target.value as "location" | "gewerk" | "type")}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                            backgroundSize: "12px 12px",
+                            backgroundPosition: "calc(100% - 12px) center",
+                            backgroundRepeat: "no-repeat",
+                            appearance: "none"
+                          }}
                         >
                           <option value="location">{t('location')}</option>
                           <option value="gewerk">{t('gewerk')}</option>
@@ -468,7 +529,14 @@ export default function SettingsPage() {
                           id="labelParent"
                           value={newLabelParent}
                           onChange={(e) => setNewLabelParent(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400"
+                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                            backgroundSize: "12px 12px",
+                            backgroundPosition: "calc(100% - 12px) center",
+                            backgroundRepeat: "no-repeat",
+                            appearance: "none"
+                          }}
                         >
                           <option value="">{t('noParentTopLevel')}</option>
                           {labels
@@ -566,6 +634,8 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+            </div>
+          </div>
         </div>
       </div>
     </main>
