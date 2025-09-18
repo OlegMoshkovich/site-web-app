@@ -502,8 +502,7 @@ export default function Home() {
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
-              <span className="sm:hidden">Simple</span>
-              <span className="hidden sm:inline">{t("siteTitle")}</span>
+              {user ? "Simple" : t("siteTitle")}
             </div>
             <div className="flex items-center gap-2">
               {user && (
@@ -1164,13 +1163,13 @@ export default function Home() {
                                 setSelectedObservations(newSelected);
                               }}
                             >
-                              <div className="relative h-48 sm:h-56 md:h-64 w-full group/photo">
+                              <div className="relative aspect-square w-full group/photo">
                                 {hasPhoto ? (
                                   <Image
                                     src={observation.signedUrl as string}
                                     alt={`Photo for ${observation.site_name ?? "observation"}`}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain bg-gray-50"
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                                   />
                                 ) : (
