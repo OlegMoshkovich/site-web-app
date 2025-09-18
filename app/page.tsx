@@ -655,7 +655,12 @@ export default function Home() {
                   
                   {/* App Store Badge */}
                   <div className="mt-8 flex justify-center">
-                    <div className="relative">
+                    <a 
+                      href="https://apps.apple.com/us/app/simple-site/id6749160249"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative hover:opacity-80 transition-opacity"
+                    >
                       <Image
                         src="/app_screens/available-app-store.png"
                         alt="Available on the App Store"
@@ -663,7 +668,7 @@ export default function Home() {
                         height={30}
                         className="w-auto h-auto object-contain"
                       />
-                    </div>
+                    </a>
                   </div>
                 </div>
               </div>
