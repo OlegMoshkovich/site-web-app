@@ -953,8 +953,8 @@ export default function Home() {
                                       sizes="(max-width: 640px) 80px, 64px"
                                     />
                                   ) : (
-                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                      <ImageIcon className="h-6 w-6 text-gray-400" />
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center border">
+                                      <span className="text-sm font-medium text-gray-600">Note</span>
                                     </div>
                                   )}
 
@@ -1117,23 +1117,23 @@ export default function Home() {
                                           </div>
                                         )}
 
-                                        <div className="flex items-center gap-3">
-                                          {observation.site_name && (
-                                            <span className="flex items-center gap-1">
-                                              <MapPin className="h-3 w-3" />
-                                              <span className="truncate max-w-[100px]">
-                                                Site: {observation.site_name}
-                                              </span>
-                                            </span>
-                                          )}
-
-                                          <span className="flex items-center gap-1 whitespace-nowrap">
+                                        <div className="flex flex-col gap-1">
+                                          <span className="flex items-center gap-1 text-xs">
                                             <Calendar className="h-3 w-3" />
                                             {new Date(
                                               observation.photo_date ||
                                                 observation.created_at,
                                             ).toLocaleDateString()}
                                           </span>
+                                          
+                                          {observation.site_name && (
+                                            <span className="flex items-center gap-1 text-xs">
+                                              <MapPin className="h-3 w-3" />
+                                              <span className="truncate">
+                                                Site: {observation.site_name}
+                                              </span>
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
@@ -1163,8 +1163,8 @@ export default function Home() {
                                 setSelectedObservations(newSelected);
                               }}
                             >
-                              <div className="relative aspect-square w-full group/photo">
-                                {hasPhoto ? (
+                              {hasPhoto && (
+                                <div className="relative aspect-square w-full group/photo">
                                   <Image
                                     src={observation.signedUrl as string}
                                     alt={`Photo for ${observation.site_name ?? "observation"}`}
@@ -1172,24 +1172,21 @@ export default function Home() {
                                     className="object-contain bg-gray-50"
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                                   />
-                                ) : (
-                                  <div className="h-full w-full bg-gray-100 flex items-center justify-center">
-                                    <div className="text-center text-gray-500">
-                                      <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                                      <p className="text-sm">
-                                        No photo available
-                                      </p>
-                                      {observation.photo_url && (
-                                        <p className="text-xs text-gray-400 mt-1">
-                                          Path:{" "}
-                                          {normalizePath(observation.photo_url)}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
+                                  {/* Delete button positioned over photo */}
+                                  <button
+                                    onClick={(e) =>
+                                      handleDeleteObservation(observation.id, e)
+                                    }
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
+                                    title="Delete observation"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              )}
 
-                                {/* Delete button positioned over photo */}
+                              {/* Delete button for cards without photos */}
+                              {!hasPhoto && (
                                 <button
                                   onClick={(e) =>
                                     handleDeleteObservation(observation.id, e)
@@ -1199,7 +1196,7 @@ export default function Home() {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </button>
-                              </div>
+                              )}
 
                               <CardHeader>
                                 {editingNoteId === observation.id ? (
@@ -1364,22 +1361,19 @@ export default function Home() {
                                     </div>
                                   )}
 
-                                {observation.plan_anchor && (
+                                {observation.plan_anchor &&
+                                  typeof observation.plan_anchor === "object" &&
+                                  observation.plan_anchor !== null &&
+                                  "x" in observation.plan_anchor &&
+                                  "y" in observation.plan_anchor &&
+                                  !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0) && (
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
                                     <span className="font-medium">
                                       Plan Anchor:
                                     </span>
                                     <span>
-                                      {typeof observation.plan_anchor ===
-                                        "object" &&
-                                      observation.plan_anchor !== null &&
-                                      "x" in observation.plan_anchor &&
-                                      "y" in observation.plan_anchor
-                                        ? `${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`
-                                        : JSON.stringify(
-                                            observation.plan_anchor,
-                                          )}
+                                      {`${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`}
                                     </span>
                                   </div>
                                 )}
