@@ -34,6 +34,35 @@ export function filterObservationsBySearch(
 }
 
 /**
+ * Filters observations by labels
+ * - If selectedLabels is empty, returns the original list
+ * - By default matches ALL selected labels (AND). Set matchAll=false to match ANY (OR)
+ */
+export function filterObservationsByLabels(
+  observations: ObservationWithUrl[],
+  selectedLabels: string[],
+  matchAll: boolean = true
+): ObservationWithUrl[] {
+  if (!selectedLabels || selectedLabels.length === 0) {
+    return observations;
+  }
+
+  const normalizedSelected = selectedLabels.map((l) => l.trim().toLowerCase());
+
+  return observations.filter((obs) => {
+    const labels = (obs.labels || []).map((l) => (l || "").trim().toLowerCase());
+    if (labels.length === 0) return false;
+
+    if (matchAll) {
+      // Every selected label must be present on the observation
+      return normalizedSelected.every((sel) => labels.includes(sel));
+    }
+    // At least one selected label must be present
+    return normalizedSelected.some((sel) => labels.includes(sel));
+  });
+}
+
+/**
  * Normalizes file paths by removing leading slashes and empty strings
  */
 export function normalizePath(path?: string | null): string | null {

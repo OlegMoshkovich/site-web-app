@@ -48,6 +48,11 @@ export const translations = {
     // Search
     search: "Search",
     searchObservations: "Search observations...",
+    filterByLabels: "Filter by Labels",
+    noLabelsFound: "No labels found in your observations",
+    labelsSelected: "labels selected",
+    labelSelected: "label selected",
+    clearAllLabels: "Clear all",
     
     // Report page
     observationsReport: "Observations Report",
@@ -159,6 +164,11 @@ export const translations = {
     // Search
     search: "Suchen",
     searchObservations: "Beobachtungen suchen...",
+    filterByLabels: "Nach Labels filtern",
+    noLabelsFound: "Keine Labels in Ihren Beobachtungen gefunden",
+    labelsSelected: "Labels ausgewählt",
+    labelSelected: "Label ausgewählt",
+    clearAllLabels: "Alle löschen",
     
     // Report page
     observationsReport: "Beobachtungsbericht",

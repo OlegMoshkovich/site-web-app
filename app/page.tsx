@@ -33,6 +33,7 @@ import {
   Filter,
   Download,
   Settings,
+  Tag,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -48,7 +49,9 @@ import { translations, type Language } from "@/lib/translations";
 import {
   filterObservationsBySearch,
   filterObservationsByDateRange,
+  filterObservationsByLabels,
   groupObservationsByDate,
+  processLabel,
 } from "@/lib/search-utils";
 // Types
 import type { Observation, ObservationWithUrl } from "@/types/observation";
@@ -92,6 +95,10 @@ export default function Home() {
   // Search state
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
+  // Label filter state
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
+  const [availableLabels, setAvailableLabels] = useState<string[]>([]);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -344,6 +351,11 @@ export default function Home() {
       filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
     }
     
+    // Then apply label filter if active
+    if (showLabelSelector && selectedLabels.length > 0) {
+      filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
+    }
+    
     const visibleIds = filteredObservations.map((obs) => obs.id);
 
     // If all visible observations are already selected, unselect all
@@ -357,7 +369,7 @@ export default function Home() {
       visibleIds.forEach(id => newSelected.add(id));
       setSelectedObservations(newSelected);
     }
-  }, [observations, selectedObservations, showDateSelector, startDate, endDate, showSearchSelector, searchQuery]);
+  }, [observations, selectedObservations, showDateSelector, startDate, endDate, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // ===== UTILITY FUNCTIONS =====
   // Calculate the minimum and maximum dates available in the observations
@@ -431,6 +443,20 @@ export default function Home() {
         );
 
         setObservations(withUrls);
+        
+        // Extract unique labels from all observations
+        const allLabels = new Set<string>();
+        withUrls.forEach(obs => {
+          if (obs.labels) {
+            obs.labels.forEach(label => {
+              if (label && label.trim()) {
+                allLabels.add(label.trim());
+              }
+            });
+          }
+        });
+        setAvailableLabels(Array.from(allLabels).sort());
+        
         setIsLoading(false);
       } catch (e) {
         console.error("Error in fetchData:", e);
@@ -497,12 +523,29 @@ export default function Home() {
 
               {user && (
                 <Button
+                  onClick={() => setShowLabelSelector(!showLabelSelector)}
+                  variant="outline"
+                  size="sm"
+                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                    showLabelSelector
+                      ? "bg-gray-200 text-gray-700"
+                      : "bg-white"
+                  }`}
+                  title="Toggle label filter"
+                >
+                  <Tag className="h-4 w-4" />
+                </Button>
+              )}
+
+              {user && (
+                <Button
                   onClick={() => setShowDateSelector(!showDateSelector)}
                   variant="outline"
                   size="sm"
                   className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
                     showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
                   }`}
+                  title="Toggle date filter"
                 >
                   <Filter className="h-4 w-4" />
                 </Button>
@@ -718,6 +761,11 @@ export default function Home() {
                               filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
                             }
                             
+                            // Then apply label filter if active
+                            if (showLabelSelector && selectedLabels.length > 0) {
+                              filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
+                            }
+                            
                             const visibleIds = filteredObservations.map((obs) => obs.id);
                             const allVisibleSelected = visibleIds.every(id => selectedObservations.has(id));
                             
@@ -737,8 +785,7 @@ export default function Home() {
                 {/* Search Input - Conditionally rendered */}
                 {showSearchSelector && (
                   <div className="flex flex-col gap-2 w-full">
-                    <label className="text-sm f
-                    ont-medium text-muted-foreground">
+                    <label className="text-sm font-medium text-muted-foreground">
                       {t("search")}
                     </label>
                     <input
@@ -763,6 +810,59 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Label Filter - Conditionally rendered */}
+                {showLabelSelector && (
+                  <div className="flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      {t("filterByLabels")}
+                    </label>
+                    {availableLabels.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {availableLabels.map((label) => {
+                          const isSelected = selectedLabels.includes(label);
+                          const processedLabel = processLabel(label);
+                          return (
+                            <button
+                              key={label}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedLabels(prev => prev.filter(l => l !== label));
+                                } else {
+                                  setSelectedLabels(prev => [...prev, label]);
+                                }
+                              }}
+                              className={`px-3 py-1 text-sm border transition-colors ${
+                                isSelected
+                                  ? "bg-black text-white border-black"
+                                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                              }`}
+                            >
+                              {processedLabel}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {t("noLabelsFound")}
+                      </div>
+                    )}
+                    {selectedLabels.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-muted-foreground">
+                          {selectedLabels.length} {selectedLabels.length === 1 ? t("labelSelected") : t("labelsSelected")}
+                        </div>
+                        <button
+                          onClick={() => setSelectedLabels([])}
+                          className="text-xs text-blue-600 hover:text-blue-800"
+                        >
+                          {t("clearAllLabels")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {(() => {
                   // Start with all observations
                   let filteredObservations = observations;
@@ -779,6 +879,11 @@ export default function Home() {
                   // Then apply search filter if active
                   if (showSearchSelector && searchQuery.trim()) {
                     filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
+                  }
+                  
+                  // Then apply label filter if active
+                  if (showLabelSelector && selectedLabels.length > 0) {
+                    filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false); // OR logic - match any selected label
                   }
 
                   // Group filtered observations by date
