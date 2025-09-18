@@ -497,12 +497,13 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-4 items-center">
+      <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
-              {t("siteTitle")}
+              <span className="sm:hidden">Simple</span>
+              <span className="hidden sm:inline">{t("siteTitle")}</span>
             </div>
             <div className="flex items-center gap-2">
               {user && (
@@ -601,7 +602,7 @@ export default function Home() {
         </nav>
 
         {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-14 sm:py-3 md:py-4">
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-1 sm:py-3 md:py-4">
           <div className="w-full">
             {/* Conditional rendering based on app state */}
             {!user ? (
