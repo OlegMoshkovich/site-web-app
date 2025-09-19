@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import {
   Calendar,
   MapPin,
-  Image as ImageIcon,
   Edit3,
   Check,
   X,
@@ -606,7 +605,8 @@ export default function Home() {
             {/* Conditional rendering based on app state */}
             {!user ? (
               // Show welcome message when user is not logged in
-              <div className="text-center py-20 sm:py-12">
+              <div className="text-center py-20
+               sm:py-12">
                 <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">
                   {t("welcomeTitle")}
                 </h1>
