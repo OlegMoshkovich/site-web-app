@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage } from "lucide-react";
 import { Language, useTranslations } from "@/lib/translations";
 import { AuthButtonClient } from "@/components/auth-button-client";
 
@@ -35,6 +35,13 @@ export default function SettingsPage() {
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
+
+  // Plan upload state
+  const [selectedSiteForPlans, setSelectedSiteForPlans] = useState<string>("");
+  const [plans, setPlans] = useState<{id: string; plan_name: string; plan_url: string; site_id: string}[]>([]);
+  const [newPlanName, setNewPlanName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
 
   const loadSites = useCallback(async () => {
@@ -113,6 +120,62 @@ export default function SettingsPage() {
     }
   }, [user, supabase]);
 
+  const loadPlans = useCallback(async (siteId?: string) => {
+    if (!user) return;
+    
+    try {
+      const query = supabase
+        .from('site_plans')
+        .select('id, plan_name, plan_url, site_id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (siteId) {
+        query.eq('site_id', siteId);
+      }
+      
+      const { data: plansData, error } = await query;
+      
+      if (error) {
+        console.error('Error loading plans:', error);
+        return;
+      }
+      
+      // Generate fresh signed URLs for each plan
+      const plansWithFreshUrls = await Promise.all(
+        (plansData || []).map(async (plan: {id: string; plan_name: string; plan_url: string; site_id: string}) => {
+          try {
+            // Extract file path from existing URL or construct it
+            const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
+            const filePath = `${plan.site_id}/${fileName}`;
+            
+            const { data: urlData, error: urlError } = await supabase.storage
+              .from('plans')
+              .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+            
+            if (urlError) {
+              console.error('Error creating signed URL for plan:', plan.id, urlError);
+              return plan; // Return original if URL generation fails
+            }
+            
+            return {
+              ...plan,
+              plan_url: urlData.signedUrl
+            };
+          } catch (error) {
+            console.error('Error processing plan URL:', plan.id, error);
+            return plan;
+          }
+        })
+      );
+      
+      setPlans(plansWithFreshUrls);
+      console.log('Plans loaded for site:', siteId, plansWithFreshUrls);
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    }
+  }, [user, supabase]);
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -140,6 +203,13 @@ export default function SettingsPage() {
       loadLabels(selectedSiteForLabels);
     }
   }, [selectedSiteForLabels, loadLabels]);
+
+  useEffect(() => {
+    if (selectedSiteForPlans) {
+      // Load plans when a site is selected
+      loadPlans(selectedSiteForPlans);
+    }
+  }, [selectedSiteForPlans, loadPlans]);
 
   const handleCreateSite = async () => {
     if (!newSiteName.trim() || !user) return;
@@ -292,6 +362,121 @@ export default function SettingsPage() {
       // Still remove from local state
       setLabels(prev => prev.filter(label => label.id !== labelId));
       alert(`Label "${labelName}" removed locally.`);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadPlan = async () => {
+    if (!selectedFile || !newPlanName.trim() || !selectedSiteForPlans || !user) {
+      alert('Please select a site, enter a plan name, and choose a file.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+      const fileName = `plan_${Date.now()}.${fileExt}`;
+      const filePath = `${selectedSiteForPlans}/${fileName}`;
+
+      // Upload file to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('plans')
+        .upload(filePath, selectedFile);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        alert('Failed to upload file. Please try again.');
+        return;
+      }
+
+      // Get signed URL for the uploaded file (expires in 1 year)
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from('plans')
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+      if (urlError) {
+        console.error('Error creating signed URL:', urlError);
+        alert('Failed to create access URL for the plan. Please try again.');
+        return;
+      }
+
+      // Save plan metadata to database
+      const { data: planData, error: dbError } = await supabase
+        .from('site_plans')
+        .insert({
+          user_id: user.id,
+          site_id: selectedSiteForPlans,
+          plan_name: newPlanName.trim(),
+          plan_url: urlData.signedUrl
+        })
+        .select('id, plan_name, plan_url, site_id')
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        alert('Failed to save plan information. Please try again.');
+        return;
+      }
+
+      // Add to local state
+      if (planData) {
+        setPlans(prev => [planData, ...prev]);
+      }
+
+      // Reset form
+      setNewPlanName("");
+      setSelectedFile(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('planFile') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+
+      alert(`Plan "${newPlanName}" uploaded successfully!`);
+    } catch (error) {
+      console.error('Error uploading plan:', error);
+      alert('Failed to upload plan. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeletePlan = async (planId: string, planName: string) => {
+    const confirmed = window.confirm(`Are you sure you want to delete "${planName}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('site_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', user?.id);
+
+      if (error) {
+        console.error('Error deleting plan:', error);
+        alert('Failed to delete plan. Please try again.');
+        return;
+      }
+
+      // Remove from local state
+      setPlans(prev => prev.filter(plan => plan.id !== planId));
+      
+      alert(`Plan "${planName}" deleted successfully.`);
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+      alert('Failed to delete plan. Please try again.');
     }
   };
 
@@ -627,6 +812,136 @@ export default function SettingsPage() {
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Plan Upload Management */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileImage className="h-5 w-5" />
+                {t('uploadPlans')}
+              </CardTitle>
+              <CardDescription>
+                {t('uploadSitePlansAndMaps')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Site Selection for Plans */}
+              <div className="space-y-2">
+                <Label htmlFor="siteSelectPlans">{t('selectSite')}</Label>
+                <select
+                  id="siteSelectPlans"
+                  value={selectedSiteForPlans}
+                  onChange={(e) => setSelectedSiteForPlans(e.target.value)}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="">{t('chooseASite')}</option>
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedSiteForPlans && (
+                <>
+                  {/* Plan Upload Form */}
+                  <div className="border-t pt-4">
+                    <h3 className="text-lg font-medium mb-4">{t('uploadPlan')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="planName">{t('planName')}</Label>
+                        <Input
+                          id="planName"
+                          value={newPlanName}
+                          onChange={(e) => setNewPlanName(e.target.value)}
+                          placeholder={t('enterPlanName')}
+                          disabled={isUploading}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="planFile">{t('planFile')}</Label>
+                        <Input
+                          id="planFile"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          disabled={isUploading}
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                    {selectedFile && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected file: {selectedFile.name}
+                      </div>
+                    )}
+                    <Button 
+                      onClick={handleUploadPlan} 
+                      className="w-full mt-4"
+                      disabled={!selectedFile || !newPlanName.trim() || isUploading}
+                    >
+                      {isUploading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          {t('uploadPlan')}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Existing Plans Display */}
+                  {plans.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-medium mb-4">Existing Plans</h3>
+                      <div className="space-y-3">
+                        {plans.map((plan) => (
+                          <div key={plan.id} className="flex items-center justify-between p-3 border rounded-md">
+                            <div className="flex items-center gap-3">
+                              <FileImage className="h-5 w-5 text-gray-500" />
+                              <div>
+                                <span className="font-medium">{plan.plan_name}</span>
+                                <div className="text-sm text-gray-500">
+                                  <a 
+                                    href={plan.plan_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="hover:text-blue-600 underline"
+                                  >
+                                    View Plan
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDeletePlan(plan.id, plan.plan_name)}
+                              disabled={isUploading}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </>
