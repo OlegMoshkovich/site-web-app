@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { fetchUserObservations, fetchObservationDates, downloadPhoto } from '@/lib/supabase/api';
+import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservations } from '@/lib/supabase/api';
 
 export interface Observation {
   id: string;
   user_id: string;
+  site_id: string | null;
   created_at: string;
   updated_at: string;
   photo_url: string | null;
@@ -63,7 +64,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   fetchObservations: async (userId: string): Promise<Observation[]> => {
     try {
       set({ isLoading: true, error: null });
-      const observations = await fetchUserObservations(userId);
+      const observations = await fetchCollaborativeObservations(userId);
       set({ observations, isLoading: false });
       return observations; // Return the observations
     } catch (error) {

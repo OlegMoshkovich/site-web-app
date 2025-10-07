@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage } from "lucide-react";
 import { Language, useTranslations } from "@/lib/translations";
 import { AuthButtonClient } from "@/components/auth-button-client";
+import { inviteUserToSite, getSitePendingInvitations, removeCollaborator, getPendingInvitationsForUser, updateCollaboratorRole } from "@/lib/supabase/api";
+import type { SiteCollaborator, CollaborationInvitation } from "@/types/supabase";
 
 export default function SettingsPage() {
   const supabase = createClient();
@@ -35,6 +37,8 @@ export default function SettingsPage() {
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
+  const [selectedSiteForInvite, setSelectedSiteForInvite] = useState("");
+  const [inviteRole, setInviteRole] = useState<"admin" | "collaborator">("collaborator");
 
   // Plan upload state
   const [selectedSiteForPlans, setSelectedSiteForPlans] = useState<string>("");
@@ -42,6 +46,14 @@ export default function SettingsPage() {
   const [newPlanName, setNewPlanName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Collaboration state
+  const [selectedSiteForCollaborators, setSelectedSiteForCollaborators] = useState<string>("");
+  const [collaborators, setCollaborators] = useState<(SiteCollaborator & { email?: string })[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<CollaborationInvitation[]>([]);
+  
+  // User pending invitations state
+  const [userPendingInvitations, setUserPendingInvitations] = useState<(CollaborationInvitation & { site_name?: string })[]>([]);
 
 
   const loadSites = useCallback(async () => {
@@ -176,6 +188,98 @@ export default function SettingsPage() {
     }
   }, [user, supabase]);
 
+  const loadCollaborators = useCallback(async (siteId?: string) => {
+    if (!user || !siteId) return;
+    
+    try {
+      // Get collaborators first
+      const { data: collaboratorsData, error: collabError } = await supabase
+        .from('site_collaborators')
+        .select('*')
+        .eq('site_id', siteId)
+        .eq('status', 'accepted')
+        .order('created_at', { ascending: true });
+
+      if (collabError) {
+        console.error('Error loading collaborators:', collabError);
+        return;
+      }
+
+      // Then get user emails separately
+      const collaboratorsWithEmail = await Promise.all(
+        (collaboratorsData || []).map(async (collab: SiteCollaborator) => {
+          let email = 'Unknown';
+          
+          console.log('Looking up email for user:', collab.user_id);
+          
+          // Try to get from profiles table
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('id', collab.user_id)
+              .single();
+            
+            console.log('Profile lookup result:', { profileData, profileError });
+            
+            if (profileData?.email) {
+              email = profileData.email;
+            } else if (profileError) {
+              console.error('Profile error:', profileError);
+            }
+          } catch (profileError) {
+            console.error('Profile lookup failed for user:', collab.user_id, profileError);
+          }
+
+          // If still unknown, try to get from invitation records (as a fallback)
+          if (email === 'Unknown') {
+            try {
+              const { data: inviteData } = await supabase
+                .from('collaboration_invitations')
+                .select('invited_email')
+                .eq('site_id', siteId)
+                .eq('status', 'accepted')
+                .limit(1);
+              
+              // This is a weak match - only use if there's exactly one accepted invitation
+              if (inviteData && inviteData.length === 1) {
+                email = inviteData[0].invited_email;
+                console.log('Using email from invitation record:', email);
+              }
+            } catch (inviteError) {
+              console.log('Invitation lookup failed:', inviteError);
+            }
+          }
+
+          return {
+            ...collab,
+            email: email
+          };
+        })
+      );
+
+      setCollaborators(collaboratorsWithEmail);
+
+      // Get pending invitations
+      const pendingData = await getSitePendingInvitations(siteId);
+      setPendingInvitations(pendingData);
+      
+    } catch (error) {
+      console.error('Error loading collaborators:', error);
+    }
+  }, [user, supabase]);
+
+  const loadUserPendingInvitations = useCallback(async () => {
+    if (!user?.email) return;
+    
+    try {
+      const invitations = await getPendingInvitationsForUser(user.email);
+      setUserPendingInvitations(invitations);
+    } catch (error) {
+      console.error('Error loading user pending invitations:', error);
+    }
+  }, [user?.email]);
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -194,8 +298,10 @@ export default function SettingsPage() {
     if (user) {
       // Load user's sites when user is available
       loadSites();
+      // Load user's pending invitations
+      loadUserPendingInvitations();
     }
-  }, [user, loadSites]);
+  }, [user, loadSites, loadUserPendingInvitations]);
 
   useEffect(() => {
     if (selectedSiteForLabels) {
@@ -210,6 +316,13 @@ export default function SettingsPage() {
       loadPlans(selectedSiteForPlans);
     }
   }, [selectedSiteForPlans, loadPlans]);
+
+  useEffect(() => {
+    if (selectedSiteForCollaborators) {
+      // Load collaborators when a site is selected
+      loadCollaborators(selectedSiteForCollaborators);
+    }
+  }, [selectedSiteForCollaborators, loadCollaborators]);
 
   const handleCreateSite = async () => {
     if (!newSiteName.trim() || !user) return;
@@ -302,11 +415,22 @@ export default function SettingsPage() {
   };
 
   const handleInviteUser = async () => {
-    if (!inviteEmail.trim()) return;
-    
-    // For now, just show a message since we'd need a proper invitation system
-    alert(`Invitation feature coming soon! For now, ask ${inviteEmail} to sign up directly.`);
-    setInviteEmail("");
+    if (!inviteEmail.trim() || !selectedSiteForInvite || !user) {
+      alert('Please select a site and enter an email address.');
+      return;
+    }
+
+    try {
+      await inviteUserToSite(selectedSiteForInvite, inviteEmail.trim(), user.id, inviteRole);
+      
+      alert(`Invitation sent to ${inviteEmail} as ${inviteRole} for the selected site!`);
+      setInviteEmail("");
+      setSelectedSiteForInvite("");
+      setInviteRole("collaborator");
+    } catch (error: unknown) {
+      console.error('Error sending invitation:', error);
+      alert((error as Error)?.message || 'Failed to send invitation. Please try again.');
+    }
   };
 
 
@@ -480,6 +604,53 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRemoveCollaborator = async (collaboratorId: string, email: string) => {
+    const confirmed = window.confirm(`Remove ${email} from this site? They will lose access immediately.`);
+    if (!confirmed) return;
+
+    try {
+      await removeCollaborator(selectedSiteForCollaborators, collaboratorId);
+      
+      // Refresh collaborators list
+      loadCollaborators(selectedSiteForCollaborators);
+      
+      alert(`${email} has been removed from the site.`);
+    } catch (error) {
+      console.error('Error removing collaborator:', error);
+      alert('Failed to remove collaborator. Please try again.');
+    }
+  };
+
+  const handleUpdateCollaboratorRole = async (
+    collaboratorId: string, 
+    email: string, 
+    currentRole: string, 
+    newRole: 'admin' | 'collaborator'
+  ) => {
+    const roleNames = {
+      admin: 'Admin (can see all observations)',
+      collaborator: 'Collaborator (own observations only)'
+    };
+    
+    const confirmed = window.confirm(
+      `Change ${email}'s role from ${currentRole} to ${newRole}?\n\n` +
+      `New permissions: ${roleNames[newRole]}`
+    );
+    if (!confirmed) return;
+
+    try {
+      await updateCollaboratorRole(selectedSiteForCollaborators, collaboratorId, newRole);
+      
+      // Refresh collaborators list
+      loadCollaborators(selectedSiteForCollaborators);
+      
+      alert(`${email}'s role has been updated to ${newRole}.`);
+    } catch (error) {
+      console.error('Error updating collaborator role:', error);
+      alert('Failed to update collaborator role. Please try again.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -551,6 +722,42 @@ export default function SettingsPage() {
               <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
             </div>
 
+            {/* Pending Invitations Alert */}
+            {userPendingInvitations.length > 0 && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-800">
+                    <Users className="h-5 w-5" />
+                    Pending Collaboration Invitations
+                  </CardTitle>
+                  <CardDescription className="text-blue-700">
+                    You have been invited to collaborate on the following sites:
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {userPendingInvitations.map((invitation) => (
+                    <div key={invitation.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-md">
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {invitation.site_name}
+                        </div>
+                        <div className="text-sm text-gray-600 capitalize">
+                          Role: {invitation.role} • Expires: {new Date(invitation.expires_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => router.push(`/invitations/${invitation.token}`)}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Accept Invitation
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid gap-6 md:grid-cols-2">
           {/* Site Management */}
           <Card>
@@ -619,6 +826,31 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Site Selection for Invitations */}
+              <div className="space-y-2">
+                <Label htmlFor="siteSelectInvite">{t('selectSite')}</Label>
+                <select
+                  id="siteSelectInvite"
+                  value={selectedSiteForInvite}
+                  onChange={(e) => setSelectedSiteForInvite(e.target.value)}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="">{t('chooseASite')}</option>
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="inviteEmail">{t('emailAddress')}</Label>
                 <Input
@@ -629,7 +861,33 @@ export default function SettingsPage() {
                   placeholder="user@example.com"
                 />
               </div>
-              <Button onClick={handleInviteUser} className="w-full">
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="inviteRole">Role</Label>
+                <select
+                  id="inviteRole"
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as "admin" | "collaborator")}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="collaborator">Collaborator (own observations only)</option>
+                  <option value="admin">Admin (see all observations)</option>
+                </select>
+              </div>
+
+              <Button 
+                onClick={handleInviteUser} 
+                className="w-full"
+                disabled={!selectedSiteForInvite || !inviteEmail.trim()}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 {t('sendInvitation')}
               </Button>
@@ -942,6 +1200,146 @@ export default function SettingsPage() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Collaboration Management */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Manage Collaborators
+              </CardTitle>
+              <CardDescription>
+                View and manage site collaborators and pending invitations
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Site Selection for Collaborators */}
+              <div className="space-y-2">
+                <Label htmlFor="siteSelectCollaborators">Select Site</Label>
+                <select
+                  id="siteSelectCollaborators"
+                  value={selectedSiteForCollaborators}
+                  onChange={(e) => setSelectedSiteForCollaborators(e.target.value)}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="">Choose a site</option>
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedSiteForCollaborators && (
+                <>
+                  {/* Current Collaborators */}
+                  {collaborators.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-medium mb-4">Current Collaborators</h3>
+                      <div className="space-y-3">
+                        {collaborators.map((collaborator) => (
+                          <div key={collaborator.id} className="flex items-center justify-between p-3 border rounded-md">
+                            <div className="flex items-center gap-3">
+                              <Users className="h-5 w-5 text-gray-500" />
+                              <div className="flex-1">
+                                <span className="font-medium">{collaborator.email}</span>
+                                <div className="text-sm text-gray-500 capitalize">
+                                  {collaborator.role}
+                                  {collaborator.role === 'owner' && ' (cannot be modified)'}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Action buttons - only show for non-owners and not current user */}
+                            {collaborator.role !== 'owner' && collaborator.user_id !== user?.id && (
+                              <div className="flex items-center gap-2">
+                                {/* Role change dropdown */}
+                                <select
+                                  value={collaborator.role}
+                                  onChange={(e) => {
+                                    const newRole = e.target.value as 'admin' | 'collaborator';
+                                    if (newRole !== collaborator.role) {
+                                      handleUpdateCollaboratorRole(
+                                        collaborator.user_id, 
+                                        collaborator.email || 'Unknown', 
+                                        collaborator.role, 
+                                        newRole
+                                      );
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-gray-400 bg-white"
+                                  style={{
+                                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                                    backgroundSize: "8px 8px",
+                                    backgroundPosition: "calc(100% - 4px) center",
+                                    backgroundRepeat: "no-repeat",
+                                    appearance: "none",
+                                    paddingRight: "16px"
+                                  }}
+                                >
+                                  <option value="collaborator">Collaborator</option>
+                                  <option value="admin">Admin</option>
+                                </select>
+                                
+                                {/* Remove button */}
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleRemoveCollaborator(collaborator.user_id, collaborator.email || 'Unknown')}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pending Invitations */}
+                  {pendingInvitations.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h3 className="text-lg font-medium mb-4">Pending Invitations</h3>
+                      <div className="space-y-3">
+                        {pendingInvitations.map((invitation) => (
+                          <div key={invitation.id} className="flex items-center justify-between p-3 border rounded-md bg-yellow-50">
+                            <div className="flex items-center gap-3">
+                              <Users className="h-5 w-5 text-yellow-600" />
+                              <div>
+                                <span className="font-medium">{invitation.invited_email}</span>
+                                <div className="text-sm text-gray-500 capitalize">
+                                  {invitation.role} - Expires: {new Date(invitation.expires_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-sm text-yellow-600">
+                              Pending
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {collaborators.length === 0 && pendingInvitations.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No collaborators or pending invitations for this site.
                     </div>
                   )}
                 </>

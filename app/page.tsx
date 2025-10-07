@@ -125,13 +125,38 @@ export default function Home() {
       const key = normalizePath(filenameOrPath);
       if (!key) return null;
 
+      // First check if the file exists in storage
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from(BUCKET)
+        .list('', { search: key });
+
+      if (fileError) {
+        console.error("Storage list error", { 
+          key, 
+          bucket: BUCKET,
+          error: fileError.message || fileError 
+        });
+        return null;
+      }
+
+      const fileExists = fileData?.some(file => file.name === key);
+      if (!fileExists) {
+        console.warn("File not found in storage", { key, bucket: BUCKET });
+        return null;
+      }
+
       // Request a signed URL from Supabase storage
       const { data, error } = await supabase.storage
         .from(BUCKET)
         .createSignedUrl(key, expiresIn);
 
       if (error) {
-        console.error("createSignedUrl error", { key, error });
+        console.error("createSignedUrl error", { 
+          key, 
+          bucket: BUCKET,
+          error: error.message || error,
+          errorDetails: error 
+        });
         return null;
       }
 
@@ -414,21 +439,17 @@ export default function Home() {
         }
         setUser(authData.user);
 
-        // Step 2: Fetch observations for the current user (newest first)
-        const { data: obsData, error: obsError } = await supabase
-          .from("observations")
-          .select("*")
-          .eq("user_id", authData.user.id)
-          .order("created_at", { ascending: false });
-
-        if (obsError) {
-          console.error("Error fetching observations:", obsError);
-          setError(`${t("errorLoading")} ${obsError.message}`);
+        // Step 2: Fetch observations with collaboration permissions
+        let base: Observation[];
+        try {
+          const { fetchCollaborativeObservations } = await import("@/lib/supabase/api");
+          base = await fetchCollaborativeObservations(authData.user.id);
+        } catch (obsError: any) {
+          console.error("Error fetching collaborative observations:", obsError);
+          setError(`${t("errorLoading")} ${obsError.message || obsError}`);
           setIsLoading(false);
           return;
         }
-
-        const base = (obsData ?? []) as Observation[];
 
         // Step 3: Generate signed URLs for each photo in parallel
         // This is necessary because photos are stored privately in Supabase
