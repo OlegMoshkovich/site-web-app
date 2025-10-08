@@ -53,7 +53,14 @@ import {
   processLabel,
 } from "@/lib/search-utils";
 // Types
-import type { Observation, ObservationWithUrl } from "@/types/observation";
+import type { Observation } from "@/types/supabase";
+
+// Extended observation with signed URL for secure photo access
+interface ObservationWithUrl extends Observation {
+  signedUrl: string | null;      // Temporary signed URL for viewing the photo
+  sites?: { name: string } | null; // Site information from join
+  profiles?: { email: string } | null; // User profile information from join
+}
 
 // Supabase storage bucket name for photos
 const BUCKET = "photos";
@@ -139,7 +146,7 @@ export default function Home() {
         return null;
       }
 
-      const fileExists = fileData?.some(file => file.name === key);
+      const fileExists = fileData?.some((file: { name: string }) => file.name === key);
       if (!fileExists) {
         console.warn("File not found in storage", { key, bucket: BUCKET });
         return null;
@@ -213,9 +220,9 @@ export default function Home() {
             const blob = await response.blob();
             
             // Create a filename based on observation data
-            const date = obs.photo_date || obs.created_at;
+            const date = obs.taken_at || obs.created_at;
             const dateStr = new Date(date).toISOString().split('T')[0];
-            const site = obs.site_name ? `_${obs.site_name.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+            const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
             const extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' : 
                             blob.type.includes('png') ? '.png' : '.jpg';
             
@@ -403,7 +410,7 @@ export default function Home() {
 
     // Extract all dates from observations (photo_date or created_at)
     const dates = observations.map(
-      (obs) => new Date(obs.photo_date || obs.created_at),
+      (obs) => new Date(obs.taken_at || obs.created_at),
     );
     // Find the earliest and latest dates
     const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
@@ -444,9 +451,10 @@ export default function Home() {
         try {
           const { fetchCollaborativeObservations } = await import("@/lib/supabase/api");
           base = await fetchCollaborativeObservations(authData.user.id);
-        } catch (obsError: any) {
+        } catch (obsError: unknown) {
           console.error("Error fetching collaborative observations:", obsError);
-          setError(`${t("errorLoading")} ${obsError.message || obsError}`);
+          const errorMessage = obsError instanceof Error ? obsError.message : String(obsError);
+          setError(`${t("errorLoading")} ${errorMessage}`);
           setIsLoading(false);
           return;
         }
@@ -973,7 +981,7 @@ export default function Home() {
                                   {hasPhoto ? (
                                     <Image
                                       src={observation.signedUrl as string}
-                                      alt={`Photo for ${observation.site_name ?? "observation"}`}
+                                      alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                       fill
                                       className="object-cover"
                                       sizes="(max-width: 640px) 80px, 64px"
@@ -1074,93 +1082,77 @@ export default function Home() {
                                         </button>
                                       </div>
 
-                                      {/* Labels and metadata in compact form */}
-                                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                                      {/* Metadata in compact form */}
+                                      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                                        <span className="flex items-center gap-1 text-xs">
+                                          <Calendar className="h-3 w-3" />
+                                          {new Date(
+                                            observation.taken_at ||
+                                              observation.created_at,
+                                          ).toLocaleDateString()}
+                                        </span>
+                                        
+                                        {(observation.sites?.name || observation.site_id) && (
+                                          <span className="flex items-center gap-1 text-xs">
+                                            <MapPin className="h-3 w-3" />
+                                            <span className="truncate">
+                                              Site: {observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}
+                                            </span>
+                                          </span>
+                                        )}
+
+                                        {/* Tags/Labels section - positioned under site information */}
                                         {labels && labels.length > 0 && (
-                                          <div className="flex flex-wrap gap-1">
-                                            {labels
-                                              .slice(0, 3)
-                                              .map((label, idx) => {
-                                                const cleanLabel = label.trim();
-                                                let processedLabel = cleanLabel;
+                                          <div className="flex flex-wrap gap-1 mt-1">
+                                            {labels.slice(0, 4).map((label, idx) => {
+                                              const cleanLabel = label.trim();
+                                              let processedLabel = cleanLabel;
 
-                                                if (cleanLabel.includes(" ")) {
-                                                  processedLabel = cleanLabel;
-                                                } else if (
-                                                  cleanLabel.includes("_")
-                                                ) {
-                                                  processedLabel =
-                                                    cleanLabel.replace(
-                                                      /_/g,
-                                                      " ",
-                                                    );
-                                                } else if (
-                                                  cleanLabel.includes("-")
-                                                ) {
-                                                  processedLabel =
-                                                    cleanLabel.replace(
-                                                      /-/g,
-                                                      " ",
-                                                    );
-                                                } else {
-                                                  processedLabel = cleanLabel
-                                                    .replace(
-                                                      /([a-z])([A-Z])/g,
-                                                      "$1 $2",
-                                                    )
-                                                    .replace(
-                                                      /([A-Z])([A-Z][a-z])/g,
-                                                      "$1 $2",
-                                                    )
-                                                    .replace(
-                                                      /([a-z])([0-9])/g,
-                                                      "$1 $2",
-                                                    )
-                                                    .replace(
-                                                      /([0-9])([a-zA-Z])/g,
-                                                      "$1 $2",
-                                                    );
-                                                }
+                                              // First, try to split by common separators
+                                              if (cleanLabel.includes(" ")) {
+                                                processedLabel = cleanLabel;
+                                              } else if (cleanLabel.includes("_")) {
+                                                processedLabel = cleanLabel.replace(/_/g, " ");
+                                              } else if (cleanLabel.includes("-")) {
+                                                processedLabel = cleanLabel.replace(/-/g, " ");
+                                              } else {
+                                                // Split camelCase and PascalCase more aggressively
+                                                processedLabel = cleanLabel
+                                                  .replace(/([a-z])([A-Z])/g, "$1 $2")
+                                                  .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+                                                  .replace(/([a-z])([0-9])/g, "$1 $2")
+                                                  .replace(/([0-9])([a-zA-Z])/g, "$1 $2");
+                                              }
 
-                                                processedLabel = processedLabel
-                                                  .replace(/\s+/g, " ")
-                                                  .trim();
+                                              processedLabel = processedLabel.replace(/\s+/g, " ").trim();
 
-                                                return (
-                                                  <span
-                                                    key={idx}
-                                                    className="inline-block px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 text-gray-600 rounded"
-                                                  >
-                                                    {processedLabel}
-                                                  </span>
-                                                );
-                                              })}
-                                            {labels.length > 3 && (
-                                              <span className="text-xs text-gray-500">
-                                                +{labels.length - 3} more
-                                              </span>
+                                              return (
+                                                <Badge
+                                                  key={`${observation.id}-label-${idx}`}
+                                                  variant="outline"
+                                                  className="text-xs px-1.5 py-0.5 border border-gray-300 bg-white text-gray-700"
+                                                >
+                                                  {processedLabel}
+                                                </Badge>
+                                              );
+                                            })}
+                                            {labels.length > 4 && (
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-500"
+                                              >
+                                                +{labels.length - 4}
+                                              </Badge>
                                             )}
                                           </div>
                                         )}
 
-                                        <div className="flex flex-col gap-1">
+                                        {observation.profiles?.email && (
                                           <span className="flex items-center gap-1 text-xs">
-                                            <Calendar className="h-3 w-3" />
-                                            {new Date(
-                                              observation.photo_date ||
-                                                observation.created_at,
-                                            ).toLocaleDateString()}
+                                            <span className="font-medium">Created by:</span>
+                                            <span className="truncate">{observation.profiles.email}</span>
                                           </span>
-                                          
-                                          {observation.site_name && (
-                                            <span className="flex items-center gap-1 text-xs">
-                                              <MapPin className="h-3 w-3" />
-                                              <span className="truncate">
-                                                Site: {observation.site_name}
-                                              </span>
-                                            </span>
-                                          )}
-                                        </div>
+                                        )}
                                       </div>
                                     </div>
                                   )}
@@ -1193,7 +1185,7 @@ export default function Home() {
                                 <div className="relative aspect-square w-full group/photo">
                                   <Image
                                     src={observation.signedUrl as string}
-                                    alt={`Photo for ${observation.site_name ?? "observation"}`}
+                                    alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                     fill
                                     className="object-contain bg-gray-50"
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -1223,6 +1215,7 @@ export default function Home() {
                                   <Trash2 className="h-4 w-4" />
                                 </button>
                               )}
+
 
                               <CardHeader>
                                 {editingNoteId === observation.id ? (
@@ -1304,8 +1297,16 @@ export default function Home() {
                               </CardHeader>
 
                               <CardContent className="space-y-3">
+                                {(observation.sites?.name || observation.site_id) && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span className="font-medium">Site:</span>
+                                    <span>{observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}</span>
+                                  </div>
+                                )}
+
+                                {/* Tags/Labels section - positioned under site information */}
                                 {labels && labels.length > 0 && (
-                                  <div className="flex flex-wrap gap-3 p-3 border border-gray-200 bg-gray-50">
+                                  <div className="flex flex-wrap gap-2">
                                     {labels.map((label, idx) => {
                                       // Clean up the label - remove extra spaces and split if it's concatenated
                                       const cleanLabel = label.trim();
@@ -1350,7 +1351,7 @@ export default function Home() {
                                         <Badge
                                           key={`${observation.id}-label-${idx}`}
                                           variant="outline"
-                                          className="text-xs px-3 py-1 border-2 bg-white hover:bg-gray-100 transition-colors"
+                                          className="text-xs px-2 py-1 border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
                                         >
                                           {processedLabel}
                                         </Badge>
@@ -1359,10 +1360,10 @@ export default function Home() {
                                   </div>
                                 )}
 
-                                {observation.site_name && (
+                                {observation.profiles?.email && (
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <span className="font-medium">Site:</span>
-                                    <span>{observation.site_name}</span>
+                                    <span className="font-medium">Created by:</span>
+                                    <span>{observation.profiles.email}</span>
                                   </div>
                                 )}
 
@@ -1370,52 +1371,37 @@ export default function Home() {
                                   <Calendar className="h-4 w-4" />
                                   <span>
                                     {formatDate(
-                                      observation.photo_date ||
+                                      observation.taken_at ||
                                         observation.created_at,
                                     )}
                                   </span>
                                 </div>
 
-                                {observation.gps_lat != null &&
-                                  observation.gps_lng != null && (
+                                {observation.latitude != null &&
+                                  observation.longitude != null && (
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                       <MapPin className="h-4 w-4" />
                                       <span>
-                                        {observation.gps_lat.toFixed(6)},{" "}
-                                        {observation.gps_lng.toFixed(6)}
+                                        {observation.latitude.toFixed(6)},{" "}
+                                        {observation.longitude.toFixed(6)}
                                       </span>
                                     </div>
                                   )}
 
-                                {observation.plan_anchor &&
-                                  typeof observation.plan_anchor === "object" &&
-                                  observation.plan_anchor !== null &&
-                                  "x" in observation.plan_anchor &&
-                                  "y" in observation.plan_anchor &&
-                                  !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0) && (
+                                {observation.anchor_x != null &&
+                                  observation.anchor_y != null &&
+                                  !(observation.anchor_x === 0 && observation.anchor_y === 0) && (
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
                                     <span className="font-medium">
                                       Plan Anchor:
                                     </span>
                                     <span>
-                                      {`${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`}
+                                      {`${observation.anchor_x.toFixed(6)}, ${observation.anchor_y.toFixed(6)}`}
                                     </span>
                                   </div>
                                 )}
 
-                                {observation.plan_url && (
-                                  <div className="pt-2">
-                                    <a
-                                      href={observation.plan_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 text-sm underline"
-                                    >
-                                      {t("viewPlan")}
-                                    </a>
-                                  </div>
-                                )}
                               </CardContent>
                             </Card>
                           );

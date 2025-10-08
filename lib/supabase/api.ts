@@ -278,7 +278,7 @@ export async function updateCollaboratorRole(
  * - Owners and admins see all observations for sites they have access to
  * - Collaborators see only their own observations for sites they have access to
  */
-export async function fetchCollaborativeObservations(userId: string): Promise<Observation[]> {
+export async function fetchCollaborativeObservations(userId: string): Promise<any[]> {
   const supabase = createClient();
   
   console.log('fetchCollaborativeObservations called for userId:', userId);
@@ -296,8 +296,9 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
 
   if (!userSites || userSites.length === 0) {
     console.log('No collaborative sites found, falling back to user observations');
-    // User has no collaborative access, return only their own observations
-    return await fetchUserObservations(userId);
+    // User has no collaborative access, return only their own observations with user data
+    const observations = await fetchUserObservations(userId);
+    return await enrichObservationsWithUserData(observations);
   }
 
   
@@ -315,7 +316,10 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
 
   let query = supabase
     .from('observations')
-    .select('*');
+    .select(`
+      *,
+      sites(name)
+    `);
 
   // Build query to include ALL user's own observations PLUS collaborative observations
   const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
@@ -335,7 +339,36 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
   const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  
+  // Enrich observations with user profile data
+  return await enrichObservationsWithUserData(data ?? []);
+}
+
+/**
+ * Helper function to enrich observations with user profile data
+ * Since profiles table doesn't exist, we'll use auth.users but only for the current user
+ */
+async function enrichObservationsWithUserData(observations: Observation[]): Promise<any[]> {
+  if (!observations.length) return [];
+  
+  const supabase = createClient();
+  
+  // Get current user data
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    console.error('Error getting current user:', userError);
+    return observations;
+  }
+  
+  // For now, we can only get the current user's email
+  // For other users, we'll show a user ID or create placeholder text
+  return observations.map(obs => ({
+    ...obs,
+    profiles: obs.user_id === user.id 
+      ? { email: user.email } 
+      : { email: `User ${obs.user_id.slice(0, 8)}...` } // Show partial user ID as fallback
+  }));
 }
 
 /**

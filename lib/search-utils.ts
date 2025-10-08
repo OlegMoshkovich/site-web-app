@@ -1,4 +1,10 @@
-import { ObservationWithUrl } from "@/types/observation";
+import type { Observation } from "@/types/supabase";
+
+// Extended observation with signed URL for secure photo access
+interface ObservationWithUrl extends Observation {
+  signedUrl: string | null;      // Temporary signed URL for viewing the photo
+  sites?: { name: string } | null; // Site information from join
+}
 
 /**
  * Filters observations based on a search query
@@ -18,7 +24,7 @@ export function filterObservationsBySearch(
     // Create searchable text from all relevant fields
     const searchableFields = [
       observation.note,
-      observation.plan,
+      observation.sites?.name,
       ...(observation.labels || [])
     ];
 
@@ -74,7 +80,7 @@ export function normalizePath(path?: string | null): string | null {
  */
 export function groupObservationsByDate(observations: ObservationWithUrl[]) {
   const groups = observations.reduce((acc, observation) => {
-    const date = observation.photo_date || observation.created_at;
+    const date = observation.taken_at || observation.created_at;
     const dateKey = new Date(date).toDateString();
     
     if (!acc[dateKey]) {
@@ -110,9 +116,9 @@ export function filterObservationsByDateRange(
   const end = new Date(endDate + "T23:59:59.999");
 
   return observations.filter((observation) => {
-    // Use photo_date if available, otherwise fall back to created_at
+    // Use taken_at if available, otherwise fall back to created_at
     const observationDate = new Date(
-      observation.photo_date || observation.created_at,
+      observation.taken_at || observation.created_at,
     );
     return observationDate >= start && observationDate <= end;
   });
