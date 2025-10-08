@@ -49,6 +49,7 @@ import {
   filterObservationsBySearch,
   filterObservationsByDateRange,
   filterObservationsByLabels,
+  filterObservationsByUserId,
   groupObservationsByDate,
   processLabel,
 } from "@/lib/search-utils";
@@ -105,6 +106,9 @@ export default function Home() {
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
   const [availableLabels, setAvailableLabels] = useState<string[]>([]);
+  // User filter state
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [availableUsers, setAvailableUsers] = useState<{id: string, displayName: string}[]>([]);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -342,6 +346,7 @@ export default function Home() {
   const handleClearDateRange = useCallback(() => {
     setStartDate("");
     setEndDate("");
+    setSelectedUserId("");
   }, []);
 
   const handleSelectAll = useCallback(() => {
@@ -355,6 +360,11 @@ export default function Home() {
         startDate,
         endDate
       );
+    }
+    
+    // Then apply user filter if active
+    if (selectedUserId) {
+      filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
     }
     
     // Then apply search filter if active
@@ -380,7 +390,7 @@ export default function Home() {
       visibleIds.forEach(id => newSelected.add(id));
       setSelectedObservations(newSelected);
     }
-  }, [observations, selectedObservations, showDateSelector, startDate, endDate, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+  }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // ===== UTILITY FUNCTIONS =====
   // Calculate the minimum and maximum dates available in the observations
@@ -464,6 +474,16 @@ export default function Home() {
           }
         });
         setAvailableLabels(Array.from(allLabels).sort());
+        
+        // Extract unique users from all observations
+        const allUsers = new Map<string, string>();
+        withUrls.forEach(obs => {
+          if (obs.user_id) {
+            const displayName = `User ${obs.user_id.slice(0, 8)}...`;
+            allUsers.set(obs.user_id, displayName);
+          }
+        });
+        setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
         
         setIsLoading(false);
       } catch (e) {
@@ -741,10 +761,31 @@ export default function Home() {
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
+                      <div className="flex flex-col gap-1">
+                        <label
+                          htmlFor="userFilter"
+                          className="text-sm font-medium text-muted-foreground"
+                        >
+                          User
+                        </label>
+                        <select
+                          id="userFilter"
+                          value={selectedUserId}
+                          onChange={(e) => setSelectedUserId(e.target.value)}
+                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
+                        >
+                          <option value="">All Users</option>
+                          {availableUsers.map((user) => (
+                            <option key={user.id} value={user.id}>
+                              {user.displayName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <div className="flex flex-row gap-1 sm:gap-3 w-full sm:w-auto">
                         <Button
                           onClick={handleClearDateRange}
-                          disabled={!startDate && !endDate}
+                          disabled={!startDate && !endDate && !selectedUserId}
                           size="sm"
                           variant="outline"
                           className="flex-1 sm:w-auto text-xs px-2"
@@ -768,6 +809,11 @@ export default function Home() {
                                 startDate,
                                 endDate
                               );
+                            }
+                            
+                            // Then apply user filter if active
+                            if (selectedUserId) {
+                              filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
                             }
                             
                             // Then apply search filter if active
@@ -888,6 +934,11 @@ export default function Home() {
                       startDate,
                       endDate
                     );
+                  }
+                  
+                  // Then apply user filter if active
+                  if (selectedUserId) {
+                    filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
                   }
                   
                   // Then apply search filter if active
@@ -1127,12 +1178,10 @@ export default function Home() {
                                           </div>
                                         )}
 
-                                        {observation.profiles?.email && (
-                                          <span className="flex items-center gap-1 text-xs">
-                                            <span className="font-medium">Created by:</span>
-                                            <span className="truncate">{observation.profiles.email}</span>
-                                          </span>
-                                        )}
+                                        <span className="flex items-center gap-1 text-xs">
+                                          <span className="font-medium">Created by:</span>
+                                          <span className="truncate">User {observation.user_id.slice(0, 8)}...</span>
+                                        </span>
                                       </div>
                                     </div>
                                   )}
@@ -1340,12 +1389,10 @@ export default function Home() {
                                   </div>
                                 )}
 
-                                {observation.profiles?.email && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <span className="font-medium">Created by:</span>
-                                    <span>{observation.profiles.email}</span>
-                                  </div>
-                                )}
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <span className="font-medium">Created by:</span>
+                                  <span>User {observation.user_id.slice(0, 8)}...</span>
+                                </div>
 
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Calendar className="h-4 w-4" />

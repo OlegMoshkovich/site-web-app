@@ -125,6 +125,21 @@ export function filterObservationsByDateRange(
 }
 
 /**
+ * Filters observations by user ID
+ * Returns only observations created by the specified user
+ */
+export function filterObservationsByUserId(
+  observations: ObservationWithUrl[],
+  userId: string
+): ObservationWithUrl[] {
+  if (!userId.trim()) {
+    return observations;
+  }
+
+  return observations.filter(observation => observation.user_id === userId);
+}
+
+/**
  * Processes labels for display by cleaning up concatenated strings
  */
 export function processLabel(label: string): string {
