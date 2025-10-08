@@ -132,27 +132,8 @@ export default function Home() {
       const key = normalizePath(filenameOrPath);
       if (!key) return null;
 
-      // First check if the file exists in storage
-      const { data: fileData, error: fileError } = await supabase.storage
-        .from(BUCKET)
-        .list('', { search: key });
-
-      if (fileError) {
-        console.error("Storage list error", { 
-          key, 
-          bucket: BUCKET,
-          error: fileError.message || fileError 
-        });
-        return null;
-      }
-
-      const fileExists = fileData?.some((file: { name: string }) => file.name === key);
-      if (!fileExists) {
-        console.warn("File not found in storage", { key, bucket: BUCKET });
-        return null;
-      }
-
       // Request a signed URL from Supabase storage
+      // If the file doesn't exist, this will fail gracefully
       const { data, error } = await supabase.storage
         .from(BUCKET)
         .createSignedUrl(key, expiresIn);
@@ -161,8 +142,7 @@ export default function Home() {
         console.error("createSignedUrl error", { 
           key, 
           bucket: BUCKET,
-          error: error.message || error,
-          errorDetails: error 
+          error: error.message || error 
         });
         return null;
       }
