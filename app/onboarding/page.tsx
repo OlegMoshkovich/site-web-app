@@ -261,18 +261,55 @@ export default function OnboardingPage() {
 
         // Upload plan file if provided
         if (onboardingData.planFile) {
-          const fileExt = onboardingData.planFile.name.split('.').pop();
-          const fileName = `${siteData.id}/plan.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('plans')
-            .upload(fileName, onboardingData.planFile);
+          try {
+            const fileExt = onboardingData.planFile.name.split('.').pop();
+            const fileName = `${siteData.id}/plan.${fileExt}`;
+            
+            // Try to upload to plans bucket, create if it doesn't exist
+            const { error: uploadError } = await supabase.storage
+              .from('plans')
+              .upload(fileName, onboardingData.planFile);
 
-          if (!uploadError) {
+            if (uploadError) {
+              console.error('Plan upload error:', uploadError);
+              // Try photos bucket as fallback
+              const { error: fallbackError } = await supabase.storage
+                .from('photos')
+                .upload(`plans/${fileName}`, onboardingData.planFile);
+              
+              if (!fallbackError) {
+                await supabase
+                  .from('sites')
+                  .update({ plan_url: `plans/${fileName}` })
+                  .eq('id', siteData.id);
+                console.log('Plan uploaded to photos bucket as fallback');
+              } else {
+                console.error('Fallback plan upload failed:', fallbackError);
+              }
+            } else {
+              await supabase
+                .from('sites')
+                .update({ plan_url: fileName })
+                .eq('id', siteData.id);
+              console.log('Plan uploaded successfully');
+            }
+          } catch (planError) {
+            console.error('Plan upload process failed:', planError);
+          }
+        }
+
+        // Save labels as site metadata if provided
+        if (onboardingData.labels.length > 0) {
+          try {
             await supabase
               .from('sites')
-              .update({ plan_url: fileName })
+              .update({ 
+                labels: onboardingData.labels 
+              })
               .eq('id', siteData.id);
+            console.log('Site labels saved:', onboardingData.labels);
+          } catch (labelsError) {
+            console.error('Failed to save labels:', labelsError);
           }
         }
 
