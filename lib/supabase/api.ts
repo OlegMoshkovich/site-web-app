@@ -278,7 +278,7 @@ export async function updateCollaboratorRole(
  * - Owners and admins see all observations for sites they have access to
  * - Collaborators see only their own observations for sites they have access to
  */
-export async function fetchCollaborativeObservations(userId: string): Promise<any[]> {
+export async function fetchCollaborativeObservations(userId: string): Promise<Observation[]> {
   const supabase = createClient();
   
   console.log('fetchCollaborativeObservations called for userId:', userId);
@@ -348,7 +348,7 @@ export async function fetchCollaborativeObservations(userId: string): Promise<an
  * Helper function to enrich observations with user profile data
  * Since profiles table doesn't exist, we'll use auth.users but only for the current user
  */
-async function enrichObservationsWithUserData(observations: Observation[]): Promise<any[]> {
+async function enrichObservationsWithUserData(observations: Observation[]): Promise<Observation[]> {
   if (!observations.length) return [];
   
   const supabase = createClient();
