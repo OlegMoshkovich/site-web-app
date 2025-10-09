@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          site_id: string | null
           created_at: string
           updated_at: string
           photo_url: string | null
@@ -27,6 +28,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
+          site_id?: string | null
           created_at?: string
           updated_at?: string
           photo_url?: string | null
@@ -41,6 +43,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
+          site_id?: string | null
           created_at?: string
           updated_at?: string
           photo_url?: string | null
@@ -73,6 +76,73 @@ export interface Database {
           updated_at?: string
         }
       }
+      site_collaborators: {
+        Row: {
+          id: string
+          site_id: string
+          user_id: string
+          invited_by: string | null
+          role: 'owner' | 'admin' | 'collaborator'
+          status: 'pending' | 'accepted' | 'declined'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          site_id: string
+          user_id: string
+          invited_by?: string | null
+          role?: 'owner' | 'admin' | 'collaborator'
+          status?: 'pending' | 'accepted' | 'declined'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          site_id?: string
+          user_id?: string
+          invited_by?: string | null
+          role?: 'owner' | 'admin' | 'collaborator'
+          status?: 'pending' | 'accepted' | 'declined'
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      collaboration_invitations: {
+        Row: {
+          id: string
+          site_id: string
+          invited_email: string
+          invited_by: string
+          role: 'admin' | 'collaborator'
+          token: string
+          expires_at: string
+          status: 'pending' | 'accepted' | 'declined' | 'expired'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          site_id: string
+          invited_email: string
+          invited_by: string
+          role?: 'admin' | 'collaborator'
+          token?: string
+          expires_at?: string
+          status?: 'pending' | 'accepted' | 'declined' | 'expired'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          site_id?: string
+          invited_email?: string
+          invited_by?: string
+          role?: 'admin' | 'collaborator'
+          token?: string
+          expires_at?: string
+          status?: 'pending' | 'accepted' | 'declined' | 'expired'
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -97,3 +167,11 @@ export type ObservationUpdate = Database['public']['Tables']['observations']['Up
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
+
+export type SiteCollaborator = Database['public']['Tables']['site_collaborators']['Row']
+export type SiteCollaboratorInsert = Database['public']['Tables']['site_collaborators']['Insert']
+export type SiteCollaboratorUpdate = Database['public']['Tables']['site_collaborators']['Update']
+
+export type CollaborationInvitation = Database['public']['Tables']['collaboration_invitations']['Row']
+export type CollaborationInvitationInsert = Database['public']['Tables']['collaboration_invitations']['Insert']
+export type CollaborationInvitationUpdate = Database['public']['Tables']['collaboration_invitations']['Update']
