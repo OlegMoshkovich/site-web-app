@@ -48,7 +48,7 @@ export function SignUpForm({
         options: {
           emailRedirectTo: invitationToken 
             ? `${window.location.origin}/invitations/${invitationToken}`
-            : `${window.location.origin}/observations`,
+            : `${window.location.origin}/onboarding`,
         },
       });
       if (error) throw error;

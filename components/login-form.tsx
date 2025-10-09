@@ -44,9 +44,42 @@ export function LoginForm({
       // If there's an invitation token, redirect to accept invitation
       if (invitationToken) {
         router.push(`/invitations/${invitationToken}`);
-      } else {
-        // Redirect to observations page after successful login
-        router.push("/");
+        return;
+      }
+
+      // Check if user should see onboarding
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          // First check if user has any existing data (sites, collaborations, observations)
+          const { data: existingData } = await supabase
+            .from('site_collaborators')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1);
+
+          // If user has existing data, they're not new - go to main page
+          if (existingData && existingData.length > 0) {
+            router.push("/");
+          } else {
+            // Check profiles table for onboarding status
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('onboarding_completed')
+              .eq('id', user.id)
+              .single();
+
+            // Only redirect to onboarding if profile doesn't exist AND no table error
+            if (!profile && !profileError?.message.includes('relation "public.profiles" does not exist')) {
+              router.push("/onboarding");
+            } else {
+              router.push("/");
+            }
+          }
+        } catch (error) {
+          console.warn('Error checking onboarding status, going to main app:', error);
+          router.push("/");
+        }
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
