@@ -1076,13 +1076,22 @@ export default function Home() {
                                 {/* Photo thumbnail - larger on desktop */}
                                 <div className="relative w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 flex-shrink-0 overflow-hidden group/photo">
                                   {hasPhoto ? (
-                                    <Image
-                                      src={observation.signedUrl as string}
-                                      alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
-                                      fill
-                                      className="object-cover"
-                                      sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, 160px"
-                                    />
+                                    <>
+                                      {/* Skeleton loading background */}
+                                      <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                                      <Image
+                                        src={observation.signedUrl as string}
+                                        alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, 160px"
+                                        onLoad={(e) => {
+                                          // Hide skeleton when image loads
+                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                          if (skeleton) skeleton.style.display = 'none';
+                                        }}
+                                      />
+                                    </>
                                   ) : (
                                     <div className="w-full h-full bg-gray-100 flex items-center justify-center border">
                                       <span className="text-sm font-medium text-gray-600">Note</span>
@@ -1278,12 +1287,19 @@ export default function Home() {
                             >
                               {hasPhoto && (
                                 <div className="relative aspect-square w-full group/photo">
+                                  {/* Skeleton loading background */}
+                                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                                   <Image
                                     src={observation.signedUrl as string}
                                     alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                     fill
                                     className="object-contain bg-gray-50"
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                                    onLoad={(e) => {
+                                      // Hide skeleton when image loads
+                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                      if (skeleton) skeleton.style.display = 'none';
+                                    }}
                                   />
                                   {/* Delete button positioned over photo */}
                                   <button
