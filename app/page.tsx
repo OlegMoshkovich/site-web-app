@@ -438,36 +438,24 @@ export default function Home() {
 
         // Step 1.5: Check if user should see onboarding
         try {
-          // First check if user has any existing data (sites, collaborations, observations)
-          const { data: existingData } = await supabase
-            .from('site_collaborators')
-            .select('id')
-            .eq('user_id', authData.user.id)
-            .limit(1);
+          // Check profiles table for onboarding status first
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', authData.user.id)
+            .single();
 
-          // If user has existing data, they're not new - skip onboarding
-          if (existingData && existingData.length > 0) {
-            console.log('User has existing data - skipping onboarding');
+          console.log('Profile check:', { profile, profileError });
+
+          // Redirect to onboarding if:
+          // 1. Profile doesn't exist, OR
+          // 2. Profile exists but onboarding_completed is false
+          if (!profile || (profile && !profile.onboarding_completed)) {
+            console.log('Redirecting to onboarding - user needs to complete onboarding');
+            router.push("/onboarding");
+            return;
           } else {
-            // Check profiles table for onboarding status
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('onboarding_completed')
-              .eq('id', authData.user.id)
-              .single();
-
-            console.log('Profile check:', { profile, profileError });
-
-            // Redirect to onboarding if:
-            // 1. Profile doesn't exist, OR
-            // 2. Profile exists but onboarding_completed is false
-            if (!profile || (profile && !profile.onboarding_completed)) {
-              console.log('Redirecting to onboarding - new user or incomplete onboarding');
-              router.push("/onboarding");
-              return;
-            } else {
-              console.log('User has completed onboarding - continuing to main app');
-            }
+            console.log('User has completed onboarding - continuing to main app');
           }
         } catch (error) {
           console.warn('Error checking onboarding status, continuing to main app:', error);

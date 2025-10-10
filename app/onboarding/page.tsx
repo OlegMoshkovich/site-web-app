@@ -26,13 +26,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-interface OnboardingData {
-  siteName: string;
-  siteDescription: string;
-  labels: string[];
-  inviteEmails: string[];
-  planFile: File | null;
-}
+// Simplified onboarding - no data collection needed
 
 const ONBOARDING_STEPS = [
   {
@@ -42,27 +36,27 @@ const ONBOARDING_STEPS = [
     icon: Globe
   },
   {
-    id: 'create-site',
-    title: 'Create Your First Site',
-    description: 'Set up a site where you and your team can make observations',
+    id: 'about-sites',
+    title: 'Sites',
+    description: 'Learn how to create and manage observation sites in Settings',
     icon: MapPin
   },
   {
-    id: 'add-labels',
-    title: 'Add Observation Labels',
-    description: 'Create labels to categorize your observations',
+    id: 'about-labels',
+    title: 'Observation Labels',
+    description: 'Learn how to create labels to categorize observations in Settings',
     icon: Tag
   },
   {
-    id: 'upload-plan',
-    title: 'Upload Site Plan (Optional)',
-    description: 'Upload a floor plan or site map for reference',
+    id: 'about-plans',
+    title: 'Site Plans',
+    description: 'Learn how to upload floor plans or site maps in Settings',
     icon: Upload
   },
   {
-    id: 'invite-team',
-    title: 'Invite Your Team',
-    description: 'Add collaborators to work together on observations',
+    id: 'about-collaboration',
+    title: 'Team Collaboration',
+    description: 'Learn how to invite team members to collaborate in Settings',
     icon: Users
   },
   {
@@ -70,6 +64,12 @@ const ONBOARDING_STEPS = [
     title: 'Get the Mobile App',
     description: 'Download the app to collect observations in the field',
     icon: Smartphone
+  },
+  {
+    id: 'existing-team',
+    title: 'You\'re already part of a team!',
+    description: 'We found existing collaborations for your account',
+    icon: Users
   },
   {
     id: 'complete',
@@ -145,8 +145,11 @@ export default function OnboardingPage() {
   }, [router, supabase]);
 
   const nextStep = () => {
-    if (currentStep < ONBOARDING_STEPS.length - 1) {
+    const visibleSteps = getVisibleSteps();
+    if (currentStep < visibleSteps.length - 1) {
       setCurrentStep(currentStep + 1);
+    } else {
+      completeOnboarding();
     }
   };
 
@@ -232,102 +235,7 @@ export default function OnboardingPage() {
     
     setIsLoading(true);
     try {
-      let siteData = null;
-
-      // Only create site if user provided a site name
-      if (onboardingData.siteName.trim()) {
-        const { data: newSiteData, error: siteError } = await supabase
-          .from('sites')
-          .insert({
-            name: onboardingData.siteName,
-            description: onboardingData.siteDescription,
-            user_id: user.id
-          })
-          .select()
-          .single();
-
-        if (siteError) throw siteError;
-        siteData = newSiteData;
-
-        // Add user as owner of the site
-        await supabase
-          .from('site_collaborators')
-          .insert({
-            site_id: siteData.id,
-            user_id: user.id,
-            role: 'owner',
-            status: 'accepted'
-          });
-
-        // Upload plan file if provided
-        if (onboardingData.planFile) {
-          try {
-            const fileExt = onboardingData.planFile.name.split('.').pop();
-            const fileName = `${siteData.id}/plan.${fileExt}`;
-            
-            // Try to upload to plans bucket, create if it doesn't exist
-            const { error: uploadError } = await supabase.storage
-              .from('plans')
-              .upload(fileName, onboardingData.planFile);
-
-            if (uploadError) {
-              console.error('Plan upload error:', uploadError);
-              // Try photos bucket as fallback
-              const { error: fallbackError } = await supabase.storage
-                .from('photos')
-                .upload(`plans/${fileName}`, onboardingData.planFile);
-              
-              if (!fallbackError) {
-                await supabase
-                  .from('sites')
-                  .update({ plan_url: `plans/${fileName}` })
-                  .eq('id', siteData.id);
-                console.log('Plan uploaded to photos bucket as fallback');
-              } else {
-                console.error('Fallback plan upload failed:', fallbackError);
-              }
-            } else {
-              await supabase
-                .from('sites')
-                .update({ plan_url: fileName })
-                .eq('id', siteData.id);
-              console.log('Plan uploaded successfully');
-            }
-          } catch (planError) {
-            console.error('Plan upload process failed:', planError);
-          }
-        }
-
-        // Save labels as site metadata if provided
-        if (onboardingData.labels.length > 0) {
-          try {
-            await supabase
-              .from('sites')
-              .update({ 
-                labels: onboardingData.labels 
-              })
-              .eq('id', siteData.id);
-            console.log('Site labels saved:', onboardingData.labels);
-          } catch (labelsError) {
-            console.error('Failed to save labels:', labelsError);
-          }
-        }
-
-        // Send invitations if site was created
-        if (onboardingData.inviteEmails.length > 0) {
-          const { inviteUserToSite } = await import('@/lib/supabase/api');
-          
-          for (const email of onboardingData.inviteEmails) {
-            try {
-              await inviteUserToSite(siteData.id, email, user.id, 'collaborator');
-            } catch (error) {
-              console.error(`Failed to invite ${email}:`, error);
-            }
-          }
-        }
-      }
-
-      // Mark onboarding as complete
+      // Simply mark onboarding as complete
       await supabase
         .from('profiles')
         .upsert({
@@ -336,18 +244,20 @@ export default function OnboardingPage() {
           onboarding_completed: true
         });
 
+      console.log('Onboarding completed successfully');
       // Redirect to main app
       router.push('/');
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      alert('There was an error setting up your site. Please try again.');
+      alert('There was an error completing onboarding. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const renderStepContent = () => {
-    const step = ONBOARDING_STEPS[currentStep];
+    const visibleSteps = getVisibleSteps();
+    const step = visibleSteps[currentStep];
 
     switch (step.id) {
       case 'welcome':
@@ -369,23 +279,6 @@ export default function OnboardingPage() {
                 Perfect for teams conducting site visits, inspections, or research.
               </p>
               
-              {hasExistingSites && (
-                <div className="bg-gray-100 border border-gray-200 p-4 rounded-lg">
-                  <h3 className="font-semibold text-black mb-2">You&apos;re already part of a team!</h3>
-                  <p className="text-sm text-black mb-3">
-                    We found that you&apos;ve been invited to collaborate on existing sites. 
-                    You can skip this setup and start using Simple Site right away.
-                  </p>
-                  <Button 
-                    onClick={skipOnboarding}
-                    variant="outline"
-                    className="border-gray-300 text-black hover:bg-gray-200"
-                  >
-                    Go to My Sites
-                  </Button>
-                </div>
-              )}
-              
               <div className="bg-gray-100 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-black">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
@@ -400,189 +293,171 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 'create-site':
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6 text-black" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Create Your First Site</h2>
-              <p className="text-gray-600">A site is a location where you&apos;ll collect observations</p>
-            </div>
-            
-            {hasExistingSites && (
-              <div className="bg-gray-100 border border-gray-200 p-4 rounded-lg">
-                <p className="text-sm text-black">
-                  Since you&apos;re already part of existing sites, creating a new site is optional. 
-                  You can skip this step and work with your existing teams.
-                </p>
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="siteName">Site Name {!hasExistingSites && '*'}</Label>
-                <Input
-                  id="siteName"
-                  placeholder="e.g., Building A, Research Plot 1, Main Office"
-                  value={onboardingData.siteName}
-                  onChange={(e) => setOnboardingData(prev => ({ ...prev, siteName: e.target.value }))}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="siteDescription">Description (Optional)</Label>
-                <Textarea
-                  id="siteDescription"
-                  placeholder="Brief description of your site..."
-                  value={onboardingData.siteDescription}
-                  onChange={(e) => setOnboardingData(prev => ({ ...prev, siteDescription: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'add-labels':
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Tag className="h-6 w-6 text-black" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Add Observation Labels</h2>
-              <p className="text-gray-600">Labels help categorize and organize your observations</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g., Issue, Progress, Completed"
-                  value={tempLabel}
-                  onChange={(e) => setTempLabel(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addLabel()}
-                />
-                <Button onClick={addLabel} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {onboardingData.labels.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Your Labels:</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {onboardingData.labels.map((label) => (
-                      <Badge key={label} variant="outline" className="flex items-center gap-1">
-                        {label}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
-                          onClick={() => removeLabel(label)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-sm text-black">
-                  Tip: Common labels include &quot;Issue&quot;, &quot;Progress&quot;, &quot;Completed&quot;, &quot;Damage&quot;, &quot;Repair Needed&quot;
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'upload-plan':
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Upload className="h-6 w-6 text-black" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Upload Site Plan</h2>
-              <p className="text-gray-600">Optional: Upload a floor plan or site map for reference</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <input
-                  type="file"
-                  id="planFile"
-                  accept="image/*,.pdf"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <label htmlFor="planFile" className="cursor-pointer">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <p className="text-gray-600 mb-2">Click to upload a plan file</p>
-                  <p className="text-sm text-gray-400">Supports images (PNG, JPG) and PDF files</p>
-                </label>
-              </div>
-              
-              {onboardingData.planFile && (
-                <div className="bg-gray-100 p-3 rounded-lg flex items-center gap-2">
-                  <Check className="h-4 w-4 text-black" />
-                  <span className="text-sm text-black">File selected: {onboardingData.planFile.name}</span>
-                </div>
-              )}
-              
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-sm text-black">
-                  Plans help team members understand the site layout and locate observations more easily.
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'invite-team':
+      case 'existing-team':
         return (
           <div className="space-y-6">
             <div className="text-center">
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Invite Your Team</h2>
+              <h2 className="text-xl font-bold mb-2">You&apos;re already part of a team!</h2>
+              <p className="text-gray-600">We found that you&apos;ve been invited to collaborate on existing sites</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                <p className="text-sm text-green-800 mb-3">
+                  You can skip this introduction and start using Simple Site right away, or continue to learn about the platform&apos;s features.
+                </p>
+                <Button 
+                  onClick={skipOnboarding}
+                  variant="outline"
+                  className="border-green-300 text-green-800 hover:bg-green-100 w-full"
+                >
+                  Go to My Sites
+                </Button>
+              </div>
+              
+            </div>
+          </div>
+        );
+
+      case 'about-sites':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <MapPin className="h-6 w-6 text-black" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Sites</h2>
+              <p className="text-gray-600">A site is a location where you&apos;ll collect observations</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <ul className="text-sm text-black space-y-1">
+                  <li>• Create multiple observation sites</li>
+                  <li>• Add descriptions and details for each site</li>
+                  <li>• Manage site collaborators and permissions</li>
+                  <li>• Upload site plans and reference materials</li>
+                </ul>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>To create sites:</strong> Go to Settings → Site Management after completing this introduction
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'about-labels':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Tag className="h-6 w-6 text-black" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Observation Labels</h2>
+              <p className="text-gray-600">Labels help categorize and organize your observations</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <ul className="text-sm text-black space-y-1">
+                  <li>• Create hierarchical label systems</li>
+                  <li>• Organize labels by location, type, or category</li>
+                  <li>• Use labels to filter and search observations</li>
+                  <li>• Share labels across team members</li>
+                </ul>
+              </div>
+              
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <p className="text-sm text-black">
+                  <strong>Common label examples:</strong> Issue, Progress, Completed, Damage, Repair Needed, Quality Check
+                </p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>To create labels:</strong> Go to Settings → Label Management after completing this introduction
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'about-plans':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Upload className="h-6 w-6 text-black" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Site Plans</h2>
+              <p className="text-gray-600">Upload floor plans or site maps for reference</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <ul className="text-sm text-black space-y-1">
+                  <li>• Upload floor plans, site maps, or diagrams</li>
+                  <li>• Support for images (PNG, JPG)</li>
+                  <li>• Pin observations directly to plan locations</li>
+                  <li>• Share visual context with team members</li>
+                </ul>
+              </div>
+              
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <p className="text-sm text-black">
+                  Plans help team members understand the site layout and locate observations more easily.
+                </p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>To upload plans:</strong> Go to Settings → Plan Management after completing this introduction
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'about-collaboration':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-black" />
+              </div>
+              <h2 className="text-xl font-bold mb-2">Team Collaboration</h2>
               <p className="text-gray-600">Add team members to collaborate on observations</p>
             </div>
             
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="colleague@example.com"
-                  value={tempEmail}
-                  onChange={(e) => setTempEmail(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addEmail()}
-                />
-                <Button onClick={addEmail} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <ul className="text-sm text-black space-y-1">
+                  <li>• Invite team members via email</li>
+                  <li>• Set different permission levels (Admin, Collaborator)</li>
+                  <li>• View team observations in real-time</li>
+                  <li>• Manage collaborator access and roles</li>
+                </ul>
               </div>
-              
-              {onboardingData.inviteEmails.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Invitations to send:</Label>
-                  <div className="space-y-2">
-                    {onboardingData.inviteEmails.map((email) => (
-                      <div key={email} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                        <span className="text-sm">{email}</span>
-                        <X 
-                          className="h-4 w-4 cursor-pointer text-gray-500 hover:text-red-500" 
-                          onClick={() => removeEmail(email)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
               
               <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-sm text-black">
-                  Team members will receive email invitations to join your site as collaborators.
+                  Team members will receive email invitations to join your site as collaborators and can start contributing observations immediately.
+                </p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>To invite team members:</strong> Go to Settings → Collaboration Management after completing this introduction
                 </p>
               </div>
             </div>
@@ -597,7 +472,7 @@ export default function OnboardingPage() {
                 <Smartphone className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Get the Mobile App</h2>
-              <p className="text-gray-600">Collect observations in the field with our mobile app</p>
+              <p className="text-gray-600">Essential for collecting observations in the field</p>
             </div>
             
             <div className="space-y-6">
@@ -611,10 +486,6 @@ export default function OnboardingPage() {
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-black" />
                     GPS location tracking
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-black" />
-                    Offline mode for remote locations
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-black" />
@@ -640,10 +511,14 @@ export default function OnboardingPage() {
                 </div>
               </div>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <p className="text-sm text-black text-center">
-                  You can also use the web version, but the mobile app provides the best field experience
-                </p>
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-2">Web vs Mobile:</p>
+                  <ul className="space-y-1">
+                    <li>• <strong>Web Portal:</strong> View team observations, generate reports, and manage settings</li>
+                    <li>• <strong>Mobile App:</strong> Required for collecting observations in the field</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -658,17 +533,18 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-black">You&apos;re All Set!</h2>
               <p className="text-gray-600 max-w-md mx-auto">
-                Your site &quot;{onboardingData.siteName}&quot; has been created successfully. 
-                You can now start collecting observations with your team.
+                Welcome to Simple Site! You now know how to use all the key features. 
+                You can start by creating your first site and observations.
               </p>
               
               <div className="bg-gray-100 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 text-black">What&apos;s next:</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Start creating observations on your site</li>
+                  <li>• Go to Settings to create your first site</li>
+                  <li>• Set up observation labels and upload plans</li>
+                  <li>• Invite team members to collaborate</li>
                   <li>• Download the mobile app for field work</li>
-                  <li>• Invite more team members if needed</li>
-                  <li>• Explore reporting and export features</li>
+                  <li>• Start collecting observations</li>
                 </ul>
               </div>
               
@@ -718,7 +594,17 @@ export default function OnboardingPage() {
     );
   }
 
-  const progress = ((currentStep + 1) / ONBOARDING_STEPS.length) * 100;
+  // Filter steps based on user's situation
+  const getVisibleSteps = () => {
+    if (hasExistingSites) {
+      return ONBOARDING_STEPS; // Show all steps including 'existing-team'
+    } else {
+      return ONBOARDING_STEPS.filter(step => step.id !== 'existing-team'); // Skip 'existing-team' step
+    }
+  };
+
+  const visibleSteps = getVisibleSteps();
+  const progress = ((currentStep + 1) / visibleSteps.length) * 100;
 
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
@@ -728,7 +614,7 @@ export default function OnboardingPage() {
           <div className="flex justify-between items-center mb-2">
             <h1 className="text-lg font-semibold">Setup Your Site</h1>
             <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {ONBOARDING_STEPS.length}
+              Step {currentStep + 1} of {visibleSteps.length}
             </span>
           </div>
           <Progress value={progress} className="w-full" />
