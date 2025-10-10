@@ -702,7 +702,7 @@ export default function SettingsPage() {
         </nav>
 
         {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-14 sm:py-3 md:py-4">
+        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-3 md:py-4">
           <div className="w-full">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
