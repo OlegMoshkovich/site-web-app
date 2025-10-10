@@ -118,13 +118,13 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
           <div key={planInfo.planName} className="flex-shrink-0">
             <div className="flex justify-between items-center mb-2" style={{ width: imageWidth }}>
               <h3 className="text-sm text-gray-700 font-medium">{planInfo.planName}</h3>
-              <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+              <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 ">
                 {planInfo.anchors.length} anchor{planInfo.anchors.length !== 1 ? 's' : ''}
               </span>
             </div>
             
             <div 
-              className="relative overflow-hidden border border-gray-300 rounded-lg"
+              className="relative overflow-hidden border border-gray-300 "
               style={{
                 width: imageWidth,
                 height: imageHeight,
@@ -151,7 +151,7 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
                     top: anchor.y * imageHeight - 8,
                   }}
                 >
-                  <div className="w-4 h-4 rounded-full bg-black border-2 border-white flex items-center justify-center">
+                  <div className="w-4 h-4  bg-black border-2 border-white flex items-center justify-center">
                     <span className="text-white text-xs font-bold leading-none">
                       {anchor.index}
                     </span>

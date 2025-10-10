@@ -213,7 +213,7 @@ export default function OnboardingPage() {
                 alt="Simple Site Icon"
                 width={80}
                 height={80}
-                className="w-20 h-20 border border-gray-300 rounded"
+                className="w-20 h-20 border border-gray-300 "
               />
             </div>
             <div className="space-y-4">
@@ -223,7 +223,7 @@ export default function OnboardingPage() {
                 Perfect for teams conducting site visits, inspections, or research.
               </p>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold mb-2 text-black">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Create and manage observation sites</li>
@@ -241,7 +241,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">You&apos;re already part of a team!</h2>
@@ -249,7 +249,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+              <div className="bg-green-50 border border-green-200 p-4 -lg">
                 <p className="text-sm text-green-800 mb-3">
                   You can skip this introduction and start using Simple Site right away, or continue to learn about the platform&apos;s features.
                 </p>
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <MapPin className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Sites</h2>
@@ -278,7 +278,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold text-black mb-2">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Create multiple observation sites</li>
@@ -288,7 +288,7 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 p-4 -lg">
                 <p className="text-sm text-blue-800">
                   <strong>To create sites:</strong> Go to Settings → Site Management after completing this introduction
                 </p>
@@ -301,7 +301,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <Tag className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Observation Labels</h2>
@@ -309,7 +309,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold text-black mb-2">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Create hierarchical label systems</li>
@@ -319,13 +319,13 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
+              <div className="bg-gray-100 p-3 -lg">
                 <p className="text-sm text-black">
                   <strong>Common label examples:</strong> Issue, Progress, Completed, Damage, Repair Needed, Quality Check
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 p-4 -lg">
                 <p className="text-sm text-blue-800">
                   <strong>To create labels:</strong> Go to Settings → Label Management after completing this introduction
                 </p>
@@ -338,7 +338,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Site Plans</h2>
@@ -346,7 +346,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold text-black mb-2">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Upload floor plans, site maps, or diagrams</li>
@@ -356,13 +356,13 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
+              <div className="bg-gray-100 p-3 -lg">
                 <p className="text-sm text-black">
                   Plans help team members understand the site layout and locate observations more easily.
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 p-4 -lg">
                 <p className="text-sm text-blue-800">
                   <strong>To upload plans:</strong> Go to Settings → Plan Management after completing this introduction
                 </p>
@@ -375,7 +375,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Team Collaboration</h2>
@@ -383,7 +383,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold text-black mb-2">What you can do:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Invite team members via email</li>
@@ -393,13 +393,13 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
+              <div className="bg-gray-100 p-3 -lg">
                 <p className="text-sm text-black">
                   Team members will receive email invitations to join your site as collaborators and can start contributing observations immediately.
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 p-4 -lg">
                 <p className="text-sm text-blue-800">
                   <strong>To invite team members:</strong> Go to Settings → Collaboration Management after completing this introduction
                 </p>
@@ -412,7 +412,7 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 -full flex items-center justify-center mb-4">
                 <Smartphone className="h-6 w-6 text-black" />
               </div>
               <h2 className="text-xl font-bold mb-2">Get the Mobile App</h2>
@@ -420,7 +420,7 @@ export default function OnboardingPage() {
             </div>
             
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-6 rounded-lg">
+              <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-6 -lg">
                 <h3 className="font-semibold mb-3 text-black">Simple Site Mobile App</h3>
                 <ul className="text-sm space-y-2 mb-4">
                   <li className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 p-4 -lg">
                 <div className="text-sm text-blue-800">
                   <p className="font-semibold mb-2">Web vs Mobile:</p>
                   <ul className="space-y-1">
@@ -471,7 +471,7 @@ export default function OnboardingPage() {
       case 'complete':
         return (
           <div className="text-center space-y-6">
-            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 bg-gray-100 -full flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-black" />
             </div>
             <div className="space-y-4">
@@ -481,7 +481,7 @@ export default function OnboardingPage() {
                 You can start by creating your first site and observations.
               </p>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div className="bg-gray-100 p-4 -lg">
                 <h3 className="font-semibold mb-2 text-black">What&apos;s next:</h3>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Go to Settings to create your first site</li>
@@ -500,7 +500,7 @@ export default function OnboardingPage() {
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin -full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Setting up...
                   </>
                 ) : (
@@ -526,7 +526,7 @@ export default function OnboardingPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin -full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }

@@ -216,7 +216,7 @@ export default function TestOnboardingPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="border-2 border-dashed border-gray-300  p-8 text-center">
                 <input
                   type="file"
                   id="planFile"
@@ -232,7 +232,7 @@ export default function TestOnboardingPage() {
               </div>
 
               {planFile && (
-                <div className="bg-gray-100 p-3 rounded-lg flex items-center gap-2">
+                <div className="bg-gray-100 p-3  flex items-center gap-2">
                   <Check className="h-4 w-4 text-black" />
                   <span className="text-sm text-black">File selected: {planFile.name}</span>
                 </div>

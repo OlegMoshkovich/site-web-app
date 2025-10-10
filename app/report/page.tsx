@@ -1064,7 +1064,7 @@ function ReportPageContent() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {Array.from({ length: Math.min(memoizedSelectedIds.length, 8) }).map((_, index) => (
-                <div key={index} className="bg-gray-100 rounded-lg overflow-hidden animate-pulse">
+                <div key={index} className="bg-gray-100  overflow-hidden animate-pulse">
                   <div className="h-48 bg-gray-200"></div>
                   <div className="p-4 space-y-3">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -1123,7 +1123,7 @@ function ReportPageContent() {
           </div>
           
           <div className="text-center py-20">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+            <div className="bg-red-50 border border-red-200  p-6 max-w-md mx-auto">
               <p className="text-red-600 font-medium">{error}</p>
               {memoizedSelectedIds.length > 0 ? (
                 <Button 
@@ -1254,7 +1254,7 @@ function ReportPageContent() {
         {anchorData.hasAnchors && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Plan Overview</h2>
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div className="border border-gray-200  p-4 bg-gray-50">
               <PlanDisplayWidget
                 observations={observations}
                 plan="plan1"
@@ -1273,7 +1273,7 @@ function ReportPageContent() {
                   <div key={observation.id} className="observation relative">
                     {/* Anchor number indicator */}
                     {anchorNumber && (
-                      <div className="absolute top-2 left-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-md">
+                      <div className="absolute top-2 left-2 w-6 h-6 bg-black text-white  flex items-center justify-center text-sm font-bold z-10 shadow-md">
                         {anchorNumber}
                       </div>
                     )}
@@ -1297,7 +1297,7 @@ function ReportPageContent() {
                         {/* Delete button positioned over photo */}
                         <button
                           onClick={(e) => handleDeleteObservation(observation.id, e)}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2  shadow-lg"
                           title="Delete observation"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -1324,7 +1324,7 @@ function ReportPageContent() {
                                     handleCancelEdit();
                                   }
                                 }}
-                                className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 text-sm border border-gray-300  resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 rows={3}
                                 placeholder="Add a note..."
                                 autoFocus

@@ -669,7 +669,7 @@ export default function Home() {
                 {/* App Screenshots */}
                 <div className="mt-8 max-w-lg mx-auto">
                   <div className="flex justify-center items-center gap-0 space-x-1 mx-auto">
-                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
+                    <div className="relative overflow-hidden shadow-lg bg-gray-100">
                       <Image
                         src="/app_screens/Screen1.jpeg"
                         alt="App Screenshot 1"
@@ -681,7 +681,7 @@ export default function Home() {
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
                       />
                     </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
+                    <div className="relative overflow-hidden shadow-lg bg-gray-100">
                       <Image
                         src="/app_screens/Screen2.jpeg"
                         alt="App Screenshot 2"
@@ -693,7 +693,7 @@ export default function Home() {
                         blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
                       />
                     </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg  bg-gray-100">
+                    <div className="relative overflow-hidden  shadow-lg  bg-gray-100">
                       <Image
                         src="/app_screens/Screen3.jpeg"
                         alt="App Screenshot 3"
@@ -730,7 +730,7 @@ export default function Home() {
               // Show loading spinner while fetching data
               <div className="text-center py-12">
                 <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <div className="animate-spin h-4 w-4 border-b-2 border-primary"></div>
                 </div>
               </div>
             ) : error ? (
@@ -1053,7 +1053,7 @@ export default function Home() {
                                     onClick={(e) =>
                                       handleDeleteObservation(observation.id, e)
                                     }
-                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg"
+                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 shadow-lg"
                                     title="Delete observation"
                                   >
                                     <Trash2 className="h-3 w-3" />
@@ -1085,7 +1085,7 @@ export default function Home() {
                                             handleCancelEdit();
                                           }
                                         }}
-                                        className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full p-2 text-sm border border-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         rows={2}
                                         placeholder="Add a note..."
                                         autoFocus
@@ -1096,14 +1096,14 @@ export default function Home() {
                                             onClick={(e) =>
                                               handleSaveNote(observation.id, e)
                                             }
-                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
                                           >
                                             <Check className="h-3 w-3" />
                                             Save
                                           </button>
                                           <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors"
                                           >
                                             <X className="h-3 w-3" />
                                             Cancel
@@ -1249,7 +1249,7 @@ export default function Home() {
                                     onClick={(e) =>
                                       handleDeleteObservation(observation.id, e)
                                     }
-                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 shadow-lg"
                                     title="Delete observation"
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -1263,7 +1263,7 @@ export default function Home() {
                                   onClick={(e) =>
                                     handleDeleteObservation(observation.id, e)
                                   }
-                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
+                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 shadow-lg"
                                   title="Delete observation"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -1295,7 +1295,7 @@ export default function Home() {
                                           handleCancelEdit();
                                         }
                                       }}
-                                      className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      className="w-full p-2 text-sm border border-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       rows={3}
                                       placeholder="Add a note..."
                                       autoFocus
@@ -1306,14 +1306,14 @@ export default function Home() {
                                           onClick={(e) =>
                                             handleSaveNote(observation.id, e)
                                           }
-                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
                                         >
                                           <Check className="h-3 w-3" />
                                           Save
                                         </button>
                                         <button
                                           onClick={handleCancelEdit}
-                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white hover:bg-gray-700 transition-colors"
                                         >
                                           <X className="h-3 w-3" />
                                           Cancel

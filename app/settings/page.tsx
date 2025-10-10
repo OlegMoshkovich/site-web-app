@@ -654,7 +654,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin  h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -736,7 +736,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {userPendingInvitations.map((invitation) => (
-                    <div key={invitation.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-md">
+                    <div key={invitation.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 ">
                       <div>
                         <div className="font-medium text-gray-900">
                           {invitation.site_name}
@@ -833,7 +833,7 @@ export default function SettingsPage() {
                   id="siteSelectInvite"
                   value={selectedSiteForInvite}
                   onChange={(e) => setSelectedSiteForInvite(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                   style={{
                     backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                     backgroundSize: "12px 12px",
@@ -869,7 +869,7 @@ export default function SettingsPage() {
                   id="inviteRole"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as "admin" | "collaborator")}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                   style={{
                     backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                     backgroundSize: "12px 12px",
@@ -913,7 +913,7 @@ export default function SettingsPage() {
                   id="siteSelect"
                   value={selectedSiteForLabels}
                   onChange={(e) => setSelectedSiteForLabels(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                   style={{
                     backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                     backgroundSize: "12px 12px",
@@ -952,7 +952,7 @@ export default function SettingsPage() {
                           id="labelCategory"
                           value={newLabelCategory}
                           onChange={(e) => setNewLabelCategory(e.target.value as "location" | "gewerk" | "type")}
-                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                          className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                           style={{
                             backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                             backgroundSize: "12px 12px",
@@ -972,7 +972,7 @@ export default function SettingsPage() {
                           id="labelParent"
                           value={newLabelParent}
                           onChange={(e) => setNewLabelParent(e.target.value)}
-                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                          className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                           style={{
                             backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                             backgroundSize: "12px 12px",
@@ -1025,7 +1025,7 @@ export default function SettingsPage() {
                               {topLevelLabels.map((label) => {
                                 const subLabels = categoryLabels.filter(l => l.parent_id === label.id);
                                 return (
-                                  <div key={label.id} className="border rounded-md p-3">
+                                  <div key={label.id} className="border  p-3">
                                     <div className="flex items-center justify-between">
                                       <div>
                                         <span className="font-medium">{label.name}</span>
@@ -1096,7 +1096,7 @@ export default function SettingsPage() {
                   id="siteSelectPlans"
                   value={selectedSiteForPlans}
                   onChange={(e) => setSelectedSiteForPlans(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                   style={{
                     backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                     backgroundSize: "12px 12px",
@@ -1154,7 +1154,7 @@ export default function SettingsPage() {
                     >
                       {isUploading ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin  h-4 w-4 border-b-2 border-white mr-2"></div>
                           Uploading...
                         </>
                       ) : (
@@ -1172,7 +1172,7 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Existing Plans</h3>
                       <div className="space-y-3">
                         {plans.map((plan) => (
-                          <div key={plan.id} className="flex items-center justify-between p-3 border rounded-md">
+                          <div key={plan.id} className="flex items-center justify-between p-3 border ">
                             <div className="flex items-center gap-3">
                               <FileImage className="h-5 w-5 text-gray-500" />
                               <div>
@@ -1226,7 +1226,7 @@ export default function SettingsPage() {
                   id="siteSelectCollaborators"
                   value={selectedSiteForCollaborators}
                   onChange={(e) => setSelectedSiteForCollaborators(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className="w-full px-3 py-2 pr-8 border border-gray-300  focus:outline-none focus:border-gray-400 bg-white"
                   style={{
                     backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
                     backgroundSize: "12px 12px",
@@ -1252,7 +1252,7 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Current Collaborators</h3>
                       <div className="space-y-3">
                         {collaborators.map((collaborator) => (
-                          <div key={collaborator.id} className="flex items-center justify-between p-3 border rounded-md">
+                          <div key={collaborator.id} className="flex items-center justify-between p-3 border ">
                             <div className="flex items-center gap-3">
                               <Users className="h-5 w-5 text-gray-500" />
                               <div className="flex-1">
@@ -1318,7 +1318,7 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Pending Invitations</h3>
                       <div className="space-y-3">
                         {pendingInvitations.map((invitation) => (
-                          <div key={invitation.id} className="flex items-center justify-between p-3 border rounded-md bg-yellow-50">
+                          <div key={invitation.id} className="flex items-center justify-between p-3 border  bg-yellow-50">
                             <div className="flex items-center gap-3">
                               <Users className="h-5 w-5 text-yellow-600" />
                               <div>

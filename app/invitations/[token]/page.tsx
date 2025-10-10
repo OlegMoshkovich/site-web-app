@@ -146,7 +146,7 @@ export default function AcceptInvitationPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin  h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -155,7 +155,7 @@ export default function AcceptInvitationPage() {
     <main className="min-h-screen flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <div className="mx-auto mb-4 w-12 h-12 bg-blue-100  flex items-center justify-center">
             <Users className="h-6 w-6 text-blue-600" />
           </div>
           <CardTitle>Collaboration Invitation</CardTitle>
@@ -169,7 +169,7 @@ export default function AcceptInvitationPage() {
 
         <CardContent className="space-y-4">
           {message && (
-            <div className={`flex items-center gap-2 p-3 rounded-md ${
+            <div className={`flex items-center gap-2 p-3  ${
               message.type === 'success' ? 'bg-green-50 text-green-700' :
               message.type === 'error' ? 'bg-red-50 text-red-700' :
               'bg-blue-50 text-blue-700'
@@ -225,7 +225,7 @@ export default function AcceptInvitationPage() {
                   >
                     {isAccepting ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin  h-4 w-4 border-b-2 border-white mr-2"></div>
                         Accepting...
                       </>
                     ) : (

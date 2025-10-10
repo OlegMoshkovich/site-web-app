@@ -206,7 +206,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
       
       <div 
         ref={containerRef}
-        className="w-[90%] h-[280px] rounded-[20px] overflow-hidden border border-gray-300 mb-2.5 relative cursor-move"
+        className="w-[90%] h-[280px] [20px] overflow-hidden border border-gray-300 mb-2.5 relative cursor-move"
         onWheel={handleWheel}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -239,13 +239,13 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
           {/* Render single anchor (non-report mode) */}
           {!isReportMode && anchor && (
             <div
-              className="absolute border-4 border-black rounded-full pointer-events-none"
+              className="absolute border-4 border-black  pointer-events-none"
               style={{
                 left: anchor.x * (imageWidth * zoomScale) - (7.5 * zoomScale),
                 top: anchor.y * (imageHeight * zoomScale) - (8 * zoomScale),
                 width: 12 * zoomScale,
                 height: 12 * zoomScale,
-                borderRadius: 15 * zoomScale,
+                borderRadius: 0,
               }}
             />
           )}
@@ -254,13 +254,13 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
           {isReportMode && anchors.map((anchorPoint, index) => (
             <div key={anchorPoint.observationId} className="absolute pointer-events-none">
               <div
-                className="absolute border-4 border-red-500 rounded-full bg-red-500"
+                className="absolute border-4 border-red-500  bg-red-500"
                 style={{
                   left: anchorPoint.x * (imageWidth * zoomScale) - (7.5 * zoomScale),
                   top: anchorPoint.y * (imageHeight * zoomScale) - (8 * zoomScale),
                   width: 12 * zoomScale,
                   height: 12 * zoomScale,
-                  borderRadius: 15 * zoomScale,
+                  borderRadius: 0,
                 }}
               />
               <div
@@ -284,21 +284,21 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
         <Button
           onClick={zoomOut}
           variant="outline"
-          className="w-[100px] rounded-full bg-[#FAFEFF] border-gray-300 shadow-sm text-black font-bold"
+          className="w-[100px]  bg-[#FAFEFF] border-gray-300 shadow-sm text-black font-bold"
         >
           -
         </Button>
         <Button
           onClick={resetPlan}
           variant="outline"
-          className="w-[90px] rounded-[20px] border-gray-300 shadow-sm text-black"
+          className="w-[90px] [20px] border-gray-300 shadow-sm text-black"
         >
           reset
         </Button>
         <Button
           onClick={zoomIn}
           variant="outline"
-          className="w-[100px] rounded-full bg-[#FAFEFF] border-gray-300 shadow-sm text-black font-bold"
+          className="w-[100px]  bg-[#FAFEFF] border-gray-300 shadow-sm text-black font-bold"
         >
           +
         </Button>
@@ -307,7 +307,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
       <div className="flex flex-col justify-center items-center py-1.5 gap-1">
         <Button
           onClick={() => movePlan('down')}
-          className="w-[90px] bg-[#666D70] text-[#DDDBD1] rounded-full shadow-sm font-bold hover:bg-[#666D70]/90"
+          className="w-[90px] bg-[#666D70] text-[#DDDBD1]  shadow-sm font-bold hover:bg-[#666D70]/90"
         >
           ↑
         </Button>
@@ -315,13 +315,13 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
         <div className="flex justify-center items-center py-0 gap-[100px]">
           <Button
             onClick={() => movePlan('right')}
-            className="w-[90px] bg-[#666D70] text-[#DDDBD1] rounded-full shadow-sm font-bold hover:bg-[#666D70]/90"
+            className="w-[90px] bg-[#666D70] text-[#DDDBD1]  shadow-sm font-bold hover:bg-[#666D70]/90"
           >
             ←
           </Button>
           <Button
             onClick={() => movePlan('left')}
-            className="w-[90px] bg-[#666D70] text-[#DDDBD1] rounded-full shadow-sm font-bold hover:bg-[#666D70]/90"
+            className="w-[90px] bg-[#666D70] text-[#DDDBD1]  shadow-sm font-bold hover:bg-[#666D70]/90"
           >
             →
           </Button>
@@ -329,7 +329,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
         
         <Button
           onClick={() => movePlan('up')}
-          className="w-[90px] bg-[#666D70] text-[#DDDBD1] rounded-full shadow-sm font-bold hover:bg-[#666D70]/90"
+          className="w-[90px] bg-[#666D70] text-[#DDDBD1]  shadow-sm font-bold hover:bg-[#666D70]/90"
         >
           ↓
         </Button>
@@ -337,7 +337,7 @@ const PlanWidget: React.FC<PlanWidgetProps> = ({
 
       {dialogVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-[80vw] max-h-[80vh] overflow-auto">
+          <div className="bg-white  p-6 max-w-[80vw] max-h-[80vh] overflow-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-red-500">Project Location</h3>
               <Button
