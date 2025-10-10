@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   ChevronRight, 
@@ -20,9 +16,7 @@ import {
   Users, 
   Smartphone,
   Globe,
-  CheckCircle,
-  Plus,
-  X
+  CheckCircle
 } from "lucide-react";
 import Image from "next/image";
 
@@ -87,15 +81,6 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [hasExistingSites, setHasExistingSites] = useState(false);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
-    siteName: '',
-    siteDescription: '',
-    labels: [],
-    inviteEmails: [],
-    planFile: null
-  });
-  const [tempLabel, setTempLabel] = useState('');
-  const [tempEmail, setTempEmail] = useState('');
 
   useEffect(() => {
     const checkUser = async () => {
@@ -188,47 +173,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const addLabel = () => {
-    if (tempLabel.trim() && !onboardingData.labels.includes(tempLabel.trim())) {
-      setOnboardingData(prev => ({
-        ...prev,
-        labels: [...prev.labels, tempLabel.trim()]
-      }));
-      setTempLabel('');
-    }
-  };
-
-  const removeLabel = (label: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      labels: prev.labels.filter(l => l !== label)
-    }));
-  };
-
-  const addEmail = () => {
-    const email = tempEmail.trim().toLowerCase();
-    if (email && email.includes('@') && !onboardingData.inviteEmails.includes(email)) {
-      setOnboardingData(prev => ({
-        ...prev,
-        inviteEmails: [...prev.inviteEmails, email]
-      }));
-      setTempEmail('');
-    }
-  };
-
-  const removeEmail = (email: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      inviteEmails: prev.inviteEmails.filter(e => e !== email)
-    }));
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setOnboardingData(prev => ({ ...prev, planFile: file }));
-    }
-  };
 
   const completeOnboarding = async () => {
     if (!user) return;
@@ -576,14 +520,7 @@ export default function OnboardingPage() {
   };
 
   const canProceed = () => {
-    const step = ONBOARDING_STEPS[currentStep];
-    switch (step.id) {
-      case 'create-site':
-        // If user has existing sites, site creation is optional
-        return hasExistingSites || onboardingData.siteName.trim().length > 0;
-      default:
-        return true;
-    }
+    return true; // All steps are informational, no validation needed
   };
 
   if (!user) {
