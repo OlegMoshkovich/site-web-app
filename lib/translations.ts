@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from 'react';
+
 export const translations = {
   en: {
     // Navigation
@@ -112,7 +114,100 @@ export const translations = {
     planName: "Plan Name",
     enterPlanName: "Enter plan name",
     planFile: "Plan File",
-    uploadPlan: "Upload Plan"
+    uploadPlan: "Upload Plan",
+
+    // Onboarding
+    setupYourSite: "Setup Your Site",
+    step: "Step",
+    of: "of",
+    welcome: "Welcome",
+    previous: "Previous",
+    next: "Next",
+    
+    // Onboarding steps
+    welcomeToSimpleSite: "Welcome to Simple Site!",
+    welcomeDescription: "Simple Site is a collaborative platform for collecting and managing site observations. Perfect for teams conducting site visits, inspections, or research.",
+    whatYouCanDo: "What you can do:",
+    collaborateWithTeamMembers: "Collaborate with team members",
+    collectObservationsWithPhotos: "Collect observations with photos and notes",
+    generateReportsAndExportData: "Generate reports and export data",
+    useOurMobileAppForFieldWork: "Use our mobile app for field work",
+
+    // Existing team step
+    youreAlreadyPartOfATeam: "You're already part of a team!",
+    foundExistingCollaborations: "We found that you've been invited to collaborate on existing sites",
+    skipIntroductionAndStart: "You can skip this introduction and start using Simple Site right away, or continue to learn about the platform's features.",
+    goToMySites: "Go to My Sites",
+
+    // Sites step
+    sites: "Sites",
+    siteIsLocation: "A site is a location where you'll collect observations",
+    createMultipleObservationSites: "Create multiple observation sites",
+    addDescriptionsAndDetails: "Add descriptions and details for each site",
+    manageSiteCollaborators: "Manage site collaborators and permissions",
+    uploadSitePlansAndReference: "Upload site plans and reference materials",
+    toCreateSites: "To create sites:",
+    goToSettingsSiteManagement: "Go to Settings → Site Management after completing this introduction",
+
+    // Labels step
+    observationLabels: "Observation Labels",
+    labelsHelpCategorize: "Labels help categorize and organize your observations",
+    createHierarchicalLabelSystems: "Create hierarchical label systems",
+    organizeLabelsByLocation: "Organize labels by location, type, or category",
+    useLabelsToFilter: "Use labels to filter and search observations",
+    shareLabelsAcrossTeam: "Share labels across team members",
+    commonLabelExamples: "Common label examples:",
+    issueProgressCompleted: "Issue, Progress, Completed, Damage, Repair Needed, Quality Check",
+    toCreateLabels: "To create labels:",
+    goToSettingsLabelManagement: "Go to Settings → Label Management after completing this introduction",
+
+    // Plans step
+    sitePlans: "Site Plans",
+    uploadFloorPlansOrSiteMaps: "Upload floor plans or site maps for reference",
+    uploadFloorPlansSiteMaps: "Upload floor plans, site maps, or diagrams",
+    supportForImages: "Support for images (PNG, JPG)",
+    pinObservationsDirectly: "Pin observations directly to plan locations",
+    shareVisualContext: "Share visual context with team members",
+    plansHelpTeamMembers: "Plans help team members understand the site layout and locate observations more easily.",
+    toUploadPlans: "To upload plans:",
+    goToSettingsPlanManagement: "Go to Settings → Plan Management after completing this introduction",
+
+    // Collaboration step
+    teamCollaboration: "Team Collaboration",
+    addTeamMembersToCollaborate: "Add team members to collaborate on observations",
+    inviteTeamMembersViaEmail: "Invite team members via email",
+    setDifferentPermissionLevels: "Set different permission levels (Admin, Collaborator)",
+    viewTeamObservationsRealTime: "View team observations in real-time",
+    manageCollaboratorAccess: "Manage collaborator access and roles",
+    teamMembersWillReceive: "Team members will receive email invitations to join your site as collaborators and can start contributing observations immediately.",
+    toInviteTeamMembers: "To invite team members:",
+    goToSettingsCollaborationManagement: "Go to Settings → Collaboration Management after completing this introduction",
+
+    // Mobile app step
+    getTheMobileApp: "Get the Mobile App",
+    essentialForCollecting: "Essential for collecting observations in the field",
+    simpleSiteMobileApp: "Simple Site Mobile App",
+    takePhotosAndAddNotes: "Take photos and add notes on-site",
+    gpsLocationTracking: "GPS location tracking",
+    automaticSyncWithSites: "Automatic sync with your sites",
+    availableOnAppStore: "Available on the App Store",
+    webVsMobile: "Web vs Mobile:",
+    webPortal: "Web Portal:",
+    viewTeamObservationsGenerateReports: "View team observations, generate reports, and manage settings",
+    mobileApp: "Mobile App:",
+    requiredForCollectingObservations: "Required for collecting observations in the field",
+
+    // Complete step
+    youreAllSet: "You're All Set!",
+    welcomeToSimpleSiteComplete: "Welcome to Simple Site! You now know how to use all the key features. You can start by creating your first site and observations.",
+    whatsNext: "What's next:",
+    goToSettingsCreateFirstSite: "Go to Settings to create your first site",
+    setupObservationLabelsUploadPlans: "Set up observation labels and upload plans",
+    inviteTeamMembersToCollaborate: "Invite team members to collaborate",
+    downloadMobileAppForFieldWork: "Download the mobile app for field work",
+    startCollectingObservations: "Start collecting observations",
+    goToDashboard: "Go to Dashboard",
+    settingUp: "Setting up..."
   },
   
   de: {
@@ -228,7 +323,100 @@ export const translations = {
     planName: "Plan-Name",
     enterPlanName: "Plan-Name eingeben",
     planFile: "Plan-Datei",
-    uploadPlan: "Plan hochladen"
+    uploadPlan: "Plan hochladen",
+
+    // Onboarding
+    setupYourSite: "Ihre Baustelle einrichten",
+    step: "Schritt",
+    of: "von",
+    welcome: "Willkommen",
+    previous: "Zurück",
+    next: "Weiter",
+    
+    // Onboarding steps
+    welcomeToSimpleSite: "Willkommen bei Simple Site!",
+    welcomeDescription: "Simple Site ist eine kollaborative Plattform für das Sammeln und Verwalten von Baustellenbeobachtungen. Perfekt für Teams, die Baustellenbesuche, Inspektionen oder Forschung durchführen.",
+    whatYouCanDo: "Was Sie tun können:",
+    collaborateWithTeamMembers: "Mit Teammitgliedern zusammenarbeiten",
+    collectObservationsWithPhotos: "Beobachtungen mit Fotos und Notizen sammeln",
+    generateReportsAndExportData: "Berichte generieren und Daten exportieren",
+    useOurMobileAppForFieldWork: "Unsere mobile App für Feldarbeit verwenden",
+
+    // Existing team step
+    youreAlreadyPartOfATeam: "Sie sind bereits Teil eines Teams!",
+    foundExistingCollaborations: "Wir haben festgestellt, dass Sie zur Zusammenarbeit an bestehenden Standorten eingeladen wurden",
+    skipIntroductionAndStart: "Sie können diese Einführung überspringen und sofort mit Simple Site beginnen, oder weiter lernen über die Funktionen der Plattform.",
+    goToMySites: "Zu meinen Standorten",
+
+    // Sites step
+    sites: "Standorte",
+    siteIsLocation: "Ein Standort ist ein Ort, an dem Sie Beobachtungen sammeln werden",
+    createMultipleObservationSites: "Mehrere Beobachtungsstandorte erstellen",
+    addDescriptionsAndDetails: "Beschreibungen und Details für jeden Standort hinzufügen",
+    manageSiteCollaborators: "Standort-Mitarbeiter und Berechtigungen verwalten",
+    uploadSitePlansAndReference: "Standortpläne und Referenzmaterialien hochladen",
+    toCreateSites: "Um Standorte zu erstellen:",
+    goToSettingsSiteManagement: "Gehen Sie zu Einstellungen → Standortverwaltung nach Abschluss dieser Einführung",
+
+    // Labels step
+    observationLabels: "Beobachtungs-Labels",
+    labelsHelpCategorize: "Labels helfen dabei, Ihre Beobachtungen zu kategorisieren und zu organisieren",
+    createHierarchicalLabelSystems: "Hierarchische Label-Systeme erstellen",
+    organizeLabelsByLocation: "Labels nach Standort, Typ oder Kategorie organisieren",
+    useLabelsToFilter: "Labels zum Filtern und Suchen von Beobachtungen verwenden",
+    shareLabelsAcrossTeam: "Labels im Team teilen",
+    commonLabelExamples: "Häufige Label-Beispiele:",
+    issueProgressCompleted: "Problem, Fortschritt, Abgeschlossen, Schaden, Reparatur erforderlich, Qualitätsprüfung",
+    toCreateLabels: "Um Labels zu erstellen:",
+    goToSettingsLabelManagement: "Gehen Sie zu Einstellungen → Label-Verwaltung nach Abschluss dieser Einführung",
+
+    // Plans step
+    sitePlans: "Standortpläne",
+    uploadFloorPlansOrSiteMaps: "Grundrisse oder Standortkarten als Referenz hochladen",
+    uploadFloorPlansSiteMaps: "Grundrisse, Standortkarten oder Diagramme hochladen",
+    supportForImages: "Unterstützung für Bilder (PNG, JPG)",
+    pinObservationsDirectly: "Beobachtungen direkt an Planstandorten anheften",
+    shareVisualContext: "Visuellen Kontext mit Teammitgliedern teilen",
+    plansHelpTeamMembers: "Pläne helfen Teammitgliedern, das Standortlayout zu verstehen und Beobachtungen leichter zu finden.",
+    toUploadPlans: "Um Pläne hochzuladen:",
+    goToSettingsPlanManagement: "Gehen Sie zu Einstellungen → Plan-Verwaltung nach Abschluss dieser Einführung",
+
+    // Collaboration step
+    teamCollaboration: "Teamzusammenarbeit",
+    addTeamMembersToCollaborate: "Teammitglieder zur Zusammenarbeit bei Beobachtungen hinzufügen",
+    inviteTeamMembersViaEmail: "Teammitglieder per E-Mail einladen",
+    setDifferentPermissionLevels: "Verschiedene Berechtigungsebenen festlegen (Admin, Mitarbeiter)",
+    viewTeamObservationsRealTime: "Team-Beobachtungen in Echtzeit anzeigen",
+    manageCollaboratorAccess: "Mitarbeiter-Zugang und Rollen verwalten",
+    teamMembersWillReceive: "Teammitglieder erhalten E-Mail-Einladungen, um Ihrem Standort als Mitarbeiter beizutreten und können sofort mit der Erfassung von Beobachtungen beginnen.",
+    toInviteTeamMembers: "Um Teammitglieder einzuladen:",
+    goToSettingsCollaborationManagement: "Gehen Sie zu Einstellungen → Zusammenarbeitsverwaltung nach Abschluss dieser Einführung",
+
+    // Mobile app step
+    getTheMobileApp: "Die mobile App herunterladen",
+    essentialForCollecting: "Unverzichtbar für das Sammeln von Beobachtungen im Feld",
+    simpleSiteMobileApp: "Simple Site Mobile App",
+    takePhotosAndAddNotes: "Fotos aufnehmen und Notizen vor Ort hinzufügen",
+    gpsLocationTracking: "GPS-Standortverfolgung",
+    automaticSyncWithSites: "Automatische Synchronisation mit Ihren Standorten",
+    availableOnAppStore: "Verfügbar im App Store",
+    webVsMobile: "Web vs Mobile:",
+    webPortal: "Web-Portal:",
+    viewTeamObservationsGenerateReports: "Team-Beobachtungen anzeigen, Berichte generieren und Einstellungen verwalten",
+    mobileApp: "Mobile App:",
+    requiredForCollectingObservations: "Erforderlich für das Sammeln von Beobachtungen im Feld",
+
+    // Complete step
+    youreAllSet: "Sie sind startklar!",
+    welcomeToSimpleSiteComplete: "Willkommen bei Simple Site! Sie kennen jetzt alle wichtigen Funktionen. Sie können mit der Erstellung Ihres ersten Standorts und Beobachtungen beginnen.",
+    whatsNext: "Was kommt als nächstes:",
+    goToSettingsCreateFirstSite: "Gehen Sie zu Einstellungen, um Ihren ersten Standort zu erstellen",
+    setupObservationLabelsUploadPlans: "Beobachtungs-Labels einrichten und Pläne hochladen",
+    inviteTeamMembersToCollaborate: "Teammitglieder zur Zusammenarbeit einladen",
+    downloadMobileAppForFieldWork: "Die mobile App für Feldarbeit herunterladen",
+    startCollectingObservations: "Mit dem Sammeln von Beobachtungen beginnen",
+    goToDashboard: "Zum Dashboard",
+    settingUp: "Wird eingerichtet..."
   }
 };
 
@@ -241,4 +429,27 @@ export function useTranslations(language: Language) {
     const value = translations[language][key];
     return typeof value === 'string' ? value : '';
   };
+}
+
+// Hook for managing language with localStorage persistence
+export function useLanguage() {
+  const [language, setLanguageState] = useState<Language>('de');
+  const [mounted, setMounted] = useState(false);
+
+  // Load language from localStorage on mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as Language;
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+      setLanguageState(savedLanguage);
+    }
+    setMounted(true);
+  }, []);
+
+  // Save language to localStorage when it changes
+  const setLanguage = useCallback((newLanguage: Language) => {
+    setLanguageState(newLanguage);
+    localStorage.setItem('language', newLanguage);
+  }, []);
+
+  return { language, setLanguage, mounted };
 }

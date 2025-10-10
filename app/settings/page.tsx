@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage } from "lucide-react";
-import { Language, useTranslations } from "@/lib/translations";
+import { Language, useTranslations, useLanguage } from "@/lib/translations";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { inviteUserToSite, getSitePendingInvitations, removeCollaborator, getPendingInvitationsForUser, updateCollaboratorRole } from "@/lib/supabase/api";
 import type { SiteCollaborator, CollaborationInvitation } from "@/types/supabase";
@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [language, setLanguage] = useState<Language>('de'); // Default to German
+  const { language, setLanguage } = useLanguage();
   const t = useTranslations(language);
 
   // Site management state

@@ -19,6 +19,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import Image from "next/image";
+import { useLanguage, useTranslations } from "@/lib/translations";
 
 // Simplified onboarding - no data collection needed
 
@@ -76,6 +77,8 @@ const ONBOARDING_STEPS = [
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { language } = useLanguage();
+  const t = useTranslations(language);
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -189,20 +192,19 @@ export default function OnboardingPage() {
               />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold">Welcome to Simple Site!</h2>
+              <h2 className="text-2xl font-bold">{t('welcomeToSimpleSite')}</h2>
               <p className="text-gray-600 max-w-md mx-auto">
-                Simple Site is a collaborative platform for collecting and managing site observations. 
-                Perfect for teams conducting site visits, inspections, or research.
+                {t('welcomeDescription')}
               </p>
               
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-black">What you can do:</h3>
+                <h3 className="font-semibold mb-2 text-black">{t('whatYouCanDo')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Create and manage observation sites</li>
-                  <li>• Collaborate with team members</li>
-                  <li>• Collect observations with photos and notes</li>
-                  <li>• Generate reports and export data</li>
-                  <li>• Use our mobile app for field work</li>
+                  <li>• {t('createAndManageObservationSites')}</li>
+                  <li>• {t('collaborateWithTeamMembers')}</li>
+                  <li>• {t('collectObservationsWithPhotos')}</li>
+                  <li>• {t('generateReportsAndExportData')}</li>
+                  <li>• {t('useOurMobileAppForFieldWork')}</li>
                 </ul>
               </div>
             </div>
@@ -216,21 +218,21 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">You&apos;re already part of a team!</h2>
-              <p className="text-gray-600">We found that you&apos;ve been invited to collaborate on existing sites</p>
+              <h2 className="text-xl font-bold mb-2">{t('youreAlreadyPartOfATeam')}</h2>
+              <p className="text-gray-600">{t('foundExistingCollaborations')}</p>
             </div>
             
             <div className="space-y-4">
               <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                 <p className="text-sm text-green-800 mb-3">
-                  You can skip this introduction and start using Simple Site right away, or continue to learn about the platform&apos;s features.
+                  {t('skipIntroductionAndStart')}
                 </p>
                 <Button 
                   onClick={completeOnboarding}
                   variant="outline"
                   className="border-green-300 text-green-800 hover:bg-green-100 w-full"
                 >
-                  Go to My Sites
+                  {t('goToMySites')}
                 </Button>
               </div>
               
@@ -245,24 +247,24 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <MapPin className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Sites</h2>
-              <p className="text-gray-600">A site is a location where you&apos;ll collect observations</p>
+              <h2 className="text-xl font-bold mb-2">{t('sites')}</h2>
+              <p className="text-gray-600">{t('siteIsLocation')}</p>
             </div>
             
             <div className="space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Create multiple observation sites</li>
-                  <li>• Add descriptions and details for each site</li>
-                  <li>• Manage site collaborators and permissions</li>
-                  <li>• Upload site plans and reference materials</li>
+                  <li>• {t('createMultipleObservationSites')}</li>
+                  <li>• {t('addDescriptionsAndDetails')}</li>
+                  <li>• {t('manageSiteCollaborators')}</li>
+                  <li>• {t('uploadSitePlansAndReference')}</li>
                 </ul>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>To create sites:</strong> Go to Settings → Site Management after completing this introduction
+                  <strong>{t('toCreateSites')}</strong> {t('goToSettingsSiteManagement')}
                 </p>
               </div>
             </div>
@@ -276,30 +278,30 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Tag className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Observation Labels</h2>
-              <p className="text-gray-600">Labels help categorize and organize your observations</p>
+              <h2 className="text-xl font-bold mb-2">{t('observationLabels')}</h2>
+              <p className="text-gray-600">{t('labelsHelpCategorize')}</p>
             </div>
             
             <div className="space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Create hierarchical label systems</li>
-                  <li>• Organize labels by location, type, or category</li>
-                  <li>• Use labels to filter and search observations</li>
-                  <li>• Share labels across team members</li>
+                  <li>• {t('createHierarchicalLabelSystems')}</li>
+                  <li>• {t('organizeLabelsByLocation')}</li>
+                  <li>• {t('useLabelsToFilter')}</li>
+                  <li>• {t('shareLabelsAcrossTeam')}</li>
                 </ul>
               </div>
               
               <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-sm text-black">
-                  <strong>Common label examples:</strong> Issue, Progress, Completed, Damage, Repair Needed, Quality Check
+                  <strong>{t('commonLabelExamples')}</strong> {t('issueProgressCompleted')}
                 </p>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>To create labels:</strong> Go to Settings → Label Management after completing this introduction
+                  <strong>{t('toCreateLabels')}</strong> {t('goToSettingsLabelManagement')}
                 </p>
               </div>
             </div>
@@ -313,30 +315,30 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Site Plans</h2>
-              <p className="text-gray-600">Upload floor plans or site maps for reference</p>
+              <h2 className="text-xl font-bold mb-2">{t('sitePlans')}</h2>
+              <p className="text-gray-600">{t('uploadFloorPlansOrSiteMaps')}</p>
             </div>
             
             <div className="space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Upload floor plans, site maps, or diagrams</li>
-                  <li>• Support for images (PNG, JPG)</li>
-                  <li>• Pin observations directly to plan locations</li>
-                  <li>• Share visual context with team members</li>
+                  <li>• {t('uploadFloorPlansSiteMaps')}</li>
+                  <li>• {t('supportForImages')}</li>
+                  <li>• {t('pinObservationsDirectly')}</li>
+                  <li>• {t('shareVisualContext')}</li>
                 </ul>
               </div>
               
               <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-sm text-black">
-                  Plans help team members understand the site layout and locate observations more easily.
+                  {t('plansHelpTeamMembers')}
                 </p>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>To upload plans:</strong> Go to Settings → Plan Management after completing this introduction
+                  <strong>{t('toUploadPlans')}</strong> {t('goToSettingsPlanManagement')}
                 </p>
               </div>
             </div>
@@ -350,30 +352,30 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Team Collaboration</h2>
-              <p className="text-gray-600">Add team members to collaborate on observations</p>
+              <h2 className="text-xl font-bold mb-2">{t('teamCollaboration')}</h2>
+              <p className="text-gray-600">{t('addTeamMembersToCollaborate')}</p>
             </div>
             
             <div className="space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">What you can do:</h3>
+                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Invite team members via email</li>
-                  <li>• Set different permission levels (Admin, Collaborator)</li>
-                  <li>• View team observations in real-time</li>
-                  <li>• Manage collaborator access and roles</li>
+                  <li>• {t('inviteTeamMembersViaEmail')}</li>
+                  <li>• {t('setDifferentPermissionLevels')}</li>
+                  <li>• {t('viewTeamObservationsRealTime')}</li>
+                  <li>• {t('manageCollaboratorAccess')}</li>
                 </ul>
               </div>
               
               <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-sm text-black">
-                  Team members will receive email invitations to join your site as collaborators and can start contributing observations immediately.
+                  {t('teamMembersWillReceive')}
                 </p>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>To invite team members:</strong> Go to Settings → Collaboration Management after completing this introduction
+                  <strong>{t('toInviteTeamMembers')}</strong> {t('goToSettingsCollaborationManagement')}
                 </p>
               </div>
             </div>
@@ -387,25 +389,25 @@ export default function OnboardingPage() {
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Smartphone className="h-6 w-6 text-black" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Get the Mobile App</h2>
-              <p className="text-gray-600">Essential for collecting observations in the field</p>
+              <h2 className="text-xl font-bold mb-2">{t('getTheMobileApp')}</h2>
+              <p className="text-gray-600">{t('essentialForCollecting')}</p>
             </div>
             
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-6 rounded-lg">
-                <h3 className="font-semibold mb-3 text-black">Simple Site Mobile App</h3>
+                <h3 className="font-semibold mb-3 text-black">{t('simpleSiteMobileApp')}</h3>
                 <ul className="text-sm space-y-2 mb-4">
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-black" />
-                    Take photos and add notes on-site
+                    {t('takePhotosAndAddNotes')}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-black" />
-                    GPS location tracking
+                    {t('gpsLocationTracking')}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-black" />
-                    Automatic sync with your sites
+                    {t('automaticSyncWithSites')}
                   </li>
                 </ul>
                 
@@ -418,7 +420,7 @@ export default function OnboardingPage() {
                   >
                     <Image
                       src="/app_screens/available-app-store.png"
-                      alt="Available on the App Store"
+                      alt={t('availableOnAppStore')}
                       width={120}
                       height={40}
                       className="w-auto h-auto object-contain"
@@ -429,10 +431,10 @@ export default function OnboardingPage() {
               
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                 <div className="text-sm text-blue-800">
-                  <p className="font-semibold mb-2">Web vs Mobile:</p>
+                  <p className="font-semibold mb-2">{t('webVsMobile')}</p>
                   <ul className="space-y-1">
-                    <li>• <strong>Web Portal:</strong> View team observations, generate reports, and manage settings</li>
-                    <li>• <strong>Mobile App:</strong> Required for collecting observations in the field</li>
+                    <li>• <strong>{t('webPortal')}</strong> {t('viewTeamObservationsGenerateReports')}</li>
+                    <li>• <strong>{t('mobileApp')}</strong> {t('requiredForCollectingObservations')}</li>
                   </ul>
                 </div>
               </div>
@@ -447,20 +449,19 @@ export default function OnboardingPage() {
               <CheckCircle className="h-8 w-8 text-black" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-black">You&apos;re All Set!</h2>
+              <h2 className="text-2xl font-bold text-black">{t('youreAllSet')}</h2>
               <p className="text-gray-600 max-w-md mx-auto">
-                Welcome to Simple Site! You now know how to use all the key features. 
-                You can start by creating your first site and observations.
+                {t('welcomeToSimpleSiteComplete')}
               </p>
               
               <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-black">What&apos;s next:</h3>
+                <h3 className="font-semibold mb-2 text-black">{t('whatsNext')}</h3>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Go to Settings to create your first site</li>
-                  <li>• Set up observation labels and upload plans</li>
-                  <li>• Invite team members to collaborate</li>
-                  <li>• Download the mobile app for field work</li>
-                  <li>• Start collecting observations</li>
+                  <li>• {t('goToSettingsCreateFirstSite')}</li>
+                  <li>• {t('setupObservationLabelsUploadPlans')}</li>
+                  <li>• {t('inviteTeamMembersToCollaborate')}</li>
+                  <li>• {t('downloadMobileAppForFieldWork')}</li>
+                  <li>• {t('startCollectingObservations')}</li>
                 </ul>
               </div>
               
@@ -473,11 +474,11 @@ export default function OnboardingPage() {
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Setting up...
+                    {t('settingUp')}
                   </>
                 ) : (
                   <>
-                    Go to Dashboard
+                    {t('goToDashboard')}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -521,9 +522,9 @@ export default function OnboardingPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
-            <h1 className="text-lg font-semibold">Setup Your Site</h1>
+            <h1 className="text-lg font-semibold">{t('setupYourSite')}</h1>
             <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {visibleSteps.length}
+              {t('step')} {currentStep + 1} {t('of')} {visibleSteps.length}
             </span>
           </div>
           <Progress value={progress} className="w-full" />
@@ -546,14 +547,14 @@ export default function OnboardingPage() {
                 disabled={currentStep === 0}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Previous
+                {t('previous')}
               </Button>
               
               <Button 
                 onClick={nextStep}
                 disabled={!canProceed()}
               >
-                Next
+                {t('next')}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>

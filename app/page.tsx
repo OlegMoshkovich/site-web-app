@@ -43,7 +43,7 @@ import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
 import Image from "next/image";
 // Translation system
-import { translations, type Language } from "@/lib/translations";
+import { translations, type Language, useLanguage } from "@/lib/translations";
 // Utility functions
 import {
   filterObservationsBySearch,
@@ -89,9 +89,8 @@ export default function Home() {
   // Date range selection for filtering observations
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  // Current language for internationalization
-  const [language, setLanguage] = useState<Language>("de");
-  const [mounted, setMounted] = useState(false);
+  // Language management with localStorage persistence
+  const { language, setLanguage, mounted } = useLanguage();
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
   // Edit state for inline note editing
@@ -413,10 +412,6 @@ export default function Home() {
     };
   }, [observations]);
 
-  // ===== HYDRATION FIX =====
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations

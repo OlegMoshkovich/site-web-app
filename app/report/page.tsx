@@ -9,7 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { translations, type Language } from "@/lib/translations";
+import { translations, type Language, useLanguage } from "@/lib/translations";
 import jsPDF from 'jspdf';
 import { Document, Paragraph, ImageRun, TextRun, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
@@ -43,7 +43,7 @@ function ReportPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const { language, setLanguage } = useLanguage();
   
   // Display toggles
   const [displaySettings, setDisplaySettings] = useState({
