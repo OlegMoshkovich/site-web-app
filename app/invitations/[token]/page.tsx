@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { acceptInvitation } from "@/lib/supabase/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Users, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface InvitationData {
@@ -146,7 +147,7 @@ export default function AcceptInvitationPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin  h-8 w-8 border-b-2 border-primary"></div>
+        <Spinner className="h-8 w-8" />
       </div>
     );
   }
@@ -225,7 +226,7 @@ export default function AcceptInvitationPage() {
                   >
                     {isAccepting ? (
                       <>
-                        <div className="animate-spin  h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <Spinner className="mr-2" />
                         Accepting...
                       </>
                     ) : (

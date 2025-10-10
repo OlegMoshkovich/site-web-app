@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 // Lucide React icons
 import {
   Calendar,
@@ -730,7 +731,7 @@ export default function Home() {
               // Show loading spinner while fetching data
               <div className="text-center py-12">
                 <div className="flex justify-center">
-                  <div className="animate-spin h-4 w-4 border-b-2 border-primary"></div>
+                  <Spinner className="h-8 w-8" />
                 </div>
               </div>
             ) : error ? (

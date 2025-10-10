@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -654,7 +655,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin  h-8 w-8 border-b-2 border-primary"></div>
+        <Spinner className="h-8 w-8" />
       </div>
     );
   }
@@ -1154,7 +1155,7 @@ export default function SettingsPage() {
                     >
                       {isUploading ? (
                         <>
-                          <div className="animate-spin  h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <Spinner className="mr-2" />
                           Uploading...
                         </>
                       ) : (

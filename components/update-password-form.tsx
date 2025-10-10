@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -112,7 +113,7 @@ export function UpdatePasswordForm({
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <div className="mr-2 h-4 w-4 animate-spin  border-2 border-current border-t-transparent" />
+                    <Spinner className="mr-2" />
                     Saving...
                   </>
                 ) : (

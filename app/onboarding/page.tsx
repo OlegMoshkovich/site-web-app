@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -500,7 +501,7 @@ export default function OnboardingPage() {
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin -full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <Spinner className="mr-2" />
                     Setting up...
                   </>
                 ) : (
@@ -526,7 +527,7 @@ export default function OnboardingPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin -full h-8 w-8 border-b-2 border-primary"></div>
+        <Spinner className="h-8 w-8" />
       </div>
     );
   }
