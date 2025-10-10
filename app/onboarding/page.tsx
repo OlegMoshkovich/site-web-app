@@ -144,34 +144,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const skipOnboarding = async () => {
-    if (!user) return;
-    
-    try {
-      // Mark onboarding as complete without creating anything
-      await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          email: user.email,
-          onboarding_completed: true
-        });
-
-      // Redirect to main app
-      router.push('/');
-    } catch (error) {
-      console.error('Error skipping onboarding:', error);
-    }
-  };
-
-  const skipCurrentStep = () => {
-    if (currentStep < ONBOARDING_STEPS.length - 1) {
-      nextStep();
-    } else {
-      // If last step, complete onboarding
-      skipOnboarding();
-    }
-  };
 
 
   const completeOnboarding = async () => {
@@ -254,7 +226,7 @@ export default function OnboardingPage() {
                   You can skip this introduction and start using Simple Site right away, or continue to learn about the platform&apos;s features.
                 </p>
                 <Button 
-                  onClick={skipOnboarding}
+                  onClick={completeOnboarding}
                   variant="outline"
                   className="border-green-300 text-green-800 hover:bg-green-100 w-full"
                 >
@@ -577,31 +549,12 @@ export default function OnboardingPage() {
                 Previous
               </Button>
               
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  onClick={skipCurrentStep}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  Skip
-                </Button>
-                <Button 
-                  onClick={nextStep}
-                  disabled={!canProceed()}
-                >
-                  Next
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="text-center">
               <Button 
-                variant="ghost" 
-                onClick={skipOnboarding}
-                className="text-sm text-gray-400 hover:text-gray-600"
+                onClick={nextStep}
+                disabled={!canProceed()}
               >
-                Skip entire setup - I&apos;ll do this later
+                Next
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
