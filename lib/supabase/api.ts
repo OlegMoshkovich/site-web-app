@@ -3,7 +3,8 @@ import { createClient } from './client';
 import type { 
   Observation, 
   SiteCollaborator, 
-  CollaborationInvitation
+  CollaborationInvitation,
+  Profile
 } from '../../types/supabase';
 
 /**
@@ -140,8 +141,8 @@ export async function inviteUserToSite(
 ): Promise<CollaborationInvitation> {
   const supabase = createClient();
   
-  // Check if user already has an invitation or is already a collaborator
-  const { data: existing } = await supabase
+  // Check if user already has a pending invitation
+  const { data: existingInvitation } = await supabase
     .from('collaboration_invitations')
     .select('*')
     .eq('site_id', siteId)
@@ -149,11 +150,31 @@ export async function inviteUserToSite(
     .eq('status', 'pending')
     .single();
 
-  if (existing) {
-    throw new Error('User already has a pending invitation for this site');
+  if (existingInvitation) {
+    throw new Error('This user already has a pending invitation for this site');
   }
 
-  // TODO: Check if user is already a collaborator by email lookup
+  // Check if user is already a collaborator by looking up their profile
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', invitedEmail)
+    .single();
+
+  if (userProfile) {
+    // User exists, check if they're already a collaborator
+    const { data: existingCollaborator } = await supabase
+      .from('site_collaborators')
+      .select('*')
+      .eq('site_id', siteId)
+      .eq('user_id', userProfile.id)
+      .eq('status', 'accepted')
+      .single();
+
+    if (existingCollaborator) {
+      throw new Error('This user is already a collaborator on this site');
+    }
+  }
 
   const { data, error } = await supabase
     .from('collaboration_invitations')
@@ -166,7 +187,14 @@ export async function inviteUserToSite(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // Handle duplicate key constraint error specifically
+    if (error.code === '23505' && error.message.includes('duplicate key')) {
+      throw new Error('This user has already been invited to this site');
+    }
+    throw error;
+  }
+  
   return data;
 }
 
@@ -197,6 +225,25 @@ export async function acceptInvitation(token: string, userId: string): Promise<S
     throw new Error('Invitation has expired');
   }
 
+  // Check if user is already a collaborator on this site
+  const { data: existingCollaborator } = await supabase
+    .from('site_collaborators')
+    .select('*')
+    .eq('site_id', invitation.site_id)
+    .eq('user_id', userId)
+    .eq('status', 'accepted')
+    .single();
+
+  if (existingCollaborator) {
+    // User is already a collaborator, just mark the invitation as accepted
+    await supabase
+      .from('collaboration_invitations')
+      .update({ status: 'accepted' })
+      .eq('id', invitation.id);
+    
+    return existingCollaborator;
+  }
+
   // Add user as collaborator
   const { data: collaborator, error: collabError } = await supabase
     .from('site_collaborators')
@@ -210,7 +257,29 @@ export async function acceptInvitation(token: string, userId: string): Promise<S
     .select()
     .single();
 
-  if (collabError) throw collabError;
+  if (collabError) {
+    // Handle duplicate key constraint error
+    if (collabError.code === '23505' && collabError.message.includes('duplicate key')) {
+      // User is already a collaborator, fetch their existing record
+      const { data: existing } = await supabase
+        .from('site_collaborators')
+        .select('*')
+        .eq('site_id', invitation.site_id)
+        .eq('user_id', userId)
+        .single();
+      
+      if (existing) {
+        // Mark invitation as accepted
+        await supabase
+          .from('collaboration_invitations')
+          .update({ status: 'accepted' })
+          .eq('id', invitation.id);
+        
+        return existing;
+      }
+    }
+    throw collabError;
+  }
 
   // Mark invitation as accepted
   await supabase
@@ -346,28 +415,57 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
 
 /**
  * Helper function to enrich observations with user profile data
- * Since profiles table doesn't exist, we'll use auth.users but only for the current user
  */
 async function enrichObservationsWithUserData(observations: Observation[]): Promise<Observation[]> {
   if (!observations.length) return [];
   
   const supabase = createClient();
   
-  // Get current user data
+  // Get unique user IDs from observations
+  const userIds = [...new Set(observations.map(obs => obs.user_id))];
+  
+  try {
+    // Try to get profiles from profiles table
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name')
+      .in('id', userIds);
+    
+    if (!profilesError && profiles && profiles.length > 0) {
+      // Create a map of user_id to profile data
+      const profileMap = new Map<string, Pick<Profile, 'id' | 'email' | 'full_name'>>(
+        profiles.map((profile: Pick<Profile, 'id' | 'email' | 'full_name'>) => [profile.id, profile])
+      );
+      
+      return observations.map(obs => ({
+        ...obs,
+        user_email: profileMap.get(obs.user_id)?.email || `User ${obs.user_id.slice(0, 8)}...`,
+        user_name: profileMap.get(obs.user_id)?.full_name || null
+      }));
+    } else {
+      console.warn('No profiles found or error fetching profiles:', profilesError);
+    }
+  } catch (error) {
+    console.warn('Profiles table not available, using fallback user display:', error);
+  }
+  
+  // Fallback: Get current user data from auth
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
   if (userError || !user) {
-    console.error('Error getting current user:', userError);
-    return observations;
+    // Final fallback: show partial user ID
+    return observations.map(obs => ({
+      ...obs,
+      user_email: `User ${obs.user_id.slice(0, 8)}...`,
+      user_name: null
+    }));
   }
   
-  // For now, we can only get the current user's email
-  // For other users, we'll show a user ID or create placeholder text
+  // Show current user's email, others get user ID fallback
   return observations.map(obs => ({
     ...obs,
-    profiles: obs.user_id === user.id 
-      ? { email: user.email } 
-      : { email: `User ${obs.user_id.slice(0, 8)}...` } // Show partial user ID as fallback
+    user_email: obs.user_id === user.id ? user.email || 'Unknown User' : `User ${obs.user_id.slice(0, 8)}...`,
+    user_name: null
   }));
 }
 

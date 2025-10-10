@@ -436,6 +436,31 @@ export default function Home() {
         }
         setUser(authData.user);
 
+        // Step 1.5: Check if user should see onboarding
+        try {
+          // Check profiles table for onboarding status first
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', authData.user.id)
+            .single();
+
+          console.log('Profile check:', { profile, profileError });
+
+          // Redirect to onboarding if:
+          // 1. Profile doesn't exist, OR
+          // 2. Profile exists but onboarding_completed is false
+          if (!profile || (profile && !profile.onboarding_completed)) {
+            console.log('Redirecting to onboarding - user needs to complete onboarding');
+            router.push("/onboarding");
+            return;
+          } else {
+            console.log('User has completed onboarding - continuing to main app');
+          }
+        } catch (error) {
+          console.warn('Error checking onboarding status, continuing to main app:', error);
+        }
+
         // Step 2: Fetch observations with collaboration permissions
         let base: Observation[];
         try {
@@ -479,7 +504,7 @@ export default function Home() {
         const allUsers = new Map<string, string>();
         withUrls.forEach(obs => {
           if (obs.user_id) {
-            const displayName = `User ${obs.user_id.slice(0, 8)}...`;
+            const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
             allUsers.set(obs.user_id, displayName);
           }
         });
@@ -516,7 +541,7 @@ export default function Home() {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase, getSignedPhotoUrl, t]);
+  }, [supabase, getSignedPhotoUrl, t, router]);
 
   // ===== MAIN RENDER =====
   if (!mounted) {
@@ -1180,7 +1205,7 @@ export default function Home() {
 
                                         <span className="flex items-center gap-1 text-xs">
                                           <span className="font-medium">Created by:</span>
-                                          <span className="truncate">User {observation.user_id.slice(0, 8)}...</span>
+                                          <span className="truncate">{observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}</span>
                                         </span>
                                       </div>
                                     </div>
@@ -1391,7 +1416,7 @@ export default function Home() {
 
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <span className="font-medium">Created by:</span>
-                                  <span>User {observation.user_id.slice(0, 8)}...</span>
+                                  <span>{observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}</span>
                                 </div>
 
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

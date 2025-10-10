@@ -60,18 +60,27 @@ export interface Database {
         Row: {
           id: string
           email: string
+          full_name: string | null
+          onboarding_completed: boolean
+          last_sign_in_at: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id: string
           email: string
+          full_name?: string | null
+          onboarding_completed?: boolean
+          last_sign_in_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           email?: string
+          full_name?: string | null
+          onboarding_completed?: boolean
+          last_sign_in_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -160,7 +169,10 @@ export interface Database {
 }
 
 // Type helpers for easier usage
-export type Observation = Database['public']['Tables']['observations']['Row']
+export type Observation = Database['public']['Tables']['observations']['Row'] & {
+  user_email?: string;
+  user_name?: string | null;
+}
 export type ObservationInsert = Database['public']['Tables']['observations']['Insert']
 export type ObservationUpdate = Database['public']['Tables']['observations']['Update']
 

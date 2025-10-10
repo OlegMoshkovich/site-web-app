@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function UpdatePasswordForm({
   className,
@@ -22,7 +22,42 @@ export function UpdatePasswordForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const supabase = createClient();
+      
+      // First check if we have a session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Session data:', session, 'Session error:', sessionError);
+      
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      } else {
+        // Try to get user from URL parameters (for password reset flow)
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          // Set the session from URL parameters
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (data.user?.email) {
+            setUserEmail(data.user.email);
+          }
+          
+          console.log('Set session result:', data, 'Error:', error);
+        }
+      }
+    };
+    getUserEmail();
+  }, []);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,8 +68,8 @@ export function UpdatePasswordForm({
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+      // Redirect to main app after password update
+      router.push("/");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -48,7 +83,11 @@ export function UpdatePasswordForm({
         <CardHeader>
           <CardTitle className="text-2xl">Reset Your Password</CardTitle>
           <CardDescription>
-            Please enter your new password below.
+            {userEmail ? (
+              <>Updating password for <span className="font-medium">{userEmail}</span></>
+            ) : (
+              "Please enter your new password below."
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
