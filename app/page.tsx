@@ -50,6 +50,7 @@ import {
   filterObservationsByDateRange,
   filterObservationsByLabels,
   filterObservationsByUserId,
+  filterObservationsBySiteId,
   groupObservationsByDate,
   processLabel,
 } from "@/lib/search-utils";
@@ -108,6 +109,9 @@ export default function Home() {
   // User filter state
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [availableUsers, setAvailableUsers] = useState<{id: string, displayName: string}[]>([]);
+  // Site filter state  
+  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
+  const [availableSites, setAvailableSites] = useState<{id: string, name: string}[]>([]);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -346,6 +350,7 @@ export default function Home() {
     setStartDate("");
     setEndDate("");
     setSelectedUserId("");
+    setSelectedSiteId("");
   }, []);
 
   const handleSelectAll = useCallback(() => {
@@ -364,6 +369,11 @@ export default function Home() {
     // Then apply user filter if active
     if (selectedUserId) {
       filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
+    }
+    
+    // Then apply site filter if active
+    if (selectedSiteId) {
+      filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
     }
     
     // Then apply search filter if active
@@ -389,7 +399,7 @@ export default function Home() {
       visibleIds.forEach(id => newSelected.add(id));
       setSelectedObservations(newSelected);
     }
-  }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+  }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // ===== UTILITY FUNCTIONS =====
   // Calculate the minimum and maximum dates available in the observations
@@ -504,6 +514,16 @@ export default function Home() {
           }
         });
         setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
+        
+        // Extract unique sites from all observations
+        const allSites = new Map<string, string>();
+        withUrls.forEach(obs => {
+          if (obs.site_id) {
+            const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
+            allSites.set(obs.site_id, siteName);
+          }
+        });
+        setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
         
         setIsLoading(false);
       } catch (e) {
@@ -786,7 +806,7 @@ export default function Home() {
                           htmlFor="userFilter"
                           className="text-sm font-medium text-muted-foreground"
                         >
-                          User
+                          {t("user")}
                         </label>
                         <select
                           id="userFilter"
@@ -794,7 +814,7 @@ export default function Home() {
                           onChange={(e) => setSelectedUserId(e.target.value)}
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         >
-                          <option value="">All Users</option>
+                          <option value="">{t("allUsers")}</option>
                           {availableUsers.map((user) => (
                             <option key={user.id} value={user.id}>
                               {user.displayName}
@@ -802,10 +822,31 @@ export default function Home() {
                           ))}
                         </select>
                       </div>
+                      <div className="flex flex-col gap-1">
+                        <label
+                          htmlFor="siteFilter"
+                          className="text-sm font-medium text-muted-foreground"
+                        >
+                          {t("site")}
+                        </label>
+                        <select
+                          id="siteFilter"
+                          value={selectedSiteId}
+                          onChange={(e) => setSelectedSiteId(e.target.value)}
+                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
+                        >
+                          <option value="">{t("allSites")}</option>
+                          {availableSites.map((site) => (
+                            <option key={site.id} value={site.id}>
+                              {site.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <div className="flex flex-row gap-1 sm:gap-3 w-full sm:w-auto">
                         <Button
                           onClick={handleClearDateRange}
-                          disabled={!startDate && !endDate && !selectedUserId}
+                          disabled={!startDate && !endDate && !selectedUserId && !selectedSiteId}
                           size="sm"
                           variant="outline"
                           className="flex-1 sm:w-auto text-xs px-2"
@@ -836,6 +877,11 @@ export default function Home() {
                               filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
                             }
                             
+                            // Then apply site filter if active
+                            if (selectedSiteId) {
+                              filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
+                            }
+                            
                             // Then apply search filter if active
                             if (showSearchSelector && searchQuery.trim()) {
                               filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
@@ -853,11 +899,6 @@ export default function Home() {
                           })()}
                         </Button>
                       </div>
-                    </div>
-                    <div className="text-muted-foreground text-sm text-center sm:text-right">
-                      {startDate && endDate
-                        ? "Klicken Sie auf Beobachtungen, um sie auszuwählen."
-                        : t("clickToSelect")}
                     </div>
                   </div>
                 )}
@@ -959,6 +1000,11 @@ export default function Home() {
                   // Then apply user filter if active
                   if (selectedUserId) {
                     filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
+                  }
+                  
+                  // Then apply site filter if active
+                  if (selectedSiteId) {
+                    filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
                   }
                   
                   // Then apply search filter if active

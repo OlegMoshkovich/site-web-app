@@ -36,6 +36,12 @@ export const translations = {
     clickToSelect: "Click on observations to select them.",
     observationsSelected: "observation(s) selected",
     
+    // Filtering
+    user: "User",
+    allUsers: "All Users",
+    site: "Site",
+    allSites: "All Sites",
+    
     // Buttons
     generateReport: "Generate Report",
     clearSelection: "Clear Selection",
@@ -259,6 +265,12 @@ export const translations = {
     // Selection status
     clickToSelect: "Klicken Sie auf Beobachtungen, um sie auszuwählen.",
     observationsSelected: "Beobachtung(en) ausgewählt",
+    
+    // Filtering
+    user: "Benutzer",
+    allUsers: "Alle Benutzer",
+    site: "Standort",
+    allSites: "Alle Standorte",
     
     // Buttons
     generateReport: "Bericht generieren",

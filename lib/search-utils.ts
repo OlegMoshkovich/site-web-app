@@ -140,6 +140,21 @@ export function filterObservationsByUserId(
 }
 
 /**
+ * Filters observations by site ID
+ * Returns only observations from the specified site
+ */
+export function filterObservationsBySiteId(
+  observations: ObservationWithUrl[],
+  siteId: string
+): ObservationWithUrl[] {
+  if (!siteId.trim()) {
+    return observations;
+  }
+
+  return observations.filter(observation => observation.site_id === siteId);
+}
+
+/**
  * Processes labels for display by cleaning up concatenated strings
  */
 export function processLabel(label: string): string {
