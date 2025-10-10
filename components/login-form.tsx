@@ -17,6 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useLanguage, useTranslations } from "@/lib/translations";
 
 export function LoginForm({
   className,
@@ -30,6 +31,8 @@ export function LoginForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get('invitation');
+  const { language } = useLanguage();
+  const t = useTranslations(language);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +102,7 @@ export function LoginForm({
           <CardDescription>
             {invitationToken ? 
               "Sign in to accept your collaboration invitation" : 
-              "Login to your account"
+              t('loginToYourAccount')
             }
           </CardDescription>
         </CardHeader>     
@@ -107,7 +110,7 @@ export function LoginForm({
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -119,12 +122,12 @@ export function LoginForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   <Link
                     href="/auth/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    {t('forgotYourPassword')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -158,20 +161,20 @@ export function LoginForm({
                 {isLoading ? (
                   <>
                     <Spinner className="mr-2" />
-                    Logging in...
+                    {t('login')}...
                   </>
                 ) : (
-                  "Login"
+                  t('login')
                 )}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              {t('dontHaveAccount')}{" "}
               <Link
                 href="/auth/sign-up"
                 className="underline underline-offset-4"
               >
-                Sign up
+                {t('signUp')}
               </Link>
             </div>
           </form>

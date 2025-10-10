@@ -17,6 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useLanguage, useTranslations } from "@/lib/translations";
 
 export function SignUpForm({
   className,
@@ -32,6 +33,8 @@ export function SignUpForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get('invitation');
+  const { language } = useLanguage();
+  const t = useTranslations(language);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +43,7 @@ export function SignUpForm({
     setError(null);
 
     if (password !== repeatPassword) {
-      setError("Passwords do not match");
+      setError(t('passwordsDoNotMatch'));
       setIsLoading(false);
       return;
     }
@@ -69,13 +72,13 @@ export function SignUpForm({
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Simple Site</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+          <CardDescription>{t('createNewAccount')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -87,7 +90,7 @@ export function SignUpForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                 </div>
                 <div className="relative">
                   <Input
@@ -113,7 +116,7 @@ export function SignUpForm({
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repeat Password</Label>
+                  <Label htmlFor="repeat-password">{t('repeatPassword')}</Label>
                 </div>
                 <div className="relative">
                   <Input
@@ -146,17 +149,17 @@ export function SignUpForm({
                 {isLoading ? (
                   <>
                     <Spinner className="mr-2" />
-                    Creating an account...
+                    {t('creatingAccount')}...
                   </>
                 ) : (
-                  "Sign up"
+                  t('signUp')
                 )}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              {t('alreadyHaveAccount')}{" "}
               <Link href="/auth/login" className="underline underline-offset-4">
-                Login
+                {t('login')}
               </Link>
             </div>
           </form>

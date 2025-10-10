@@ -9,6 +9,21 @@ export const translations = {
     welcomeTitle: "Simple solution for a digital construction site",
     pleaseSignIn: "please sign in to generate reports",
     
+    // Authentication
+    loginToYourAccount: "Login to your account",
+    email: "Email",
+    password: "Password",
+    forgotYourPassword: "Forgot your password?",
+    login: "Login",
+    dontHaveAccount: "Don't have an account?",
+    signUp: "Sign up",
+    signIn: "Sign in",
+    createNewAccount: "Create a new account",
+    repeatPassword: "Repeat Password",
+    passwordsDoNotMatch: "Passwords do not match",
+    creatingAccount: "Creating an account",
+    alreadyHaveAccount: "Already have an account?",
+    
     // Date selection
     start: "Start:",
     end: "End:",
@@ -217,6 +232,21 @@ export const translations = {
     // Hero section
     welcomeTitle: "Die Lösung für eine digitale Baustelle",
     pleaseSignIn: "bitte anmelden um berichte zu generieren",
+    
+    // Authentication
+    loginToYourAccount: "Bei Ihrem Konto anmelden",
+    email: "E-Mail",
+    password: "Passwort",
+    forgotYourPassword: "Passwort vergessen?",
+    login: "Anmelden",
+    dontHaveAccount: "Noch kein Konto?",
+    signUp: "Registrieren",
+    signIn: "Anmelden",
+    createNewAccount: "Neues Konto erstellen",
+    repeatPassword: "Passwort wiederholen",
+    passwordsDoNotMatch: "Passwörter stimmen nicht überein",
+    creatingAccount: "Konto wird erstellt",
+    alreadyHaveAccount: "Bereits ein Konto?",
     
     // Date selection
     start: "Start:",
