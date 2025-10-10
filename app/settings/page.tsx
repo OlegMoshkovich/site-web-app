@@ -676,10 +676,6 @@ export default function SettingsPage() {
                 className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer text-center"
                 style={{ 
                   textAlignLast: "center",
-                  backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                  backgroundSize: "8px 8px",
-                  backgroundPosition: "calc(100% - 2px) center",
-                  backgroundRepeat: "no-repeat",
                   appearance: "none"
                 }}
               >

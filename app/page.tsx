@@ -1073,15 +1073,15 @@ export default function Home() {
                                   setSelectedObservations(newSelected);
                                 }}
                               >
-                                {/* Photo thumbnail - larger on mobile */}
-                                <div className="relative w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 overflow-hidden group/photo">
+                                {/* Photo thumbnail - larger on desktop */}
+                                <div className="relative w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 flex-shrink-0 overflow-hidden group/photo">
                                   {hasPhoto ? (
                                     <Image
                                       src={observation.signedUrl as string}
                                       alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                       fill
                                       className="object-cover"
-                                      sizes="(max-width: 640px) 80px, 64px"
+                                      sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, 160px"
                                     />
                                   ) : (
                                     <div className="w-full h-full bg-gray-100 flex items-center justify-center border">
