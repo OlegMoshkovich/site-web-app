@@ -45,7 +45,10 @@ export default function SettingsPage() {
   const [plans, setPlans] = useState<{id: string; plan_name: string; plan_url: string; site_id: string}[]>([]);
   const [newPlanName, setNewPlanName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: 'pending' | 'uploading' | 'completed' | 'error'}>({});
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Collaboration state
   const [selectedSiteForCollaborators, setSelectedSiteForCollaborators] = useState<string>("");
@@ -490,91 +493,259 @@ export default function SettingsPage() {
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Check if it's an image
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
-        return;
+    const files = event.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const validFiles = fileArray.filter(file => {
+        return file.type.startsWith('image/') || file.type === 'application/pdf';
+      });
+      
+      if (validFiles.length !== fileArray.length) {
+        alert('Some files were skipped. Only image files (PNG, JPG, etc.) and PDF files are supported.');
       }
-      setSelectedFile(file);
+      
+      setSelectedFiles(validFiles);
+      // Initialize progress tracking
+      const progress: {[key: string]: 'pending' | 'uploading' | 'completed' | 'error'} = {};
+      validFiles.forEach(file => {
+        progress[file.name] = 'pending';
+      });
+      setUploadProgress(progress);
     }
   };
 
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    
+    const files = event.dataTransfer.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const validFiles = fileArray.filter(file => {
+        return file.type.startsWith('image/') || file.type === 'application/pdf';
+      });
+      
+      if (validFiles.length !== fileArray.length) {
+        alert('Some files were skipped. Only image files (PNG, JPG, etc.) and PDF files are supported.');
+      }
+      
+      setSelectedFiles(validFiles);
+      // Initialize progress tracking
+      const progress: {[key: string]: 'pending' | 'uploading' | 'completed' | 'error'} = {};
+      validFiles.forEach(file => {
+        progress[file.name] = 'pending';
+      });
+      setUploadProgress(progress);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
   const handleUploadPlan = async () => {
-    if (!selectedFile || !newPlanName.trim() || !selectedSiteForPlans || !user) {
-      alert('Please select a site, enter a plan name, and choose a file.');
+    if (!selectedSiteForPlans || !user) {
+      alert('Please select a site.');
+      return;
+    }
+
+    // Handle single file upload (legacy)
+    if (selectedFile && newPlanName.trim()) {
+      setIsUploading(true);
+      try {
+        const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+        const fileName = `plan_${Date.now()}.${fileExt}`;
+        const filePath = `${selectedSiteForPlans}/${fileName}`;
+
+        // Upload file to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from('plans')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          alert('Failed to upload file. Please try again.');
+          return;
+        }
+
+        // Get signed URL for the uploaded file (expires in 1 year)
+        const { data: urlData, error: urlError } = await supabase.storage
+          .from('plans')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+        if (urlError) {
+          console.error('Error creating signed URL:', urlError);
+          alert('Failed to create access URL for the plan. Please try again.');
+          return;
+        }
+
+        // Save plan metadata to database
+        const { data: planData, error: dbError } = await supabase
+          .from('site_plans')
+          .insert({
+            user_id: user.id,
+            site_id: selectedSiteForPlans,
+            plan_name: newPlanName.trim(),
+            plan_url: urlData.signedUrl
+          })
+          .select('id, plan_name, plan_url, site_id')
+          .single();
+
+        if (dbError) {
+          console.error('Database error:', dbError);
+          alert('Failed to save plan information. Please try again.');
+          return;
+        }
+
+        // Add to local state
+        if (planData) {
+          setPlans(prev => [planData, ...prev]);
+        }
+
+        // Reset form
+        setNewPlanName("");
+        setSelectedFile(null);
+        
+        // Reset file input
+        const fileInput = document.getElementById('planFile') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+
+        alert(`Plan "${newPlanName}" uploaded successfully!`);
+      } catch (error) {
+        console.error('Error uploading plan:', error);
+        alert('Failed to upload plan. Please try again.');
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
+    // Handle bulk file upload
+    if (selectedFiles.length === 0) {
+      alert('Please select files to upload.');
       return;
     }
 
     setIsUploading(true);
-    try {
-      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
-      const fileName = `plan_${Date.now()}.${fileExt}`;
-      const filePath = `${selectedSiteForPlans}/${fileName}`;
+    const newPlans: {id: string; plan_name: string; plan_url: string; site_id: string}[] = [];
 
-      // Upload file to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from('plans')
-        .upload(filePath, selectedFile);
+    for (const file of selectedFiles) {
+      try {
+        // Update progress to uploading
+        setUploadProgress(prev => ({
+          ...prev,
+          [file.name]: 'uploading'
+        }));
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        alert('Failed to upload file. Please try again.');
-        return;
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const fileName = `plan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const filePath = `${selectedSiteForPlans}/${fileName}`;
+
+        // Upload file to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from('plans')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Upload error for', file.name, ':', uploadError);
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 'error'
+          }));
+          continue;
+        }
+
+        // Get signed URL for the uploaded file (expires in 1 year)
+        const { data: urlData, error: urlError } = await supabase.storage
+          .from('plans')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+        if (urlError) {
+          console.error('Error creating signed URL for', file.name, ':', urlError);
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 'error'
+          }));
+          continue;
+        }
+
+        // Use file name without extension as plan name
+        const planName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
+        // Save plan metadata to database
+        const { data: planData, error: dbError } = await supabase
+          .from('site_plans')
+          .insert({
+            user_id: user.id,
+            site_id: selectedSiteForPlans,
+            plan_name: planName,
+            plan_url: urlData.signedUrl
+          })
+          .select('id, plan_name, plan_url, site_id')
+          .single();
+
+        if (dbError) {
+          console.error('Database error for', file.name, ':', dbError);
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 'error'
+          }));
+          continue;
+        }
+
+        if (planData) {
+          newPlans.push(planData);
+        }
+
+        // Update progress to completed
+        setUploadProgress(prev => ({
+          ...prev,
+          [file.name]: 'completed'
+        }));
+
+      } catch (error) {
+        console.error('Error uploading', file.name, ':', error);
+        setUploadProgress(prev => ({
+          ...prev,
+          [file.name]: 'error'
+        }));
       }
-
-      // Get signed URL for the uploaded file (expires in 1 year)
-      const { data: urlData, error: urlError } = await supabase.storage
-        .from('plans')
-        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
-
-      if (urlError) {
-        console.error('Error creating signed URL:', urlError);
-        alert('Failed to create access URL for the plan. Please try again.');
-        return;
-      }
-
-      // Save plan metadata to database
-      const { data: planData, error: dbError } = await supabase
-        .from('site_plans')
-        .insert({
-          user_id: user.id,
-          site_id: selectedSiteForPlans,
-          plan_name: newPlanName.trim(),
-          plan_url: urlData.signedUrl
-        })
-        .select('id, plan_name, plan_url, site_id')
-        .single();
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        alert('Failed to save plan information. Please try again.');
-        return;
-      }
-
-      // Add to local state
-      if (planData) {
-        setPlans(prev => [planData, ...prev]);
-      }
-
-      // Reset form
-      setNewPlanName("");
-      setSelectedFile(null);
-      
-      // Reset file input
-      const fileInput = document.getElementById('planFile') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-      }
-
-      alert(`Plan "${newPlanName}" uploaded successfully!`);
-    } catch (error) {
-      console.error('Error uploading plan:', error);
-      alert('Failed to upload plan. Please try again.');
-    } finally {
-      setIsUploading(false);
     }
+
+    // Add all successfully uploaded plans to local state
+    if (newPlans.length > 0) {
+      setPlans(prev => [...newPlans, ...prev]);
+    }
+
+    // Reset bulk upload state
+    setSelectedFiles([]);
+    setUploadProgress({});
+    
+    // Reset file input
+    const fileInput = document.getElementById('planFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+
+    const successCount = newPlans.length;
+    const totalCount = selectedFiles.length;
+    const errorCount = totalCount - successCount;
+
+    if (errorCount === 0) {
+      alert(`All ${successCount} plans uploaded successfully!`);
+    } else {
+      alert(`${successCount} plans uploaded successfully. ${errorCount} failed to upload.`);
+    }
+
+    setIsUploading(false);
   };
 
   const handleDeletePlan = async (planId: string, planName: string) => {
@@ -1081,7 +1252,7 @@ export default function SettingsPage() {
                 {t('uploadPlans')}
               </CardTitle>
               <CardDescription>
-                {t('uploadSitePlansAndMaps')}
+                {t('uploadSitePlansAndMaps')} (Images and PDFs supported)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1115,38 +1286,120 @@ export default function SettingsPage() {
                   {/* Plan Upload Form */}
                   <div className="border-t pt-4">
                     <h3 className="text-lg font-medium mb-4">{t('uploadPlan')}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="planName">{t('planName')}</Label>
-                        <Input
-                          id="planName"
-                          value={newPlanName}
-                          onChange={(e) => setNewPlanName(e.target.value)}
-                          placeholder={t('enterPlanName')}
-                          disabled={isUploading}
-                        />
+                    
+                    {/* Single File Upload */}
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                      <h4 className="text-md font-medium mb-3">Single File Upload</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="planName">{t('planName')}</Label>
+                          <Input
+                            id="planName"
+                            value={newPlanName}
+                            onChange={(e) => setNewPlanName(e.target.value)}
+                            placeholder={t('enterPlanName')}
+                            disabled={isUploading}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="planFile">{t('planFile')}</Label>
+                          <Input
+                            id="planFile"
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={handleFileSelect}
+                            disabled={isUploading}
+                            className="cursor-pointer"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="planFile">{t('planFile')}</Label>
+                      {selectedFile && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          Selected file: {selectedFile.name}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bulk Upload Section */}
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                      <h4 className="text-md font-medium mb-3">Bulk Upload</h4>
+                      
+                      {/* Drag and Drop Area */}
+                      <div 
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                          isDragOver 
+                            ? 'border-blue-400 bg-blue-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                      >
+                        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-lg font-medium text-gray-700 mb-2">
+                          Drag and drop files here, or click to select
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Supports images (PNG, JPG, etc.) and PDF files
+                        </p>
                         <Input
-                          id="planFile"
                           type="file"
-                          accept="image/*"
+                          multiple
+                          accept="image/*,.pdf"
                           onChange={handleFileSelect}
                           disabled={isUploading}
-                          className="cursor-pointer"
+                          className="hidden"
+                          id="bulkFileInput"
                         />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('bulkFileInput')?.click()}
+                          disabled={isUploading}
+                          className="mt-2"
+                        >
+                          Select Files
+                        </Button>
                       </div>
+
+                      {/* Selected Files List */}
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-4">
+                          <h5 className="font-medium mb-2">Selected Files ({selectedFiles.length})</h5>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {selectedFiles.map((file, index) => {
+                              const status = uploadProgress[file.name] || 'pending';
+                              return (
+                                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <span className="text-sm truncate flex-1">{file.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500">
+                                      {(file.size / (1024 * 1024)).toFixed(1)} MB
+                                    </span>
+                                    <span className={`text-xs px-2 py-1 rounded ${
+                                      status === 'pending' ? 'bg-gray-200 text-gray-700' :
+                                      status === 'uploading' ? 'bg-blue-200 text-blue-700' :
+                                      status === 'completed' ? 'bg-green-200 text-green-700' :
+                                      'bg-red-200 text-red-700'
+                                    }`}>
+                                      {status === 'pending' ? 'Pending' :
+                                       status === 'uploading' ? 'Uploading...' :
+                                       status === 'completed' ? 'Completed' :
+                                       'Error'}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    {selectedFile && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        Selected file: {selectedFile.name}
-                      </div>
-                    )}
+
                     <Button 
                       onClick={handleUploadPlan} 
-                      className="w-full mt-4"
-                      disabled={!selectedFile || !newPlanName.trim() || isUploading}
+                      className="w-full"
+                      disabled={(!selectedFile || !newPlanName.trim()) && selectedFiles.length === 0 || isUploading}
                     >
                       {isUploading ? (
                         <>
@@ -1156,7 +1409,7 @@ export default function SettingsPage() {
                       ) : (
                         <>
                           <Upload className="h-4 w-4 mr-2" />
-                          {t('uploadPlan')}
+                          {selectedFiles.length > 0 ? `Upload ${selectedFiles.length} Plans` : t('uploadPlan')}
                         </>
                       )}
                     </Button>
