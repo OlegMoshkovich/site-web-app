@@ -172,6 +172,115 @@ export default function Home() {
     router.push(`/report?ids=${queryString}`);
   }, [selectedObservations, router]);
 
+  // Compress image blob for download with multi-pass approach
+  const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 50): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      // If it's not an image, return as-is
+      if (!blob.type.startsWith('image/')) {
+        resolve(blob);
+        return;
+      }
+
+      // Even if it's small, still compress it to ensure consistency
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
+        // Set up timeout to prevent hanging
+        const timeout = setTimeout(() => {
+          reject(new Error('Image compression timeout'));
+        }, 30000);
+
+        img.onload = () => {
+          try {
+            clearTimeout(timeout);
+            
+            // Multi-pass compression: try different dimension sizes
+            const compressionPasses = [
+              { maxDim: 600, quality: 0.3 },  // Very aggressive first pass
+              { maxDim: 500, quality: 0.25 }, // Even more aggressive
+              { maxDim: 400, quality: 0.2 },  // Very small
+              { maxDim: 300, quality: 0.15 }  // Tiny but readable
+            ];
+
+            let passIndex = 0;
+
+            const tryPass = () => {
+              if (passIndex >= compressionPasses.length) {
+                // If all passes fail, use the tiniest possible version
+                canvas.width = 200;
+                canvas.height = 200;
+                ctx?.drawImage(img, 0, 0, 200, 200);
+                canvas.toBlob((finalBlob) => {
+                  resolve(finalBlob || blob);
+                }, 'image/jpeg', 0.1);
+                return;
+              }
+
+              const pass = compressionPasses[passIndex];
+              let { width, height } = img;
+              
+              // Calculate dimensions for this pass
+              if (width > height && width > pass.maxDim) {
+                height = (height * pass.maxDim) / width;
+                width = pass.maxDim;
+              } else if (height > pass.maxDim) {
+                width = (width * pass.maxDim) / height;
+                height = pass.maxDim;
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+
+              if (!ctx) {
+                reject(new Error('Failed to get canvas context'));
+                return;
+              }
+
+              // Draw image
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // Try compression with current pass settings
+              canvas.toBlob((compressedBlob) => {
+                if (!compressedBlob) {
+                  passIndex++;
+                  tryPass(); // Try next pass
+                  return;
+                }
+
+                // If this pass achieves target size, use it
+                if (compressedBlob.size <= targetSizeKB * 1024) {
+                  resolve(compressedBlob);
+                } else {
+                  // Try next pass
+                  passIndex++;
+                  tryPass();
+                }
+              }, 'image/jpeg', pass.quality);
+            };
+
+            tryPass();
+          } catch (error) {
+            clearTimeout(timeout);
+            reject(error);
+          }
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Failed to load image for compression'));
+        };
+
+        // Set CORS to anonymous to handle cross-origin issues
+        img.crossOrigin = 'anonymous';
+        img.src = URL.createObjectURL(blob);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }, []);
+
   // Download photos for selected observations as a ZIP file
   const handleDownloadPhotos = useCallback(async () => {
     if (selectedObservations.size === 0) return;
@@ -206,17 +315,64 @@ export default function Home() {
             
             const blob = await response.blob();
             
+            // Try to compress the image for download, fallback to original if it fails
+            let finalBlob = blob;
+            let extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' : 
+                           blob.type.includes('png') ? '.png' : '.jpg';
+            
+            try {
+              // Attempt compression for images only (target 30KB for very small files)
+              if (blob.type.startsWith('image/')) {
+                const compressedBlob = await compressImageForDownload(blob, 30);
+                finalBlob = compressedBlob;
+                extension = '.jpg'; // Compressed images are always JPEG
+                console.log(`Compressed image from ${(blob.size / 1024).toFixed(1)}KB to ${(compressedBlob.size / 1024).toFixed(1)}KB`);
+              }
+            } catch (compressionError) {
+              console.warn(`Failed to compress image for observation ${obs.id}, attempting basic fallback compression:`, compressionError);
+              
+              // Try a simple fallback compression
+              try {
+                if (blob.type.startsWith('image/')) {
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  const img = new Image();
+                  
+                  await new Promise((resolve, reject) => {
+                    img.onload = () => {
+                      // Very small dimensions
+                      canvas.width = 300;
+                      canvas.height = 300;
+                      ctx?.drawImage(img, 0, 0, 300, 300);
+                      
+                      canvas.toBlob((fallbackBlob) => {
+                        if (fallbackBlob) {
+                          finalBlob = fallbackBlob;
+                          extension = '.jpg';
+                          console.log(`Fallback compression: ${(blob.size / 1024).toFixed(1)}KB to ${(fallbackBlob.size / 1024).toFixed(1)}KB`);
+                        }
+                        resolve(fallbackBlob);
+                      }, 'image/jpeg', 0.1);
+                    };
+                    img.onerror = reject;
+                    img.src = URL.createObjectURL(blob);
+                  });
+                }
+              } catch (fallbackError) {
+                console.warn(`Fallback compression also failed for ${obs.id}, using original:`, fallbackError);
+                // Keep using the original blob and extension
+              }
+            }
+            
             // Create a filename based on observation data
             const date = obs.taken_at || obs.created_at;
             const dateStr = new Date(date).toISOString().split('T')[0];
             const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
-            const extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' : 
-                            blob.type.includes('png') ? '.png' : '.jpg';
             
             const filename = `${dateStr}${site}_${obs.id.slice(0, 8)}${extension}`;
             
-            // Add to ZIP
-            zip.file(filename, blob);
+            // Add image to ZIP (compressed or original)
+            zip.file(filename, finalBlob);
             downloadCount++;
           }
         } catch (error) {
@@ -248,7 +404,7 @@ export default function Home() {
       console.error("Error downloading photos:", error);
       alert("Failed to download photos. Please try again.");
     }
-  }, [selectedObservations, observations]);
+  }, [selectedObservations, observations, compressImageForDownload]);
 
   // ===== NOTE EDITING =====
   // Handle note editing
