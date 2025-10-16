@@ -185,7 +185,11 @@ export default function Home() {
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const img = new Image();
+        const img = typeof window !== "undefined" ? new window.Image() : null;
+        if (!img) {
+          reject(new Error("Could not create Image object in this environment"));
+          return;
+        }
 
         // Set up timeout to prevent hanging
         const timeout = setTimeout(() => {
@@ -336,7 +340,8 @@ export default function Home() {
                 if (blob.type.startsWith('image/')) {
                   const canvas = document.createElement('canvas');
                   const ctx = canvas.getContext('2d');
-                  const img = new Image();
+                  const img = typeof window !== "undefined" ? new window.Image() : null;
+                  if (!img) throw new Error("Could not create Image object in this environment");
                   
                   await new Promise((resolve, reject) => {
                     img.onload = () => {
