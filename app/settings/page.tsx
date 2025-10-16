@@ -46,6 +46,8 @@ export default function SettingsPage() {
   const [newPlanName, setNewPlanName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<{original: number; compressed: number} | null>(null);
 
   // Collaboration state
   const [selectedSiteForCollaborators, setSelectedSiteForCollaborators] = useState<string>("");
@@ -280,6 +282,80 @@ export default function SettingsPage() {
     }
   }, [user?.email]);
 
+  const compressImage = useCallback((file: File, targetSizeKB: number = 200): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      // If it's already a PDF or small enough, return as-is
+      if (file.type === 'application/pdf' || file.size <= targetSizeKB * 1024) {
+        resolve(file);
+        return;
+      }
+
+      // Only compress images
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        const maxDimension = 1920; // Max width or height
+        let { width, height } = img;
+        
+        if (width > height && width > maxDimension) {
+          height = (height * maxDimension) / width;
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = (width * maxDimension) / height;
+          height = maxDimension;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Start with quality 0.8 and reduce if needed
+        let quality = 0.8;
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
+
+            // If size is good or quality is too low, accept the result
+            if (blob.size <= targetSizeKB * 1024 || quality <= 0.1) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              // Reduce quality and try again
+              quality -= 0.1;
+              tryCompress();
+            }
+          }, 'image/jpeg', quality);
+        };
+
+        tryCompress();
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  }, []);
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -489,15 +565,36 @@ export default function SettingsPage() {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check if it's an image
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
+      // Check if it's an image or PDF
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        alert('Please select an image file (PNG, JPG, etc.) or PDF file.');
         return;
       }
-      setSelectedFile(file);
+      
+      try {
+        setIsCompressing(true);
+        setCompressionInfo(null);
+        
+        // Compress image if it's an image file
+        const processedFile = await compressImage(file);
+        setSelectedFile(processedFile);
+        
+        // Show compression info if file was compressed
+        if (processedFile.size !== file.size) {
+          setCompressionInfo({
+            original: file.size,
+            compressed: processedFile.size
+          });
+        }
+      } catch (error) {
+        console.error('Error processing file:', error);
+        alert('Error processing file. Please try again.');
+      } finally {
+        setIsCompressing(false);
+      }
     }
   };
 
@@ -1081,7 +1178,7 @@ export default function SettingsPage() {
                 {t('uploadPlans')}
               </CardTitle>
               <CardDescription>
-                {t('uploadSitePlansAndMaps')}
+                {t('uploadSitePlansAndMaps')} (Images auto-compressed to ~200KB, PDFs uploaded as-is)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1131,22 +1228,38 @@ export default function SettingsPage() {
                         <Input
                           id="planFile"
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.pdf"
                           onChange={handleFileSelect}
                           disabled={isUploading}
                           className="cursor-pointer"
                         />
                       </div>
                     </div>
-                    {selectedFile && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        Selected file: {selectedFile.name}
+                    {isCompressing && (
+                      <div className="mt-2 text-sm text-blue-600 flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        Compressing image...
+                      </div>
+                    )}
+                    {selectedFile && !isCompressing && (
+                      <div className="mt-2 space-y-1">
+                        <div className="text-sm text-gray-600">
+                          Selected file: {selectedFile.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Size: {(selectedFile.size / 1024).toFixed(1)} KB
+                        </div>
+                        {compressionInfo && (
+                          <div className="text-sm text-green-600">
+                            ✓ Compressed from {(compressionInfo.original / (1024 * 1024)).toFixed(1)}MB to {(compressionInfo.compressed / 1024).toFixed(1)}KB
+                          </div>
+                        )}
                       </div>
                     )}
                     <Button 
                       onClick={handleUploadPlan} 
                       className="w-full mt-4"
-                      disabled={!selectedFile || !newPlanName.trim() || isUploading}
+                      disabled={!selectedFile || !newPlanName.trim() || isUploading || isCompressing}
                     >
                       {isUploading ? (
                         <>
