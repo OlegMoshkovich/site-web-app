@@ -10,7 +10,7 @@ export function Footer() {
           <div className="text-left">
             <div className="text-xs text-gray-500 space-y-1">
               <div className="font-medium text-gray-900">clone:it GmbH</div>
-              <div>Am Katzelbach 7, 8054 Graz</div>
+              <div>Am Katzelbach 9, 8054 Graz</div>
               <div>Phone: +43 676 755 5310</div>
               <div>
                 e-mail: paul.wegerer (at) cloneit.at
