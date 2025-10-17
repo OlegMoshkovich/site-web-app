@@ -81,6 +81,12 @@ export default function Home() {
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   // Loading state for async operations
   const [isLoading, setIsLoading] = useState(true);
+  // Loading state for loading more observations
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Whether there are more observations to load
+  const [hasMore, setHasMore] = useState(false);
+  // Current week offset for pagination
+  const [weekOffset, setWeekOffset] = useState(0);
   // Error message if something goes wrong
   const [error, setError] = useState<string | null>(null);
   // Set of selected observation IDs for bulk operations
@@ -584,6 +590,73 @@ export default function Home() {
   }, [observations]);
 
 
+  // ===== LOAD MORE FUNCTIONALITY =====
+  const loadMoreObservations = useCallback(async () => {
+    if (!user || isLoadingMore || !hasMore) return;
+
+    try {
+      setIsLoadingMore(true);
+      const { fetchCollaborativeObservationsByWeek } = await import("@/lib/supabase/api");
+      
+      // Load next week's observations
+      const { observations: newObservations, hasMore: hasMoreData } = 
+        await fetchCollaborativeObservationsByWeek(user.id, 1, weekOffset + 1);
+
+      // Generate signed URLs for new photos
+      const withUrls: ObservationWithUrl[] = await Promise.all(
+        newObservations.map(async (o) => {
+          const signedUrl = o.photo_url
+            ? await getSignedPhotoUrl(o.photo_url, 3600)
+            : null;
+          return { ...o, signedUrl };
+        })
+      );
+
+      // Append new observations to existing ones
+      setObservations(prev => [...prev, ...withUrls]);
+      setHasMore(hasMoreData);
+      setWeekOffset(prev => prev + 1);
+      
+      // Update filters with new data (combining existing and new observations)
+      const allLabels = new Set<string>();
+      const allUsers = new Map<string, string>();
+      const allSites = new Map<string, string>();
+      
+      // Combine existing observations with new ones for filter updates
+      const combinedObservations = [...observations, ...withUrls];
+      combinedObservations.forEach(obs => {
+        // Labels
+        if (obs.labels) {
+          obs.labels.forEach(label => {
+            if (label && label.trim()) {
+              allLabels.add(label.trim());
+            }
+          });
+        }
+        // Users
+        if (obs.user_id) {
+          const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
+          allUsers.set(obs.user_id, displayName);
+        }
+        // Sites
+        if (obs.site_id) {
+          const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
+          allSites.set(obs.site_id, siteName);
+        }
+      });
+      
+      setAvailableLabels(Array.from(allLabels).sort());
+      setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
+      setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
+
+    } catch (e) {
+      console.error("Error loading more observations:", e);
+      setError("Failed to load more observations");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [user, isLoadingMore, hasMore, weekOffset, observations, getSignedPhotoUrl]);
+
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
   useEffect(() => {
@@ -591,6 +664,8 @@ export default function Home() {
       try {
         setIsLoading(true);
         setError(null);
+        setWeekOffset(0);
+        setHasMore(false);
 
         // Step 1: Authenticate the current user
         const { data: authData, error: userError } =
@@ -627,11 +702,14 @@ export default function Home() {
           console.warn('Error checking onboarding status, continuing to main app:', error);
         }
 
-        // Step 2: Fetch observations with collaboration permissions
+        // Step 2: Fetch first week of observations with collaboration permissions
         let base: Observation[];
+        let hasMoreData = false;
         try {
-          const { fetchCollaborativeObservations } = await import("@/lib/supabase/api");
-          base = await fetchCollaborativeObservations(authData.user.id);
+          const { fetchCollaborativeObservationsByWeek } = await import("@/lib/supabase/api");
+          const result = await fetchCollaborativeObservationsByWeek(authData.user.id, 1, 0);
+          base = result.observations;
+          hasMoreData = result.hasMore;
         } catch (obsError: unknown) {
           console.error("Error fetching collaborative observations:", obsError);
           const errorMessage = obsError instanceof Error ? obsError.message : String(obsError);
@@ -652,6 +730,7 @@ export default function Home() {
         );
 
         setObservations(withUrls);
+        setHasMore(hasMoreData);
         
         // Extract unique labels from all observations
         const allLabels = new Set<string>();
@@ -708,6 +787,8 @@ export default function Home() {
           setUser(null);
           setObservations([]);
           setSelectedObservations(new Set());
+          setWeekOffset(0);
+          setHasMore(false);
           setIsLoading(false);
         } else if (event === "SIGNED_IN" && session?.user) {
           // Refetch data when user signs in
@@ -1680,6 +1761,28 @@ export default function Home() {
                     </div>
                   ));
                 })()}
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="flex justify-center py-8">
+                    <Button
+                      onClick={loadMoreObservations}
+                      disabled={isLoadingMore}
+                      variant="outline"
+                      size="lg"
+                      className="shadow-md hover:shadow-lg transition-all"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                          {t("loading")}
+                        </>
+                      ) : (
+                        t("loadMore")
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12">
