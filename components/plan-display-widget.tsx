@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 
 interface AnchorPoint {
@@ -35,9 +35,19 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
   // Use the same dimensions as React Native version
   const imageWidth = 320;
   const imageHeight = 280;
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
   const getPlanImageSrc = (planName: string) => {
-    return `/plans/${planName}.png`;
+    // Check if planName looks like a UUID (contains hyphens) - these won't have image files
+    if (planName && planName.includes('-') && planName.length > 30) {
+      console.log('Plan name appears to be a UUID:', planName, 'no image file available');
+      return null; // Return null to indicate no image available
+    }
+    
+    // Clean the plan name and ensure it's valid
+    const cleanPlanName = (planName || 'plan1').replace(/[^a-zA-Z0-9]/g, '');
+    console.log('Getting plan image for:', planName, 'cleaned to:', cleanPlanName);
+    return `/plans/${cleanPlanName}.png`;
   };
 
   const getAnchorPoint = (item: PlanDisplayWidgetProps['observations'][0]): AnchorPoint | null => {
@@ -130,17 +140,48 @@ const PlanDisplayWidget: React.FC<PlanDisplayWidgetProps> = ({ observations, pla
                 height: imageHeight,
               }}
             >
-              <Image
-                src={getPlanImageSrc(planInfo.planName)}
-                alt={`Plan ${planInfo.planName}`}
-                width={imageWidth}
-                height={imageHeight}
-                className="object-contain"
-                style={{
-                  width: imageWidth,
-                  height: imageHeight,
-                }}
-              />
+              {(() => {
+                const imageSrc = getPlanImageSrc(planInfo.planName);
+                
+                if (!imageSrc || imageErrors.has(planInfo.planName)) {
+                  return (
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <div className="text-center">
+                        <div className="text-gray-500 text-sm font-medium">
+                          {planInfo.planName.includes('-') && planInfo.planName.length > 30 
+                            ? 'PDF Plan (not displayable)' 
+                            : 'Plan not found'
+                          }
+                        </div>
+                        <div className="text-gray-400 text-xs">
+                          {planInfo.planName.includes('-') && planInfo.planName.length > 30 
+                            ? 'PDF plans cannot be displayed here' 
+                            : planInfo.planName
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <Image
+                    src={imageSrc}
+                    alt={`Plan ${planInfo.planName}`}
+                    width={imageWidth}
+                    height={imageHeight}
+                    className="object-contain"
+                    style={{
+                      width: imageWidth,
+                      height: imageHeight,
+                    }}
+                    onError={(e) => {
+                      console.error(`Failed to load plan image for ${planInfo.planName}:`, e);
+                      setImageErrors(prev => new Set(prev).add(planInfo.planName));
+                    }}
+                  />
+                );
+              })()}
               
               {planInfo.anchors.map((anchor) => (
                 <div

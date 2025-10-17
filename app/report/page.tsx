@@ -50,9 +50,7 @@ function ReportPageContent() {
     photo: true,
     note: true,
     labels: true,
-    plan: true,
-    gps: true,
-    planAnchor: true
+    gps: true
   });
   
   // Edit state
@@ -198,7 +196,16 @@ function ReportPageContent() {
         let globalIndex = 0;
         
         observationsWithAnchors.forEach((obs) => {
-          const obsPlan = obs.plan || 'plan1';
+          let obsPlan = obs.plan || 'plan1';
+          
+          // Check if plan looks like a UUID - skip these plans
+          if (obsPlan.includes('-') && obsPlan.length > 30) {
+            console.log('Plan appears to be a UUID:', obsPlan, 'skipping plan display');
+            return; // Skip this observation for plan overview
+          } else {
+            obsPlan = obsPlan.replace(/[^a-zA-Z0-9]/g, '');
+          }
+          
           let anchor = null;
           
           if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
@@ -225,6 +232,8 @@ function ReportPageContent() {
           yPosition += 15;
 
           for (const [planName, anchors] of planGroups) {
+            console.log(`Processing plan: ${planName} with ${anchors.length} anchors`);
+            
             // Check if we need a new page
             if (yPosition > pageHeight - 80) {
               pdf.addPage();
@@ -247,7 +256,10 @@ function ReportPageContent() {
               img.crossOrigin = 'anonymous';
               await new Promise((resolve, reject) => {
                 img.onload = resolve;
-                img.onerror = reject;
+                img.onerror = (error) => {
+                  console.error(`Failed to load plan image: /plans/${planName}.png`, error);
+                  reject(error);
+                };
                 img.src = `/plans/${planName}.png`;
               });
 
@@ -322,69 +334,20 @@ function ReportPageContent() {
         }
       }
 
-      // Process each observation
+      // Process each observation in a simple table format
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
         
-        // Check if we need a new page
-        if (yPosition > pageHeight - 60) {
+        // Check if we need a new page (reserve more space for table layout)
+        if (yPosition > pageHeight - 100) {
           pdf.addPage();
           yPosition = margin;
         }
 
-        // Add observation number
-        pdf.setFontSize(14);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Observation ${i + 1}`, margin, yPosition);
-        yPosition += 10;
-
-        // Add note (if enabled)
-        if (displaySettings.note && observation.note) {
-          pdf.setFontSize(10);
-          pdf.setFont('helvetica', 'normal');
-          const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
-          pdf.text(noteLines, margin, yPosition);
-          yPosition += noteLines.length * 5 + 5;
-        }
-
-        // Add labels (if enabled)
-        if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'italic');
-          pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
-          yPosition += 10;
-        }
-
-        // Add plan if available (only if enabled and meaningful)
-        if (displaySettings.plan && observation.plan && observation.plan.trim() !== '') {
-          pdf.setFontSize(9);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text('Plan: ' + observation.plan, margin, yPosition);
-          yPosition += 8;
-        }
-
-        // Add GPS coordinates (if enabled)
-        if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
-          pdf.setFontSize(9);
-          pdf.text(`GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, margin, yPosition);
-          yPosition += 8;
-        }
-
-        // Add plan anchor coordinates (if enabled and meaningful)
-        if (displaySettings.planAnchor && 
-            observation.plan_anchor && 
-            typeof observation.plan_anchor === 'object' && 
-            'x' in observation.plan_anchor && 
-            'y' in observation.plan_anchor &&
-            !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0)) {
-          pdf.setFontSize(9);
-          pdf.text(`Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, margin, yPosition);
-          yPosition += 8;
-        }
-
-        // Add photo if available and enabled
+        // Create a simple table-like layout with photo on left, text on right
         if (displaySettings.photo && observation.signedUrl) {
           try {
+            // Load and process the image
             const img = new window.Image();
             img.crossOrigin = 'anonymous';
             await new Promise((resolve, reject) => {
@@ -400,23 +363,98 @@ function ReportPageContent() {
             ctx?.drawImage(img, 0, 0);
             
             const imgData = canvas.toDataURL('image/jpeg', 0.7);
-            const imgWidth = 80;
-            const imgHeight = (img.height / img.width) * imgWidth;
             
-            // Check if image fits on current page
-            if (yPosition + imgHeight > pageHeight - margin) {
+            // Image dimensions and positioning
+            const imgWidth = 60;
+            const imgHeight = (img.height / img.width) * imgWidth;
+            const textStartX = margin + imgWidth + 10; // Text starts after image + gap
+            const textWidth = pageWidth - textStartX - margin;
+            
+            // Check if this observation fits on current page
+            const estimatedHeight = Math.max(imgHeight, 40); // Minimum height for text
+            if (yPosition + estimatedHeight > pageHeight - margin) {
               pdf.addPage();
               yPosition = margin;
             }
             
-            pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
-            yPosition += imgHeight + 10;
+            // Draw border around the entire row
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(0.5);
+            const rowHeight = Math.max(imgHeight + 10, 50);
+            pdf.rect(margin, yPosition, pageWidth - 2 * margin, rowHeight);
+            
+            // Add the image
+            pdf.addImage(imgData, 'JPEG', margin + 5, yPosition + 5, imgWidth, imgHeight);
+            
+            // Add text content in the right column
+            let textY = yPosition + 10;
+            
+            // Add note
+            if (displaySettings.note && observation.note) {
+              pdf.setFontSize(12);
+              pdf.setFont('helvetica', 'bold');
+              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
+              pdf.text(noteLines, textStartX, textY);
+              textY += noteLines.length * 6 + 5;
+            }
+            
+            // Add labels
+            if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const labelText = 'Labels: ' + observation.labels.join(', ');
+              const labelLines = pdf.splitTextToSize(labelText, textWidth);
+              pdf.text(labelLines, textStartX, textY);
+              textY += labelLines.length * 5 + 3;
+            }
+            
+            // Add GPS coordinates
+            if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const gpsText = `GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`;
+              pdf.text(gpsText, textStartX, textY);
+              textY += 5;
+            }
+            
+            yPosition += rowHeight + 10; // Move to next row with spacing
+            
           } catch (error) {
-            console.error('Error adding image to PDF:', error);
+            console.error('Error adding observation to PDF:', error);
+            // Fallback: just add text without image
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            if (observation.note) {
+              const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
+              pdf.text(noteLines, margin, yPosition);
+              yPosition += noteLines.length * 6 + 10;
+            }
           }
+        } else {
+          // No photo: just add text content
+          if (displaySettings.note && observation.note) {
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
+            pdf.text(noteLines, margin, yPosition);
+            yPosition += noteLines.length * 6 + 5;
+          }
+          
+          if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
+            yPosition += 8;
+          }
+          
+          if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
+            pdf.setFontSize(10);
+            pdf.text(`GPS: ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}`, margin, yPosition);
+            yPosition += 8;
+          }
+          
+          yPosition += 15; // Space between observations
         }
-
-        yPosition += 10; // Space between observations
       }
 
       // Save the PDF
@@ -658,15 +696,6 @@ function ReportPageContent() {
           );
         }
 
-        // Add plan (if enabled and meaningful)
-        if (displaySettings.plan && observation.plan && observation.plan.trim() !== '') {
-          textContent.push(
-            new Paragraph({
-              children: [new TextRun({ text: 'Plan: ' + observation.plan, size: 20, font: 'Arial' })],
-              // spacing: { after: 100 }
-            })
-          );
-        }
 
         // Add GPS coordinates (if enabled)
         if (displaySettings.gps && observation.gps_lat && observation.gps_lng) {
@@ -678,20 +707,6 @@ function ReportPageContent() {
           );
         }
 
-        // Add plan anchor coordinates (if enabled and meaningful)
-        if (displaySettings.planAnchor && 
-            observation.plan_anchor && 
-            typeof observation.plan_anchor === 'object' && 
-            'x' in observation.plan_anchor && 
-            'y' in observation.plan_anchor &&
-            !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0)) {
-          textContent.push(
-            new Paragraph({
-              children: [new TextRun({ text: `Plan Anchor: ${Number(observation.plan_anchor.x).toFixed(6)}, ${Number(observation.plan_anchor.y).toFixed(6)}`, size: 20, font: 'Arial' })],
-              // spacing: { after: 100 }
-            })
-          );
-        }
 
 
         // Create layout based on whether photo is enabled and available
@@ -1004,9 +1019,7 @@ function ReportPageContent() {
                     { key: 'photo', label: 'Photo' },
                     { key: 'note', label: 'Note' },
                     { key: 'labels', label: 'Labels' },
-                    { key: 'plan', label: 'Plan' },
-                    { key: 'gps', label: 'GPS' },
-                    { key: 'planAnchor', label: 'Anchors' }
+                    { key: 'gps', label: 'GPS' }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -1230,9 +1243,7 @@ function ReportPageContent() {
               { key: 'photo', label: 'Photo' },
               { key: 'note', label: 'Note' },
               { key: 'labels', label: 'Labels' },
-              { key: 'plan', label: 'Plan' },
-              { key: 'gps', label: 'GPS' },
-              { key: 'planAnchor', label: 'Anchors' }
+              { key: 'gps', label: 'GPS' }
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-1 cursor-pointer text-sm">
                 <input
@@ -1403,11 +1414,6 @@ function ReportPageContent() {
                         </div>
                       )}
                       
-                      {displaySettings.plan && observation.plan && observation.plan.trim() !== '' && (
-                        <div className="text-sm text-gray-600">
-                          <strong>Plan:</strong> {observation.plan}
-                        </div>
-                      )}
                       
                       {displaySettings.gps && observation.gps_lat && observation.gps_lng && (
                         <div className="text-sm text-gray-600">
@@ -1415,15 +1421,6 @@ function ReportPageContent() {
                         </div>
                       )}
                       
-                      {displaySettings.planAnchor && observation.plan_anchor && 
-                       typeof observation.plan_anchor === 'object' && 
-                       'x' in observation.plan_anchor && 
-                       'y' in observation.plan_anchor &&
-                       !(Number(observation.plan_anchor.x) === 0 && Number(observation.plan_anchor.y) === 0) && (
-                        <div className="text-sm text-gray-600">
-                          <strong>Plan Anchor:</strong> {Number(observation.plan_anchor.x).toFixed(6)}, {Number(observation.plan_anchor.y).toFixed(6)}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
