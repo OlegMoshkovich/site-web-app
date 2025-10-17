@@ -33,11 +33,14 @@ import {
   Download,
   Settings,
   Tag,
+  ZoomIn,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
 // Footer component
 import { Footer } from "@/components/footer";
+// Photo modal component
+import { PhotoModal } from "@/components/photo-modal";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -118,6 +121,9 @@ export default function Home() {
   // Site filter state  
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [availableSites, setAvailableSites] = useState<{id: string, name: string}[]>([]);
+  // Photo modal state
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -465,6 +471,18 @@ export default function Home() {
     if (event) event.stopPropagation(); // Prevent card selection
     setEditingNoteId(null);
     setEditNoteValue("");
+  }, []);
+
+  // ===== PHOTO MODAL FUNCTIONALITY =====
+  const handleOpenPhotoModal = useCallback((observation: ObservationWithUrl, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card selection
+    setSelectedPhotoObservation(observation);
+    setPhotoModalOpen(true);
+  }, []);
+
+  const handleClosePhotoModal = useCallback(() => {
+    setPhotoModalOpen(false);
+    setSelectedPhotoObservation(null);
   }, []);
 
   // ===== DELETE FUNCTIONALITY =====
@@ -1340,6 +1358,17 @@ export default function Home() {
                                     </div>
                                   )}
 
+                                  {/* Zoom button for list view */}
+                                  {hasPhoto && (
+                                    <button
+                                      onClick={(e) => handleOpenPhotoModal(observation, e)}
+                                      className="absolute bottom-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg"
+                                      title="View photo"
+                                    >
+                                      <ZoomIn className="h-4 w-4" />
+                                    </button>
+                                  )}
+
                                   {/* Delete button for list view */}
                                   <button
                                     onClick={(e) =>
@@ -1543,6 +1572,15 @@ export default function Home() {
                                       if (skeleton) skeleton.style.display = 'none';
                                     }}
                                   />
+                                  {/* Zoom button positioned over photo */}
+                                  <button
+                                    onClick={(e) => handleOpenPhotoModal(observation, e)}
+                                    className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
+                                    title="View photo"
+                                  >
+                                    <ZoomIn className="h-5 w-5" />
+                                  </button>
+                                  
                                   {/* Delete button positioned over photo */}
                                   <button
                                     onClick={(e) =>
@@ -1830,6 +1868,16 @@ export default function Home() {
 
       {!isLoading && (
         <Footer />
+      )}
+
+      {/* Photo Modal */}
+      {selectedPhotoObservation && selectedPhotoObservation.signedUrl && (
+        <PhotoModal
+          isOpen={photoModalOpen}
+          onClose={handleClosePhotoModal}
+          imageUrl={selectedPhotoObservation.signedUrl}
+          observation={selectedPhotoObservation}
+        />
       )}
     </main>
   );
