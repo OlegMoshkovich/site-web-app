@@ -46,6 +46,7 @@ export const translations = {
     generateReport: "Generate Report",
     clearSelection: "Clear Selection",
     generateReportSelected: "Generate Report ({count} selected)",
+    loadMore: "Load More",
     
     // Date headers
     dateFormat: {
@@ -276,6 +277,7 @@ export const translations = {
     generateReport: "Bericht generieren",
     clearSelection: "Auswahl löschen",
     generateReportSelected: "Bericht generieren ({count} ausgewählt)",
+    loadMore: "Mehr laden",
     
     // Date headers
     dateFormat: {

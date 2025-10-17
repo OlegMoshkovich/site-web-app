@@ -343,7 +343,219 @@ export async function updateCollaboratorRole(
 }
 
 /**
- * Fetch observations with collaboration permissions
+ * Fetch observations for a specific week with collaboration permissions
+ * - Returns observations from the last N weeks
+ * - Owners and admins see all observations for sites they have access to
+ * - Collaborators see only their own observations for sites they have access to
+ */
+export async function fetchCollaborativeObservationsByWeek(
+  userId: string,
+  weeksToLoad: number = 1,
+  weekOffset: number = 0
+): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
+  const supabase = createClient();
+  
+  console.log('fetchCollaborativeObservationsByWeek called for userId:', userId, 'weeksToLoad:', weeksToLoad, 'weekOffset:', weekOffset);
+  
+  // Calculate date range for the requested weeks
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - (7 * (weekOffset + weeksToLoad))); // Start of oldest week
+  const endDate = new Date(now);
+  endDate.setDate(now.getDate() - (7 * weekOffset)); // End of newest week
+  
+  console.log('Date range:', { 
+    startDate: startDate.toISOString(), 
+    endDate: endDate.toISOString(),
+    weeksToLoad,
+    weekOffset 
+  });
+  
+  // Get all sites where user is a collaborator
+  const { data: userSites, error: sitesError } = await supabase
+    .from('site_collaborators')
+    .select('site_id, role')
+    .eq('user_id', userId)
+    .eq('status', 'accepted');
+
+  console.log('userSites query result:', { userSites, sitesError });
+
+  if (sitesError) throw sitesError;
+
+  // Build base query
+  let query = supabase.from('observations').select(`
+    *,
+    sites(name)
+  `, { count: 'exact' });
+
+  if (!userSites || userSites.length === 0) {
+    console.log('No collaborative sites found, falling back to user observations');
+    // User has no collaborative access, return only their own observations
+    query = query.eq('user_id', userId);
+  } else {
+    // Build query based on user's roles
+    const adminSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+    
+    const collaboratorSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+
+    console.log('adminSiteIds:', adminSiteIds);
+    console.log('collaboratorSiteIds:', collaboratorSiteIds);
+
+    // Build query to include ALL user's own observations PLUS collaborative observations
+    const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
+
+    // Add admin site access (all observations in admin sites)
+    if (adminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    }
+
+    // Add collaborator site access (only user's observations in collaborator sites)
+    if (collaboratorSiteIds.length > 0) {
+      orConditions.push(`and(site_id.in.(${collaboratorSiteIds.join(',')}),user_id.eq.${userId})`);
+    }
+
+    query = query.or(orConditions.join(','));
+  }
+
+  // Apply date range filter and ordering
+  const { data, error, count } = await query
+    .gte('created_at', startDate.toISOString())
+    .lte('created_at', endDate.toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  
+  // Check if there are more weeks available by looking for observations older than our date range
+  let hasMoreQuery = supabase.from('observations').select('id', { count: 'exact', head: true });
+  
+  if (!userSites || userSites.length === 0) {
+    hasMoreQuery = hasMoreQuery.eq('user_id', userId);
+  } else {
+    const adminSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+    
+    const collaboratorSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+
+    const orConditions = [`user_id.eq.${userId}`];
+
+    if (adminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    }
+
+    if (collaboratorSiteIds.length > 0) {
+      orConditions.push(`and(site_id.in.(${collaboratorSiteIds.join(',')}),user_id.eq.${userId})`);
+    }
+
+    hasMoreQuery = hasMoreQuery.or(orConditions.join(','));
+  }
+  
+  const { count: olderCount } = await hasMoreQuery.lt('created_at', startDate.toISOString());
+  const hasMore = (olderCount || 0) > 0;
+  
+  // Enrich observations with user profile data
+  const enrichedData = await enrichObservationsWithUserData(data ?? []);
+  
+  return {
+    observations: enrichedData,
+    hasMore,
+    totalCount: count || 0
+  };
+}
+
+/**
+ * Fetch observations with collaboration permissions using pagination
+ * - Loads observations in weekly chunks starting from most recent
+ * - Owners and admins see all observations for sites they have access to
+ * - Collaborators see only their own observations for sites they have access to
+ */
+export async function fetchCollaborativeObservationsPaginated(
+  userId: string, 
+  limit: number = 50,
+  offset: number = 0
+): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
+  const supabase = createClient();
+  
+  console.log('fetchCollaborativeObservationsPaginated called for userId:', userId, 'limit:', limit, 'offset:', offset);
+  
+  // Get all sites where user is a collaborator
+  const { data: userSites, error: sitesError } = await supabase
+    .from('site_collaborators')
+    .select('site_id, role')
+    .eq('user_id', userId)
+    .eq('status', 'accepted');
+
+  console.log('userSites query result:', { userSites, sitesError });
+
+  if (sitesError) throw sitesError;
+
+  // Build base query
+  let query = supabase.from('observations').select(`
+    *,
+    sites(name)
+  `, { count: 'exact' });
+
+  if (!userSites || userSites.length === 0) {
+    console.log('No collaborative sites found, falling back to user observations');
+    // User has no collaborative access, return only their own observations
+    query = query.eq('user_id', userId);
+  } else {
+    // Build query based on user's roles
+    const adminSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+    
+    const collaboratorSiteIds = userSites
+      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+      .map((site: { site_id: string; role: string }) => site.site_id);
+
+    console.log('adminSiteIds:', adminSiteIds);
+    console.log('collaboratorSiteIds:', collaboratorSiteIds);
+
+    // Build query to include ALL user's own observations PLUS collaborative observations
+    const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
+
+    // Add admin site access (all observations in admin sites)
+    if (adminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    }
+
+    // Add collaborator site access (only user's observations in collaborator sites)
+    if (collaboratorSiteIds.length > 0) {
+      orConditions.push(`and(site_id.in.(${collaboratorSiteIds.join(',')}),user_id.eq.${userId})`);
+    }
+
+    query = query.or(orConditions.join(','));
+  }
+
+  // Apply pagination and ordering
+  const { data, error, count } = await query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) throw error;
+  
+  const totalCount = count || 0;
+  const hasMore = offset + limit < totalCount;
+  
+  // Enrich observations with user profile data
+  const enrichedData = await enrichObservationsWithUserData(data ?? []);
+  
+  return {
+    observations: enrichedData,
+    hasMore,
+    totalCount
+  };
+}
+
+/**
+ * Fetch observations with collaboration permissions (legacy function for compatibility)
  * - Owners and admins see all observations for sites they have access to
  * - Collaborators see only their own observations for sites they have access to
  */
