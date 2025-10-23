@@ -46,7 +46,7 @@ export default function Tunnels() {
         {/* Main content area */}
         <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5">
           <div className="w-full">
-            <div className="text-center pt-2 sm:pt-8 pb-4 sm:pb-8">
+            <div className="text-center pt-2 sm:pt-8 pb-2 sm:pb-4">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-8">
                   Die Lösung für eine digitale Baustelle
                 </h1>
