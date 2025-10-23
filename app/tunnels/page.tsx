@@ -6,14 +6,30 @@ import { useState, useCallback } from "react";
 import { X } from "lucide-react";
 // Footer component
 import { Footer } from "@/components/footer";
+// Authentication component
+import { AuthButtonClient } from "@/components/auth-button-client";
 // Next.js Link component for navigation
 import Link from "next/link";
+// Translation system
+import { translations, type Language, useLanguage } from "@/lib/translations";
 
 // Main component for the tunnels page
 export default function Tunnels() {
+  // Language management with localStorage persistence
+  const { language, setLanguage, mounted } = useLanguage();
+  
   // Photo modal state for tunnel photos
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<{src: string, alt: string} | null>(null);
+
+  // Helper function to get translated text based on current language
+  const t = useCallback(
+    (key: keyof typeof translations.en) => {
+      const value = translations[language][key];
+      return typeof value === "string" ? value : "";
+    },
+    [language],
+  );
 
   // ===== PHOTO MODAL FUNCTIONALITY =====
   const handleOpenPhotoModal = useCallback((photo: {src: string, alt: string}) => {
@@ -26,10 +42,15 @@ export default function Tunnels() {
     setSelectedPhoto(null);
   }, []);
 
+  // ===== MAIN RENDER =====
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
-        {/* Simple navigation header */}
+        {/* Navigation header with language selector and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
@@ -37,8 +58,22 @@ export default function Tunnels() {
                 href="/" 
                 className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
               >
-                Simple Site
+                {t("siteTitle")}
               </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Language selector */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
+                style={{ textAlignLast: "center" }}
+              >
+                <option value="en">EN</option>
+                <option value="de">DE</option>
+              </select>
+
+              <AuthButtonClient />
             </div>
           </div>
         </nav>
@@ -46,9 +81,9 @@ export default function Tunnels() {
         {/* Main content area */}
         <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5">
           <div className="w-full">
-            <div className="text-center py-20 sm:py-12" style={{paddingBottom: '10px'}}>
+            <div className="text-center py-10 sm:py-12" style={{paddingBottom: '2px'}}>
                 <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">
-                  Die Lösung für eine digitale Baustelle
+                  {t("welcomeTitle")}
                 </h1>
 
                 {/* Tunnel Photos Gallery */}
@@ -85,9 +120,6 @@ export default function Tunnels() {
                       { src: "/tunnels/32.png", alt: "Tunnel Construction Site 11" },
                       { src: "/tunnels/33.jpg", alt: "Tunnel Construction Site 11" },
                       { src: "/tunnels/34.jpg", alt: "Tunnel Construction Site 11" },
-
-
-              
                     ].map((photo, index) => (
                       <div 
                         key={index} 
