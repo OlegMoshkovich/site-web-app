@@ -344,12 +344,11 @@ export default function Tunnels() {
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
-              {user ? "Tunnels" : t("siteTitle")}
               <Link 
                 href="/" 
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
               >
-                Home
+                {user ? "Tunnels" : t("siteTitle")}
               </Link>
             </div>
             <div className="flex items-center gap-2">
