@@ -499,7 +499,7 @@ export default function Tunnels() {
                     ].map((photo, index) => (
                       <div 
                         key={index} 
-                        className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100 aspect-[4/3] cursor-pointer"
+                        className="relative overflow-hidden rounded-none shadow-lg bg-gray-100 aspect-[4/3] cursor-pointer"
                         onClick={() => handleOpenPhotoModal(photo)}
                       >
                         <Image
@@ -533,11 +533,11 @@ export default function Tunnels() {
           />
           
           {/* Modal Content */}
-          <div className="relative bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="relative bg-white rounded-none max-w-4xl max-h-[90vh] overflow-hidden">
             {/* Close Button */}
             <button
               onClick={handleClosePhotoModal}
-              className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 transition-colors"
+              className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-none p-2 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
