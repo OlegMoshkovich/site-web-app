@@ -6,8 +6,6 @@ import { useState, useCallback } from "react";
 import { X } from "lucide-react";
 // Footer component
 import { Footer } from "@/components/footer";
-// Next.js Image component for optimized images
-import Image from "next/image";
 // Next.js Link component for navigation
 import Link from "next/link";
 
@@ -96,12 +94,10 @@ export default function Tunnels() {
                         className="relative overflow-hidden rounded-none shadow-lg bg-gray-100 aspect-[4/3] cursor-pointer"
                         onClick={() => handleOpenPhotoModal(photo)}
                       >
-                        <Image
+                        <img
                           src={photo.src}
                           alt={photo.alt}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     ))}
@@ -136,11 +132,9 @@ export default function Tunnels() {
             
             {/* Image */}
             <div className="relative">
-              <Image
+              <img
                 src={selectedPhoto.src}
                 alt={selectedPhoto.alt}
-                width={800}
-                height={600}
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
             </div>
