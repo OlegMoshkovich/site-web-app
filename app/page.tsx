@@ -34,6 +34,7 @@ import {
   Settings,
   Tag,
   ZoomIn,
+  FileText,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -124,6 +125,11 @@ export default function Home() {
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
+  // Save report modal state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [reportTitle, setReportTitle] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -172,17 +178,13 @@ export default function Home() {
   );
 
   // ===== ACTION HANDLERS =====
-  // Navigate to the report generation page with selected observations
+  // Show save report dialog for selected observations
   const handleGenerateReport = useCallback(() => {
     if (selectedObservations.size === 0) return;
 
-    // Convert selected observation IDs to a comma-separated string
-    const selectedIds = Array.from(selectedObservations);
-    const queryString = selectedIds.join(",");
-
-    // Navigate to the report page with selected observation IDs as URL parameters
-    router.push(`/report?ids=${queryString}`);
-  }, [selectedObservations, router]);
+    // Show the save report dialog
+    setShowSaveDialog(true);
+  }, [selectedObservations]);
 
   // Compress image blob for download with multi-pass approach
   const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 50): Promise<Blob> => {
@@ -484,6 +486,74 @@ export default function Home() {
     setPhotoModalOpen(false);
     setSelectedPhotoObservation(null);
   }, []);
+
+  // ===== SAVE REPORT FUNCTIONALITY =====
+  const handleSaveReport = useCallback(async () => {
+    if (!reportTitle.trim()) {
+      alert('Please enter a title for the report');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        alert('You must be logged in to save reports');
+        return;
+      }
+
+      // Create the report
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: currentUser.id,
+          title: reportTitle,
+          description: reportDescription || null,
+          settings: {
+            language,
+            selectedIds: Array.from(selectedObservations)
+          }
+        })
+        .select()
+        .single();
+
+      if (reportError) {
+        console.error('Error creating report:', reportError);
+        alert('Error saving report. Please try again.');
+        return;
+      }
+
+      // Create report_observations entries
+      const reportObservations = Array.from(selectedObservations).map(obsId => ({
+        report_id: reportData.id,
+        observation_id: obsId
+      }));
+
+      const { error: observationsError } = await supabase
+        .from('report_observations')
+        .insert(reportObservations);
+
+      if (observationsError) {
+        console.error('Error linking observations to report:', observationsError);
+        alert('Error saving report observations. Please try again.');
+        return;
+      }
+
+      alert('Report saved successfully!');
+      setShowSaveDialog(false);
+      setReportTitle('');
+      setReportDescription('');
+      setSelectedObservations(new Set()); // Clear selections
+      
+      // Redirect to reports page
+      router.push('/reports');
+    } catch (error) {
+      console.error('Error saving report:', error);
+      alert('Error saving report. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [reportTitle, reportDescription, selectedObservations, language, supabase, router]);
 
   // ===== DELETE FUNCTIONALITY =====
   // Handle observation deletion with confirmation
@@ -911,6 +981,18 @@ export default function Home() {
               </select>
 
               {/* Settings gear icon */}
+              {user && (
+                <Button
+                  onClick={() => router.push('/reports')}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                  title="Reports"
+                >
+                  <FileText className="h-4 w-4" />
+                </Button>
+              )}
+
               {user && (
                 <Button
                   onClick={() => router.push('/settings')}
@@ -1878,6 +1960,63 @@ export default function Home() {
           imageUrl={selectedPhotoObservation.signedUrl}
           observation={selectedPhotoObservation}
         />
+      )}
+
+      {/* Save Report Dialog */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Title *
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report title"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  id="report-description"
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report description (optional)"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button
+                onClick={() => {
+                  setShowSaveDialog(false);
+                  setReportTitle('');
+                  setReportDescription('');
+                }}
+                variant="outline"
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveReport}
+                disabled={isSaving || !reportTitle.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Save Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

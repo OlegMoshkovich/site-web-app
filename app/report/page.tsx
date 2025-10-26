@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -56,6 +56,13 @@ function ReportPageContent() {
   // Edit state
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>('');
+  
+  // Save report state
+  const [isSaving, setIsSaving] = useState(false);
+  const [reportTitle, setReportTitle] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  
   const searchParams = useSearchParams();
   
   // Helper function to get translated text
@@ -71,16 +78,23 @@ function ReportPageContent() {
         console.warn('Search params not available yet');
         return [];
       }
+      
+      // Check for direct observation IDs
       const ids = searchParams.get('ids');
-      if (!ids) {
-        return [];
+      if (ids) {
+        return ids.split(',').filter(id => id.trim());
       }
-      return ids.split(',').filter(id => id.trim());
+      
+      // If no direct IDs, this will be handled by loadReportData
+      return [];
     } catch (err) {
       console.error('Error parsing search params:', err);
       return [];
     }
   }, [searchParams]);
+
+  // Check if we're loading from a saved report
+  const reportId = searchParams?.get('reportId');
   
   // Create supabase client only once
   const supabase = useMemo(() => createClient(), []);
@@ -165,18 +179,37 @@ function ReportPageContent() {
       const margin = 20;
       let yPosition = margin;
 
-      // Add title
-      pdf.setFontSize(24);
+      // Header section with professional styling
+      pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(t('report'), pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 15;
-
-      // Add date
-      pdf.setFontSize(20);
+      pdf.text('INSPECTION REPORT', margin, yPosition);
+      yPosition += 10;
+      
+      // Project details
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Site Inspection Documentation', margin, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
-      pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 20;
+      const dateText = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Date: ${dateText}`, margin, yPosition);
+      yPosition += 6;
+      
+      pdf.text(`Total Observations: ${observations.length}`, margin, yPosition);
+      yPosition += 6;
+      
+      // Add a separator line
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 15;
 
 
       // Add plan overview if there are observations with meaningful anchors (not 0,0)
@@ -334,14 +367,21 @@ function ReportPageContent() {
         }
       }
 
-      // Process each observation in a simple table format
+      // Process each observation with professional numbering
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
+        const observationNumber = i + 1;
         
-        // Check if we need a new page (reserve more space for table layout)
-        if (yPosition > pageHeight - 100) {
+        // Check if we need a new page (reserve more space for content)
+        if (yPosition > pageHeight - 120) {
           pdf.addPage();
           yPosition = margin;
+          
+          // Add page header for continuation
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Inspection Report (continued) - Page ${pdf.internal.getNumberOfPages()}`, margin, yPosition);
+          yPosition += 15;
         }
 
         // Create a simple table-like layout with photo on left, text on right
@@ -389,9 +429,31 @@ function ReportPageContent() {
             // Add text content in the right column
             let textY = yPosition + 10;
             
+            // Add observation number and category
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${observationNumber}`, margin + 5, yPosition - 3);
+            
+            // Add category/type if available from labels
+            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Kategorie: ${category}`, textStartX, textY);
+            textY += 7;
+            
+            // Add timestamp
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            const timestamp = new Date(observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
+                             new Date(observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+            pdf.text(`Foto 1 von 1`, textStartX, textY);
+            textY += 5;
+            pdf.text(timestamp, textStartX, textY);
+            textY += 10;
+            
             // Add note
             if (displaySettings.note && observation.note) {
-              pdf.setFontSize(12);
+              pdf.setFontSize(11);
               pdf.setFont('helvetica', 'bold');
               const noteLines = pdf.splitTextToSize(observation.note, textWidth);
               pdf.text(noteLines, textStartX, textY);
@@ -457,8 +519,25 @@ function ReportPageContent() {
         }
       }
 
+      // Add footer to all pages
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        
+        // Footer line
+        pdf.setLineWidth(0.5);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+        
+        // Footer text
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Site Inspection Report', margin, pageHeight - 12);
+        pdf.text(`${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
+      }
+
       // Save the PDF
-      pdf.save(`report-${new Date().toISOString().split('T')[0]}.pdf`);
+      pdf.save(`inspection-report-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -867,6 +946,73 @@ function ReportPageContent() {
     }
   }, [observations, t, language, displaySettings]);
 
+  const handleSaveReport = useCallback(async () => {
+    if (!reportTitle.trim()) {
+      alert('Please enter a title for the report');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to save reports');
+        return;
+      }
+
+      // Create the report
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: user.id,
+          title: reportTitle,
+          description: reportDescription || null,
+          settings: {
+            displaySettings,
+            language,
+            selectedIds: memoizedSelectedIds
+          }
+        })
+        .select()
+        .single();
+
+      if (reportError) {
+        console.error('Error creating report:', reportError);
+        alert('Error saving report. Please try again.');
+        return;
+      }
+
+      // Create report_observations entries
+      const reportObservations = observations.map(obs => ({
+        report_id: reportData.id,
+        observation_id: obs.id
+      }));
+
+      const { error: observationsError } = await supabase
+        .from('report_observations')
+        .insert(reportObservations);
+
+      if (observationsError) {
+        console.error('Error linking observations to report:', observationsError);
+        alert('Error saving report observations. Please try again.');
+        return;
+      }
+
+      alert('Report saved successfully!');
+      setShowSaveDialog(false);
+      setReportTitle('');
+      setReportDescription('');
+      
+      // Redirect to reports page
+      window.location.href = '/reports';
+    } catch (error) {
+      console.error('Error saving report:', error);
+      alert('Error saving report. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [reportTitle, reportDescription, displaySettings, language, memoizedSelectedIds, observations, supabase]);
+
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
     if (item.plan_anchor && 
@@ -925,22 +1071,57 @@ function ReportPageContent() {
     };
   }, [observations]);
 
-  const fetchSelectedObservations = useCallback(async () => {
-    if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
-      setError("No observations selected. Please go back and select some observations first.");
-      setIsLoading(false);
-      setIsInitialized(true);
-      return;
-    }
-
+  const fetchFromSavedReport = useCallback(async (reportId: string) => {
     try {
-      // Only set loading if we haven't initialized yet
-      if (!isInitialized) {
-        setIsLoading(true);
-      }
-      setError(null);
+      // First, get the observation IDs for this report
+      const { data: reportObsData, error: reportObsError } = await supabase
+        .from('report_observations')
+        .select('observation_id')
+        .eq('report_id', reportId);
 
-      // Fetch the selected observations
+      if (reportObsError) {
+        console.error('Error fetching report observations:', reportObsError);
+        setError(`Error loading report: ${reportObsError.message}`);
+        return [];
+      }
+
+      if (!reportObsData || reportObsData.length === 0) {
+        setError("No observations found in this report.");
+        return [];
+      }
+
+      // Extract observation IDs
+      const observationIds = reportObsData.map(item => item.observation_id);
+
+      // Fetch the actual observations
+      const { data: obsData, error: obsError } = await supabase
+        .from("observations")
+        .select("*")
+        .in("id", observationIds)
+        .order("created_at", { ascending: false });
+
+      if (obsError) {
+        console.error("Error fetching observations:", obsError);
+        setError(`Error loading observations: ${obsError.message}`);
+        return [];
+      }
+
+      return (obsData ?? []) as Observation[];
+    } catch (e) {
+      console.error("Error in fetchFromSavedReport:", e);
+      setError("An unexpected error occurred while loading the report.");
+      return [];
+    }
+  }, [supabase]);
+
+  const fetchSelectedObservations = useCallback(async () => {
+    let baseObservations: Observation[] = [];
+
+    // Check if we're loading from a saved report
+    if (reportId) {
+      baseObservations = await fetchFromSavedReport(reportId);
+    } else if (memoizedSelectedIds && memoizedSelectedIds.length > 0) {
+      // Fetch the selected observations directly
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
         .select("*")
@@ -954,12 +1135,30 @@ function ReportPageContent() {
         setIsInitialized(true);
         return;
       }
+      baseObservations = (obsData ?? []) as Observation[];
+    } else {
+      setError("No observations selected. Please go back and select some observations first.");
+      setIsLoading(false);
+      setIsInitialized(true);
+      return;
+    }
 
-      const base = (obsData ?? []) as Observation[];
+    if (baseObservations.length === 0) {
+      setIsLoading(false);
+      setIsInitialized(true);
+      return;
+    }
+
+    try {
+      // Only set loading if we haven't initialized yet
+      if (!isInitialized) {
+        setIsLoading(true);
+      }
+      setError(null);
 
       // Create signed URLs for each photo
       const withUrls: ObservationWithUrl[] = await Promise.all(
-        base.map(async (o) => {
+        baseObservations.map(async (o) => {
           const signedUrl = o.photo_url
             ? await (async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
                 const key = normalizePath(filenameOrPath);
@@ -987,7 +1186,7 @@ function ReportPageContent() {
       setIsLoading(false);
       setIsInitialized(true);
     }
-  }, [memoizedSelectedIds, supabase, isInitialized]);
+  }, [memoizedSelectedIds, supabase, isInitialized, reportId, fetchFromSavedReport]);
 
   useEffect(() => {
     // Only fetch once when component mounts
@@ -1215,6 +1414,14 @@ function ReportPageContent() {
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">
               <Button
+                onClick={() => setShowSaveDialog(true)}
+                className="transition-all"
+                variant="default"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Report
+              </Button>
+              <Button
                 onClick={handleDownloadPDF}
                 className="transition-all"
                 variant="outline"
@@ -1232,10 +1439,18 @@ function ReportPageContent() {
               </Button>
             </div>
           </div>
-          <h1 className="text-3xl font-bold">Report</h1>
-          <p className="text-muted-foreground">
-            {observations.length} observation{observations.length !== 1 ? 's' : ''} selected
-          </p>
+          <h1 className="text-3xl font-bold">INSPECTION REPORT</h1>
+          <h2 className="text-xl font-semibold text-gray-700 mt-2">Site Inspection Documentation</h2>
+          <div className="mt-4 space-y-1 text-sm text-gray-600">
+            <p>Date: {new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+            <p>Total Observations: {observations.length}</p>
+          </div>
           
           {/* Display Toggles */}
           <div className="flex flex-wrap gap-3 mt-4 mb-2">
@@ -1433,6 +1648,63 @@ function ReportPageContent() {
           </div>
         )}
       </div>
+      
+      {/* Save Report Dialog */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Title *
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report title"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  id="report-description"
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report description (optional)"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button
+                onClick={() => {
+                  setShowSaveDialog(false);
+                  setReportTitle('');
+                  setReportDescription('');
+                }}
+                variant="outline"
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveReport}
+                disabled={isSaving || !reportTitle.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Save Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

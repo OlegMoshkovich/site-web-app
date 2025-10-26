@@ -152,6 +152,55 @@ export interface Database {
           created_at?: string
         }
       }
+      reports: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          created_at: string
+          updated_at: string
+          settings: Json
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+          settings?: Json
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+          settings?: Json
+        }
+      }
+      report_observations: {
+        Row: {
+          id: string
+          report_id: string
+          observation_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          observation_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          observation_id?: string
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -187,3 +236,11 @@ export type SiteCollaboratorUpdate = Database['public']['Tables']['site_collabor
 export type CollaborationInvitation = Database['public']['Tables']['collaboration_invitations']['Row']
 export type CollaborationInvitationInsert = Database['public']['Tables']['collaboration_invitations']['Insert']
 export type CollaborationInvitationUpdate = Database['public']['Tables']['collaboration_invitations']['Update']
+
+export type Report = Database['public']['Tables']['reports']['Row']
+export type ReportInsert = Database['public']['Tables']['reports']['Insert']
+export type ReportUpdate = Database['public']['Tables']['reports']['Update']
+
+export type ReportObservation = Database['public']['Tables']['report_observations']['Row']
+export type ReportObservationInsert = Database['public']['Tables']['report_observations']['Insert']
+export type ReportObservationUpdate = Database['public']['Tables']['report_observations']['Update']
