@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { X } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -43,14 +42,6 @@ export function Modal({ isOpen, onClose, children, className = "" }: ModalProps)
       
       {/* Modal content */}
       <div className={`relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-hidden ${className}`}>
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full shadow-lg transition-all"
-          title="Close"
-        >
-          <X className="h-5 w-5" />
-        </button>
         
         {/* Content */}
         {children}

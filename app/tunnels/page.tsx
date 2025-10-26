@@ -154,13 +154,6 @@ export default function Tunnels() {
           
           {/* Modal Content */}
           <div className="relative bg-white rounded-none max-w-4xl max-h-[90vh] overflow-hidden">
-            {/* Close Button */}
-            <button
-              onClick={handleClosePhotoModal}
-              className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-none p-2 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
             
             {/* Image */}
             <div className="relative">
