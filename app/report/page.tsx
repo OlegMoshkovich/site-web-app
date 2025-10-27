@@ -1411,7 +1411,7 @@ function ReportPageContent() {
       {/* Save Report Dialog */}
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white rounded-none p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-4">Save Report</h3>
             <div className="space-y-4">
               <div>
@@ -1423,7 +1423,7 @@ function ReportPageContent() {
                   type="text"
                   value={reportTitle}
                   onChange={(e) => setReportTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   placeholder="Enter report title"
                 />
               </div>
@@ -1436,7 +1436,7 @@ function ReportPageContent() {
                   value={reportDescription}
                   onChange={(e) => setReportDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   placeholder="Enter report description (optional)"
                 />
               </div>
