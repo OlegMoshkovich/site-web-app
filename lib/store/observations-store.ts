@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservations, fetchCollaborativeObservationsByWeek } from '@/lib/supabase/api';
+import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservationsByWeek } from '@/lib/supabase/api';
 
 export interface Observation {
   id: string;
@@ -19,6 +19,9 @@ export interface Observation {
 
 export interface ObservationWithUrl extends Observation {
   signedUrl: string | null;
+  sites?: { name: string } | null; // Site information from join
+  profiles?: { email: string } | null; // User profile information from join
+  user_email?: string; // User email from the query
 }
 
 export interface ObservationWithPhoto extends Observation {

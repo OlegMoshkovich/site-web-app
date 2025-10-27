@@ -68,10 +68,10 @@ interface ObservationWithUrl extends Observation {
   signedUrl: string | null;      // Temporary signed URL for viewing the photo
   sites?: { name: string } | null; // Site information from join
   profiles?: { email: string } | null; // User profile information from join
+  user_email?: string; // User email from the query
 }
 
-// Supabase storage bucket name for photos
-const BUCKET = "photos";
+// Note: BUCKET constant moved to API layer
 
 // Main component for the observations page
 export default function Home() {
@@ -94,6 +94,7 @@ export default function Home() {
     availableLabels: storeAvailableLabels,
     fetchInitialObservations,
     loadMoreObservations,
+    setObservations,
     clearStore
   } = useObservationsStore();
   // Set of selected observation IDs for bulk operations
@@ -118,9 +119,8 @@ export default function Home() {
   // Label filter state
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
-  // Use labels from store, fallback to local state for backward compatibility
-  const [localAvailableLabels, setLocalAvailableLabels] = useState<string[]>([]);
-  const availableLabels = storeAvailableLabels.length > 0 ? storeAvailableLabels : localAvailableLabels;
+  // Use labels from store
+  const availableLabels = storeAvailableLabels;
   // User filter state
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [availableUsers, setAvailableUsers] = useState<{id: string, displayName: string}[]>([]);
@@ -146,41 +146,10 @@ export default function Home() {
     [language],
   );
 
-  // Clean up file paths by removing leading slashes and empty strings
-  const normalizePath = (v?: string | null) =>
-    (v ?? "").trim().replace(/^\/+/, "") || null;
+  // Note: normalizePath function moved to API layer
 
   // ===== PHOTO MANAGEMENT =====
-  // Generate a temporary signed URL for viewing a photo from Supabase storage
-  // This is necessary because photos are stored privately and need authentication
-  const getSignedPhotoUrl = useCallback(
-    async (
-      filenameOrPath: string,
-      expiresIn = 3600,
-    ): Promise<string | null> => {
-      // Clean up the file path
-      const key = normalizePath(filenameOrPath);
-      if (!key) return null;
-
-      // Request a signed URL from Supabase storage
-      // If the file doesn't exist, this will fail gracefully
-      const { data, error } = await supabase.storage
-        .from(BUCKET)
-        .createSignedUrl(key, expiresIn);
-
-      if (error) {
-        console.error("createSignedUrl error", { 
-          key, 
-          bucket: BUCKET,
-          error: error.message || error 
-        });
-        return null;
-      }
-
-      return data.signedUrl;
-    },
-    [supabase],
-  );
+  // Note: getSignedPhotoUrl is now handled in the Zustand store via the API
 
   // ===== ACTION HANDLERS =====
   // Show save report dialog for selected observations
@@ -457,12 +426,11 @@ export default function Home() {
           return;
         }
 
-        // Update local state
-        setObservations((prev) =>
-          prev.map((obs) =>
-            obs.id === observationId ? { ...obs, note: editNoteValue } : obs,
-          ),
+        // Update observations in store
+        const updatedObservations = observations.map((obs) =>
+          obs.id === observationId ? { ...obs, note: editNoteValue } : obs,
         );
+        setObservations(updatedObservations);
 
         setEditingNoteId(null);
         setEditNoteValue("");
@@ -584,10 +552,9 @@ export default function Home() {
           return;
         }
 
-        // Remove from local state
-        setObservations((prev) =>
-          prev.filter((obs) => obs.id !== observationId),
-        );
+        // Remove from store
+        const updatedObservations = observations.filter((obs) => obs.id !== observationId);
+        setObservations(updatedObservations);
 
         // Remove from selected observations if it was selected
         setSelectedObservations((prev) => {
@@ -761,7 +728,7 @@ export default function Home() {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase, t, router]);
+  }, [supabase, t, router, fetchInitialObservations, clearStore]);
 
   // Extract users and sites when observations change
   useEffect(() => {
@@ -771,7 +738,7 @@ export default function Home() {
     const allUsers = new Map<string, string>();
     observations.forEach(obs => {
       if (obs.user_id) {
-        const displayName = (obs as any).user_email || `User ${obs.user_id.slice(0, 8)}...`;
+        const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
         allUsers.set(obs.user_id, displayName);
       }
     });
@@ -781,7 +748,7 @@ export default function Home() {
     const allSites = new Map<string, string>();
     observations.forEach(obs => {
       if (obs.site_id) {
-        const siteName = (obs as any).sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
+        const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
         allSites.set(obs.site_id, siteName);
       }
     });
