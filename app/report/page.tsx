@@ -12,20 +12,7 @@ import { Button } from "@/components/ui/button";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 import jsPDF from 'jspdf';
 
-// Type definition for jsPDF internal
-interface jsPDFInternal {
-  getNumberOfPages(): number;
-  pageSize: {
-    width: number;
-    height: number;
-    getWidth: () => number;
-    getHeight: () => number;
-  };
-  pages: number[];
-  events: Record<string, unknown>;
-  scaleFactor: number;
-  getEncryptor: (objectId: number) => (data: string) => string;
-}
+// Type definition for jsPDF internal - using unknown for flexibility
 import { Document, Paragraph, ImageRun, TextRun, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
 
@@ -238,7 +225,7 @@ function ReportPageContent() {
           // Add page header for continuation
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(`Inspection Report (continued) - Page ${(pdf.internal as jsPDFInternal).getNumberOfPages()}`, margin, yPosition);
+          pdf.text(`Inspection Report (continued) - Page ${(pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages()}`, margin, yPosition);
           yPosition += 15;
         }
 
@@ -378,7 +365,7 @@ function ReportPageContent() {
       }
 
       // Add footer to all pages
-      const totalPages = (pdf.internal as jsPDFInternal).getNumberOfPages();
+      const totalPages = (pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         
