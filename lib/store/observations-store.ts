@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservations } from '@/lib/supabase/api';
+import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservations, fetchCollaborativeObservationsByWeek } from '@/lib/supabase/api';
 
 export interface Observation {
   id: string;
@@ -17,27 +17,42 @@ export interface Observation {
   taken_at: string | null;
 }
 
+export interface ObservationWithUrl extends Observation {
+  signedUrl: string | null;
+}
+
 export interface ObservationWithPhoto extends Observation {
   dataUrl: string | null;
 }
 
 interface ObservationsState {
   // State
-  observations: Observation[];
+  observations: ObservationWithUrl[];
   observationsWithPhotos: ObservationWithPhoto[];
   observationDates: string[];
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  weekOffset: number;
   error: string | null;
+  availableLabels: string[];
+  currentUserId: string | null;
   
   // Actions
-  setObservations: (observations: Observation[]) => void;
+  setObservations: (observations: ObservationWithUrl[]) => void;
+  addObservations: (observations: ObservationWithUrl[]) => void;
   setPhotos: (photos: ObservationWithPhoto[]) => void;
   setObservationDates: (dates: string[]) => void;
   setLoading: (loading: boolean) => void;
+  setLoadingMore: (loading: boolean) => void;
+  setHasMore: (hasMore: boolean) => void;
+  setWeekOffset: (offset: number) => void;
   setError: (error: string | null) => void;
+  setAvailableLabels: (labels: string[]) => void;
   
   // Async actions
-  fetchObservations: (userId: string) => Promise<Observation[]>;
+  fetchInitialObservations: (userId: string) => Promise<void>;
+  loadMoreObservations: (userId: string) => Promise<void>;
   fetchDates: (userId: string) => Promise<void>;
   processPhotos: () => Promise<void>;
   
@@ -51,28 +66,140 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   observationsWithPhotos: [],
   observationDates: [],
   isLoading: false,
+  isLoadingMore: false,
+  hasMore: true,
+  weekOffset: 0,
   error: null,
+  availableLabels: [],
+  currentUserId: null,
   
   // Basic setters
   setObservations: (observations) => set({ observations }),
+  addObservations: (newObservations) => set((state) => ({ 
+    observations: [...state.observations, ...newObservations] 
+  })),
   setPhotos: (photos) => set({ observationsWithPhotos: photos }),
   setObservationDates: (dates) => set({ observationDates: dates }),
   setLoading: (loading) => set({ isLoading: loading }),
+  setLoadingMore: (loading) => set({ isLoadingMore: loading }),
+  setHasMore: (hasMore) => set({ hasMore }),
+  setWeekOffset: (offset) => set({ weekOffset: offset }),
   setError: (error) => set({ error }),
+  setAvailableLabels: (labels) => set({ availableLabels: labels }),
   
   // Async actions
-  fetchObservations: async (userId: string): Promise<Observation[]> => {
+  fetchInitialObservations: async (userId: string) => {
+    const currentState = get();
+    
+    // Don't refetch if we already have observations for the same user
+    if (currentState.observations.length > 0 && currentState.currentUserId === userId) {
+      console.log('Skipping fetch - observations already loaded for this user');
+      return;
+    }
+    
+    // If user changed, clear existing data
+    if (currentState.currentUserId && currentState.currentUserId !== userId) {
+      console.log('User changed, clearing existing observations');
+      set({
+        observations: [],
+        observationsWithPhotos: [],
+        availableLabels: [],
+        hasMore: true,
+        weekOffset: 0,
+        error: null,
+      });
+    }
+    
     try {
-      set({ isLoading: true, error: null });
-      const observations = await fetchCollaborativeObservations(userId);
-      set({ observations, isLoading: false });
-      return observations; // Return the observations
+      set({ isLoading: true, error: null, weekOffset: 0 });
+      
+      const result = await fetchCollaborativeObservationsByWeek(userId, 1, 0);
+      const { observations: baseObservations, hasMore } = result;
+      
+      // Generate signed URLs
+      const { getSignedPhotoUrl } = await import('@/lib/supabase/api');
+      const withUrls: ObservationWithUrl[] = await Promise.all(
+        baseObservations.map(async (o) => {
+          const signedUrl = o.photo_url
+            ? await getSignedPhotoUrl(o.photo_url, 3600)
+            : null;
+          return { ...o, signedUrl };
+        })
+      );
+      
+      // Extract labels
+      const allLabels = new Set<string>();
+      withUrls.forEach(obs => {
+        if (obs.labels) {
+          obs.labels.forEach(label => {
+            if (label && label.trim()) {
+              allLabels.add(label.trim());
+            }
+          });
+        }
+      });
+      
+      set({ 
+        observations: withUrls, 
+        hasMore,
+        availableLabels: Array.from(allLabels).sort(),
+        currentUserId: userId,
+        isLoading: false 
+      });
     } catch (error) {
+      console.error('Error in fetchInitialObservations:', error);
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch observations',
         isLoading: false 
       });
-      return []; // Return empty array on error
+    }
+  },
+
+  loadMoreObservations: async (userId: string) => {
+    const { isLoadingMore, hasMore, weekOffset } = get();
+    if (isLoadingMore || !hasMore) return;
+    
+    try {
+      set({ isLoadingMore: true, error: null });
+      
+      const result = await fetchCollaborativeObservationsByWeek(userId, 1, weekOffset + 1);
+      const { observations: newObservations, hasMore: hasMoreData } = result;
+      
+      // Generate signed URLs for new observations
+      const { getSignedPhotoUrl } = await import('@/lib/supabase/api');
+      const withUrls: ObservationWithUrl[] = await Promise.all(
+        newObservations.map(async (o) => {
+          const signedUrl = o.photo_url
+            ? await getSignedPhotoUrl(o.photo_url, 3600)
+            : null;
+          return { ...o, signedUrl };
+        })
+      );
+      
+      // Update labels
+      const currentLabels = new Set(get().availableLabels);
+      withUrls.forEach(obs => {
+        if (obs.labels) {
+          obs.labels.forEach(label => {
+            if (label && label.trim()) {
+              currentLabels.add(label.trim());
+            }
+          });
+        }
+      });
+      
+      set((state) => ({ 
+        observations: [...state.observations, ...withUrls],
+        hasMore: hasMoreData,
+        weekOffset: state.weekOffset + 1,
+        availableLabels: Array.from(currentLabels).sort(),
+        isLoadingMore: false 
+      }));
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to load more observations',
+        isLoadingMore: false 
+      });
     }
   },
   
@@ -168,6 +295,11 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     observationsWithPhotos: [],
     observationDates: [],
     isLoading: false,
+    isLoadingMore: false,
+    hasMore: true,
+    weekOffset: 0,
     error: null,
+    availableLabels: [],
+    currentUserId: null,
   }),
 }));

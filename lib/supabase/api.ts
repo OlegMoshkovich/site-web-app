@@ -7,6 +7,42 @@ import type {
   Profile
 } from '../../types/supabase';
 
+// Clean up file paths by removing leading slashes and empty strings
+const normalizePath = (v?: string | null) =>
+  (v ?? "").trim().replace(/^\/+/, "") || null;
+
+const BUCKET = "photos";
+
+/**
+ * Generate a temporary signed URL for viewing a photo from Supabase storage
+ */
+export async function getSignedPhotoUrl(
+  filenameOrPath: string,
+  expiresIn = 3600,
+): Promise<string | null> {
+  // Clean up the file path
+  const key = normalizePath(filenameOrPath);
+  if (!key) return null;
+
+  const supabase = createClient();
+  
+  // Request a signed URL from Supabase storage
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(key, expiresIn);
+
+  if (error) {
+    console.error("createSignedUrl error", { 
+      key, 
+      bucket: BUCKET,
+      error: error.message || error 
+    });
+    return null;
+  }
+
+  return data?.signedUrl || null;
+}
+
 /**
  * Fetch all observations for a user, newest first.
  */

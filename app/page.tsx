@@ -48,6 +48,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 // Translation system
 import { translations, type Language, useLanguage } from "@/lib/translations";
+// Zustand store for observations
+import { useObservationsStore } from "@/lib/store/observations-store";
 // Utility functions
 import {
   filterObservationsBySearch,
@@ -81,18 +83,19 @@ export default function Home() {
   // ===== STATE MANAGEMENT =====
   // Current authenticated user (null if not logged in)
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  // Array of observations with signed photo URLs
-  const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
-  // Loading state for async operations
-  const [isLoading, setIsLoading] = useState(true);
-  // Loading state for loading more observations
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  // Whether there are more observations to load
-  const [hasMore, setHasMore] = useState(false);
-  // Current week offset for pagination
-  const [weekOffset, setWeekOffset] = useState(0);
-  // Error message if something goes wrong
-  const [error, setError] = useState<string | null>(null);
+  
+  // Zustand store for observations
+  const {
+    observations,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    error,
+    availableLabels: storeAvailableLabels,
+    fetchInitialObservations,
+    loadMoreObservations,
+    clearStore
+  } = useObservationsStore();
   // Set of selected observation IDs for bulk operations
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(
     new Set(),
@@ -115,7 +118,9 @@ export default function Home() {
   // Label filter state
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
-  const [availableLabels, setAvailableLabels] = useState<string[]>([]);
+  // Use labels from store, fallback to local state for backward compatibility
+  const [localAvailableLabels, setLocalAvailableLabels] = useState<string[]>([]);
+  const availableLabels = storeAvailableLabels.length > 0 ? storeAvailableLabels : localAvailableLabels;
   // User filter state
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [availableUsers, setAvailableUsers] = useState<{id: string, displayName: string}[]>([]);
@@ -679,88 +684,23 @@ export default function Home() {
 
 
   // ===== LOAD MORE FUNCTIONALITY =====
-  const loadMoreObservations = useCallback(async () => {
-    if (!user || isLoadingMore || !hasMore) return;
-
-    try {
-      setIsLoadingMore(true);
-      const { fetchCollaborativeObservationsByWeek } = await import("@/lib/supabase/api");
-      
-      // Load next week's observations
-      const { observations: newObservations, hasMore: hasMoreData } = 
-        await fetchCollaborativeObservationsByWeek(user.id, 1, weekOffset + 1);
-
-      // Generate signed URLs for new photos
-      const withUrls: ObservationWithUrl[] = await Promise.all(
-        newObservations.map(async (o) => {
-          const signedUrl = o.photo_url
-            ? await getSignedPhotoUrl(o.photo_url, 3600)
-            : null;
-          return { ...o, signedUrl };
-        })
-      );
-
-      // Append new observations to existing ones
-      setObservations(prev => [...prev, ...withUrls]);
-      setHasMore(hasMoreData);
-      setWeekOffset(prev => prev + 1);
-      
-      // Update filters with new data (combining existing and new observations)
-      const allLabels = new Set<string>();
-      const allUsers = new Map<string, string>();
-      const allSites = new Map<string, string>();
-      
-      // Combine existing observations with new ones for filter updates
-      const combinedObservations = [...observations, ...withUrls];
-      combinedObservations.forEach(obs => {
-        // Labels
-        if (obs.labels) {
-          obs.labels.forEach(label => {
-            if (label && label.trim()) {
-              allLabels.add(label.trim());
-            }
-          });
-        }
-        // Users
-        if (obs.user_id) {
-          const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
-          allUsers.set(obs.user_id, displayName);
-        }
-        // Sites
-        if (obs.site_id) {
-          const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
-          allSites.set(obs.site_id, siteName);
-        }
-      });
-      
-      setAvailableLabels(Array.from(allLabels).sort());
-      setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-      setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
-
-    } catch (e) {
-      console.error("Error loading more observations:", e);
-      setError("Failed to load more observations");
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [user, isLoadingMore, hasMore, weekOffset, observations, getSignedPhotoUrl]);
+  const handleLoadMore = useCallback(async () => {
+    if (!user) return;
+    await loadMoreObservations(user.id);
+  }, [user, loadMoreObservations]);
 
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
   useEffect(() => {
+    console.log('Main useEffect triggered');
     const fetchData = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        setWeekOffset(0);
-        setHasMore(false);
 
         // Step 1: Authenticate the current user
         const { data: authData, error: userError } =
           await supabase.auth.getUser();
         if (userError || !authData.user) {
           setUser(null);
-          setIsLoading(false);
           return;
         }
         setUser(authData.user);
@@ -790,74 +730,12 @@ export default function Home() {
           console.warn('Error checking onboarding status, continuing to main app:', error);
         }
 
-        // Step 2: Fetch first week of observations with collaboration permissions
-        let base: Observation[];
-        let hasMoreData = false;
-        try {
-          const { fetchCollaborativeObservationsByWeek } = await import("@/lib/supabase/api");
-          const result = await fetchCollaborativeObservationsByWeek(authData.user.id, 1, 0);
-          base = result.observations;
-          hasMoreData = result.hasMore;
-        } catch (obsError: unknown) {
-          console.error("Error fetching collaborative observations:", obsError);
-          const errorMessage = obsError instanceof Error ? obsError.message : String(obsError);
-          setError(`${t("errorLoading")} ${errorMessage}`);
-          setIsLoading(false);
-          return;
-        }
-
-        // Step 3: Generate signed URLs for each photo in parallel
-        // This is necessary because photos are stored privately in Supabase
-        const withUrls: ObservationWithUrl[] = await Promise.all(
-          base.map(async (o) => {
-            const signedUrl = o.photo_url
-              ? await getSignedPhotoUrl(o.photo_url, 3600) // 1 hour expiration
-              : null;
-            return { ...o, signedUrl };
-          }),
-        );
-
-        setObservations(withUrls);
-        setHasMore(hasMoreData);
-        
-        // Extract unique labels from all observations
-        const allLabels = new Set<string>();
-        withUrls.forEach(obs => {
-          if (obs.labels) {
-            obs.labels.forEach(label => {
-              if (label && label.trim()) {
-                allLabels.add(label.trim());
-              }
-            });
-          }
-        });
-        setAvailableLabels(Array.from(allLabels).sort());
-        
-        // Extract unique users from all observations
-        const allUsers = new Map<string, string>();
-        withUrls.forEach(obs => {
-          if (obs.user_id) {
-            const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
-            allUsers.set(obs.user_id, displayName);
-          }
-        });
-        setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-        
-        // Extract unique sites from all observations
-        const allSites = new Map<string, string>();
-        withUrls.forEach(obs => {
-          if (obs.site_id) {
-            const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
-            allSites.set(obs.site_id, siteName);
-          }
-        });
-        setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
-        
-        setIsLoading(false);
+        // Step 2: Fetch observations using Zustand store
+        console.log('About to call fetchInitialObservations for user:', authData.user.id);
+        await fetchInitialObservations(authData.user.id);
+        console.log('fetchInitialObservations completed');
       } catch (e) {
         console.error("Error in fetchData:", e);
-        setError(t("unexpectedError"));
-        setIsLoading(false);
       }
     };
 
@@ -873,11 +751,8 @@ export default function Home() {
       ) => {
         if (event === "SIGNED_OUT") {
           setUser(null);
-          setObservations([]);
+          clearStore();
           setSelectedObservations(new Set());
-          setWeekOffset(0);
-          setHasMore(false);
-          setIsLoading(false);
         } else if (event === "SIGNED_IN" && session?.user) {
           // Refetch data when user signs in
           fetchData();
@@ -886,7 +761,32 @@ export default function Home() {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase, getSignedPhotoUrl, t, router]);
+  }, [supabase, t, router]);
+
+  // Extract users and sites when observations change
+  useEffect(() => {
+    if (observations.length === 0) return;
+
+    // Extract unique users from all observations
+    const allUsers = new Map<string, string>();
+    observations.forEach(obs => {
+      if (obs.user_id) {
+        const displayName = (obs as any).user_email || `User ${obs.user_id.slice(0, 8)}...`;
+        allUsers.set(obs.user_id, displayName);
+      }
+    });
+    setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
+    
+    // Extract unique sites from all observations
+    const allSites = new Map<string, string>();
+    observations.forEach(obs => {
+      if (obs.site_id) {
+        const siteName = (obs as any).sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
+        allSites.set(obs.site_id, siteName);
+      }
+    });
+    setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
+  }, [observations]);
 
   // ===== MAIN RENDER =====
   if (!mounted) {
@@ -1911,7 +1811,7 @@ export default function Home() {
                 {hasMore && (
                   <div className="flex justify-center py-8">
                     <Button
-                      onClick={loadMoreObservations}
+                      onClick={handleLoadMore}
                       disabled={isLoadingMore}
                       variant="outline"
                       size="lg"
