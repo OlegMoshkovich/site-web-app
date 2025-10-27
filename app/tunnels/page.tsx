@@ -3,7 +3,6 @@
 // React hooks for state management  
 import { useState, useCallback } from "react";
 // Lucide React icons
-import { X } from "lucide-react";
 // Footer component
 import { Footer } from "@/components/footer";
 // Authentication component

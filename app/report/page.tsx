@@ -11,9 +11,10 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 import jsPDF from 'jspdf';
+
+// Type definition for jsPDF internal - using unknown for flexibility
 import { Document, Paragraph, ImageRun, TextRun, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
-import PlanDisplayWidget from '@/components/plan-display-widget';
 
 interface Observation {
   id: string;
@@ -56,6 +57,13 @@ function ReportPageContent() {
   // Edit state
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>('');
+  
+  // Save report state
+  const [isSaving, setIsSaving] = useState(false);
+  const [reportTitle, setReportTitle] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  
   const searchParams = useSearchParams();
   
   // Helper function to get translated text
@@ -71,16 +79,23 @@ function ReportPageContent() {
         console.warn('Search params not available yet');
         return [];
       }
+      
+      // Check for direct observation IDs
       const ids = searchParams.get('ids');
-      if (!ids) {
-        return [];
+      if (ids) {
+        return ids.split(',').filter(id => id.trim());
       }
-      return ids.split(',').filter(id => id.trim());
+      
+      // If no direct IDs, this will be handled by loadReportData
+      return [];
     } catch (err) {
       console.error('Error parsing search params:', err);
       return [];
     }
   }, [searchParams]);
+
+  // Check if we're loading from a saved report
+  const reportId = searchParams?.get('reportId');
   
   // Create supabase client only once
   const supabase = useMemo(() => createClient(), []);
@@ -165,183 +180,53 @@ function ReportPageContent() {
       const margin = 20;
       let yPosition = margin;
 
-      // Add title
-      pdf.setFontSize(24);
+      // Header section with professional styling
+      pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(t('report'), pageWidth / 2, yPosition, { align: 'center' });
+      pdf.text('INSPECTION REPORT', margin, yPosition);
+      yPosition += 10;
+      
+      // Project details
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Site Inspection Documentation', margin, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const dateText = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Date: ${dateText}`, margin, yPosition);
+      yPosition += 6;
+      
+      pdf.text(`Total Observations: ${observations.length}`, margin, yPosition);
+      yPosition += 6;
+      
+      // Add a separator line
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 15;
 
-      // Add date
-      pdf.setFontSize(20);
-      pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
-      pdf.text(dateText, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 20;
-
-
-      // Add plan overview if there are observations with meaningful anchors (not 0,0)
-      const observationsWithAnchors = observations.filter(obs => 
-        (obs.plan_anchor && 
-         typeof obs.plan_anchor === 'object' && 
-         'x' in obs.plan_anchor && 
-         'y' in obs.plan_anchor &&
-         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
-        (obs.anchor_x !== null && obs.anchor_y !== null &&
-         !(obs.anchor_x === 0 && obs.anchor_y === 0))
-      );
-
-      if (observationsWithAnchors.length > 0) {
-        // Group by plan
-        const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
-        let globalIndex = 0;
-        
-        observationsWithAnchors.forEach((obs) => {
-          let obsPlan = obs.plan || 'plan1';
-          
-          // Check if plan looks like a UUID - skip these plans
-          if (obsPlan.includes('-') && obsPlan.length > 30) {
-            console.log('Plan appears to be a UUID:', obsPlan, 'skipping plan display');
-            return; // Skip this observation for plan overview
-          } else {
-            obsPlan = obsPlan.replace(/[^a-zA-Z0-9]/g, '');
-          }
-          
-          let anchor = null;
-          
-          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
-              !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
-            anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-          } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
-            anchor = { x: obs.anchor_x, y: obs.anchor_y };
-          }
-          
-          if (anchor) {
-            if (!planGroups.has(obsPlan)) {
-              planGroups.set(obsPlan, []);
-            }
-            globalIndex++;
-            planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
-          }
-        });
-
-        // Add plan overview section
-        if (planGroups.size > 0) {
-          pdf.setFontSize(18);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Plan Overview', margin, yPosition);
-          yPosition += 15;
-
-          for (const [planName, anchors] of planGroups) {
-            console.log(`Processing plan: ${planName} with ${anchors.length} anchors`);
-            
-            // Check if we need a new page
-            if (yPosition > pageHeight - 80) {
-              pdf.addPage();
-              yPosition = margin;
-            }
-
-            pdf.setFontSize(14);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(`${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, margin, yPosition);
-            yPosition += 10;
-
-            // Add plan image
-            try {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = 320;
-              canvas.height = 280;
-              
-              const img = new window.Image();
-              img.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = (error) => {
-                  console.error(`Failed to load plan image: /plans/${planName}.png`, error);
-                  reject(error);
-                };
-                img.src = `/plans/${planName}.png`;
-              });
-
-              // Clear canvas with white background and use object-contain behavior
-              if (ctx) {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, 320, 280);
-                
-                // Calculate aspect ratios for object-contain behavior
-                const imgAspect = img.width / img.height;
-                const canvasAspect = 320 / 280;
-                
-                let drawWidth, drawHeight, offsetX, offsetY;
-                
-                if (imgAspect > canvasAspect) {
-                  drawWidth = 320;
-                  drawHeight = 320 / imgAspect;
-                  offsetX = 0;
-                  offsetY = (280 - drawHeight) / 2;
-                } else {
-                  drawHeight = 280;
-                  drawWidth = 280 * imgAspect;
-                  offsetX = (320 - drawWidth) / 2;
-                  offsetY = 0;
-                }
-                
-                // Draw the plan image with object-contain behavior
-                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-                
-                // Draw anchors on the canvas
-                anchors.forEach((anchor) => {
-                  const x = anchor.x * 320;
-                  const y = anchor.y * 280;
-                  
-                  // Draw black circle with white border
-                  ctx.beginPath();
-                  ctx.arc(x, y, 8, 0, 2 * Math.PI);
-                  ctx.fillStyle = 'black';
-                  ctx.fill();
-                  ctx.strokeStyle = 'white';
-                  ctx.lineWidth = 2;
-                  ctx.stroke();
-                  
-                  // Draw white number
-                  ctx.fillStyle = 'white';
-                  ctx.font = 'bold 10px Arial';
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText(anchor.index.toString(), x, y);
-                });
-              }
-              
-              const planImageData = canvas.toDataURL('image/jpeg', 0.8);
-              const planWidth = 130;
-              const planHeight = 100; // Increased height for better visibility
-              
-              // Check if image fits on current page
-              if (yPosition + planHeight > pageHeight - margin) {
-                pdf.addPage();
-                yPosition = margin;
-              }
-              
-              pdf.addImage(planImageData, 'JPEG', margin, yPosition, planWidth, planHeight);
-              yPosition += planHeight + 15;
-            } catch (error) {
-              console.error('Error adding plan to PDF:', error);
-              yPosition += 10;
-            }
-          }
-          
-          yPosition += 10; // Extra space after plans
-        }
-      }
-
-      // Process each observation in a simple table format
+      // Process each observation with professional numbering
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
+        const observationNumber = i + 1;
         
-        // Check if we need a new page (reserve more space for table layout)
-        if (yPosition > pageHeight - 100) {
+        // Check if we need a new page (reserve more space for content)
+        if (yPosition > pageHeight - 120) {
           pdf.addPage();
           yPosition = margin;
+          
+          // Add page header for continuation
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Inspection Report (continued) - Page ${(pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages()}`, margin, yPosition);
+          yPosition += 15;
         }
 
         // Create a simple table-like layout with photo on left, text on right
@@ -389,9 +274,31 @@ function ReportPageContent() {
             // Add text content in the right column
             let textY = yPosition + 10;
             
+            // Add observation number and category
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${observationNumber}`, margin + 5, yPosition - 3);
+            
+            // Add category/type if available from labels
+            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Kategorie: ${category}`, textStartX, textY);
+            textY += 7;
+            
+            // Add timestamp
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            const timestamp = new Date(observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
+                             new Date(observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+            pdf.text(`Foto 1 von 1`, textStartX, textY);
+            textY += 5;
+            pdf.text(timestamp, textStartX, textY);
+            textY += 10;
+            
             // Add note
             if (displaySettings.note && observation.note) {
-              pdf.setFontSize(12);
+              pdf.setFontSize(11);
               pdf.setFont('helvetica', 'bold');
               const noteLines = pdf.splitTextToSize(observation.note, textWidth);
               pdf.text(noteLines, textStartX, textY);
@@ -457,13 +364,30 @@ function ReportPageContent() {
         }
       }
 
+      // Add footer to all pages
+      const totalPages = (pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        
+        // Footer line
+        pdf.setLineWidth(0.5);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+        
+        // Footer text
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Site Inspection Report', margin, pageHeight - 12);
+        pdf.text(`${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
+      }
+
       // Save the PDF
-      pdf.save(`report-${new Date().toISOString().split('T')[0]}.pdf`);
+      pdf.save(`inspection-report-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
     }
-  }, [observations, t, language, displaySettings]);
+  }, [observations, displaySettings]);
 
   const handleDownloadWord = useCallback(async () => {
     try {
@@ -504,174 +428,12 @@ function ReportPageContent() {
         })
       );
 
-      // // Add plan overview if there are observations with meaningful anchors (not 0,0)
-      // const observationsWithAnchors = observations.filter(obs => 
-      //   (obs.plan_anchor && 
-      //    typeof obs.plan_anchor === 'object' && 
-      //    'x' in obs.plan_anchor && 
-      //    'y' in obs.plan_anchor &&
-      //    !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
-      //   (obs.anchor_x !== null && obs.anchor_y !== null &&
-      //    !(obs.anchor_x === 0 && obs.anchor_y === 0))
-      // );
-
-      // if (observationsWithAnchors.length > 0) {
-      //   // Group by plan
-      //   const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
-      //   let globalIndex = 0;
-        
-      //   observationsWithAnchors.forEach((obs) => {
-      //     const obsPlan = obs.plan || 'plan1';
-      //     let anchor = null;
-          
-      //     if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
-      //         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
-      //       anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-      //     } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
-      //       anchor = { x: obs.anchor_x, y: obs.anchor_y };
-      //     }
-          
-      //     if (anchor) {
-      //       if (!planGroups.has(obsPlan)) {
-      //         planGroups.set(obsPlan, []);
-      //       }
-      //       globalIndex++;
-      //       planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
-      //     }
-      //   });
-
-      //   // Add plan overview section
-      //   if (planGroups.size > 0) {
-      //     children.push(
-      //       new Paragraph({
-      //         children: [new TextRun({ text: 'Plan Overview',  size: 20 })],
-  
-      //         spacing: { before: 200 }
-      //       })
-      //     );
-
-      //     for (const [planName, anchors] of planGroups) {
-      //       // Add plan title
-      //       children.push(
-      //         new Paragraph({
-      //           children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`,  size: 20 })],
-      //           // heading: HeadingLevel.HEADING_2,
-      //           // spacing: { before: 100, after: 100 }
-      //         })
-      //       );
-
-      //       // Add plan image with anchors
-      //       try {
-      //         const canvas = document.createElement('canvas');
-      //         const ctx = canvas.getContext('2d');
-      //         canvas.width = 320;
-      //         canvas.height = 220;
-              
-      //         const img = new window.Image();
-      //         img.crossOrigin = 'anonymous';
-      //         await new Promise((resolve, reject) => {
-      //           img.onload = resolve;
-      //           img.onerror = reject;
-      //           img.src = `/plans/${planName}.png`;
-      //         });
-
-      //         // Clear canvas with white background and use object-contain behavior
-      //         if (ctx) {
-      //           ctx.fillStyle = 'white';
-      //           ctx.fillRect(0, 0, 320, 280);
-                
-      //           // Calculate aspect ratios for object-contain behavior
-      //           const imgAspect = img.width / img.height;
-      //           const canvasAspect = 320 / 280;
-                
-      //           let drawWidth, drawHeight, offsetX, offsetY;
-                
-      //           if (imgAspect > canvasAspect) {
-      //             drawWidth = 320;
-      //             drawHeight = 320 / imgAspect;
-      //             offsetX = 0;
-      //             offsetY = (280 - drawHeight) / 2;
-      //           } else {
-      //             drawHeight = 280;
-      //             drawWidth = 280 * imgAspect;
-      //             offsetX = (320 - drawWidth) / 2;
-      //             offsetY = 0;
-      //           }
-                
-      //           // Draw the plan image with object-contain behavior
-      //           ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-                
-      //           // Draw anchors on the canvas
-      //           anchors.forEach((anchor) => {
-      //             const x = anchor.x * 320;
-      //             const y = anchor.y * 280;
-                  
-      //             // Draw black circle with white border
-      //             ctx.beginPath();
-      //             ctx.arc(x, y, 8, 0, 2 * Math.PI);
-      //             ctx.fillStyle = 'black';
-      //             ctx.fill();
-      //             ctx.strokeStyle = 'white';
-      //             ctx.lineWidth = 2;
-      //             ctx.stroke();
-                  
-      //             // Draw white number
-      //             ctx.fillStyle = 'white';
-      //             ctx.font = 'bold 10px Arial';
-      //             ctx.textAlign = 'center';
-      //             ctx.textBaseline = 'middle';
-      //             ctx.fillText(anchor.index.toString(), x, y);
-      //           });
-      //         }
-              
-      //         // Convert canvas to blob and add to document
-      //         const planImageBlob = await new Promise<Blob>((resolve) => {
-      //           canvas.toBlob((blob) => resolve(blob!), 'image/png');
-      //         });
-              
-      //         const arrayBuffer = await planImageBlob.arrayBuffer();
-              
-      //         children.push(
-      //           new Paragraph({
-      //             children: [
-      //               new ImageRun({
-      //                 data: arrayBuffer,
-      //                 transformation: {
-      //                   width: 320*1.5, // Match the original canvas width
-      //                   height: 220*1.5  // Reduced height for better document layout
-      //                 },
-      //                 type: 'png'
-      //               })
-      //             ],
-      //             // spacing: { after: 100 }
-      //           })
-      //         );
-      //       } catch (error) {
-      //         console.error('Error adding plan to Word doc:', error);
-      //         children.push(
-      //           new Paragraph({
-      //             children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
-      //             // spacing: { after: 100 }
-      //           })
-      //         );
-      //       }
-      //     }
-      //   }
-      // }
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
         
 
-        // // Observation heading
-        // children.push(
-        //   new Paragraph({
-        //     children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
-        //     // heading: HeadingLevel.HEADING_2,
-        //     // spacing: { before: 100, after: 100 }
-        //   })
-        // );
 
         // Create content for text column
         const textContent = [];
@@ -867,6 +629,73 @@ function ReportPageContent() {
     }
   }, [observations, t, language, displaySettings]);
 
+  const handleSaveReport = useCallback(async () => {
+    if (!reportTitle.trim()) {
+      alert('Please enter a title for the report');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to save reports');
+        return;
+      }
+
+      // Create the report
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: user.id,
+          title: reportTitle,
+          description: reportDescription || null,
+          settings: {
+            displaySettings,
+            language,
+            selectedIds: memoizedSelectedIds
+          }
+        })
+        .select()
+        .single();
+
+      if (reportError) {
+        console.error('Error creating report:', reportError);
+        alert('Error saving report. Please try again.');
+        return;
+      }
+
+      // Create report_observations entries
+      const reportObservations = observations.map(obs => ({
+        report_id: reportData.id,
+        observation_id: obs.id
+      }));
+
+      const { error: observationsError } = await supabase
+        .from('report_observations')
+        .insert(reportObservations);
+
+      if (observationsError) {
+        console.error('Error linking observations to report:', observationsError);
+        alert('Error saving report observations. Please try again.');
+        return;
+      }
+
+      alert('Report saved successfully!');
+      setShowSaveDialog(false);
+      setReportTitle('');
+      setReportDescription('');
+      
+      // Redirect to reports page
+      window.location.href = '/reports';
+    } catch (error) {
+      console.error('Error saving report:', error);
+      alert('Error saving report. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [reportTitle, reportDescription, displaySettings, language, memoizedSelectedIds, observations, supabase]);
+
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
     if (item.plan_anchor && 
@@ -925,22 +754,57 @@ function ReportPageContent() {
     };
   }, [observations]);
 
-  const fetchSelectedObservations = useCallback(async () => {
-    if (!memoizedSelectedIds || memoizedSelectedIds.length === 0) {
-      setError("No observations selected. Please go back and select some observations first.");
-      setIsLoading(false);
-      setIsInitialized(true);
-      return;
-    }
-
+  const fetchFromSavedReport = useCallback(async (reportId: string) => {
     try {
-      // Only set loading if we haven't initialized yet
-      if (!isInitialized) {
-        setIsLoading(true);
-      }
-      setError(null);
+      // First, get the observation IDs for this report
+      const { data: reportObsData, error: reportObsError } = await supabase
+        .from('report_observations')
+        .select('observation_id')
+        .eq('report_id', reportId);
 
-      // Fetch the selected observations
+      if (reportObsError) {
+        console.error('Error fetching report observations:', reportObsError);
+        setError(`Error loading report: ${reportObsError.message}`);
+        return [];
+      }
+
+      if (!reportObsData || reportObsData.length === 0) {
+        setError("No observations found in this report.");
+        return [];
+      }
+
+      // Extract observation IDs
+      const observationIds = reportObsData.map((item: { observation_id: string }) => item.observation_id);
+
+      // Fetch the actual observations
+      const { data: obsData, error: obsError } = await supabase
+        .from("observations")
+        .select("*")
+        .in("id", observationIds)
+        .order("created_at", { ascending: false });
+
+      if (obsError) {
+        console.error("Error fetching observations:", obsError);
+        setError(`Error loading observations: ${obsError.message}`);
+        return [];
+      }
+
+      return (obsData ?? []) as Observation[];
+    } catch (e) {
+      console.error("Error in fetchFromSavedReport:", e);
+      setError("An unexpected error occurred while loading the report.");
+      return [];
+    }
+  }, [supabase]);
+
+  const fetchSelectedObservations = useCallback(async () => {
+    let baseObservations: Observation[] = [];
+
+    // Check if we're loading from a saved report
+    if (reportId) {
+      baseObservations = await fetchFromSavedReport(reportId);
+    } else if (memoizedSelectedIds && memoizedSelectedIds.length > 0) {
+      // Fetch the selected observations directly
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
         .select("*")
@@ -954,12 +818,30 @@ function ReportPageContent() {
         setIsInitialized(true);
         return;
       }
+      baseObservations = (obsData ?? []) as Observation[];
+    } else {
+      setError("No observations selected. Please go back and select some observations first.");
+      setIsLoading(false);
+      setIsInitialized(true);
+      return;
+    }
 
-      const base = (obsData ?? []) as Observation[];
+    if (baseObservations.length === 0) {
+      setIsLoading(false);
+      setIsInitialized(true);
+      return;
+    }
+
+    try {
+      // Only set loading if we haven't initialized yet
+      if (!isInitialized) {
+        setIsLoading(true);
+      }
+      setError(null);
 
       // Create signed URLs for each photo
       const withUrls: ObservationWithUrl[] = await Promise.all(
-        base.map(async (o) => {
+        baseObservations.map(async (o) => {
           const signedUrl = o.photo_url
             ? await (async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
                 const key = normalizePath(filenameOrPath);
@@ -987,7 +869,7 @@ function ReportPageContent() {
       setIsLoading(false);
       setIsInitialized(true);
     }
-  }, [memoizedSelectedIds, supabase, isInitialized]);
+  }, [memoizedSelectedIds, supabase, isInitialized, reportId, fetchFromSavedReport]);
 
   useEffect(() => {
     // Only fetch once when component mounts
@@ -999,18 +881,49 @@ function ReportPageContent() {
   // Show loading state inline to prevent layout shifts
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center">
-        <div className="w-full max-w-7xl p-5">
-          {/* Header - Always visible */}
-          <div className="mb-8">
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+          {/* Header */}
+          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 border-gray-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Home
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Reports
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
             <div className="flex items-center justify-between mb-4">
-              <Link 
-                href="/" 
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                {t('backToObservations')}
-              </Link>
+              <div></div>
               
               <div className="flex items-center gap-3">
                 {/* Display Toggles */}
@@ -1089,25 +1002,56 @@ function ReportPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   // Show error state inline to prevent layout shifts
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center">
-        <div className="w-full max-w-7xl p-5">
-          {/* Header - Always visible */}
-          <div className="mb-8">
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+          {/* Header */}
+          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 border-gray-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Home
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Reports
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
             <div className="flex items-center justify-between mb-4">
-              <Link 
-                href="/" 
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                {t('backToObservations')}
-              </Link>
+              <div></div>
               
               {/* Action Buttons - Disabled during error */}
               <div className="flex flex-col gap-2">
@@ -1161,59 +1105,92 @@ function ReportPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      <style jsx>{`
-        .observation {
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          overflow: hidden;
-          background: white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .photo {
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
-        }
-        .no-photo {
-          width: 100%;
-          height: 200px;
-          background: #f5f5f5;
-          border: 2px dashed #ddd;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .no-photo-text {
-          color: #999;
-          font-size: 14px;
-        }
-        .note {
-          padding: 15px;
-          font-size: 14px;
-          color: #333;
-          line-height: 1.4;
-        }
-      `}</style>
-      <div className="w-full max-w-7xl p-5">
-        {/* Header - Stable section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Back to Observations
-            </Link>
+    <>
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+        {/* Header */}
+        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => window.history.back()}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 border-gray-300"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </div>
             
+            <div className="flex items-center gap-2">
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 border-gray-300"
+                >
+                  Home
+                </Button>
+              </Link>
+              <Link href="/reports">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 border-gray-300"
+                >
+                  Reports
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
+          <style jsx>{`
+            .observation {
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              overflow: hidden;
+              background: white;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .photo {
+              width: 100%;
+              height: 200px;
+              object-fit: cover;
+            }
+            .no-photo {
+              width: 100%;
+              height: 200px;
+              background: #f5f5f5;
+              border: 2px dashed #ddd;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .no-photo-text {
+              color: #999;
+              font-size: 14px;
+            }
+            .note {
+              padding: 15px;
+              font-size: 14px;
+              color: #333;
+              line-height: 1.4;
+            }
+          `}</style>
+          
+          <div className="flex items-center justify-between mb-4">
+            <div></div>
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">
+              
               <Button
                 onClick={handleDownloadPDF}
                 className="transition-all"
@@ -1232,10 +1209,18 @@ function ReportPageContent() {
               </Button>
             </div>
           </div>
-          <h1 className="text-3xl font-bold">Report</h1>
-          <p className="text-muted-foreground">
-            {observations.length} observation{observations.length !== 1 ? 's' : ''} selected
-          </p>
+          <h1 className="text-3xl font-bold">INSPECTION REPORT</h1>
+          <h2 className="text-xl font-semibold text-gray-700 mt-2">Site Inspection Documentation</h2>
+          <div className="mt-4 space-y-1 text-sm text-gray-600">
+            <p>Date: {new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+            <p>Total Observations: {observations.length}</p>
+          </div>
           
           {/* Display Toggles */}
           <div className="flex flex-wrap gap-3 mt-4 mb-2">
@@ -1261,23 +1246,11 @@ function ReportPageContent() {
           </div>
         </div>
 
-        {/* Plan Display Widget - Show if any observations have anchors */}
-        {anchorData.hasAnchors && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Plan Overview</h2>
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <PlanDisplayWidget
-                observations={observations}
-                plan="plan1"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Photos in a row */}
         {observations.length > 0 ? (
           <div key="observations-content" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl ml-auto mr-0">
               {observations.map((observation) => {
                 const anchorNumber = anchorData.anchorIndexMap.get(observation.id);
                 return (
@@ -1433,7 +1406,64 @@ function ReportPageContent() {
           </div>
         )}
       </div>
-    </div>
+      </main>
+      
+      {/* Save Report Dialog */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Title *
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter report title"
+                />
+              </div>
+              <div>
+                <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  id="report-description"
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter report description (optional)"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                onClick={() => {
+                  setShowSaveDialog(false);
+                  setReportTitle('');
+                  setReportDescription('');
+                }}
+                variant="outline"
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveReport}
+                disabled={isSaving || !reportTitle.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Save Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

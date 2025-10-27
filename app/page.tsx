@@ -34,6 +34,7 @@ import {
   Settings,
   Tag,
   ZoomIn,
+  FileText,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -124,6 +125,11 @@ export default function Home() {
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
+  // Save report modal state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [reportTitle, setReportTitle] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // ===== UTILITY FUNCTIONS =====
   // Helper function to get translated text based on current language
@@ -172,17 +178,13 @@ export default function Home() {
   );
 
   // ===== ACTION HANDLERS =====
-  // Navigate to the report generation page with selected observations
+  // Show save report dialog for selected observations
   const handleGenerateReport = useCallback(() => {
     if (selectedObservations.size === 0) return;
 
-    // Convert selected observation IDs to a comma-separated string
-    const selectedIds = Array.from(selectedObservations);
-    const queryString = selectedIds.join(",");
-
-    // Navigate to the report page with selected observation IDs as URL parameters
-    router.push(`/report?ids=${queryString}`);
-  }, [selectedObservations, router]);
+    // Show the save report dialog
+    setShowSaveDialog(true);
+  }, [selectedObservations]);
 
   // Compress image blob for download with multi-pass approach
   const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 50): Promise<Blob> => {
@@ -484,6 +486,74 @@ export default function Home() {
     setPhotoModalOpen(false);
     setSelectedPhotoObservation(null);
   }, []);
+
+  // ===== SAVE REPORT FUNCTIONALITY =====
+  const handleSaveReport = useCallback(async () => {
+    if (!reportTitle.trim()) {
+      alert('Please enter a title for the report');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        alert('You must be logged in to save reports');
+        return;
+      }
+
+      // Create the report
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: currentUser.id,
+          title: reportTitle,
+          description: reportDescription || null,
+          settings: {
+            language,
+            selectedIds: Array.from(selectedObservations)
+          }
+        })
+        .select()
+        .single();
+
+      if (reportError) {
+        console.error('Error creating report:', reportError);
+        alert('Error saving report. Please try again.');
+        return;
+      }
+
+      // Create report_observations entries
+      const reportObservations = Array.from(selectedObservations).map(obsId => ({
+        report_id: reportData.id,
+        observation_id: obsId
+      }));
+
+      const { error: observationsError } = await supabase
+        .from('report_observations')
+        .insert(reportObservations);
+
+      if (observationsError) {
+        console.error('Error linking observations to report:', observationsError);
+        alert('Error saving report observations. Please try again.');
+        return;
+      }
+
+      alert('Report saved successfully!');
+      setShowSaveDialog(false);
+      setReportTitle('');
+      setReportDescription('');
+      setSelectedObservations(new Set()); // Clear selections
+      
+      // Redirect to reports page
+      router.push('/reports');
+    } catch (error) {
+      console.error('Error saving report:', error);
+      alert('Error saving report. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [reportTitle, reportDescription, selectedObservations, language, supabase, router]);
 
   // ===== DELETE FUNCTIONALITY =====
   // Handle observation deletion with confirmation
@@ -829,95 +899,132 @@ export default function Home() {
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-            <div className="flex text-lg gap-5 items-center font-semibold">
-              {user ? "Simple" : t("siteTitle")}
-            </div>
             <div className="flex items-center gap-2">
-              {user && (
-                <Button
-                  onClick={() => setShowSearchSelector(!showSearchSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showSearchSelector
-                      ? "bg-gray-200 text-gray-700"
-                      : "bg-white"
-                  }`}
-                  title="Toggle search"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
+              {/* Show "Simple site" title when not logged in */}
+              {!user && (
+                <div className="text-lg font-semibold">
+                  {t("siteTitle")}
+                </div>
               )}
+              
+              {/* Left side controls: Search, Tags, Filter, Grid */}
+              {user && (
+                <>
+                  <Button
+                    onClick={() => setShowSearchSelector(!showSearchSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showSearchSelector
+                        ? "bg-gray-200 text-gray-700"
+                        : "bg-white"
+                    }`}
+                    title={t("toggleSearch")}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
 
-              {user && (
-                <Button
-                  onClick={() => setShowLabelSelector(!showLabelSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showLabelSelector
-                      ? "bg-gray-200 text-gray-700"
-                      : "bg-white"
-                  }`}
-                  title="Toggle label filter"
-                >
-                  <Tag className="h-4 w-4" />
-                </Button>
-              )}
+                  <Button
+                    onClick={() => setShowLabelSelector(!showLabelSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showLabelSelector
+                        ? "bg-gray-200 text-gray-700"
+                        : "bg-white"
+                    }`}
+                    title={t("toggleLabelFilter")}
+                  >
+                    <Tag className="h-4 w-4" />
+                  </Button>
 
-              {user && (
-                <Button
-                  onClick={() => setShowDateSelector(!showDateSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
-                  }`}
-                  title="Toggle date filter"
-                >
-                  <Filter className="h-4 w-4" />
-                </Button>
-              )}
+                  <Button
+                    onClick={() => setShowDateSelector(!showDateSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
+                    }`}
+                    title={t("toggleDateFilter")}
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
 
-              {/* View Mode Toggle */}
-              {user && (
-                <button
-                  onClick={() =>
-                    setViewMode(viewMode === "list" ? "card" : "list")
-                  }
-                  className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
-                  title={
-                    viewMode === "list"
-                      ? "Switch to card view"
-                      : "Switch to list view"
-                  }
-                >
-                  {viewMode === "list" ? (
-                    <Grid3X3 className="h-4 w-4" />
-                  ) : (
-                    <List className="h-4 w-4" />
-                  )}
-                </button>
+                  {/* View Mode Toggle */}
+                  <button
+                    onClick={() =>
+                      setViewMode(viewMode === "list" ? "card" : "list")
+                    }
+                    className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
+                    title={
+                      viewMode === "list"
+                        ? t("switchToCardView")
+                        : t("switchToListView")
+                    }
+                  >
+                    {viewMode === "list" ? (
+                      <Grid3X3 className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </button>
+                </>
               )}
+            </div>
+            
+            {/* Center icon - only show when user is logged in */}
+            {user && (
+              <div className="absolute left-1/2 transform -translate-x-1/2">
+                <div 
+                  onClick={() => router.push('/')}
+                  className="h-8 w-8 border border-gray-300 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50" 
+                  title={t("home")}
+                >
+                  <Image
+                    src="/images/icon.png"
+                    alt="Site Icon"
+                    width={24}
+                    height={24}
+                    className="h-6 w-6"
+                  />
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">              
               {/* Language selector */}
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
                 className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
                 style={{ textAlignLast: "center" }}
+                title={t("changeLanguage")}
               >
                 <option value="en">EN</option>
                 <option value="de">DE</option>
               </select>
 
-              {/* Settings gear icon */}
+              {/* Reports */}
+              {user && (
+                <Button
+                  onClick={() => router.push('/reports')}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                  title={t("reports")}
+                >
+                  <FileText className="h-4 w-4" />
+                </Button>
+              )}
+
+              {/* Settings */}
               {user && (
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="outline"
                   size="sm"
                   className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
-                  title="Settings"
+                  title={t("settings")}
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -1878,6 +1985,63 @@ export default function Home() {
           imageUrl={selectedPhotoObservation.signedUrl}
           observation={selectedPhotoObservation}
         />
+      )}
+
+      {/* Save Report Dialog */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Title *
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportTitle}
+                  onChange={(e) => setReportTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report title"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  id="report-description"
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter report description (optional)"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button
+                onClick={() => {
+                  setShowSaveDialog(false);
+                  setReportTitle('');
+                  setReportDescription('');
+                }}
+                variant="outline"
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveReport}
+                disabled={isSaving || !reportTitle.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Save Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
