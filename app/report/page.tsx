@@ -4,16 +4,30 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save } from "lucide-react";
+import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 import jsPDF from 'jspdf';
+
+// Type definition for jsPDF internal
+interface jsPDFInternal {
+  getNumberOfPages(): number;
+  pageSize: {
+    width: number;
+    height: number;
+    getWidth: () => number;
+    getHeight: () => number;
+  };
+  pages: number[];
+  events: Record<string, unknown>;
+  scaleFactor: number;
+  getEncryptor: (objectId: number) => (data: string) => string;
+}
 import { Document, Paragraph, ImageRun, TextRun, Packer, Table, TableRow, TableCell, WidthType, VerticalAlign } from 'docx';
 import { saveAs } from 'file-saver';
-import PlanDisplayWidget from '@/components/plan-display-widget';
 
 interface Observation {
   id: string;
@@ -211,162 +225,6 @@ function ReportPageContent() {
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 15;
 
-
-      // Add plan overview if there are observations with meaningful anchors (not 0,0)
-      const observationsWithAnchors = observations.filter(obs => 
-        (obs.plan_anchor && 
-         typeof obs.plan_anchor === 'object' && 
-         'x' in obs.plan_anchor && 
-         'y' in obs.plan_anchor &&
-         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
-        (obs.anchor_x !== null && obs.anchor_y !== null &&
-         !(obs.anchor_x === 0 && obs.anchor_y === 0))
-      );
-
-      if (observationsWithAnchors.length > 0) {
-        // Group by plan
-        const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
-        let globalIndex = 0;
-        
-        observationsWithAnchors.forEach((obs) => {
-          let obsPlan = obs.plan || 'plan1';
-          
-          // Check if plan looks like a UUID - skip these plans
-          if (obsPlan.includes('-') && obsPlan.length > 30) {
-            console.log('Plan appears to be a UUID:', obsPlan, 'skipping plan display');
-            return; // Skip this observation for plan overview
-          } else {
-            obsPlan = obsPlan.replace(/[^a-zA-Z0-9]/g, '');
-          }
-          
-          let anchor = null;
-          
-          if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
-              !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
-            anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-          } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
-            anchor = { x: obs.anchor_x, y: obs.anchor_y };
-          }
-          
-          if (anchor) {
-            if (!planGroups.has(obsPlan)) {
-              planGroups.set(obsPlan, []);
-            }
-            globalIndex++;
-            planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
-          }
-        });
-
-        // Add plan overview section
-        if (planGroups.size > 0) {
-          pdf.setFontSize(18);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text('Plan Overview', margin, yPosition);
-          yPosition += 15;
-
-          for (const [planName, anchors] of planGroups) {
-            console.log(`Processing plan: ${planName} with ${anchors.length} anchors`);
-            
-            // Check if we need a new page
-            if (yPosition > pageHeight - 80) {
-              pdf.addPage();
-              yPosition = margin;
-            }
-
-            pdf.setFontSize(14);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(`${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`, margin, yPosition);
-            yPosition += 10;
-
-            // Add plan image
-            try {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              canvas.width = 320;
-              canvas.height = 280;
-              
-              const img = new window.Image();
-              img.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = (error) => {
-                  console.error(`Failed to load plan image: /plans/${planName}.png`, error);
-                  reject(error);
-                };
-                img.src = `/plans/${planName}.png`;
-              });
-
-              // Clear canvas with white background and use object-contain behavior
-              if (ctx) {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, 320, 280);
-                
-                // Calculate aspect ratios for object-contain behavior
-                const imgAspect = img.width / img.height;
-                const canvasAspect = 320 / 280;
-                
-                let drawWidth, drawHeight, offsetX, offsetY;
-                
-                if (imgAspect > canvasAspect) {
-                  drawWidth = 320;
-                  drawHeight = 320 / imgAspect;
-                  offsetX = 0;
-                  offsetY = (280 - drawHeight) / 2;
-                } else {
-                  drawHeight = 280;
-                  drawWidth = 280 * imgAspect;
-                  offsetX = (320 - drawWidth) / 2;
-                  offsetY = 0;
-                }
-                
-                // Draw the plan image with object-contain behavior
-                ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-                
-                // Draw anchors on the canvas
-                anchors.forEach((anchor) => {
-                  const x = anchor.x * 320;
-                  const y = anchor.y * 280;
-                  
-                  // Draw black circle with white border
-                  ctx.beginPath();
-                  ctx.arc(x, y, 8, 0, 2 * Math.PI);
-                  ctx.fillStyle = 'black';
-                  ctx.fill();
-                  ctx.strokeStyle = 'white';
-                  ctx.lineWidth = 2;
-                  ctx.stroke();
-                  
-                  // Draw white number
-                  ctx.fillStyle = 'white';
-                  ctx.font = 'bold 10px Arial';
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText(anchor.index.toString(), x, y);
-                });
-              }
-              
-              const planImageData = canvas.toDataURL('image/jpeg', 0.8);
-              const planWidth = 130;
-              const planHeight = 100; // Increased height for better visibility
-              
-              // Check if image fits on current page
-              if (yPosition + planHeight > pageHeight - margin) {
-                pdf.addPage();
-                yPosition = margin;
-              }
-              
-              pdf.addImage(planImageData, 'JPEG', margin, yPosition, planWidth, planHeight);
-              yPosition += planHeight + 15;
-            } catch (error) {
-              console.error('Error adding plan to PDF:', error);
-              yPosition += 10;
-            }
-          }
-          
-          yPosition += 10; // Extra space after plans
-        }
-      }
-
       // Process each observation with professional numbering
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
@@ -380,7 +238,7 @@ function ReportPageContent() {
           // Add page header for continuation
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(`Inspection Report (continued) - Page ${pdf.internal.getNumberOfPages()}`, margin, yPosition);
+          pdf.text(`Inspection Report (continued) - Page ${(pdf.internal as jsPDFInternal).getNumberOfPages()}`, margin, yPosition);
           yPosition += 15;
         }
 
@@ -520,7 +378,7 @@ function ReportPageContent() {
       }
 
       // Add footer to all pages
-      const totalPages = pdf.internal.getNumberOfPages();
+      const totalPages = (pdf.internal as jsPDFInternal).getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         
@@ -542,7 +400,7 @@ function ReportPageContent() {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
     }
-  }, [observations, t, language, displaySettings]);
+  }, [observations, displaySettings]);
 
   const handleDownloadWord = useCallback(async () => {
     try {
@@ -583,174 +441,12 @@ function ReportPageContent() {
         })
       );
 
-      // // Add plan overview if there are observations with meaningful anchors (not 0,0)
-      // const observationsWithAnchors = observations.filter(obs => 
-      //   (obs.plan_anchor && 
-      //    typeof obs.plan_anchor === 'object' && 
-      //    'x' in obs.plan_anchor && 
-      //    'y' in obs.plan_anchor &&
-      //    !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) ||
-      //   (obs.anchor_x !== null && obs.anchor_y !== null &&
-      //    !(obs.anchor_x === 0 && obs.anchor_y === 0))
-      // );
-
-      // if (observationsWithAnchors.length > 0) {
-      //   // Group by plan
-      //   const planGroups = new Map<string, Array<{x: number, y: number, index: number}>>();
-      //   let globalIndex = 0;
-        
-      //   observationsWithAnchors.forEach((obs) => {
-      //     const obsPlan = obs.plan || 'plan1';
-      //     let anchor = null;
-          
-      //     if (obs.plan_anchor && typeof obs.plan_anchor === 'object' && 'x' in obs.plan_anchor && 'y' in obs.plan_anchor &&
-      //         !(Number(obs.plan_anchor.x) === 0 && Number(obs.plan_anchor.y) === 0)) {
-      //       anchor = { x: Number(obs.plan_anchor.x), y: Number(obs.plan_anchor.y) };
-      //     } else if (obs.anchor_x !== null && obs.anchor_y !== null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
-      //       anchor = { x: obs.anchor_x, y: obs.anchor_y };
-      //     }
-          
-      //     if (anchor) {
-      //       if (!planGroups.has(obsPlan)) {
-      //         planGroups.set(obsPlan, []);
-      //       }
-      //       globalIndex++;
-      //       planGroups.get(obsPlan)!.push({ ...anchor, index: globalIndex });
-      //     }
-      //   });
-
-      //   // Add plan overview section
-      //   if (planGroups.size > 0) {
-      //     children.push(
-      //       new Paragraph({
-      //         children: [new TextRun({ text: 'Plan Overview',  size: 20 })],
-  
-      //         spacing: { before: 200 }
-      //       })
-      //     );
-
-      //     for (const [planName, anchors] of planGroups) {
-      //       // Add plan title
-      //       children.push(
-      //         new Paragraph({
-      //           children: [new TextRun({ text: `${planName} (${anchors.length} anchor${anchors.length !== 1 ? 's' : ''})`,  size: 20 })],
-      //           // heading: HeadingLevel.HEADING_2,
-      //           // spacing: { before: 100, after: 100 }
-      //         })
-      //       );
-
-      //       // Add plan image with anchors
-      //       try {
-      //         const canvas = document.createElement('canvas');
-      //         const ctx = canvas.getContext('2d');
-      //         canvas.width = 320;
-      //         canvas.height = 220;
-              
-      //         const img = new window.Image();
-      //         img.crossOrigin = 'anonymous';
-      //         await new Promise((resolve, reject) => {
-      //           img.onload = resolve;
-      //           img.onerror = reject;
-      //           img.src = `/plans/${planName}.png`;
-      //         });
-
-      //         // Clear canvas with white background and use object-contain behavior
-      //         if (ctx) {
-      //           ctx.fillStyle = 'white';
-      //           ctx.fillRect(0, 0, 320, 280);
-                
-      //           // Calculate aspect ratios for object-contain behavior
-      //           const imgAspect = img.width / img.height;
-      //           const canvasAspect = 320 / 280;
-                
-      //           let drawWidth, drawHeight, offsetX, offsetY;
-                
-      //           if (imgAspect > canvasAspect) {
-      //             drawWidth = 320;
-      //             drawHeight = 320 / imgAspect;
-      //             offsetX = 0;
-      //             offsetY = (280 - drawHeight) / 2;
-      //           } else {
-      //             drawHeight = 280;
-      //             drawWidth = 280 * imgAspect;
-      //             offsetX = (320 - drawWidth) / 2;
-      //             offsetY = 0;
-      //           }
-                
-      //           // Draw the plan image with object-contain behavior
-      //           ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-                
-      //           // Draw anchors on the canvas
-      //           anchors.forEach((anchor) => {
-      //             const x = anchor.x * 320;
-      //             const y = anchor.y * 280;
-                  
-      //             // Draw black circle with white border
-      //             ctx.beginPath();
-      //             ctx.arc(x, y, 8, 0, 2 * Math.PI);
-      //             ctx.fillStyle = 'black';
-      //             ctx.fill();
-      //             ctx.strokeStyle = 'white';
-      //             ctx.lineWidth = 2;
-      //             ctx.stroke();
-                  
-      //             // Draw white number
-      //             ctx.fillStyle = 'white';
-      //             ctx.font = 'bold 10px Arial';
-      //             ctx.textAlign = 'center';
-      //             ctx.textBaseline = 'middle';
-      //             ctx.fillText(anchor.index.toString(), x, y);
-      //           });
-      //         }
-              
-      //         // Convert canvas to blob and add to document
-      //         const planImageBlob = await new Promise<Blob>((resolve) => {
-      //           canvas.toBlob((blob) => resolve(blob!), 'image/png');
-      //         });
-              
-      //         const arrayBuffer = await planImageBlob.arrayBuffer();
-              
-      //         children.push(
-      //           new Paragraph({
-      //             children: [
-      //               new ImageRun({
-      //                 data: arrayBuffer,
-      //                 transformation: {
-      //                   width: 320*1.5, // Match the original canvas width
-      //                   height: 220*1.5  // Reduced height for better document layout
-      //                 },
-      //                 type: 'png'
-      //               })
-      //             ],
-      //             // spacing: { after: 100 }
-      //           })
-      //         );
-      //       } catch (error) {
-      //         console.error('Error adding plan to Word doc:', error);
-      //         children.push(
-      //           new Paragraph({
-      //             children: [new TextRun({ text: `[Plan ${planName} could not be loaded]`, size: 16, italics: true })],
-      //             // spacing: { after: 100 }
-      //           })
-      //         );
-      //       }
-      //     }
-      //   }
-      // }
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
         
 
-        // // Observation heading
-        // children.push(
-        //   new Paragraph({
-        //     children: [new TextRun({ text: `Observation ${i + 1}`, size: 20 })],
-        //     // heading: HeadingLevel.HEADING_2,
-        //     // spacing: { before: 100, after: 100 }
-        //   })
-        // );
 
         // Create content for text column
         const textContent = [];
@@ -1091,7 +787,7 @@ function ReportPageContent() {
       }
 
       // Extract observation IDs
-      const observationIds = reportObsData.map(item => item.observation_id);
+      const observationIds = reportObsData.map((item: { observation_id: string }) => item.observation_id);
 
       // Fetch the actual observations
       const { data: obsData, error: obsError } = await supabase
@@ -1198,18 +894,49 @@ function ReportPageContent() {
   // Show loading state inline to prevent layout shifts
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center">
-        <div className="w-full max-w-7xl p-5">
-          {/* Header - Always visible */}
-          <div className="mb-8">
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+          {/* Header */}
+          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 border-gray-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Home
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Reports
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
             <div className="flex items-center justify-between mb-4">
-              <Link 
-                href="/" 
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                {t('backToObservations')}
-              </Link>
+              <div></div>
               
               <div className="flex items-center gap-3">
                 {/* Display Toggles */}
@@ -1288,25 +1015,56 @@ function ReportPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   // Show error state inline to prevent layout shifts
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center">
-        <div className="w-full max-w-7xl p-5">
-          {/* Header - Always visible */}
-          <div className="mb-8">
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+          {/* Header */}
+          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 border-gray-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Link href="/">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Home
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 border-gray-300"
+                  >
+                    Reports
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
             <div className="flex items-center justify-between mb-4">
-              <Link 
-                href="/" 
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                {t('backToObservations')}
-              </Link>
+              <div></div>
               
               {/* Action Buttons - Disabled during error */}
               <div className="flex flex-col gap-2">
@@ -1360,67 +1118,92 @@ function ReportPageContent() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      <style jsx>{`
-        .observation {
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          overflow: hidden;
-          background: white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .photo {
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
-        }
-        .no-photo {
-          width: 100%;
-          height: 200px;
-          background: #f5f5f5;
-          border: 2px dashed #ddd;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .no-photo-text {
-          color: #999;
-          font-size: 14px;
-        }
-        .note {
-          padding: 15px;
-          font-size: 14px;
-          color: #333;
-          line-height: 1.4;
-        }
-      `}</style>
-      <div className="w-full max-w-7xl p-5">
-        {/* Header - Stable section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Back to Observations
-            </Link>
+    <>
+      <main className="min-h-screen flex flex-col items-center">
+        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+        {/* Header */}
+        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => window.history.back()}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 border-gray-300"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </div>
             
+            <div className="flex items-center gap-2">
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 border-gray-300"
+                >
+                  Home
+                </Button>
+              </Link>
+              <Link href="/reports">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 border-gray-300"
+                >
+                  Reports
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
+          <style jsx>{`
+            .observation {
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              overflow: hidden;
+              background: white;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .photo {
+              width: 100%;
+              height: 200px;
+              object-fit: cover;
+            }
+            .no-photo {
+              width: 100%;
+              height: 200px;
+              background: #f5f5f5;
+              border: 2px dashed #ddd;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .no-photo-text {
+              color: #999;
+              font-size: 14px;
+            }
+            .note {
+              padding: 15px;
+              font-size: 14px;
+              color: #333;
+              line-height: 1.4;
+            }
+          `}</style>
+          
+          <div className="flex items-center justify-between mb-4">
+            <div></div>
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => setShowSaveDialog(true)}
-                className="transition-all"
-                variant="default"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Report
-              </Button>
+              
               <Button
                 onClick={handleDownloadPDF}
                 className="transition-all"
@@ -1476,23 +1259,11 @@ function ReportPageContent() {
           </div>
         </div>
 
-        {/* Plan Display Widget - Show if any observations have anchors */}
-        {anchorData.hasAnchors && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Plan Overview</h2>
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <PlanDisplayWidget
-                observations={observations}
-                plan="plan1"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Photos in a row */}
         {observations.length > 0 ? (
           <div key="observations-content" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl ml-auto mr-0">
               {observations.map((observation) => {
                 const anchorNumber = anchorData.anchorIndexMap.get(observation.id);
                 return (
@@ -1648,6 +1419,7 @@ function ReportPageContent() {
           </div>
         )}
       </div>
+      </main>
       
       {/* Save Report Dialog */}
       {showSaveDialog && (
@@ -1664,9 +1436,8 @@ function ReportPageContent() {
                   type="text"
                   value={reportTitle}
                   onChange={(e) => setReportTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter report title"
-                  autoFocus
                 />
               </div>
               <div>
@@ -1677,13 +1448,13 @@ function ReportPageContent() {
                   id="report-description"
                   value={reportDescription}
                   onChange={(e) => setReportDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter report description (optional)"
                   rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter report description (optional)"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-3 mt-6">
               <Button
                 onClick={() => {
                   setShowSaveDialog(false);
@@ -1705,7 +1476,7 @@ function ReportPageContent() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

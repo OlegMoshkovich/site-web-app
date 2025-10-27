@@ -12,13 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft,
   Calendar,
-  MapPin,
-  Download,
-  FileText,
-  Edit,
-  Tag,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -30,7 +24,7 @@ interface Report {
   description: string | null;
   created_at: string;
   updated_at: string;
-  settings: any;
+  settings: Record<string, unknown>;
 }
 
 interface Observation {
@@ -67,24 +61,13 @@ export default function ReportDetailPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
   const reportId = params.id as string;
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      // Allow access to reports without authentication
-      await fetchReportAndObservations();
-    };
-
-    getUser();
-  }, [reportId]);
-
-  const fetchReportAndObservations = async () => {
+    const fetchReportAndObservations = async () => {
     try {
       setLoading(true);
       
@@ -120,7 +103,7 @@ export default function ReportDetailPage() {
       }
 
       // Extract observation IDs
-      const observationIds = reportObsData.map(item => item.observation_id);
+      const observationIds = reportObsData.map((item: { observation_id: string }) => item.observation_id);
 
       // Fetch the actual observations
       const { data: observationsData, error: obsError } = await supabase
@@ -163,14 +146,11 @@ export default function ReportDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+    };
 
-  const handleExportReport = () => {
-    if (report && observations.length > 0) {
-      const observationIds = observations.map(obs => obs.id).join(',');
-      window.open(`/report?ids=${observationIds}`, '_blank');
-    }
-  };
+    fetchReportAndObservations();
+  }, [reportId, router, supabase]);
+
 
   const processLabel = (label: string) => {
     const cleanLabel = label.trim();
@@ -198,21 +178,6 @@ export default function ReportDetailPage() {
     return (
       <main className="min-h-screen flex flex-col items-center">
         <div className="flex-1 w-full flex flex-col gap-0 items-center">
-          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={() => router.push('/reports')}
-                  variant="ghost"
-                  size="sm"
-                  className="p-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <h1 className="text-lg font-semibold">Loading...</h1>
-              </div>
-            </div>
-          </nav>
           <div className="flex items-center justify-center py-12">
             <div className="text-gray-500">Loading report...</div>
           </div>
@@ -225,24 +190,9 @@ export default function ReportDetailPage() {
     return (
       <main className="min-h-screen flex flex-col items-center">
         <div className="flex-1 w-full flex flex-col gap-0 items-center">
-          <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-            <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={() => router.push('/reports')}
-                  variant="ghost"
-                  size="sm"
-                  className="p-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <h1 className="text-lg font-semibold">Report Not Found</h1>
-              </div>
-            </div>
-          </nav>
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Report not found</h3>
-            <p className="text-gray-500 mb-4">The report you're looking for doesn't exist or you don't have access to it.</p>
+            <p className="text-gray-500 mb-4">The report you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
             <Button onClick={() => router.push('/reports')} variant="outline">
               Back to Reports
             </Button>

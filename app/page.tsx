@@ -899,107 +899,132 @@ export default function Home() {
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-            <div className="flex text-lg gap-5 items-center font-semibold">
-              {user ? "Simple" : t("siteTitle")}
-            </div>
             <div className="flex items-center gap-2">
-              {user && (
-                <Button
-                  onClick={() => setShowSearchSelector(!showSearchSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showSearchSelector
-                      ? "bg-gray-200 text-gray-700"
-                      : "bg-white"
-                  }`}
-                  title="Toggle search"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
+              {/* Show "Simple site" title when not logged in */}
+              {!user && (
+                <div className="text-lg font-semibold">
+                  {t("siteTitle")}
+                </div>
               )}
+              
+              {/* Left side controls: Search, Tags, Filter, Grid */}
+              {user && (
+                <>
+                  <Button
+                    onClick={() => setShowSearchSelector(!showSearchSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showSearchSelector
+                        ? "bg-gray-200 text-gray-700"
+                        : "bg-white"
+                    }`}
+                    title={t("toggleSearch")}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
 
-              {user && (
-                <Button
-                  onClick={() => setShowLabelSelector(!showLabelSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showLabelSelector
-                      ? "bg-gray-200 text-gray-700"
-                      : "bg-white"
-                  }`}
-                  title="Toggle label filter"
-                >
-                  <Tag className="h-4 w-4" />
-                </Button>
-              )}
+                  <Button
+                    onClick={() => setShowLabelSelector(!showLabelSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showLabelSelector
+                        ? "bg-gray-200 text-gray-700"
+                        : "bg-white"
+                    }`}
+                    title={t("toggleLabelFilter")}
+                  >
+                    <Tag className="h-4 w-4" />
+                  </Button>
 
-              {user && (
-                <Button
-                  onClick={() => setShowDateSelector(!showDateSelector)}
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                    showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
-                  }`}
-                  title="Toggle date filter"
-                >
-                  <Filter className="h-4 w-4" />
-                </Button>
-              )}
+                  <Button
+                    onClick={() => setShowDateSelector(!showDateSelector)}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                      showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
+                    }`}
+                    title={t("toggleDateFilter")}
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
 
-              {/* View Mode Toggle */}
-              {user && (
-                <button
-                  onClick={() =>
-                    setViewMode(viewMode === "list" ? "card" : "list")
-                  }
-                  className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
-                  title={
-                    viewMode === "list"
-                      ? "Switch to card view"
-                      : "Switch to list view"
-                  }
-                >
-                  {viewMode === "list" ? (
-                    <Grid3X3 className="h-4 w-4" />
-                  ) : (
-                    <List className="h-4 w-4" />
-                  )}
-                </button>
+                  {/* View Mode Toggle */}
+                  <button
+                    onClick={() =>
+                      setViewMode(viewMode === "list" ? "card" : "list")
+                    }
+                    className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
+                    title={
+                      viewMode === "list"
+                        ? t("switchToCardView")
+                        : t("switchToListView")
+                    }
+                  >
+                    {viewMode === "list" ? (
+                      <Grid3X3 className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </button>
+                </>
               )}
+            </div>
+            
+            {/* Center icon - only show when user is logged in */}
+            {user && (
+              <div className="absolute left-1/2 transform -translate-x-1/2">
+                <div 
+                  onClick={() => router.push('/')}
+                  className="h-8 w-8 border border-gray-300 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50" 
+                  title={t("home")}
+                >
+                  <Image
+                    src="/images/icon.png"
+                    alt="Site Icon"
+                    width={24}
+                    height={24}
+                    className="h-6 w-6"
+                  />
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">              
               {/* Language selector */}
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
                 className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
                 style={{ textAlignLast: "center" }}
+                title={t("changeLanguage")}
               >
                 <option value="en">EN</option>
                 <option value="de">DE</option>
               </select>
 
-              {/* Settings gear icon */}
+              {/* Reports */}
               {user && (
                 <Button
                   onClick={() => router.push('/reports')}
                   variant="outline"
                   size="sm"
                   className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
-                  title="Reports"
+                  title={t("reports")}
                 >
                   <FileText className="h-4 w-4" />
                 </Button>
               )}
 
+              {/* Settings */}
               {user && (
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="outline"
                   size="sm"
                   className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
-                  title="Settings"
+                  title={t("settings")}
                 >
                   <Settings className="h-4 w-4" />
                 </Button>

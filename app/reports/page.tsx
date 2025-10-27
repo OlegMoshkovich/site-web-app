@@ -28,14 +28,14 @@ interface Report {
   description: string | null;
   created_at: string;
   updated_at: string;
-  settings: any;
+  settings: Record<string, unknown>;
   observation_count?: number;
 }
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
@@ -50,46 +50,47 @@ export default function ReportsPage() {
       await fetchReports();
     };
 
-    getUser();
-  }, []);
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch reports
+        const { data: reportsData, error } = await supabase
+          .from('reports')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-  const fetchReports = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch reports
-      const { data: reportsData, error } = await supabase
-        .from('reports')
-        .select('*')
-        .order('created_at', { ascending: false });
+        if (error) {
+          console.error('Error fetching reports:', error);
+          return;
+        }
 
-      if (error) {
+        // Get observation counts for each report
+        const reportsWithCount = await Promise.all(
+          (reportsData || []).map(async (report: Report) => {
+            const { count } = await supabase
+              .from('report_observations')
+              .select('*', { count: 'exact', head: true })
+              .eq('report_id', report.id);
+            
+            return {
+              ...report,
+              observation_count: count || 0
+            };
+          })
+        );
+
+        setReports(reportsWithCount);
+      } catch (error) {
         console.error('Error fetching reports:', error);
-        return;
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Get observation counts for each report
-      const reportsWithCount = await Promise.all(
-        (reportsData || []).map(async (report) => {
-          const { count } = await supabase
-            .from('report_observations')
-            .select('*', { count: 'exact', head: true })
-            .eq('report_id', report.id);
-          
-          return {
-            ...report,
-            observation_count: count || 0
-          };
-        })
-      );
+    getUser();
+  }, [router, supabase]);
 
-      setReports(reportsWithCount);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeleteReport = async (reportId: string) => {
     if (!confirm('Are you sure you want to delete this report?')) {
@@ -135,13 +136,12 @@ export default function ReportsPage() {
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => router.push('/')}
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="p-2"
+                className="h-8 w-8 p-0 border-gray-300"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <h1 className="text-lg font-semibold">Reports</h1>
             </div>
           </div>
         </nav>
@@ -157,7 +157,7 @@ export default function ReportsPage() {
               <FileText className="h-12 w-12 text-gray-300 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
               <p className="text-gray-500 mb-4">
-                Create your first report by selecting observations and clicking "Generate Report"
+                Create your first report by selecting observations and clicking &quot;Generate Report&quot;
               </p>
               <Button onClick={() => router.push('/')} variant="outline">
                 Go to Observations

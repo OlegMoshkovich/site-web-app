@@ -78,6 +78,17 @@ export const translations = {
     labelSelected: "label selected",
     clearAllLabels: "Clear all",
     
+    // Tooltips
+    toggleSearch: "Toggle search",
+    toggleLabelFilter: "Toggle label filter",
+    toggleDateFilter: "Toggle date filter",
+    switchToCardView: "Switch to card view",
+    switchToListView: "Switch to list view",
+    home: "Home",
+    changeLanguage: "Change language",
+    reports: "Reports",
+    settings: "Settings",
+    
     // Report page
     observationsReport: "Observations Report",
     reportDate: "Report Date",
@@ -92,7 +103,6 @@ export const translations = {
     noPhotoAvailable: "No photo available",
     
     // Settings page
-    settings: "Settings",
     back: "Back",
     siteManagement: "Site Management",
     createAndManageObservationSites: "Create and manage observation sites",
@@ -309,6 +319,17 @@ export const translations = {
     labelSelected: "Label ausgewählt",
     clearAllLabels: "Alle löschen",
     
+    // Tooltips
+    toggleSearch: "Suche umschalten",
+    toggleLabelFilter: "Label-Filter umschalten",
+    toggleDateFilter: "Datumsfilter umschalten",
+    switchToCardView: "Zur Kartenansicht wechseln",
+    switchToListView: "Zur Listenansicht wechseln",
+    home: "Startseite",
+    changeLanguage: "Sprache ändern",
+    reports: "Berichte",
+    settings: "Einstellungen",
+    
     // Report page
     observationsReport: "Beobachtungsbericht",
     reportDate: "Berichtsdatum",
@@ -323,7 +344,6 @@ export const translations = {
     noPhotoAvailable: "Kein Foto verfügbar",
     
     // Settings page
-    settings: "Einstellungen",
     back: "Zurück",
     siteManagement: "Standortverwaltung",
     createAndManageObservationSites: "Beobachtungsstandorte erstellen und verwalten",
