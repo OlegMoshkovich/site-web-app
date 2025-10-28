@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { Calendar, MapPin } from "lucide-react";
@@ -22,6 +23,8 @@ interface PhotoModalProps {
 }
 
 export function PhotoModal({ isOpen, onClose, imageUrl, observation }: PhotoModalProps) {
+  const [imageLoading, setImageLoading] = useState(true);
+
   const processLabel = (label: string) => {
     const cleanLabel = label.trim();
     let processedLabel = cleanLabel;
@@ -48,6 +51,11 @@ export function PhotoModal({ isOpen, onClose, imageUrl, observation }: PhotoModa
       <div className="flex flex-col max-h-[90vh]">
         {/* Image container */}
         <div className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0">
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+            </div>
+          )}
           <Image
             src={imageUrl}
             alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
@@ -55,6 +63,8 @@ export function PhotoModal({ isOpen, onClose, imageUrl, observation }: PhotoModa
             className="object-contain"
             sizes="(max-width: 768px) 100vw, 90vw"
             priority
+            onLoad={() => setImageLoading(false)}
+            onError={() => setImageLoading(false)}
           />
         </div>
         
