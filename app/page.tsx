@@ -50,6 +50,8 @@ import Image from "next/image";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 // Zustand store for observations
 import { useObservationsStore } from "@/lib/store/observations-store";
+// API functions
+import { getSignedPhotoUrl } from "@/lib/supabase/api";
 // Utility functions
 import {
   filterObservationsBySearch,
@@ -719,6 +721,43 @@ export default function Home() {
     if (!user) return;
     await loadMoreObservations(user.id);
   }, [user, loadMoreObservations]);
+
+  // ===== REFRESH SIGNED URLS =====
+  const refreshSignedUrls = useCallback(async () => {
+    if (!observations.length) return;
+    
+    try {
+      const updatedObservations = await Promise.all(
+        observations.map(async (obs) => {
+          if (obs.photo_url) {
+            const freshSignedUrl = await getSignedPhotoUrl(obs.photo_url, 3600);
+            return { ...obs, signedUrl: freshSignedUrl };
+          }
+          return obs;
+        })
+      );
+      
+      setObservations(updatedObservations);
+    } catch (error) {
+      console.error('Error refreshing signed URLs:', error);
+    }
+  }, [observations, setObservations]);
+
+  // Refresh signed URLs when switching to a view that needs photos
+  useEffect(() => {
+    if (viewMode === "list" && observations.length > 0) {
+      // Check if any signed URLs might be expired (older than 50 minutes)
+      const hasExpiredUrls = observations.some(obs => {
+        if (!obs.signedUrl) return false;
+        // Simple check - if we haven't refreshed in a while, refresh them
+        return true; // For now, always refresh when switching to list view
+      });
+      
+      if (hasExpiredUrls) {
+        refreshSignedUrls();
+      }
+    }
+  }, [viewMode, observations.length, refreshSignedUrls]);
 
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
