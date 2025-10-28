@@ -7,15 +7,8 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 // Supabase client for database operations
 import { createClient } from "@/lib/supabase/client";
-// Utility function for formatting dates
-import { formatDate } from "@/lib/utils";
 // UI components from shadcn/ui
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+// Note: Card components removed as they're no longer used in grid view
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 // Lucide React icons
@@ -1615,25 +1608,27 @@ export default function Home() {
 
                           // Grid view - show only thumbnails
                           return hasPhoto ? (
-                            <div
-                              key={observation.id}
-                              className={`relative aspect-square w-full overflow-hidden cursor-pointer group ${
-                                selectedObservations.has(observation.id)
-                                  ? "ring-2 ring-blue-500 ring-offset-1"
-                                  : ""
-                              }`}
-                              onClick={() => {
-                                const newSelected = new Set(selectedObservations);
-                                if (newSelected.has(observation.id)) {
-                                  newSelected.delete(observation.id);
-                                } else {
-                                  newSelected.add(observation.id);
-                                }
-                                setSelectedObservations(newSelected);
-                              }}
+                            <div key={observation.id} className="w-full">
+                              <div
+                                className={`relative aspect-square w-full overflow-hidden cursor-pointer group ${
+                                  selectedObservations.has(observation.id)
+                                    ? "ring-2 ring-blue-500 ring-offset-1"
+                                    : ""
+                                }`}
+                                onClick={() => {
+                                  const newSelected = new Set(selectedObservations);
+                                  if (newSelected.has(observation.id)) {
+                                    newSelected.delete(observation.id);
+                                  } else {
+                                    newSelected.add(observation.id);
+                                  }
+                                  setSelectedObservations(newSelected);
+                                }}
                             >
-                              {/* Skeleton loading background */}
-                              <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                              {/* Enhanced skeleton loading background */}
+                              <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-transparent"></div>
+                              </div>
                               <Image
                                 src={observation.signedUrl as string}
                                 alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
@@ -1656,6 +1651,41 @@ export default function Home() {
                                 <ZoomIn className="h-6 w-6 text-white drop-shadow-lg" />
                               </button>
 
+                              {/* Note overlay - bottom of thumbnail */}
+                              {observation.note && (
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 text-xs">
+                                  <p className="line-clamp-2 leading-tight">
+                                    {observation.note}
+                                  </p>
+                                </div>
+                              )}
+                              </div>
+                              
+                              {/* Tags under thumbnail */}
+                              {labels && labels.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {labels.slice(0, 3).map((label, idx) => {
+                                    const processedLabel = processLabel(label);
+                                    return (
+                                      <Badge
+                                        key={`${observation.id}-grid-label-${idx}`}
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-20"
+                                      >
+                                        {processedLabel}
+                                      </Badge>
+                                    );
+                                  })}
+                                  {labels.length > 3 && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-500"
+                                    >
+                                      +{labels.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           ) : null;
                         })}
