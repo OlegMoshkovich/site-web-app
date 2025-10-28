@@ -907,9 +907,9 @@ export default function Home() {
             {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2">
                 <div 
-                  onClick={() => router.push('/')}
+                  onClick={() => window.location.reload()}
                   className="h-8 w-8 border border-gray-300 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50" 
-                  title={t("home")}
+                  title={t("refreshObservations")}
                 >
                   <Image
                     src="/images/icon.png"
@@ -1861,11 +1861,21 @@ export default function Home() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">
-                  {t("noObservationsFound")}
-                </p>
-              </div>
+              // Show spinner if we have a user but no observations yet (initial load)
+              // Otherwise show no observations message
+              user && observations.length === 0 && !error ? (
+                <div className="text-center py-12">
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">
+                    {t("noObservationsFound")}
+                  </p>
+                </div>
+              )
             )}
           </div>
         </div>
