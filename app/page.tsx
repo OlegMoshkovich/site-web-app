@@ -829,7 +829,7 @@ export default function Home() {
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+          <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
             <div className="flex items-center gap-2">
               {/* Show "Simple site" title when not logged in */}
               {!user && (
@@ -967,7 +967,7 @@ export default function Home() {
         </nav>
 
         {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 max-w-5xl px-3 sm:px-5 py-1 sm:py-3 md:py-4">
+        <div className="flex-1 flex flex-col gap-0 w-full px-2 sm:px-4 py-1 sm:py-3 md:py-4">
           <div className="w-full">
             {/* Conditional rendering based on app state */}
             {!user ? (
@@ -1342,7 +1342,7 @@ export default function Home() {
                       <div
                         className={
                           viewMode === "card"
-                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6"
+                            ? "grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3"
                             : "space-y-3 px-1 sm:px-0"
                         }
                       >
@@ -1574,18 +1574,17 @@ export default function Home() {
                             );
                           }
 
-                          return (
-                            <Card
+                          // Grid view - show only thumbnails
+                          return hasPhoto ? (
+                            <div
                               key={observation.id}
-                              className={`overflow-hidden hover:shadow-lg transition-all cursor-pointer group ${
+                              className={`relative aspect-square w-full overflow-hidden cursor-pointer group ${
                                 selectedObservations.has(observation.id)
-                                  ? "ring-2 ring-primary shadow-lg scale-102 bg-primary/5"
-                                  : "hover:bg-muted/50"
+                                  ? "ring-2 ring-blue-500 ring-offset-1"
+                                  : ""
                               }`}
                               onClick={() => {
-                                const newSelected = new Set(
-                                  selectedObservations,
-                                );
+                                const newSelected = new Set(selectedObservations);
                                 if (newSelected.has(observation.id)) {
                                   newSelected.delete(observation.id);
                                 } else {
@@ -1594,244 +1593,32 @@ export default function Home() {
                                 setSelectedObservations(newSelected);
                               }}
                             >
-                              {hasPhoto && (
-                                <div className="relative aspect-square w-full group/photo">
-                                  {/* Skeleton loading background */}
-                                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-                                  <Image
-                                    src={observation.signedUrl as string}
-                                    alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
-                                    fill
-                                    className="object-contain bg-gray-50"
-                                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                                    onLoad={(e) => {
-                                      // Hide skeleton when image loads
-                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                      if (skeleton) skeleton.style.display = 'none';
-                                    }}
-                                  />
-                                  {/* Zoom button positioned over photo */}
-                                  <button
-                                    onClick={(e) => handleOpenPhotoModal(observation, e)}
-                                    className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
-                                    title="View photo"
-                                  >
-                                    <ZoomIn className="h-5 w-5" />
-                                  </button>
-                                  
-                                  {/* Delete button positioned over photo */}
-                                  <button
-                                    onClick={(e) =>
-                                      handleDeleteObservation(observation.id, e)
-                                    }
-                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
-                                    title="Delete observation"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              )}
+                              {/* Skeleton loading background */}
+                              <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                              <Image
+                                src={observation.signedUrl as string}
+                                alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
+                                fill
+                                className="object-cover hover:scale-105 transition-transform duration-200"
+                                sizes="(max-width: 480px) 50vw, (max-width: 640px) 25vw, (max-width: 768px) 20vw, (max-width: 1024px) 17vw, 16vw"
+                                onLoad={(e) => {
+                                  // Hide skeleton when image loads
+                                  const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                  if (skeleton) skeleton.style.display = 'none';
+                                }}
+                              />
+                              
+                              {/* Zoom button - appears on hover */}
+                              <button
+                                onClick={(e) => handleOpenPhotoModal(observation, e)}
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 flex items-center justify-center"
+                                title="View photo"
+                              >
+                                <ZoomIn className="h-6 w-6 text-white drop-shadow-lg" />
+                              </button>
 
-                              {/* Delete button for cards without photos */}
-                              {!hasPhoto && (
-                                <button
-                                  onClick={(e) =>
-                                    handleDeleteObservation(observation.id, e)
-                                  }
-                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg"
-                                  title="Delete observation"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              )}
-
-
-                              <CardHeader>
-                                {editingNoteId === observation.id ? (
-                                  <div
-                                    className="space-y-2"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <textarea
-                                      value={editNoteValue}
-                                      onChange={(e) =>
-                                        setEditNoteValue(e.target.value)
-                                      }
-                                      onKeyDown={(e) => {
-                                        if (
-                                          e.key === "Enter" &&
-                                          (e.ctrlKey || e.metaKey)
-                                        ) {
-                                          e.preventDefault();
-                                          handleSaveNote(observation.id);
-                                        }
-                                        if (e.key === "Escape") {
-                                          e.preventDefault();
-                                          handleCancelEdit();
-                                        }
-                                      }}
-                                      className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      rows={3}
-                                      placeholder="Add a note..."
-                                      autoFocus
-                                    />
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex gap-2">
-                                        <button
-                                          onClick={(e) =>
-                                            handleSaveNote(observation.id, e)
-                                          }
-                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                                        >
-                                          <Check className="h-3 w-3" />
-                                          Save
-                                        </button>
-                                        <button
-                                          onClick={handleCancelEdit}
-                                          className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                                        >
-                                          <X className="h-3 w-3" />
-                                          Cancel
-                                        </button>
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        Ctrl+Enter to save • Esc to cancel
-                                      </div>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="relative group">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <CardDescription
-                                        className={`line-clamp-2 flex-1 ${!observation.note ? "text-muted-foreground italic" : ""}`}
-                                      >
-                                        {observation.note || t("noDescription")}
-                                      </CardDescription>
-                                      <button
-                                        onClick={(e) =>
-                                          handleEditNote(
-                                            observation.id,
-                                            observation.note || "",
-                                            e,
-                                          )
-                                        }
-                                        className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-gray-500 hover:text-blue-600 transition-all"
-                                        title="Edit note"
-                                      >
-                                        <Edit3 className="h-4 w-4" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </CardHeader>
-
-                              <CardContent className="space-y-3">
-                                {(observation.sites?.name || observation.site_id) && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <span className="font-medium">Site:</span>
-                                    <span>{observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}</span>
-                                  </div>
-                                )}
-
-                                {/* Tags/Labels section - positioned under site information */}
-                                {labels && labels.length > 0 && (
-                                  <div className="flex flex-wrap gap-2">
-                                    {labels.map((label, idx) => {
-                                      // Clean up the label - remove extra spaces and split if it's concatenated
-                                      const cleanLabel = label.trim();
-
-                                      // More aggressive splitting for concatenated strings
-                                      let processedLabel = cleanLabel;
-
-                                      // First, try to split by common separators
-                                      if (cleanLabel.includes(" ")) {
-                                        processedLabel = cleanLabel;
-                                      } else if (cleanLabel.includes("_")) {
-                                        processedLabel = cleanLabel.replace(
-                                          /_/g,
-                                          " ",
-                                        );
-                                      } else if (cleanLabel.includes("-")) {
-                                        processedLabel = cleanLabel.replace(
-                                          /-/g,
-                                          " ",
-                                        );
-                                      } else {
-                                        // Split camelCase and PascalCase more aggressively
-                                        processedLabel = cleanLabel
-                                          .replace(/([a-z])([A-Z])/g, "$1 $2") // camelCase
-                                          .replace(
-                                            /([A-Z])([A-Z][a-z])/g,
-                                            "$1 $2",
-                                          ) // PascalCase
-                                          .replace(/([a-z])([0-9])/g, "$1 $2") // letters to numbers
-                                          .replace(
-                                            /([0-9])([a-zA-Z])/g,
-                                            "$1 $2",
-                                          ); // numbers to letters
-                                      }
-
-                                      // Clean up multiple spaces and trim
-                                      processedLabel = processedLabel
-                                        .replace(/\s+/g, " ")
-                                        .trim();
-
-                                      return (
-                                        <Badge
-                                          key={`${observation.id}-label-${idx}`}
-                                          variant="outline"
-                                          className="text-xs px-2 py-1 border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
-                                        >
-                                          {processedLabel}
-                                        </Badge>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <span className="font-medium">Created by:</span>
-                                  <span>{observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}</span>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>
-                                    {formatDate(
-                                      observation.taken_at ||
-                                        observation.created_at,
-                                    )}
-                                  </span>
-                                </div>
-
-                                {observation.latitude != null &&
-                                  observation.longitude != null && (
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <MapPin className="h-4 w-4" />
-                                      <span>
-                                        {observation.latitude.toFixed(6)},{" "}
-                                        {observation.longitude.toFixed(6)}
-                                      </span>
-                                    </div>
-                                  )}
-
-                                {observation.anchor_x != null &&
-                                  observation.anchor_y != null &&
-                                  !(observation.anchor_x === 0 && observation.anchor_y === 0) && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <MapPin className="h-4 w-4" />
-                                    <span className="font-medium">
-                                      Plan Anchor:
-                                    </span>
-                                    <span>
-                                      {`${observation.anchor_x.toFixed(6)}, ${observation.anchor_y.toFixed(6)}`}
-                                    </span>
-                                  </div>
-                                )}
-
-                              </CardContent>
-                            </Card>
-                          );
+                            </div>
+                          ) : null;
                         })}
                       </div>
                     </div>
