@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Observation } from "@/types/supabase";
 
@@ -20,10 +20,161 @@ interface PhotoModalProps {
   onClose: () => void;
   imageUrl: string;
   observation: ObservationWithUrl;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
 }
 
-export function PhotoModal({ isOpen, onClose, imageUrl, observation }: PhotoModalProps) {
+export function PhotoModal({ 
+  isOpen, 
+  onClose, 
+  imageUrl, 
+  observation, 
+  onPrevious, 
+  onNext, 
+  hasPrevious = false, 
+  hasNext = false 
+}: PhotoModalProps) {
   const [imageLoading, setImageLoading] = useState(true);
+  
+  // Zoom and pan state
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Reset zoom and pan when image changes
+  useEffect(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    setImageLoading(true);
+  }, [imageUrl, observation.id]);
+
+  // Zoom and pan handlers
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.01;
+    const newScale = Math.min(Math.max(0.5, scale + delta), 3);
+    setScale(newScale);
+  }, [scale]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  }, [scale, position]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Touch events for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 1 && scale > 1) {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+    }
+  }, [scale, position]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (isDragging && e.touches.length === 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      setPosition({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Reset zoom function
+  const resetZoom = useCallback(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  // Zoom in/out functions
+  const zoomIn = useCallback(() => {
+    const newScale = Math.min(scale * 1.3, 3);
+    setScale(newScale);
+  }, [scale]);
+
+  const zoomOut = useCallback(() => {
+    const newScale = Math.max(scale / 1.3, 0.5);
+    setScale(newScale);
+    if (newScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [scale]);
+
+  // Keyboard navigation and zoom
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      if (e.key === 'ArrowLeft' && hasPrevious && onPrevious && !isDragging) {
+        onPrevious();
+      } else if (e.key === 'ArrowRight' && hasNext && onNext && !isDragging) {
+        onNext();
+      } else if (e.key === 'Escape') {
+        resetZoom();
+      } else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomIn();
+      } else if (e.key === '-') {
+        e.preventDefault();
+        zoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        resetZoom();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isOpen, hasPrevious, hasNext, onPrevious, onNext, isDragging, resetZoom, zoomIn, zoomOut]);
+
+  // Mouse and touch event listeners
+  useEffect(() => {
+    const container = imageContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (isDragging) {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+  }, [handleWheel, isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   const processLabel = (label: string) => {
     const cleanLabel = label.trim();
@@ -50,22 +201,104 @@ export function PhotoModal({ isOpen, onClose, imageUrl, observation }: PhotoModa
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
       <div className="flex flex-col max-h-[90vh]">
         {/* Image container */}
-        <div className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0">
+        <div 
+          ref={imageContainerRef}
+          className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0 overflow-hidden"
+          style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+        >
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
             </div>
           )}
-          <Image
-            src={imageUrl}
-            alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
-            fill
-            className="object-contain"
-            sizes="(max-width: 768px) 100vw, 90vw"
-            priority
-            onLoad={() => setImageLoading(false)}
-            onError={() => setImageLoading(false)}
-          />
+          
+          {/* Zoom controls */}
+          <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+            <button
+              onClick={zoomIn}
+              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              aria-label="Zoom in"
+              disabled={scale >= 3}
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            <button
+              onClick={zoomOut}
+              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              aria-label="Zoom out"
+              disabled={scale <= 0.5}
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            {scale > 1 && (
+              <button
+                onClick={resetZoom}
+                className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
+                aria-label="Reset zoom"
+              >
+                1:1
+              </button>
+            )}
+          </div>
+          
+          {/* Zoom indicator */}
+          {scale !== 1 && (
+            <div className="absolute bottom-4 right-4 z-30 bg-black/70 text-white px-2 py-1 text-xs rounded">
+              {Math.round(scale * 100)}%
+            </div>
+          )}
+          
+          {/* Previous button */}
+          {hasPrevious && onPrevious && !isDragging && (
+            <button
+              onClick={onPrevious}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          )}
+          
+          {/* Next button */}
+          {hasNext && onNext && !isDragging && (
+            <button
+              onClick={onNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              aria-label="Next photo"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          )}
+          
+          {/* Zoomable/Pannable Image Container */}
+          <div
+            className="absolute inset-0 transition-transform duration-200 ease-out"
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transformOrigin: 'center center'
+            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+          >
+            <Image
+              key={observation.id} // Force re-render when observation changes
+              src={imageUrl}
+              alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
+              fill
+              className="object-contain select-none"
+              sizes="(max-width: 768px) 100vw, 90vw"
+              priority
+              draggable={false}
+              onLoad={() => {
+                console.log('Image loaded for observation:', observation.id);
+                setImageLoading(false);
+              }}
+              onError={() => {
+                console.log('Image error for observation:', observation.id);
+                setImageLoading(false);
+              }}
+            />
+          </div>
         </div>
         
         {/* Info panel */}

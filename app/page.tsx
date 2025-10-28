@@ -130,6 +130,7 @@ export default function Home() {
   // Photo modal state
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
   // Save report modal state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
@@ -448,17 +449,81 @@ export default function Home() {
     setEditNoteValue("");
   }, []);
 
+  // ===== UTILITY FUNCTIONS =====
+  const getFilteredObservations = useCallback(() => {
+    let filteredObservations = observations;
+    
+    // Apply date range filter if both dates are set
+    if (showDateSelector && startDate && endDate) {
+      filteredObservations = filterObservationsByDateRange(
+        filteredObservations,
+        startDate,
+        endDate
+      );
+    }
+    
+    // Then apply user filter if active
+    if (selectedUserId) {
+      filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
+    }
+    
+    // Then apply site filter if active
+    if (selectedSiteId) {
+      filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
+    }
+    
+    // Then apply search filter if active
+    if (showSearchSelector && searchQuery.trim()) {
+      filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
+    }
+    
+    // Then apply label filter if active
+    if (showLabelSelector && selectedLabels.length > 0) {
+      filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
+    }
+    
+    return filteredObservations;
+  }, [observations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+
   // ===== PHOTO MODAL FUNCTIONALITY =====
   const handleOpenPhotoModal = useCallback((observation: ObservationWithUrl, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent card selection
+    
+    // Find the index of the clicked observation in the filtered list
+    const filteredObservations = getFilteredObservations();
+    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+    const index = photoObservations.findIndex(obs => obs.id === observation.id);
+    
+    setCurrentPhotoIndex(index);
     setSelectedPhotoObservation(observation);
     setPhotoModalOpen(true);
-  }, []);
+  }, [getFilteredObservations]);
 
   const handleClosePhotoModal = useCallback(() => {
     setPhotoModalOpen(false);
     setSelectedPhotoObservation(null);
+    setCurrentPhotoIndex(0);
   }, []);
+
+  const handlePreviousPhoto = useCallback(() => {
+    const filteredObservations = getFilteredObservations();
+    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+    if (currentPhotoIndex > 0) {
+      const newIndex = currentPhotoIndex - 1;
+      setCurrentPhotoIndex(newIndex);
+      setSelectedPhotoObservation(photoObservations[newIndex]);
+    }
+  }, [getFilteredObservations, currentPhotoIndex]);
+
+  const handleNextPhoto = useCallback(() => {
+    const filteredObservations = getFilteredObservations();
+    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+    if (currentPhotoIndex < photoObservations.length - 1) {
+      const newIndex = currentPhotoIndex + 1;
+      setCurrentPhotoIndex(newIndex);
+      setSelectedPhotoObservation(photoObservations[newIndex]);
+    }
+  }, [getFilteredObservations, currentPhotoIndex]);
 
   // ===== SAVE REPORT FUNCTIONALITY =====
   const handleSaveReport = useCallback(async () => {
@@ -628,7 +693,6 @@ export default function Home() {
     }
   }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
-  // ===== UTILITY FUNCTIONS =====
   // Calculate the minimum and maximum dates available in the observations
   // This is used to set the min/max values for date input fields
   const getAvailableDateRange = useCallback(() => {
@@ -1845,14 +1909,25 @@ export default function Home() {
       )}
 
       {/* Photo Modal */}
-      {selectedPhotoObservation && selectedPhotoObservation.signedUrl && (
-        <PhotoModal
-          isOpen={photoModalOpen}
-          onClose={handleClosePhotoModal}
-          imageUrl={selectedPhotoObservation.signedUrl}
-          observation={selectedPhotoObservation}
-        />
-      )}
+      {selectedPhotoObservation && selectedPhotoObservation.signedUrl && (() => {
+        const filteredObservations = getFilteredObservations();
+        const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+        const hasPrevious = currentPhotoIndex > 0;
+        const hasNext = currentPhotoIndex < photoObservations.length - 1;
+        
+        return (
+          <PhotoModal
+            isOpen={photoModalOpen}
+            onClose={handleClosePhotoModal}
+            imageUrl={selectedPhotoObservation.signedUrl}
+            observation={selectedPhotoObservation}
+            onPrevious={handlePreviousPhoto}
+            onNext={handleNextPhoto}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
+        );
+      })()}
 
       {/* Save Report Dialog */}
       {showSaveDialog && (
