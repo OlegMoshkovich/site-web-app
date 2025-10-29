@@ -176,8 +176,8 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             <Image
               src="/images/banner.svg"
               alt="Simple Site"
-              width={80}
-              height={20}
+              width={56}
+              height={14}
               className="h-4 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-1 py-0.5 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
               priority
             />
