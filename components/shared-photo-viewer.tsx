@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer";
 import type { Observation } from "@/types/supabase";
 
 interface SharedPhotoViewerProps {
-  observation: Observation;
+  observation: Observation & { sites?: { name: string } | null };
   imageUrl: string;
 }
 

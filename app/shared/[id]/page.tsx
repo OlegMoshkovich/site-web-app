@@ -44,11 +44,10 @@ export async function generateMetadata({ params }: SharedPhotoPageProps) {
     };
   }
 
-  const siteName = observation.sites?.name || 'Unknown location';
   const date = new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB');
   
   return {
-    title: `Photo from ${siteName} - ${date}`,
-    description: observation.note || `Photo taken at ${siteName} on ${date}`,
+    title: `Shared Photo - ${date}`,
+    description: observation.note || `Photo taken on ${date}`,
   };
 }
