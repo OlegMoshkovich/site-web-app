@@ -106,8 +106,14 @@ export default function Home() {
   // Edit state for inline note editing
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>("");
-  // View mode state
-  const [viewMode, setViewMode] = useState<"card" | "list">("list");
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<"card" | "list">(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('observationViewMode');
+      return (saved === 'card' || saved === 'list') ? saved : 'list';
+    }
+    return 'list';
+  });
   // Search state
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
@@ -751,6 +757,13 @@ export default function Home() {
       }
     }
   }, [viewMode, observations.length, refreshSignedUrls]);
+
+  // Save view mode to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('observationViewMode', viewMode);
+    }
+  }, [viewMode]);
 
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
