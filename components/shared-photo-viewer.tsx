@@ -172,13 +172,13 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
           )}
           
           {/* Banner logo overlay - top left */}
-          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30">
+          <div className="absolute top-1 left-1 sm:top-4 sm:left-4 z-30">
             <Image
               src="/images/banner.svg"
               alt="Simple Site"
-              width={120}
-              height={30}
-              className="h-6 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
+              width={80}
+              height={20}
+              className="h-4 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-1 py-0.5 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
               priority
             />
           </div>
