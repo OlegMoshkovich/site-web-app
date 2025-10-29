@@ -248,6 +248,29 @@ export function PhotoModal({
             </div>
           )}
           
+          {/* Timestamp and elevation tags overlay - centered at bottom */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
+            <span>{new Date(observation.taken_at || observation.created_at).toLocaleString()}</span>
+            {(observation.sites?.name && observation.sites.name !== 'Munich') && (
+              <>
+                <span className="text-gray-300">•</span>
+                <span>📍 {observation.sites.name}</span>
+              </>
+            )}
+            {observation.labels && observation.labels.length > 0 && (
+              <>
+                <span className="text-gray-300">•</span>
+                <div className="flex items-center gap-1">
+                  {observation.labels.slice(0, 3).map((label, idx) => (
+                    <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          
           {/* Previous button */}
           {hasPrevious && onPrevious && !isDragging && (
             <button
