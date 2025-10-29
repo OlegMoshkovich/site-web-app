@@ -1658,7 +1658,7 @@ export default function Home() {
                               {/* Timestamp overlay - top of thumbnail */}
                               <div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-1.5 text-xs">
                                 <p className="text-center leading-tight">
-                                  {new Date(observation.taken_at || observation.created_at).toLocaleDateString()} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  {new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB')} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 </p>
                               </div>
 

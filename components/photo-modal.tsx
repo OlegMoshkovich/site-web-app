@@ -250,7 +250,7 @@ export function PhotoModal({
           
           {/* Timestamp and elevation tags overlay - centered at bottom */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
-            <span>{new Date(observation.taken_at || observation.created_at).toLocaleString()}</span>
+            <span>{new Date(observation.taken_at || observation.created_at).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
                 <span className="text-gray-300">•</span>
