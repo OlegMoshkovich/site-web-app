@@ -24,7 +24,26 @@ export async function getSignedPhotoUrl(
   const key = normalizePath(filenameOrPath);
   if (!key) return null;
 
-  const supabase = createClient();
+  let supabase;
+  
+  // Check if we're in a server context by checking for window
+  if (typeof window === 'undefined') {
+    // Server-side: use server client with service role for storage access
+    const { createServerClient } = await import('@supabase/ssr');
+    supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() { return []; },
+          setAll() { /* no-op */ },
+        },
+      }
+    );
+  } else {
+    // Client-side: use browser client
+    supabase = createClient();
+  }
   
   // Request a signed URL from Supabase storage
   const { data, error } = await supabase.storage
@@ -32,10 +51,13 @@ export async function getSignedPhotoUrl(
     .createSignedUrl(key, expiresIn);
 
   if (error) {
-    console.error("createSignedUrl error", { 
+    console.error("createSignedUrl error details:", { 
       key, 
       bucket: BUCKET,
-      error: error.message || error 
+      errorMessage: error.message,
+      errorCode: error.code,
+      fullError: error,
+      isServerSide: typeof window === 'undefined'
     });
     return null;
   }
@@ -783,4 +805,44 @@ export async function getPendingInvitationsForUser(userEmail: string): Promise<(
   );
 
   return invitationsWithSiteNames;
+}
+
+/**
+ * Fetch a single observation for public sharing (no authentication required)
+ * This returns only public information suitable for sharing
+ */
+export async function fetchSharedObservation(observationId: string): Promise<Observation | null> {
+  // Use createServerClient with service role key to bypass RLS for shared access
+  const { createServerClient } = await import('@supabase/ssr');
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // No-op for public access
+        },
+      },
+    }
+  );
+  
+  const { data: observation, error } = await supabase
+    .from('observations')
+    .select(`
+      *,
+      sites(name)
+    `)
+    .eq('id', observationId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching shared observation:', error);
+    return null;
+  }
+
+  return observation;
 }

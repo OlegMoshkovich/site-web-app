@@ -948,24 +948,42 @@ export default function Home() {
               )}
             </div>
             
-            {/* Center icon - only show when user is logged in */}
+            {/* Center banner - only show when user is logged in */}
             {user && (
-              <div className="absolute left-1/2 transform -translate-x-1/2">
+              <div className="absolute left-1/2 transform -translate-x-1/2 hidden sm:block">
                 <div 
                   onClick={() => window.location.reload()}
-                  className="h-8 w-8 border border-gray-300 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50" 
+                  className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded" 
                   title={t("refreshObservations")}
                 >
                   <Image
-                    src="/images/icon.png"
-                    alt="Site Icon"
-                    width={24}
-                    height={24}
-                    className="h-6 w-6"
+                    src="/images/banner.svg"
+                    alt="Site Banner"
+                    width={60}
+                    height={12}
+                    className="h-4 sm:h-6 w-auto max-w-none"
                   />
                 </div>
               </div>
             )}
+            {user && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 block sm:hidden">
+                <div 
+                  onClick={() => window.location.reload()}
+                  className="h-8 px-2 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded" 
+                  title={t("refreshObservations")}
+                >
+                  <Image
+                    src="/images/banner.png"
+                    alt="Site Banner"
+                    width={60}
+                    height={12}
+                    className="h-4 w-auto max-w-none"
+                  />
+                </div>
+              </div>
+            )}
+            
             
             <div className="flex items-center gap-2">              
               {/* Language selector */}
@@ -1655,6 +1673,13 @@ export default function Home() {
                                 }}
                               />
                               
+                              {/* Timestamp overlay - top of thumbnail */}
+                              <div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-1.5 text-xs">
+                                <p className="text-center leading-tight">
+                                  {new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB')} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </p>
+                              </div>
+
                               {/* Zoom button - appears on hover */}
                               <button
                                 onClick={(e) => handleOpenPhotoModal(observation, e)}

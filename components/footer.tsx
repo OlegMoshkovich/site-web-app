@@ -3,7 +3,7 @@ import React from 'react';
 export function Footer() {
   return (
     <footer className="w-full border-t border-gray-100 py-8 px-3 sm:px-5 mt-20 sm:mt-20">
-      <div className="max-w-5xl mx-auto">
+      <div>
         
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6 ml-6">
           {/* Left Column - Company Information */}
