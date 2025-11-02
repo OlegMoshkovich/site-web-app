@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ZoomIn, ZoomOut } from "lucide-react";
+import { ZoomIn, ZoomOut, Info, X } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
 import type { Observation } from "@/types/supabase";
@@ -14,6 +14,7 @@ interface SharedPhotoViewerProps {
 
 export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerProps) {
   const [imageLoading, setImageLoading] = useState(true);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   
   // Zoom and pan state
   const [scale, setScale] = useState(1);
@@ -152,6 +153,13 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
           </div>
           
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInfoModal(true)}
+              className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded flex items-center gap-1"
+            >
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Info</span>
+            </button>
             <AuthButtonClient />
           </div>
         </div>
@@ -304,6 +312,78 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
       
       {/* Footer */}
       <Footer />
+      
+      {/* Info Modal */}
+      {showInfoModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Simple Site Mobile App</h2>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-700">
+                Essential for collecting observations in the field
+              </p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">Take photos and add notes on-site</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">GPS location tracking</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">Automatic sync with your sites</span>
+                </div>
+              </div>
+              
+              <div className="pt-4">
+                <p className="text-sm font-medium text-gray-900 mb-3">Web vs Mobile:</p>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-900">Web Portal:</p>
+                    <p className="text-gray-600">View team observations, generate reports, and manage settings</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Mobile App:</p>
+                    <p className="text-gray-600">Required for collecting observations in the field</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* App Store Button */}
+              <div className="flex justify-center pt-4">
+                <a 
+                  href="https://apps.apple.com/us/app/simple-site/id6749160249"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/app_screens/available-app-store.png"
+                    alt="Available on the App Store"
+                    width={120}
+                    height={36}
+                    className="w-auto h-auto object-contain"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
