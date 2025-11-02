@@ -20,7 +20,8 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
   
   // Translation function
   const t = (key: keyof typeof translations.en) => {
-    return translations[language][key] || translations.en[key];
+    const value = translations[language][key] || translations.en[key];
+    return typeof value === 'string' ? value : '';
   };
   
   // Zoom and pan state
