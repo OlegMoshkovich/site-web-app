@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ZoomIn, ZoomOut, Info, X } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
-import { useLanguage, type Language } from "@/lib/translations";
+import { translations, type Language } from "@/lib/translations";
 import type { Observation } from "@/types/supabase";
 
 interface SharedPhotoViewerProps {
@@ -17,7 +17,11 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
   const [imageLoading, setImageLoading] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
-  const { t } = useLanguage(language);
+  
+  // Translation function
+  const t = (key: keyof typeof translations.en) => {
+    return translations[language][key] || translations.en[key];
+  };
   
   // Zoom and pan state
   const [scale, setScale] = useState(1);
