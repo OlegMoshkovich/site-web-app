@@ -2,42 +2,27 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { Modal } from "@/components/ui/modal";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ZoomIn, ZoomOut, Info, X } from "lucide-react";
+import { AuthButtonClient } from "@/components/auth-button-client";
+import { Footer } from "@/components/footer";
+import { translations, type Language } from "@/lib/translations";
 import type { Observation } from "@/types/supabase";
 
-// Extended observation with signed URL for secure photo access
-interface ObservationWithUrl extends Observation {
-  signedUrl: string | null;      // Temporary signed URL for viewing the photo
-  sites?: { name: string } | null; // Site information from join
-  profiles?: { email: string } | null; // User profile information from join
-  user_email?: string; // User email from the query
-}
-
-interface PhotoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface SharedPhotoViewerProps {
+  observation: Observation & { sites?: { name: string } | null };
   imageUrl: string;
-  observation: ObservationWithUrl;
-  onPrevious?: () => void;
-  onNext?: () => void;
-  hasPrevious?: boolean;
-  hasNext?: boolean;
 }
 
-export function PhotoModal({ 
-  isOpen, 
-  onClose, 
-  imageUrl, 
-  observation, 
-  onPrevious, 
-  onNext, 
-  hasPrevious = false, 
-  hasNext = false 
-}: PhotoModalProps) {
+export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerProps) {
   const [imageLoading, setImageLoading] = useState(true);
-  const [shareSuccess, setShareSuccess] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [language, setLanguage] = useState<Language>("en");
+  
+  // Translation function
+  const t = (key: keyof typeof translations.en) => {
+    const value = translations[language][key] || translations.en[key];
+    return typeof value === 'string' ? value : '';
+  };
   
   // Zoom and pan state
   const [scale, setScale] = useState(1);
@@ -45,13 +30,6 @@ export function PhotoModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
-
-  // Reset zoom and pan when image changes
-  useEffect(() => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-    setImageLoading(true);
-  }, [imageUrl, observation.id]);
 
   // Zoom and pan handlers
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -125,33 +103,6 @@ export function PhotoModal({
     }
   }, [scale]);
 
-  // Keyboard navigation and zoom
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-      
-      if (e.key === 'ArrowLeft' && hasPrevious && onPrevious && !isDragging) {
-        onPrevious();
-      } else if (e.key === 'ArrowRight' && hasNext && onNext && !isDragging) {
-        onNext();
-      } else if (e.key === 'Escape') {
-        resetZoom();
-      } else if (e.key === '+' || e.key === '=') {
-        e.preventDefault();
-        zoomIn();
-      } else if (e.key === '-') {
-        e.preventDefault();
-        zoomOut();
-      } else if (e.key === '0') {
-        e.preventDefault();
-        resetZoom();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isOpen, hasPrevious, hasNext, onPrevious, onNext, isDragging, resetZoom, zoomIn, zoomOut]);
-
   // Mouse and touch event listeners
   useEffect(() => {
     const container = imageContainerRef.current;
@@ -198,24 +149,48 @@ export function PhotoModal({
     return processedLabel.replace(/\s+/g, " ").trim();
   };
 
-  const handleShare = useCallback(async () => {
-    try {
-      const shareUrl = `${window.location.origin}/shared/${observation.id}`;
-      await navigator.clipboard.writeText(shareUrl);
-      setShareSuccess(true);
-      setTimeout(() => setShareSuccess(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy link:', error);
-    }
-  }, [observation.id]);
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col max-h-[90vh]">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top navigation bar */}
+      <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="text-lg font-semibold">
+              Simple Site
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Language selector */}
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
+              style={{ textAlignLast: "center" }}
+              title="Change Language"
+            >
+              <option value="en">EN</option>
+              <option value="de">DE</option>
+            </select>
+            
+            <button
+              onClick={() => setShowInfoModal(true)}
+              className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded flex items-center gap-1"
+            >
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("info")}</span>
+            </button>
+            <AuthButtonClient />
+          </div>
+        </div>
+      </nav>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full p-4">
         {/* Image container */}
         <div 
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0 overflow-hidden"
+          className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0 overflow-hidden border border-gray-200 rounded-lg"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -224,18 +199,23 @@ export function PhotoModal({
             </div>
           )}
           
+          {/* Banner logo overlay - top left */}
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30">
+            <Image
+              src="/images/banner.svg"
+              alt="Simple Site"
+              width={160}
+              height={40}
+              className="h-6 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
+              priority
+            />
+          </div>
+          
           {/* Zoom controls */}
           <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
             <button
-              onClick={handleShare}
-              className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
-              aria-label="Share photo"
-            >
-              <Share className="h-4 w-4" />
-            </button>
-            <button
               onClick={zoomIn}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors rounded"
               aria-label="Zoom in"
               disabled={scale >= 3}
             >
@@ -243,7 +223,7 @@ export function PhotoModal({
             </button>
             <button
               onClick={zoomOut}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors rounded"
               aria-label="Zoom out"
               disabled={scale <= 0.5}
             >
@@ -252,7 +232,7 @@ export function PhotoModal({
             {scale > 1 && (
               <button
                 onClick={resetZoom}
-                className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
+                className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors rounded"
                 aria-label="Reset zoom"
               >
                 1:1
@@ -290,28 +270,6 @@ export function PhotoModal({
             )}
           </div>
           
-          {/* Previous button */}
-          {hasPrevious && onPrevious && !isDragging && (
-            <button
-              onClick={onPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
-              aria-label="Previous photo"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-          )}
-          
-          {/* Next button */}
-          {hasNext && onNext && !isDragging && (
-            <button
-              onClick={onNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
-              aria-label="Next photo"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          )}
-          
           {/* Zoomable/Pannable Image Container */}
           <div
             className="absolute inset-0 transition-transform duration-200 ease-out"
@@ -323,20 +281,17 @@ export function PhotoModal({
             onTouchStart={handleTouchStart}
           >
             <Image
-              key={observation.id} // Force re-render when observation changes
               src={imageUrl}
-              alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
+              alt={`Photo for ${observation.sites?.name || "observation"}`}
               fill
               className="object-contain select-none"
               sizes="(max-width: 768px) 100vw, 90vw"
               priority
               draggable={false}
               onLoad={() => {
-                console.log('Image loaded for observation:', observation.id);
                 setImageLoading(false);
               }}
               onError={() => {
-                console.log('Image error for observation:', observation.id);
                 setImageLoading(false);
               }}
             />
@@ -344,7 +299,7 @@ export function PhotoModal({
         </div>
         
         {/* Info panel */}
-        <div className="p-6 border-t bg-white max-h-64 overflow-y-auto">
+        <div className="mt-6 bg-white p-6 border border-gray-200 rounded-lg">
           <div className="space-y-4">
             {/* Note */}
             {observation.note && (
@@ -354,74 +309,101 @@ export function PhotoModal({
               </div>
             )}
             
-            {/* Metadata */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    {new Date(observation.taken_at || observation.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                
-                {(observation.sites?.name || observation.site_id) && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      Site: {observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="text-gray-600">
-                  <span className="font-medium">Created by:</span>{" "}
-                  {observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                {observation.latitude != null && observation.longitude != null && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      GPS: {observation.latitude.toFixed(6)}, {observation.longitude.toFixed(6)}
-                    </span>
-                  </div>
-                )}
-                
-                {observation.anchor_x != null &&
-                  observation.anchor_y != null &&
-                  !(observation.anchor_x === 0 && observation.anchor_y === 0) && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      Plan Anchor: {observation.anchor_x.toFixed(6)}, {observation.anchor_y.toFixed(6)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
             {/* Labels */}
             {observation.labels && observation.labels.length > 0 && (
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
                 <div className="flex flex-wrap gap-2">
                   {observation.labels.map((label, idx) => (
-                    <Badge
-                      key={`modal-label-${idx}`}
-                      variant="outline"
-                      className="text-xs px-2 py-1 border border-gray-300 bg-white"
+                    <span
+                      key={`shared-label-${idx}`}
+                      className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"
                     >
                       {processLabel(label)}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </div>
-    </Modal>
+      
+      {/* Footer */}
+      <Footer />
+      
+      {/* Info Modal */}
+      {showInfoModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">{t("simpleSiteMobileApp")}</h2>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-700">
+                {t("essentialForCollecting")}
+              </p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">{t("takePhotosAndAddNotes")}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">{t("gpsLocationTracking")}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700">{t("automaticSyncWithSites")}</span>
+                </div>
+              </div>
+              
+              <div className="pt-4">
+                <p className="text-sm font-medium text-gray-900 mb-3">{t("webVsMobile")}</p>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-900">{t("webPortal")}</p>
+                    <p className="text-gray-600">{t("viewTeamObservationsGenerateReports")}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{t("mobileApp")}</p>
+                    <p className="text-gray-600">{t("requiredForCollectingObservations")}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* App Store Button */}
+              <div className="flex justify-center pt-4">
+                <a 
+                  href="https://apps.apple.com/us/app/simple-site/id6749160249"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/app_screens/available-app-store.png"
+                    alt={t("availableOnAppStore")}
+                    width={120}
+                    height={36}
+                    className="w-auto h-auto object-contain"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
