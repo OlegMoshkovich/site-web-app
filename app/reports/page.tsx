@@ -18,6 +18,7 @@ import {
   Trash2,
   Download,
   ArrowLeft,
+  Share,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -98,6 +99,19 @@ export default function ReportsPage() {
     }
 
     try {
+      // First delete related report_observations
+      const { error: reportObsError } = await supabase
+        .from('report_observations')
+        .delete()
+        .eq('report_id', reportId);
+
+      if (reportObsError) {
+        console.error('Error deleting report observations:', reportObsError);
+        alert('Error deleting report. Please try again.');
+        return;
+      }
+
+      // Then delete the report
       const { error } = await supabase
         .from('reports')
         .delete()
@@ -105,13 +119,16 @@ export default function ReportsPage() {
 
       if (error) {
         console.error('Error deleting report:', error);
+        alert('Error deleting report. Please try again.');
         return;
       }
 
       // Remove from local state
       setReports(reports.filter(report => report.id !== reportId));
+      alert('Report deleted successfully!');
     } catch (error) {
       console.error('Error deleting report:', error);
+      alert('Error deleting report. Please try again.');
     }
   };
 
@@ -121,6 +138,18 @@ export default function ReportsPage() {
 
   const handleExportReport = async (reportId: string) => {
     router.push(`/report?reportId=${reportId}`);
+  };
+
+  const handleShareReport = async (reportId: string) => {
+    const shareUrl = `${window.location.origin}/reports/${reportId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Report link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      // Fallback: show a prompt with the URL
+      prompt('Copy this link to share the report:', shareUrl);
+    }
   };
 
   if (!user) {
@@ -184,6 +213,15 @@ export default function ReportsPage() {
                           title="View report"
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleShareReport(report.id)}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="Share report"
+                        >
+                          <Share className="h-4 w-4" />
                         </Button>
                         <Button
                           onClick={() => handleExportReport(report.id)}
