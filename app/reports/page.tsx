@@ -99,6 +99,19 @@ export default function ReportsPage() {
     }
 
     try {
+      // First delete related report_observations
+      const { error: reportObsError } = await supabase
+        .from('report_observations')
+        .delete()
+        .eq('report_id', reportId);
+
+      if (reportObsError) {
+        console.error('Error deleting report observations:', reportObsError);
+        alert('Error deleting report. Please try again.');
+        return;
+      }
+
+      // Then delete the report
       const { error } = await supabase
         .from('reports')
         .delete()
@@ -106,13 +119,16 @@ export default function ReportsPage() {
 
       if (error) {
         console.error('Error deleting report:', error);
+        alert('Error deleting report. Please try again.');
         return;
       }
 
       // Remove from local state
       setReports(reports.filter(report => report.id !== reportId));
+      alert('Report deleted successfully!');
     } catch (error) {
       console.error('Error deleting report:', error);
+      alert('Error deleting report. Please try again.');
     }
   };
 
