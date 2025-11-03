@@ -18,6 +18,7 @@ import {
   Trash2,
   Download,
   ArrowLeft,
+  Share,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -123,6 +124,18 @@ export default function ReportsPage() {
     router.push(`/report?reportId=${reportId}`);
   };
 
+  const handleShareReport = async (reportId: string) => {
+    const shareUrl = `${window.location.origin}/reports/${reportId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Report link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      // Fallback: show a prompt with the URL
+      prompt('Copy this link to share the report:', shareUrl);
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -184,6 +197,15 @@ export default function ReportsPage() {
                           title="View report"
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleShareReport(report.id)}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="Share report"
+                        >
+                          <Share className="h-4 w-4" />
                         </Button>
                         <Button
                           onClick={() => handleExportReport(report.id)}
