@@ -13,6 +13,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
+  Info,
+  ArrowRight,
+  X,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -61,6 +64,7 @@ export default function ReportDetailPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
@@ -203,8 +207,48 @@ export default function ReportDetailPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center print:min-h-0">
-      <div className="flex-1 w-full flex flex-col gap-0 items-center">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top navigation bar */}
+      <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="text-lg font-semibold">
+              Simple Site
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Language selector */}
+            <select
+              value="en"
+              onChange={() => {}} // Add empty handler to fix React warning
+              className="h-8 px-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded"
+              title="Change Language"
+            >
+              <option value="en">EN</option>
+              <option value="de">DE</option>
+            </select>
+            
+            <button
+              onClick={() => setShowInfoModal(true)}
+              className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded flex items-center gap-1"
+            >
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Info</span>
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="h-8 w-8 p-0 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition-colors rounded flex items-center justify-center"
+              title="Go to Home"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center">
         {/* Main content */}
         <div className="flex-1 flex flex-col gap-6 max-w-4xl px-3 sm:px-5 py-6 w-full print:max-w-none print:px-4 print:py-2">
           {/* Report Info Card */}
@@ -323,6 +367,72 @@ export default function ReportDetailPage() {
           )}
         </div>
       </div>
-    </main>
+
+      {/* Info Modal */}
+      {showInfoModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Simple Site Mobile App</h2>
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              <div>
+                <p className="text-gray-600 mb-4">Essential for collecting observations in the field</p>
+                
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">Take photos and add notes on-site</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">GPS location tracking</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-gray-700">Automatic sync with your sites</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Web vs Mobile:</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-gray-900">Web Portal:</h4>
+                    <p className="text-gray-600 text-sm">View team observations, generate reports, and manage settings</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-gray-900">Mobile App:</h4>
+                    <p className="text-gray-600 text-sm">Required for collecting observations in the field</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* App Store Button */}
+              <div className="text-center">
+                <div className="inline-block bg-black text-white px-4 py-2 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs">Available on the</span>
+                  </div>
+                  <div className="text-lg font-semibold">App Store</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
