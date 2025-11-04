@@ -22,47 +22,58 @@ export async function getSignedPhotoUrl(
 ): Promise<string | null> {
   // Clean up the file path
   const key = normalizePath(filenameOrPath);
-  if (!key) return null;
+  if (!key) {
+    console.warn("getSignedPhotoUrl: Empty or invalid path provided:", filenameOrPath);
+    return null;
+  }
 
   let supabase;
   
-  // Check if we're in a server context by checking for window
-  if (typeof window === 'undefined') {
-    // Server-side: use server client with service role for storage access
-    const { createServerClient } = await import('@supabase/ssr');
-    supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        cookies: {
-          getAll() { return []; },
-          setAll() { /* no-op */ },
-        },
-      }
-    );
-  } else {
-    // Client-side: use browser client
-    supabase = createClient();
-  }
-  
-  // Request a signed URL from Supabase storage
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .createSignedUrl(key, expiresIn);
+  try {
+    // Check if we're in a server context by checking for window
+    if (typeof window === 'undefined') {
+      // Server-side: use server client with service role for storage access
+      const { createServerClient } = await import('@supabase/ssr');
+      supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            getAll() { return []; },
+            setAll() { /* no-op */ },
+          },
+        }
+      );
+    } else {
+      // Client-side: use browser client
+      supabase = createClient();
+    }
+    
+    // Request a signed URL from Supabase storage
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(key, expiresIn);
 
-  if (error) {
-    console.error("createSignedUrl error details:", { 
-      key, 
+    if (error) {
+      console.warn("createSignedUrl failed for key:", key, {
+        bucket: BUCKET,
+        errorMessage: error.message,
+        errorCode: error.code,
+        isServerSide: typeof window === 'undefined'
+      });
+      return null;
+    }
+
+    return data?.signedUrl || null;
+  } catch (err) {
+    console.error("getSignedPhotoUrl unexpected error:", {
+      key,
       bucket: BUCKET,
-      errorMessage: error.message,
-      errorCode: error.code,
-      fullError: error,
+      error: err,
       isServerSide: typeof window === 'undefined'
     });
     return null;
   }
-
-  return data?.signedUrl || null;
 }
 
 /**
@@ -401,32 +412,47 @@ export async function updateCollaboratorRole(
 }
 
 /**
- * Fetch observations for a specific week with collaboration permissions
- * - Returns observations from the last N weeks
+ * Fetch observations for a specific time range with collaboration permissions
+ * - Returns observations from the last N days/weeks/months
  * - Owners and admins see all observations for sites they have access to
  * - Collaborators see only their own observations for sites they have access to
  */
-export async function fetchCollaborativeObservationsByWeek(
+export async function fetchCollaborativeObservationsByTimeRange(
   userId: string,
-  weeksToLoad: number = 1,
-  weekOffset: number = 0
+  timeRange: {
+    type: 'days' | 'weeks' | 'months';
+    count: number;
+    offset: number;
+  }
 ): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
   const supabase = createClient();
   
-  console.log('fetchCollaborativeObservationsByWeek called for userId:', userId, 'weeksToLoad:', weeksToLoad, 'weekOffset:', weekOffset);
+  console.log('fetchCollaborativeObservationsByTimeRange called for userId:', userId, 'timeRange:', timeRange);
   
-  // Calculate date range for the requested weeks
+  // Calculate date range based on type
   const now = new Date();
   const startDate = new Date(now);
-  startDate.setDate(now.getDate() - (7 * (weekOffset + weeksToLoad))); // Start of oldest week
   const endDate = new Date(now);
-  endDate.setDate(now.getDate() - (7 * weekOffset)); // End of newest week
+  
+  switch (timeRange.type) {
+    case 'days':
+      startDate.setDate(now.getDate() - (timeRange.count + timeRange.offset));
+      endDate.setDate(now.getDate() - timeRange.offset);
+      break;
+    case 'weeks':
+      startDate.setDate(now.getDate() - (7 * (timeRange.count + timeRange.offset)));
+      endDate.setDate(now.getDate() - (7 * timeRange.offset));
+      break;
+    case 'months':
+      startDate.setMonth(now.getMonth() - (timeRange.count + timeRange.offset));
+      endDate.setMonth(now.getMonth() - timeRange.offset);
+      break;
+  }
   
   console.log('Date range:', { 
     startDate: startDate.toISOString(), 
     endDate: endDate.toISOString(),
-    weeksToLoad,
-    weekOffset 
+    timeRange
   });
   
   // Get all sites where user is a collaborator
@@ -487,7 +513,7 @@ export async function fetchCollaborativeObservationsByWeek(
 
   if (error) throw error;
   
-  // Check if there are more weeks available by looking for observations older than our date range
+  // Check if there are more observations available by looking for observations older than our date range
   let hasMoreQuery = supabase.from('observations').select('id', { count: 'exact', head: true });
   
   if (!userSites || userSites.length === 0) {
@@ -525,6 +551,24 @@ export async function fetchCollaborativeObservationsByWeek(
     hasMore,
     totalCount: count || 0
   };
+}
+
+/**
+ * Fetch observations for a specific week with collaboration permissions (legacy wrapper)
+ * - Returns observations from the last N weeks
+ * - Owners and admins see all observations for sites they have access to
+ * - Collaborators see only their own observations for sites they have access to
+ */
+export async function fetchCollaborativeObservationsByWeek(
+  userId: string,
+  weeksToLoad: number = 1,
+  weekOffset: number = 0
+): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
+  return fetchCollaborativeObservationsByTimeRange(userId, {
+    type: 'weeks',
+    count: weeksToLoad,
+    offset: weekOffset
+  });
 }
 
 /**

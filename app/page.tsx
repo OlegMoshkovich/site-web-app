@@ -716,9 +716,9 @@ export default function Home() {
 
 
   // ===== LOAD MORE FUNCTIONALITY =====
-  const handleLoadMore = useCallback(async () => {
+  const handleLoadMore = useCallback(async (type: 'week' | 'month') => {
     if (!user) return;
-    await loadMoreObservations(user.id);
+    await loadMoreObservations(user.id, type);
   }, [user, loadMoreObservations]);
 
   // ===== REFRESH SIGNED URLS =====
@@ -728,15 +728,29 @@ export default function Home() {
     try {
       const updatedObservations = await Promise.all(
         observations.map(async (obs) => {
-          if (obs.photo_url) {
-            const freshSignedUrl = await getSignedPhotoUrl(obs.photo_url, 3600);
-            return { ...obs, signedUrl: freshSignedUrl };
+          if (obs.photo_url && obs.photo_url.trim()) {
+            try {
+              const freshSignedUrl = await getSignedPhotoUrl(obs.photo_url, 3600);
+              // Only update if we got a valid signed URL, otherwise keep the existing one
+              return { ...obs, signedUrl: freshSignedUrl || obs.signedUrl };
+            } catch (err) {
+              console.warn(`Failed to refresh signed URL for observation ${obs.id}:`, err);
+              // Keep the existing signed URL if refresh fails
+              return obs;
+            }
           }
           return obs;
         })
       );
       
-      setObservations(updatedObservations);
+      // Only update if we have meaningful changes to prevent unnecessary re-renders
+      const hasChanges = updatedObservations.some((obs, index) => 
+        obs.signedUrl !== observations[index].signedUrl
+      );
+      
+      if (hasChanges) {
+        setObservations(updatedObservations);
+      }
     } catch (error) {
       console.error('Error refreshing signed URLs:', error);
     }
@@ -745,14 +759,12 @@ export default function Home() {
   // Refresh signed URLs when switching to a view that needs photos
   useEffect(() => {
     if (viewMode === "list" && observations.length > 0) {
-      // Check if any signed URLs might be expired (older than 50 minutes)
-      const hasExpiredUrls = observations.some(obs => {
-        if (!obs.signedUrl) return false;
-        // Simple check - if we haven't refreshed in a while, refresh them
-        return true; // For now, always refresh when switching to list view
-      });
+      // Only refresh if we have observations with photos but no signed URLs
+      const needsRefresh = observations.some(obs => 
+        obs.photo_url && obs.photo_url.trim() && !obs.signedUrl
+      );
       
-      if (hasExpiredUrls) {
+      if (needsRefresh) {
         refreshSignedUrls();
       }
     }
@@ -1116,7 +1128,7 @@ export default function Home() {
               <div className="space-y-8">
                 {/* Date Range Selection - Conditionally rendered */}
                 {showDateSelector && (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
                       <div className="flex flex-col gap-1">
                         <label
@@ -1266,7 +1278,10 @@ export default function Home() {
 
                 {/* Search Input - Conditionally rendered */}
                 {showSearchSelector && (
-                  <div className="flex flex-col gap-2 w-full">
+                  <div 
+                    className="sticky z-10 flex flex-col gap-2 w-full p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+                    style={{ top: showDateSelector ? '140px' : '64px' }}
+                  >
                     <label className="text-sm font-medium text-muted-foreground">
                       {t("search")}
                     </label>
@@ -1294,7 +1309,14 @@ export default function Home() {
 
                 {/* Label Filter - Conditionally rendered */}
                 {showLabelSelector && (
-                  <div className="flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1">
+                  <div 
+                    className="sticky z-10 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+                    style={{ 
+                      top: showDateSelector && showSearchSelector ? '240px' : 
+                           showDateSelector ? '140px' :
+                           showSearchSelector ? '164px' : '64px'
+                    }}
+                  >
                     <label className="text-sm font-medium text-muted-foreground">
                       {t("filterByLabels")}
                     </label>
@@ -1732,25 +1754,44 @@ export default function Home() {
                   ));
                 })()}
 
-                {/* Load More Button */}
+                {/* Load More Buttons */}
                 {hasMore && (
-                  <div className="flex justify-center py-8">
-                    <Button
-                      onClick={handleLoadMore}
-                      disabled={isLoadingMore}
-                      variant="outline"
-                      size="lg"
-                      className="shadow-md hover:shadow-lg transition-all"
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                          {t("loading")}
-                        </>
-                      ) : (
-                        t("loadMore")
-                      )}
-                    </Button>
+                  <div className="flex flex-col items-center gap-4 py-8">
+                    <div className="text-sm text-gray-600 mb-2">Load more:</div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Button
+                        onClick={() => handleLoadMore('week')}
+                        disabled={isLoadingMore}
+                        variant="outline"
+                        size="sm"
+                        className="shadow-md hover:shadow-lg transition-all"
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          'Last Week'
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => handleLoadMore('month')}
+                        disabled={isLoadingMore}
+                        variant="outline"
+                        size="sm"
+                        className="shadow-md hover:shadow-lg transition-all"
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          'Last Month'
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>

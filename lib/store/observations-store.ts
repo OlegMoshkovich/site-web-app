@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservationsByWeek } from '@/lib/supabase/api';
+import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservationsByTimeRange } from '@/lib/supabase/api';
 
 export interface Observation {
   id: string;
@@ -36,7 +36,7 @@ interface ObservationsState {
   isLoading: boolean;
   isLoadingMore: boolean;
   hasMore: boolean;
-  weekOffset: number;
+  dayOffset: number;
   error: string | null;
   availableLabels: string[];
   currentUserId: string | null;
@@ -49,13 +49,13 @@ interface ObservationsState {
   setLoading: (loading: boolean) => void;
   setLoadingMore: (loading: boolean) => void;
   setHasMore: (hasMore: boolean) => void;
-  setWeekOffset: (offset: number) => void;
+  setDayOffset: (offset: number) => void;
   setError: (error: string | null) => void;
   setAvailableLabels: (labels: string[]) => void;
   
   // Async actions
   fetchInitialObservations: (userId: string) => Promise<void>;
-  loadMoreObservations: (userId: string) => Promise<void>;
+  loadMoreObservations: (userId: string, type: 'day' | 'week' | 'month') => Promise<void>;
   fetchDates: (userId: string) => Promise<void>;
   processPhotos: () => Promise<void>;
   
@@ -71,7 +71,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   isLoading: false,
   isLoadingMore: false,
   hasMore: true,
-  weekOffset: 0,
+  dayOffset: 0,
   error: null,
   availableLabels: [],
   currentUserId: null,
@@ -86,7 +86,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   setLoading: (loading) => set({ isLoading: loading }),
   setLoadingMore: (loading) => set({ isLoadingMore: loading }),
   setHasMore: (hasMore) => set({ hasMore }),
-  setWeekOffset: (offset) => set({ weekOffset: offset }),
+  setDayOffset: (offset) => set({ dayOffset: offset }),
   setError: (error) => set({ error }),
   setAvailableLabels: (labels) => set({ availableLabels: labels }),
   
@@ -108,15 +108,20 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         observationsWithPhotos: [],
         availableLabels: [],
         hasMore: true,
-        weekOffset: 0,
+        dayOffset: 0,
         error: null,
       });
     }
     
     try {
-      set({ isLoading: true, error: null, weekOffset: 0 });
+      set({ isLoading: true, error: null, dayOffset: 0 });
       
-      const result = await fetchCollaborativeObservationsByWeek(userId, 1, 0);
+      // Fetch initial 3 days of observations
+      const result = await fetchCollaborativeObservationsByTimeRange(userId, {
+        type: 'days',
+        count: 3,
+        offset: 0
+      });
       const { observations: baseObservations, hasMore } = result;
       
       // Generate signed URLs
@@ -147,6 +152,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         hasMore,
         availableLabels: Array.from(allLabels).sort(),
         currentUserId: userId,
+        dayOffset: 3,
         isLoading: false 
       });
     } catch (error) {
@@ -158,14 +164,35 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     }
   },
 
-  loadMoreObservations: async (userId: string) => {
-    const { isLoadingMore, hasMore, weekOffset } = get();
-    if (isLoadingMore || !hasMore) return;
+  loadMoreObservations: async (userId: string, type: 'day' | 'week' | 'month') => {
+    const { isLoadingMore, hasMore, dayOffset } = get();
+    
+    if (isLoadingMore || !hasMore) {
+      return;
+    }
     
     try {
       set({ isLoadingMore: true, error: null });
       
-      const result = await fetchCollaborativeObservationsByWeek(userId, 1, weekOffset + 1);
+      let timeRange;
+      let newOffset;
+      
+      switch (type) {
+        case 'day':
+          timeRange = { type: 'days' as const, count: 1, offset: dayOffset };
+          newOffset = dayOffset + 1;
+          break;
+        case 'week':
+          timeRange = { type: 'days' as const, count: 7, offset: dayOffset };
+          newOffset = dayOffset + 7;
+          break;
+        case 'month':
+          timeRange = { type: 'days' as const, count: 30, offset: dayOffset };
+          newOffset = dayOffset + 30;
+          break;
+      }
+      
+      const result = await fetchCollaborativeObservationsByTimeRange(userId, timeRange);
       const { observations: newObservations, hasMore: hasMoreData } = result;
       
       // Generate signed URLs for new observations
@@ -194,11 +221,12 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
       set((state) => ({ 
         observations: [...state.observations, ...withUrls],
         hasMore: hasMoreData,
-        weekOffset: state.weekOffset + 1,
+        dayOffset: newOffset,
         availableLabels: Array.from(currentLabels).sort(),
         isLoadingMore: false 
       }));
     } catch (error) {
+      console.error('loadMoreObservations error:', error);
       set({ 
         error: error instanceof Error ? error.message : 'Failed to load more observations',
         isLoadingMore: false 
@@ -300,7 +328,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     isLoading: false,
     isLoadingMore: false,
     hasMore: true,
-    weekOffset: 0,
+    dayOffset: 0,
     error: null,
     availableLabels: [],
     currentUserId: null,
