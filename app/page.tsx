@@ -1431,7 +1431,7 @@ export default function Home() {
                             : "space-y-3 px-1 sm:px-0"
                         }
                       >
-                        {groupedObservations[dateKey].map((observation) => {
+                        {groupedObservations[dateKey].map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
                           const labels = observation.labels ?? [];
 
@@ -1468,6 +1468,7 @@ export default function Home() {
                                         fill
                                         className="object-cover"
                                         sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, 160px"
+                                        priority={index < 3} // Prioritize first 3 images per day
                                         onLoad={(e) => {
                                           // Hide skeleton when image loads
                                           const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
@@ -1688,6 +1689,7 @@ export default function Home() {
                                 fill
                                 className="object-cover hover:scale-105 transition-transform duration-200"
                                 sizes="(max-width: 480px) 50vw, (max-width: 640px) 25vw, (max-width: 768px) 20vw, (max-width: 1024px) 17vw, 16vw"
+                                priority={index < 6} // Prioritize first 6 images per day in tile view
                                 onLoad={(e) => {
                                   // Hide skeleton when image loads
                                   const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
