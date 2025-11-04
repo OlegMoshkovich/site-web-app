@@ -2,6 +2,8 @@
 
 // React hooks for state management  
 import { useState, useCallback } from "react";
+// Next.js optimized image component
+import Image from "next/image";
 // Lucide React icons
 // Footer component
 import { Footer } from "@/components/footer";
@@ -125,10 +127,13 @@ export default function Tunnels() {
                         className="relative overflow-hidden rounded-none shadow-lg bg-gray-100 aspect-[4/3] cursor-pointer"
                         onClick={() => handleOpenPhotoModal(photo)}
                       >
-                        <img
+                        <Image
                           src={photo.src}
                           alt={photo.alt}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover hover:scale-105 transition-transform duration-300"
+                          priority={index < 6} // Prioritize first 6 images
                         />
                       </div>
                     ))}
@@ -155,11 +160,14 @@ export default function Tunnels() {
           <div className="relative bg-white rounded-none max-w-4xl max-h-[90vh] overflow-hidden">
             
             {/* Image */}
-            <div className="relative">
-              <img
+            <div className="relative w-full h-[80vh]">
+              <Image
                 src={selectedPhoto.src}
                 alt={selectedPhoto.alt}
-                className="w-full h-auto max-h-[80vh] object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 1200px"
+                className="object-contain"
+                priority
               />
             </div>
           </div>
