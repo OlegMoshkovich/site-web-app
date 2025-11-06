@@ -75,14 +75,14 @@ export default function CompanyPage() {
               <AccordionItem value="site-planning">
                 <AccordionTrigger>SITE PLANNING</AccordionTrigger>
                 <AccordionContent>
-                  {t("sitePlanningContent")}
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">{t("sitePlanningContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="site-supervision">
                 <AccordionTrigger>SITE SUPERVISION</AccordionTrigger>
                 <AccordionContent>
-                  {t("siteSupervisionContent")}
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">{t("siteSupervisionContent")}</p> 
                 </AccordionContent>
               </AccordionItem>
               
@@ -106,14 +106,32 @@ export default function CompanyPage() {
               <AccordionItem value="site-management-app">
                 <AccordionTrigger>SITE MANAGEMENT APP</AccordionTrigger>
                 <AccordionContent>
+                
+                  
+                  <img
+                    src="/products/site.png"
+                    alt="Site Management App"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
+                    <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">
                   {t("siteManagementAppContent")}
+                  </p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="augmented-reality-app">
                 <AccordionTrigger>AUGMENTED REALITY</AccordionTrigger>
                 <AccordionContent>
-                  {t("augmentedRealityContent")}
+                
+                 
+                  <img
+                    src="/products/ar.png"
+                    alt="DB Partnership"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">
+                {t("augmentedRealityContent")}
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -131,14 +149,14 @@ export default function CompanyPage() {
               <AccordionItem value="power-plant">
                 <AccordionTrigger>POWER PLANT</AccordionTrigger>
                 <AccordionContent>
-                  {t("powerPlantContent")}
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("powerPlantContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="cheese-factory">
                 <AccordionTrigger>CHEESE FACTORY</AccordionTrigger>
                 <AccordionContent>
-                  {t("cheeseFactoryContent")}
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("cheeseFactoryContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
@@ -159,20 +177,35 @@ export default function CompanyPage() {
               <AccordionItem value="dr">
                 <AccordionTrigger>DB</AccordionTrigger>
                 <AccordionContent>
-                  {t("dbPartnershipContent")}
+                  <img
+                    src="/pilots/DB.png"
+                    alt="DB Partnership"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("dbPartnershipContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="dr-sauber">
-                  <AccordionTrigger>DR SAUBER + PARTNERS</AccordionTrigger>
+                <AccordionTrigger>DR SAUBER + PARTNERS</AccordionTrigger>
                 <AccordionContent>
-                  {t("drSauberPartnershipContent")}
+                  <img
+                    src="/pilots/DR.png"
+                    alt="DR Sauber + Partners"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("drSauberPartnershipContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="strabag">
                 <AccordionTrigger>STRABAG</AccordionTrigger>
                 <AccordionContent>
+                  <img
+                    src="/pilots/STRABAG.png"
+                    alt="STRABAG Partnership"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
                   {t("strabagPartnershipContent")}
                 </AccordionContent>
               </AccordionItem>
