@@ -70,7 +70,8 @@ export default function CompanyPage() {
         {/* Offered Services */}
         <div className="mb-16">
           
-        <div className="space-y-2 mx-[10px]">
+       
+        <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" >
               <AccordionItem value="site-planning">
                 <AccordionTrigger>SITE PLANNING</AccordionTrigger>
@@ -144,7 +145,8 @@ export default function CompanyPage() {
           {t("companyProjectsTitle")}
               </h1>
           
-            <div className="space-y-2 mx-[10px] md:mx-0">
+           
+          <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="power-plant">
                 <AccordionTrigger>GEOTHERMAL PLANT</AccordionTrigger>
