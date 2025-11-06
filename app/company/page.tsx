@@ -61,7 +61,7 @@ export default function CompanyPage() {
         <div className="w-full sm:w-[67%] mx-auto">
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
-              <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
+              <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
                 {t("companyHeroTitle")}
               </h1>
           
@@ -75,7 +75,7 @@ export default function CompanyPage() {
               <AccordionItem value="site-planning">
                 <AccordionTrigger>SITE PLANNING</AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">{t("sitePlanningContent")}</p>
+                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">{t("sitePlanningContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
@@ -95,7 +95,7 @@ export default function CompanyPage() {
         <div className="mb-16">
           <div className="max-w-3xl mx-auto text-center mb-12">
           </div>
-          <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
+          <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
               {t("companyTechnologyTitle")}
               </h1>
           
@@ -140,7 +140,7 @@ export default function CompanyPage() {
 
         {/* Projects Section */}
         <div className="mb-16">
-          <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
+          <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
           {t("companyProjectsTitle")}
               </h1>
           
@@ -167,7 +167,7 @@ export default function CompanyPage() {
 
         {/* Partnership Section */}
         <div className="mb-16">
-           <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
+           <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
           {t("companyPartnershipsTitle")}
               </h1>
 
