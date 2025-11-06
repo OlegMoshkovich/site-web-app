@@ -205,7 +205,7 @@ export default function CompanyPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-[10px] md:mx-auto">
             <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center aspect-square">
+              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
                 <img src="/images/paul.png" alt="Paul" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center justify-between mt-2">
@@ -218,7 +218,7 @@ export default function CompanyPage() {
               </div>
             </div>
             <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center aspect-square">
+              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
                 <img src="/images/liebhard.jpg" alt="Liebhard" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center justify-between mt-2">
@@ -231,7 +231,7 @@ export default function CompanyPage() {
               </div>
             </div>
             <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center aspect-square">
+              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
                 <img src="/images/timur.jpg" alt="Timur" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center justify-between mt-2">
@@ -244,7 +244,7 @@ export default function CompanyPage() {
               </div>
             </div>
             <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center aspect-square">
+              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center">
                 <img src="/images/oleg.png" alt="Oleg" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center justify-between mt-2">
