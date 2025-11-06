@@ -147,8 +147,13 @@ export default function CompanyPage() {
           <div className="space-y-2">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="power-plant">
-                <AccordionTrigger>POWER PLANT</AccordionTrigger>
+                <AccordionTrigger>GEOTHERMAL PLANT</AccordionTrigger>
                 <AccordionContent>
+                <img
+                    src="/projects/powerplant.png"
+                    alt="DB Partnership"
+                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                  />
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("powerPlantContent")}</p>
                 </AccordionContent>
               </AccordionItem>
