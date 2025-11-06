@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 export const translations = {
   en: {
     // Navigation
-    siteTitle: "Simple Site",
+    siteTitle: "clone:it",
     
     // Hero section
     welcomeTitle: "Simple solution for a digital construction site",
@@ -241,12 +241,37 @@ export const translations = {
     downloadMobileAppForFieldWork: "Download the mobile app for field work",
     startCollectingObservations: "Start collecting observations",
     goToDashboard: "Go to Dashboard",
-    settingUp: "Setting up..."
+    settingUp: "Setting up...",
+
+    // Company page
+    companyHeroTitle: "We are a comprehensive construction services and technology enterprise. Our core expertise lies in construction site supervision, backed by advanced AI and Augmented Reality solutions that enhance project management and site oversight capabilities.",
+    companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
+    companyProjectsTitle: "We take great pride in our portfolio of successfully completed projects and the lasting value we deliver. Below are select examples of our current and past construction endeavors, showcasing our expertise across diverse sectors.",
+    companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
+    
+    // Services
+    sitePlanningContent: "Strategic site planning services encompassing detailed layout design, optimal resource allocation, and comprehensive timeline optimization to ensure project efficiency and successful delivery within budget and schedule constraints.",
+    siteSupervisionContent: "Expert on-site supervision services delivering rigorous quality control, comprehensive safety compliance monitoring, and systematic project milestone management to maintain the highest construction standards and regulatory adherence.",
+    siteManagementContent: "Comprehensive end-to-end site management solutions encompassing sophisticated logistics coordination, strategic personnel management, and advanced progress tracking systems to optimize operational efficiency and project outcomes.",
+    
+    // Technology
+    siteManagementAppContent: "Professional mobile application platform enabling real-time site management capabilities including intelligent task assignment, comprehensive progress tracking, and seamless team communication for enhanced project coordination.",
+    augmentedRealityContent: "Advanced Augmented Reality technology for three-dimensional visualization of construction plans, proactive issue identification, and enhanced on-site decision-making capabilities that improve project accuracy and reduce costly errors.",
+    
+    // Projects
+    powerPlantContent: "Major power generation facility construction in Munich, incorporating state-of-the-art energy infrastructure, cutting-edge sustainable technologies, and adherence to the highest environmental and safety standards.",
+    cheeseFactoryContent: "Sophisticated cheese manufacturing facility in Wels featuring precision climate control systems, fully automated production lines, and specialized food-grade construction standards meeting the strictest industry regulations.",
+    infrastructureContent: "Essential infrastructure development project in Wels encompassing comprehensive transportation networks, integrated utility systems, and foundational civil engineering works supporting regional development.",
+    
+    // Partnerships
+    dbPartnershipContent: "Strategic partnership with DB focusing on advanced technology development and implementation of innovative construction management solutions for large-scale infrastructure and transportation projects.",
+    drSauberPartnershipContent: "Collaborative pilot program with Dr Sauber + Partners, concentrating on pioneering construction methodologies, advanced quality assurance protocols, and integrated project delivery systems for complex engineering projects.",
+    strabagPartnershipContent: "Strategic partnership with STRABAG, one of Europe's leading construction groups, focusing on large-scale project management optimization and comprehensive technology integration across diverse European construction markets."
   },
   
   de: {
     // Navigation
-    siteTitle: "Simple Site",
+    siteTitle: "clone:it",
     
     // Hero section
     welcomeTitle: "Die Lösung für eine digitale Baustelle",
@@ -484,7 +509,32 @@ export const translations = {
     downloadMobileAppForFieldWork: "Die mobile App für Feldarbeit herunterladen",
     startCollectingObservations: "Mit dem Sammeln von Beobachtungen beginnen",
     goToDashboard: "Zum Dashboard",
-    settingUp: "Wird eingerichtet..."
+    settingUp: "Wird eingerichtet...",
+
+    // Company page
+    companyHeroTitle: "Wir sind ein umfassendes Baudienstleistungs- und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch fortschrittliche KI- und Augmented-Reality-Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
+    companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer proprietären Technologielösungen. Unsere Tools werden in unseren eigenen Bauprojekten getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
+    companyProjectsTitle: "Wir sind stolz auf unser Portfolio erfolgreich abgeschlossener Projekte und den nachhaltigen Wert, den wir liefern. Nachfolgend finden Sie ausgewählte Beispiele unserer aktuellen und vergangenen Bauvorhaben, die unsere Expertise in verschiedenen Sektoren demonstrieren.",
+    companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",
+    
+    // Services
+    sitePlanningContent: "Strategische Baustellenplanungsdienste, die detaillierte Layoutgestaltung, optimale Ressourcenzuteilung und umfassende Zeitplanoptimierung umfassen, um Projekteffizienz und erfolgreiche Lieferung innerhalb von Budget- und Terminbeschränkungen zu gewährleisten.",
+    siteSupervisionContent: "Expertendienste für die Baustellenüberwachung, die rigorose Qualitätskontrolle, umfassende Sicherheitscomplianceüberwachung und systematisches Projektmeilensteinmanagement bieten, um höchste Baustandards und regulatorische Einhaltung zu gewährleisten.",
+    siteManagementContent: "Umfassende End-to-End-Baustellenmanagementlösungen, die ausgeklügelte Logistikkoordination, strategisches Personalmanagement und fortschrittliche Fortschrittsverfolgungssysteme umfassen, um operative Effizienz und Projektergebnisse zu optimieren.",
+    
+    // Technology
+    siteManagementAppContent: "Professionelle mobile Anwendungsplattform, die Echtzeit-Baustellenmanagement-Funktionen ermöglicht, einschließlich intelligenter Aufgabenzuweisung, umfassender Fortschrittsverfolgung und nahtloser Teamkommunikation für verbesserte Projektkoordination.",
+    augmentedRealityContent: "Fortschrittliche Augmented-Reality-Technologie für dreidimensionale Visualisierung von Bauplänen, proaktive Problemidentifikation und verbesserte Entscheidungsfindung vor Ort, die Projektgenauigkeit verbessert und kostspielige Fehler reduziert.",
+    
+    // Projects
+    powerPlantContent: "Großer Kraftwerksneubau in München mit modernster Energieinfrastruktur, innovativen nachhaltigen Technologien und Einhaltung höchster Umwelt- und Sicherheitsstandards.",
+    cheeseFactoryContent: "Hochmoderne Käseherstellungsanlage in Wels mit präzisen Klimakontrollsystemen, vollautomatisierten Produktionslinien und spezialisierten lebensmitteltauglichen Baustandards, die strengste Industrievorschriften erfüllen.",
+    infrastructureContent: "Wesentliches Infrastrukturentwicklungsprojekt in Wels, das umfassende Verkehrsnetze, integrierte Versorgungssysteme und grundlegende Bauingenieurarbeiten zur Unterstützung der regionalen Entwicklung umfasst.",
+    
+    // Partnerships
+    dbPartnershipContent: "Strategische Partnerschaft mit der DB, die sich auf fortschrittliche Technologieentwicklung und Implementierung innovativer Bauverwaltungslösungen für große Infrastruktur- und Verkehrsprojekte konzentriert.",
+    drSauberPartnershipContent: "Kollaboratives Pilotprogramm mit Dr Sauber + Partners, das sich auf innovative Baumethoden, fortschrittliche Qualitätssicherungsprotokolle und integrierte Projektliefersysteme für komplexe Ingenieursprojekte konzentriert.",
+    strabagPartnershipContent: "Strategische Partnerschaft mit STRABAG, einer der führenden europäischen Baugruppen, die sich auf großmaßstäbliche Projektmanagementoptimierung und umfassende Technologieintegration in verschiedenen europäischen Baumärkten konzentriert."
   }
 };
 

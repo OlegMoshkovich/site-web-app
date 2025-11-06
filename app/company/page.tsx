@@ -9,11 +9,17 @@ import {
 import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
-import { type Language, useLanguage } from "@/lib/translations";
+import { translations, type Language, useLanguage } from "@/lib/translations";
 
 export default function CompanyPage() {
   // Language management with localStorage persistence
   const { language, setLanguage, mounted } = useLanguage();
+
+  // Helper function to get translated text based on current language
+  const t = (key: keyof typeof translations.en) => {
+    const value = translations[language][key];
+    return typeof value === "string" ? value : "";
+  };
 
   // ===== MAIN RENDER =====
   if (!mounted) {
@@ -31,7 +37,7 @@ export default function CompanyPage() {
                 href="/" 
                 className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
               >
-                clone:it
+                {t("siteTitle")}
               </Link>
             </div>
             <div className="flex items-center gap-2">
@@ -56,7 +62,7 @@ export default function CompanyPage() {
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
               <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
-                We are services and technology company. <br /> Our focus is construction site supervision and we develop AI tools to help us manage and supervise our sites.
+                {t("companyHeroTitle")}
               </h1>
           
 
@@ -69,26 +75,18 @@ export default function CompanyPage() {
               <AccordionItem value="site-planning">
                 <AccordionTrigger>SITE PLANNING</AccordionTrigger>
                 <AccordionContent>
-                  Comprehensive site planning services including layout design, 
-                  resource allocation, and timeline optimization for construction projects.
+                  {t("sitePlanningContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="site-supervision">
                 <AccordionTrigger>SITE SUPERVISION</AccordionTrigger>
                 <AccordionContent>
-                  Professional on-site supervision ensuring quality control, 
-                  safety compliance, and project milestone adherence.
+                  {t("siteSupervisionContent")}
                 </AccordionContent>
               </AccordionItem>
               
-              <AccordionItem value="site-management">
-                <AccordionTrigger>SITE MANAGEMENT</AccordionTrigger>
-                <AccordionContent>
-                  End-to-end site management solutions covering logistics, 
-                  personnel coordination, and progress tracking.
-                </AccordionContent>
-              </AccordionItem>
+             
             </Accordion>
           </div>
         </div>
@@ -98,8 +96,7 @@ export default function CompanyPage() {
           <div className="max-w-3xl mx-auto text-center mb-12">
           </div>
           <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
-              We are the first users of our tools, we develop them for ourselves, 
-              and we also make them available to the world, please try.
+              {t("companyTechnologyTitle")}
               </h1>
           
 
@@ -109,16 +106,14 @@ export default function CompanyPage() {
               <AccordionItem value="site-management-app">
                 <AccordionTrigger>SITE MANAGEMENT APP</AccordionTrigger>
                 <AccordionContent>
-                  Mobile application for real-time site management including task assignment, 
-                  progress tracking, and team communication.
+                  {t("siteManagementAppContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="augmented-reality-app">
                 <AccordionTrigger>AUGMENTED REALITY</AccordionTrigger>
                 <AccordionContent>
-                  Innovative AR application for visualizing construction plans, 
-                  identifying potential issues, and enhancing on-site decision making.
+                  {t("augmentedRealityContent")}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -128,8 +123,7 @@ export default function CompanyPage() {
         {/* Projects Section */}
         <div className="mb-16">
           <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
-          We are proud of our projects and the value we offer to the world, below are
-          some of the current and the past project we did together.
+          {t("companyProjectsTitle")}
               </h1>
           
           <div className="space-y-2">
@@ -137,26 +131,18 @@ export default function CompanyPage() {
               <AccordionItem value="power-plant">
                 <AccordionTrigger>POWER PLANT</AccordionTrigger>
                 <AccordionContent>
-                  Large-scale power plant construction project in Munich featuring 
-                  advanced energy infrastructure and sustainable technology implementation.
+                  {t("powerPlantContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="cheese-factory">
                 <AccordionTrigger>CHEESE FACTORY</AccordionTrigger>
                 <AccordionContent>
-                  Modern cheese manufacturing facility in Wels with specialized 
-                  climate control systems and automated production lines.
+                  {t("cheeseFactoryContent")}
                 </AccordionContent>
               </AccordionItem>
               
-              <AccordionItem value="infrastructure">
-                 <AccordionTrigger>INFRASTRUCTURE</AccordionTrigger>
-                <AccordionContent>
-                  Critical infrastructure development project in Wels including 
-                  transportation networks and utility systems.
-                </AccordionContent>
-              </AccordionItem>
+
             </Accordion>
           </div>
         </div>
@@ -164,10 +150,7 @@ export default function CompanyPage() {
         {/* Partnership Section */}
         <div className="mb-16">
            <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
-          We are the industry insiders and understand the challenged of the
-              construction sites. <br /> We also recognise all the constructions sites have unique components,
-              that is why we pilot our technology with the leaders in the AEC space to
-              jointly come up with the best tools for the construction management.
+          {t("companyPartnershipsTitle")}
               </h1>
 
           
@@ -176,24 +159,21 @@ export default function CompanyPage() {
               <AccordionItem value="dr">
                 <AccordionTrigger>DB</AccordionTrigger>
                 <AccordionContent>
-                  Strategic partnership with DR for technology development and 
-                  implementation in construction management solutions.
+                  {t("dbPartnershipContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="dr-sauber">
                   <AccordionTrigger>DR SAUBER + PARTNERS</AccordionTrigger>
                 <AccordionContent>
-                  Collaborative pilot program with Dr Sauber + Partners focusing on 
-                  innovative construction methodologies and quality assurance.
+                  {t("drSauberPartnershipContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="strabag">
                 <AccordionTrigger>STRABAG</AccordionTrigger>
                 <AccordionContent>
-                  Partnership with STRABAG for large-scale construction project management 
-                  and technology integration across European markets.
+                  {t("strabagPartnershipContent")}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
