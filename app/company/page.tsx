@@ -56,10 +56,7 @@ export default function CompanyPage() {
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
               <h1 className="text-3xl  md:text-4xl font-black text-black mb-8 leading-tight ml-[10px] md:ml-0">
-                The new version of
-                construction site supervision.
-                <br />
-                We develope and implement bespoke technology solutions for the construction site we manage and supervise.
+                We are services and technology company. <br /> Our focus is construction site supervision and we develop AI tools to help us manage and supervise our sites.
               </h1>
           
 
@@ -138,7 +135,7 @@ export default function CompanyPage() {
           <div className="space-y-2">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="power-plant">
-                <AccordionTrigger>POWER PLANT-MUNICH</AccordionTrigger>
+                <AccordionTrigger>POWER PLANT</AccordionTrigger>
                 <AccordionContent>
                   Large-scale power plant construction project in Munich featuring 
                   advanced energy infrastructure and sustainable technology implementation.
@@ -146,7 +143,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="cheese-factory">
-                <AccordionTrigger>CHEESE FACTORY-WELS</AccordionTrigger>
+                <AccordionTrigger>CHEESE FACTORY</AccordionTrigger>
                 <AccordionContent>
                   Modern cheese manufacturing facility in Wels with specialized 
                   climate control systems and automated production lines.
@@ -154,7 +151,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="infrastructure">
-                 <AccordionTrigger>INFRASTRUCTURE-WELS</AccordionTrigger>
+                 <AccordionTrigger>INFRASTRUCTURE</AccordionTrigger>
                 <AccordionContent>
                   Critical infrastructure development project in Wels including 
                   transportation networks and utility systems.

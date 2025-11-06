@@ -27,7 +27,7 @@ const AccordionTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         // On mobile, text-xs (font-size: 0.75rem ~12px), on md+ keep text-4xl.
-        "flex flex-1 items-center justify-between py-4 px-6 font-medium transition-all hover:bg-black hover:text-white [&[data-state=open]>svg]:rotate-180 bg-white text-black outline-1 border border-gray-200 text-2xl md:text-4xl",
+        "flex flex-1 items-center justify-between py-4 px-6 font-medium transition-all [&[data-state=open]>svg]:rotate-180 bg-white text-black outline-1 border border-gray-200 text-2xl md:text-4xl",
         className
       )}
       {...props}
