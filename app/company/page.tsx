@@ -103,7 +103,7 @@ export default function CompanyPage() {
 
           
           <div className="space-y-2 mx-[10px] md:mx-0">
-            <Accordion type="multiple" className="w-full mx-[10px] md:mx-0">
+          <Accordion type="multiple" >
               <AccordionItem value="site-management-app">
                 <AccordionTrigger>SITE MANAGEMENT APP</AccordionTrigger>
                 <AccordionContent>
