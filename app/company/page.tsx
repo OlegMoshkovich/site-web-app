@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -10,20 +9,11 @@ import {
 import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
-import { translations, type Language, useLanguage } from "@/lib/translations";
+import { type Language, useLanguage } from "@/lib/translations";
 
 export default function CompanyPage() {
   // Language management with localStorage persistence
   const { language, setLanguage, mounted } = useLanguage();
-
-  // Helper function to get translated text based on current language
-  const t = useCallback(
-    (key: keyof typeof translations.en) => {
-      const value = translations[language][key];
-      return typeof value === "string" ? value : "";
-    },
-    [language],
-  );
 
   // ===== MAIN RENDER =====
   if (!mounted) {
