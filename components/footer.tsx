@@ -2,10 +2,10 @@ import React from 'react';
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-gray-100 py-8 px-3 sm:px-5 mt-20 sm:mt-20">
-      <div>
+    <footer className="w-full border-t border-gray-100 py-8 mt-20 sm:mt-20">
+      <div className="mx-[10px] md:mx-0">
         
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 ml-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           {/* Left Column - Company Information */}
           <div className="text-left">
             <div className="text-xs text-gray-500 space-y-1">
