@@ -182,7 +182,7 @@ export default function CompanyPage() {
           <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="dr">
-                <AccordionTrigger>DB</AccordionTrigger>
+                <AccordionTrigger>Deutsche Bahn</AccordionTrigger>
                 <AccordionContent>
                   <img
                     src="/pilots/DB.png"
