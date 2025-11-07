@@ -74,14 +74,14 @@ export default function CompanyPage() {
         <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" >
               <AccordionItem value="site-planning">
-                <AccordionTrigger>SITE PLANNING</AccordionTrigger>
+                <AccordionTrigger>Site Planning</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">{t("sitePlanningContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="site-supervision">
-                <AccordionTrigger>SITE SUPERVISION</AccordionTrigger>
+                <AccordionTrigger>Site Supervision</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">{t("siteSupervisionContent")}</p> 
                 </AccordionContent>
@@ -105,7 +105,7 @@ export default function CompanyPage() {
           <div className="space-y-2 mx-[10px] md:mx-0">
           <Accordion type="multiple" >
               <AccordionItem value="site-management-app">
-                <AccordionTrigger>SITE MANAGEMENT APP</AccordionTrigger>
+                <AccordionTrigger>Site Management App</AccordionTrigger>
                 <AccordionContent>
                 
                   
@@ -121,7 +121,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="augmented-reality-app">
-                <AccordionTrigger>AUGMENTED REALITY</AccordionTrigger>
+                <AccordionTrigger>Augmented Reality</AccordionTrigger>
                 <AccordionContent>
                 
                  
@@ -149,7 +149,7 @@ export default function CompanyPage() {
           <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="power-plant">
-                <AccordionTrigger>GEOTHERMAL PLANT</AccordionTrigger>
+                  <AccordionTrigger>Geothermal Plant</AccordionTrigger>
                 <AccordionContent>
                 <img
                     src="/projects/powerplant.png"
@@ -161,7 +161,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="cheese-factory">
-                <AccordionTrigger>CHEESE FACTORY</AccordionTrigger>
+                <AccordionTrigger>Cheese Factory</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("cheeseFactoryContent")}</p>
                 </AccordionContent>
@@ -194,7 +194,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="dr-sauber">
-                <AccordionTrigger>DR SAUBER + PARTNERS</AccordionTrigger>
+                <AccordionTrigger>Dr Sauber + Partners</AccordionTrigger>
                 <AccordionContent>
                   <img
                     src="/pilots/DR.png"
@@ -206,7 +206,7 @@ export default function CompanyPage() {
               </AccordionItem>
               
               <AccordionItem value="strabag">
-                <AccordionTrigger>STRABAG</AccordionTrigger>
+                 <AccordionTrigger>STRABAG</AccordionTrigger>
                 <AccordionContent>
                   <img
                     src="/pilots/STRABAG.png"
