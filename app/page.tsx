@@ -41,6 +41,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 // Translation system
 import { translations, type Language, useLanguage } from "@/lib/translations";
+// Layout constants
+import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
 import { useObservationsStore } from "@/lib/store/observations-store";
 // API functions
@@ -885,8 +887,8 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
-        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
+        <nav className={getNavbarClasses().container}>
+          <div className={getNavbarClasses().content}>
             <div className="flex items-center gap-2">
               {/* Show "Simple site" title when not logged in */}
               {!user && (
@@ -1042,8 +1044,8 @@ export default function Home() {
         </nav>
 
         {/* Main content area with responsive padding */}
-        <div className="flex-1 flex flex-col gap-0 w-full px-2 sm:px-4 py-1 sm:py-3 md:py-4">
-          <div className="w-full">
+        <div className={getContentClasses().container}>
+          <div className={getContentClasses().inner}>
             {/* Conditional rendering based on app state */}
             {!user ? (
               // Show welcome message when user is not logged in
@@ -1814,6 +1816,10 @@ export default function Home() {
                 </div>
               )
             )}
+            
+            {!isLoading && (
+              <Footer />
+            )}
           </div>
         </div>
       </div>
@@ -1849,10 +1855,6 @@ export default function Home() {
             )}
           </Button>
         </div>
-      )}
-
-      {!isLoading && (
-        <Footer />
       )}
 
       {/* Photo Modal */}

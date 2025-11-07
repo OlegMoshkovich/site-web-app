@@ -10,6 +10,8 @@ import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
 import { translations, type Language, useLanguage } from "@/lib/translations";
+// Layout constants
+import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 
 export default function CompanyPage() {
   // Language management with localStorage persistence
@@ -27,11 +29,11 @@ export default function CompanyPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-0 items-center">
+    <main className="flex flex-col items-center">
+      <div className="w-full flex flex-col gap-0 items-center">
         {/* Navigation header with language selector and auth */}
-        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+        <nav className={getNavbarClasses().container}>
+          <div className={getNavbarClasses().content}>
             <div className="flex text-lg gap-5 items-center font-semibold">
               <Link 
                 href="/" 
@@ -58,7 +60,7 @@ export default function CompanyPage() {
         </nav>
 
         {/* Main content area */}
-        <div className="w-full sm:w-[67%] mx-auto">
+        <div className={getContentClasses().widthOnly}>
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
               <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
