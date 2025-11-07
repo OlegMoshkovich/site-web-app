@@ -255,7 +255,7 @@ export const translations = {
     siteManagementContent: "Comprehensive end-to-end site management solutions encompassing sophisticated logistics coordination, strategic personnel management, and advanced progress tracking systems to optimize operational efficiency and project outcomes.",
     
     // Technology
-    siteManagementAppContent: "Professional mobile application platform enabling real-time site management capabilities including intelligent task assignment, comprehensive progress tracking, and seamless team communication for enhanced project coordination.",
+    siteManagementAppContent: "Professional mobile application platform enabling real-time site management capabilities including photo collection, centralized data repository creation, and AI-powered analysis for easy record retrieval and summarization.",
     augmentedRealityContent: "Advanced Augmented Reality technology for three-dimensional visualization of construction plans, proactive issue identification, and enhanced on-site decision-making capabilities that improve project accuracy and reduce costly errors.",
     
     // Projects
@@ -523,7 +523,7 @@ export const translations = {
     siteManagementContent: "Umfassende End-to-End Baustellen Management Lösungen mit ausgeklügelter Logistik Koordination, strategischem Personal Management und fortschrittlichen Fortschritts Systemen, um operative Effizienz und Projekt Ergebnisse zu optimieren.",
     
     // Technology
-    siteManagementAppContent: "Professionelle mobile App Plattform, die Echtzeit Baustellen Management ermöglicht, einschließlich intelligenter Aufgaben Zuweisung, umfassender Fortschritts Verfolgung und nahtloser Team Kommunikation für verbesserte Projekt Koordination.",
+    siteManagementAppContent: "Professionelle mobile App-Plattform für Echtzeit-Baustellenmanagement einschließlich Foto-Sammlung, Erstellung zentraler Daten-Repositories und KI-gestützter Analyse für einfache Datenabruf und Zusammenfassung.",
     augmentedRealityContent: "Fortschrittliche AR Technologie für 3D Visualisierung von Bau Plänen, proaktive Problem Identifikation und verbesserte Entscheidungs Findung vor Ort, die Projekt Genauigkeit verbessert und kostspielige Fehler reduziert.",
     
     // Projects
