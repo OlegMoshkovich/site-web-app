@@ -1802,7 +1802,7 @@ export default function Home() {
             ) : (
               // Show spinner if we have a user but no observations yet (initial load)
               // Otherwise show no observations message
-              user && observations.length === 0 && !error ? (
+              user && observations.length === 0 && !error && isLoading ? (
                 <div className="text-center py-12">
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -1810,9 +1810,49 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">
-                    {t("noObservationsFound")}
-                  </p>
+                  <div className="space-y-6">
+                    <p className="text-muted-foreground text-lg">
+                      No observations found for the past two days
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">Load observations from a longer period:</p>
+                      <div className="flex flex-wrap justify-center gap-3">
+                        <Button
+                          onClick={() => handleLoadMore('week')}
+                          disabled={isLoadingMore}
+                          variant="outline"
+                          size="sm"
+                          className="shadow-md hover:shadow-lg transition-all"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                              Loading...
+                            </>
+                          ) : (
+                            'Load Past Week'
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => handleLoadMore('month')}
+                          disabled={isLoadingMore}
+                          variant="outline"
+                          size="sm"
+                          className="shadow-md hover:shadow-lg transition-all"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                              Loading...
+                            </>
+                          ) : (
+                            'Load Past Month'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )
             )}
