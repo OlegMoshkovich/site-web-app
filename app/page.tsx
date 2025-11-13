@@ -1428,9 +1428,13 @@ export default function Home() {
                                 </div>
                               )}
 
-                              {/* Checkbox - bottom-right corner */}
+                              {/* Checkbox - bottom-right corner, visible on hover */}
                               <div 
-                                className="absolute bottom-2 right-2 z-20"
+                                className={`absolute bottom-1 right-2 z-20 transition-opacity w-5 h-5 flex items-center justify-center ${
+                                  selectedObservations.has(observation.id)
+                                    ? "opacity-100"
+                                    : "opacity-0 group-hover:opacity-100"
+                                }`}
                                 onClick={(e) => {
                                   e.stopPropagation(); // Prevent card selection
                                   const newSelected = new Set(selectedObservations);
@@ -1453,7 +1457,7 @@ export default function Home() {
                                     }
                                     setSelectedObservations(newSelected);
                                   }}
-                                  className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                                  className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 shadow-md w-5 h-5"
                                 />
                               </div>
                               </div>
