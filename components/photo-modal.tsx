@@ -6,8 +6,10 @@ import { Modal } from "@/components/ui/modal";
 import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
 import type { Observation } from "@/types/supabase";
+import type { Label } from "@/lib/labels";
 
 // Extended observation with signed URL for secure photo access
 interface ObservationWithUrl extends Observation {
@@ -27,6 +29,7 @@ interface PhotoModalProps {
   hasPrevious?: boolean;
   hasNext?: boolean;
   onObservationUpdate?: (updatedObservation: ObservationWithUrl) => void;
+  siteLabels?: Label[];
 }
 
 export function PhotoModal({ 
@@ -38,7 +41,8 @@ export function PhotoModal({
   onNext, 
   hasPrevious = false, 
   hasNext = false,
-  onObservationUpdate
+  onObservationUpdate,
+  siteLabels = []
 }: PhotoModalProps) {
   const supabase = createClient();
   const [imageLoading, setImageLoading] = useState(true);
@@ -48,7 +52,7 @@ export function PhotoModal({
   const [editingNote, setEditingNote] = useState(false);
   const [editNoteValue, setEditNoteValue] = useState("");
   const [editingLabels, setEditingLabels] = useState(false);
-  const [editLabelsValue, setEditLabelsValue] = useState("");
+  const [selectedLabelNames, setSelectedLabelNames] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   
   // Zoom and pan state
@@ -215,8 +219,8 @@ export function PhotoModal({
     setEditingNote(false);
     setEditingLabels(false);
     setEditNoteValue("");
-    setEditLabelsValue("");
-  }, [observation.id]);
+    setSelectedLabelNames(new Set(observation.labels || []));
+  }, [observation.id, observation.labels]);
 
   const handleShare = useCallback(async () => {
     try {
@@ -270,23 +274,32 @@ export function PhotoModal({
   }, [supabase, observation, editNoteValue, onObservationUpdate]);
 
   const handleStartEditLabels = useCallback(() => {
-    setEditLabelsValue(observation.labels?.join(", ") || "");
+    setSelectedLabelNames(new Set(observation.labels || []));
     setEditingLabels(true);
   }, [observation.labels]);
 
   const handleCancelEditLabels = useCallback(() => {
     setEditingLabels(false);
-    setEditLabelsValue("");
+    setSelectedLabelNames(new Set(observation.labels || []));
+  }, [observation.labels]);
+
+  const handleToggleLabel = useCallback((labelName: string) => {
+    setSelectedLabelNames(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(labelName)) {
+        newSet.delete(labelName);
+      } else {
+        newSet.add(labelName);
+      }
+      return newSet;
+    });
   }, []);
 
   const handleSaveLabels = useCallback(async () => {
     setIsSaving(true);
     try {
-      // Parse labels from comma-separated string
-      const labels = editLabelsValue
-        .split(",")
-        .map(label => label.trim())
-        .filter(label => label.length > 0);
+      // Convert selected label names to array
+      const labels = Array.from(selectedLabelNames).filter(label => label.trim().length > 0);
 
       const { error } = await supabase
         .from("observations")
@@ -306,14 +319,13 @@ export function PhotoModal({
       }
       
       setEditingLabels(false);
-      setEditLabelsValue("");
     } catch (error) {
       console.error("Error updating labels:", error);
       alert("Error updating labels. Please try again.");
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, editLabelsValue, onObservationUpdate]);
+  }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
@@ -584,26 +596,39 @@ export function PhotoModal({
                 )}
               </div>
               {editingLabels ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={editLabelsValue}
-                    onChange={(e) => setEditLabelsValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                        e.preventDefault();
-                        handleSaveLabels();
-                      }
-                      if (e.key === "Escape") {
-                        e.preventDefault();
-                        handleCancelEditLabels();
-                      }
-                    }}
-                    className="w-full p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter labels separated by commas (e.g., tag1, tag2, tag3)"
-                    autoFocus
-                    disabled={isSaving}
-                  />
+                <div className="space-y-3">
+                  {siteLabels.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                      {siteLabels.map((label) => (
+                        <div
+                          key={label.id}
+                          className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded"
+                        >
+                          <Checkbox
+                            checked={selectedLabelNames.has(label.name)}
+                            onCheckedChange={() => handleToggleLabel(label.name)}
+                            disabled={isSaving}
+                            className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                          />
+                          <label
+                            className="flex-1 text-sm cursor-pointer"
+                            onClick={() => handleToggleLabel(label.name)}
+                          >
+                            {label.name}
+                            {label.description && (
+                              <span className="text-xs text-gray-500 ml-2">
+                                - {label.description}
+                              </span>
+                            )}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 p-3 border border-gray-200 rounded-md">
+                      No labels available for this site. Create labels in Settings.
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <Button
                       onClick={handleSaveLabels}
@@ -624,9 +649,6 @@ export function PhotoModal({
                       <X className="h-3 w-3 mr-1" />
                       Cancel
                     </Button>
-                    <span className="text-xs text-gray-500">
-                      Ctrl+Enter to save • Esc to cancel
-                    </span>
                   </div>
                 </div>
               ) : (

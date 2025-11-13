@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservationsByTimeRange } from '@/lib/supabase/api';
+import { getLabelsForSite, type Label } from '@/lib/labels';
 
 export interface Observation {
   id: string;
@@ -39,6 +40,7 @@ interface ObservationsState {
   dayOffset: number;
   error: string | null;
   availableLabels: string[];
+  siteLabels: Map<string, Label[]>; // Map of site_id -> Label[]
   currentUserId: string | null;
   
   // Actions
@@ -52,6 +54,8 @@ interface ObservationsState {
   setDayOffset: (offset: number) => void;
   setError: (error: string | null) => void;
   setAvailableLabels: (labels: string[]) => void;
+  setSiteLabels: (siteId: string, labels: Label[]) => void;
+  fetchSiteLabels: (siteId: string, userId: string) => Promise<void>;
   
   // Async actions
   fetchInitialObservations: (userId: string) => Promise<void>;
@@ -74,6 +78,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   dayOffset: 0,
   error: null,
   availableLabels: [],
+  siteLabels: new Map(),
   currentUserId: null,
   
   // Basic setters
@@ -89,6 +94,22 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   setDayOffset: (offset) => set({ dayOffset: offset }),
   setError: (error) => set({ error }),
   setAvailableLabels: (labels) => set({ availableLabels: labels }),
+  setSiteLabels: (siteId, labels) => set((state) => {
+    const newSiteLabels = new Map(state.siteLabels);
+    newSiteLabels.set(siteId, labels);
+    return { siteLabels: newSiteLabels };
+  }),
+  fetchSiteLabels: async (siteId, userId) => {
+    try {
+      const labels = await getLabelsForSite(siteId, userId);
+      const currentState = get();
+      const newSiteLabels = new Map(currentState.siteLabels);
+      newSiteLabels.set(siteId, labels);
+      set({ siteLabels: newSiteLabels });
+    } catch (error) {
+      console.error('Error fetching site labels:', error);
+    }
+  },
   
   // Async actions
   fetchInitialObservations: async (userId: string) => {
@@ -105,6 +126,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         observations: [],
         observationsWithPhotos: [],
         availableLabels: [],
+        siteLabels: new Map(),
         hasMore: true,
         dayOffset: 0,
         error: null,
@@ -133,7 +155,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         })
       );
       
-      // Extract labels
+      // Extract labels from observations
       const allLabels = new Set<string>();
       withUrls.forEach(obs => {
         if (obs.labels) {
@@ -145,10 +167,32 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         }
       });
       
+      // Fetch site labels for all unique sites
+      const uniqueSiteIds = new Set<string>();
+      withUrls.forEach(obs => {
+        if (obs.site_id) {
+          uniqueSiteIds.add(obs.site_id);
+        }
+      });
+      
+      // Fetch labels for each site
+      const siteLabelsMap = new Map<string, Label[]>();
+      await Promise.all(
+        Array.from(uniqueSiteIds).map(async (siteId) => {
+          try {
+            const labels = await getLabelsForSite(siteId, userId);
+            siteLabelsMap.set(siteId, labels);
+          } catch (error) {
+            console.error(`Error fetching labels for site ${siteId}:`, error);
+          }
+        })
+      );
+      
       set({ 
         observations: withUrls, 
         hasMore,
         availableLabels: Array.from(allLabels).sort(),
+        siteLabels: siteLabelsMap,
         currentUserId: userId,
         dayOffset: 3,
         isLoading: false 
@@ -204,7 +248,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         })
       );
       
-      // Update labels
+      // Update labels from observations
       const currentLabels = new Set(get().availableLabels);
       withUrls.forEach(obs => {
         if (obs.labels) {
@@ -216,11 +260,35 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         }
       });
       
+      // Fetch site labels for new sites
+      const currentState = get();
+      const existingSiteIds = new Set(currentState.siteLabels.keys());
+      const newSiteIds = new Set<string>();
+      withUrls.forEach(obs => {
+        if (obs.site_id && !existingSiteIds.has(obs.site_id)) {
+          newSiteIds.add(obs.site_id);
+        }
+      });
+      
+      // Fetch labels for new sites
+      const newSiteLabelsMap = new Map(currentState.siteLabels);
+      await Promise.all(
+        Array.from(newSiteIds).map(async (siteId) => {
+          try {
+            const labels = await getLabelsForSite(siteId, userId);
+            newSiteLabelsMap.set(siteId, labels);
+          } catch (error) {
+            console.error(`Error fetching labels for site ${siteId}:`, error);
+          }
+        })
+      );
+      
       set((state) => ({ 
         observations: [...state.observations, ...withUrls],
         hasMore: hasMoreData,
         dayOffset: newOffset,
         availableLabels: Array.from(currentLabels).sort(),
+        siteLabels: newSiteLabelsMap,
         isLoadingMore: false 
       }));
     } catch (error) {
@@ -321,6 +389,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     dayOffset: 0,
     error: null,
     availableLabels: [],
+    siteLabels: new Map(),
     currentUserId: null,
   }),
 }));

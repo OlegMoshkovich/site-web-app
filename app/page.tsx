@@ -88,10 +88,12 @@ export default function Home() {
     hasMore,
     error,
     availableLabels: storeAvailableLabels,
+    siteLabels,
     fetchInitialObservations,
     loadMoreObservations,
     setObservations,
     setAvailableLabels,
+    fetchSiteLabels,
     clearStore
   } = useObservationsStore();
   // Set of selected observation IDs for bulk operations
@@ -1691,6 +1693,16 @@ export default function Home() {
         const hasPrevious = currentPhotoIndex > 0;
         const hasNext = currentPhotoIndex < photoObservations.length - 1;
         
+        // Get site labels for the current observation
+        const currentSiteLabels = selectedPhotoObservation.site_id 
+          ? (siteLabels.get(selectedPhotoObservation.site_id) || [])
+          : [];
+        
+        // Fetch labels if not already loaded
+        if (selectedPhotoObservation.site_id && user && currentSiteLabels.length === 0) {
+          fetchSiteLabels(selectedPhotoObservation.site_id, user.id);
+        }
+        
         return (
           <PhotoModal
             isOpen={photoModalOpen}
@@ -1701,6 +1713,7 @@ export default function Home() {
             onNext={handleNextPhoto}
             hasPrevious={hasPrevious}
             hasNext={hasNext}
+            siteLabels={currentSiteLabels}
             onObservationUpdate={(updatedObservation) => {
               // Update the observation in the store
               const updatedObservations = observations.map((obs) =>
