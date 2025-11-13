@@ -321,13 +321,6 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
       const observationsWithPhotos: ObservationWithPhoto[] = [];
       const failedPhotos: string[] = [];
       
-      // Log all photo URLs first to see the pattern
-      const photoUrls = observations
-        .filter(obs => obs.photo_url)
-        .map(obs => obs.photo_url);
-
-      
-      
       // Process photos sequentially to avoid stack overflow
       for (const observation of observations) {
       

@@ -14,11 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 // Lucide React icons
 import {
-  Calendar,
-  MapPin,
-  Edit3,
-  Check,
-  X,
   Trash2,
   Search,
   Filter,
@@ -107,11 +102,6 @@ export default function Home() {
   const { language, setLanguage, mounted } = useLanguage();
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
-  // Edit state for inline note editing
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editNoteValue, setEditNoteValue] = useState<string>("");
-  // View mode state - always grid view
-  const viewMode = "card";
   // Search state
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
@@ -397,53 +387,7 @@ export default function Home() {
   }, [selectedObservations, observations, compressImageForDownload]);
 
   // ===== NOTE EDITING =====
-  // Handle note editing
-  const handleEditNote = useCallback(
-    (observationId: string, currentNote: string, event: React.MouseEvent) => {
-      event.stopPropagation(); // Prevent card selection
-      setEditingNoteId(observationId);
-      setEditNoteValue(currentNote || "");
-    },
-    [],
-  );
-
-  const handleSaveNote = useCallback(
-    async (observationId: string, event?: React.MouseEvent) => {
-      if (event) event.stopPropagation(); // Prevent card selection
-
-      try {
-        const { error } = await supabase
-          .from("observations")
-          .update({ note: editNoteValue })
-          .eq("id", observationId);
-
-        if (error) {
-          console.error("Error updating note:", error);
-          alert("Error updating note. Please try again.");
-          return;
-        }
-
-        // Update observations in store
-        const updatedObservations = observations.map((obs) =>
-          obs.id === observationId ? { ...obs, note: editNoteValue } : obs,
-        );
-        setObservations(updatedObservations);
-
-        setEditingNoteId(null);
-        setEditNoteValue("");
-      } catch (error) {
-        console.error("Error updating note:", error);
-        alert("Error updating note. Please try again.");
-      }
-    },
-    [supabase, editNoteValue],
-  );
-
-  const handleCancelEdit = useCallback((event?: React.MouseEvent) => {
-    if (event) event.stopPropagation(); // Prevent card selection
-    setEditingNoteId(null);
-    setEditNoteValue("");
-  }, []);
+  // Note: Note editing is now handled in the PhotoModal component
 
   // ===== UTILITY FUNCTIONS =====
   const getFilteredObservations = useCallback(() => {
@@ -616,7 +560,7 @@ export default function Home() {
           return;
         }
 
-        const { data, error, count } = await supabase
+        const { error, count } = await supabase
           .from("observations")
           .delete({ count: 'exact' })
           .eq("id", observationId);
@@ -780,7 +724,7 @@ export default function Home() {
         refreshSignedUrls();
       }
     }
-  }, [observations.length, refreshSignedUrls]);
+  }, [observations, refreshSignedUrls]);
 
 
   // ===== DATA FETCHING =====
@@ -801,7 +745,7 @@ export default function Home() {
         // Step 1.5: Check if user should see onboarding
         try {
           // Check profiles table for onboarding status first
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('onboarding_completed')
             .eq('id', authData.user.id)
