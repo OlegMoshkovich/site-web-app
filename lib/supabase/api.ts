@@ -135,7 +135,6 @@ export async function downloadPhoto(path: string) {
 
     const supabase = createClient();
     const { data, error } = await supabase.storage.from('photos').download(path);
-    console.log('data from process photo', data);
 
     if (error) {
       console.error(`Storage error for ${path}:`, error);
@@ -427,7 +426,6 @@ export async function fetchCollaborativeObservationsByTimeRange(
 ): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
   const supabase = createClient();
   
-  console.log('fetchCollaborativeObservationsByTimeRange called for userId:', userId, 'timeRange:', timeRange);
   
   // Calculate date range based on type
   const now = new Date();
@@ -449,11 +447,6 @@ export async function fetchCollaborativeObservationsByTimeRange(
       break;
   }
   
-  console.log('Date range:', { 
-    startDate: startDate.toISOString(), 
-    endDate: endDate.toISOString(),
-    timeRange
-  });
   
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
@@ -462,7 +455,6 @@ export async function fetchCollaborativeObservationsByTimeRange(
     .eq('user_id', userId)
     .eq('status', 'accepted');
 
-  console.log('userSites query result:', { userSites, sitesError });
 
   if (sitesError) throw sitesError;
 
@@ -473,7 +465,6 @@ export async function fetchCollaborativeObservationsByTimeRange(
   `, { count: 'exact' });
 
   if (!userSites || userSites.length === 0) {
-    console.log('No collaborative sites found, falling back to user observations');
     // User has no collaborative access, return only their own observations
     query = query.eq('user_id', userId);
   } else {
@@ -486,9 +477,7 @@ export async function fetchCollaborativeObservationsByTimeRange(
       .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
       .map((site: { site_id: string; role: string }) => site.site_id);
 
-    console.log('adminSiteIds:', adminSiteIds);
-    console.log('collaboratorSiteIds:', collaboratorSiteIds);
-
+    
     // Build query to include ALL user's own observations PLUS collaborative observations
     const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
 
@@ -584,7 +573,6 @@ export async function fetchCollaborativeObservationsPaginated(
 ): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
   const supabase = createClient();
   
-  console.log('fetchCollaborativeObservationsPaginated called for userId:', userId, 'limit:', limit, 'offset:', offset);
   
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
@@ -593,7 +581,6 @@ export async function fetchCollaborativeObservationsPaginated(
     .eq('user_id', userId)
     .eq('status', 'accepted');
 
-  console.log('userSites query result:', { userSites, sitesError });
 
   if (sitesError) throw sitesError;
 
@@ -604,7 +591,6 @@ export async function fetchCollaborativeObservationsPaginated(
   `, { count: 'exact' });
 
   if (!userSites || userSites.length === 0) {
-    console.log('No collaborative sites found, falling back to user observations');
     // User has no collaborative access, return only their own observations
     query = query.eq('user_id', userId);
   } else {
@@ -617,9 +603,7 @@ export async function fetchCollaborativeObservationsPaginated(
       .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
       .map((site: { site_id: string; role: string }) => site.site_id);
 
-    console.log('adminSiteIds:', adminSiteIds);
-    console.log('collaboratorSiteIds:', collaboratorSiteIds);
-
+    
     // Build query to include ALL user's own observations PLUS collaborative observations
     const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
 
@@ -664,7 +648,6 @@ export async function fetchCollaborativeObservationsPaginated(
 export async function fetchCollaborativeObservations(userId: string): Promise<Observation[]> {
   const supabase = createClient();
   
-  console.log('fetchCollaborativeObservations called for userId:', userId);
   
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
@@ -673,12 +656,10 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
     .eq('user_id', userId)
     .eq('status', 'accepted');
 
-  console.log('userSites query result:', { userSites, sitesError });
 
   if (sitesError) throw sitesError;
 
   if (!userSites || userSites.length === 0) {
-    console.log('No collaborative sites found, falling back to user observations');
     // User has no collaborative access, return only their own observations with user data
     const observations = await fetchUserObservations(userId);
     return await enrichObservationsWithUserData(observations);
@@ -694,8 +675,6 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
     .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
     .map((site: { site_id: string; role: string }) => site.site_id);
 
-  console.log('adminSiteIds:', adminSiteIds);
-  console.log('collaboratorSiteIds:', collaboratorSiteIds);
 
   let query = supabase
     .from('observations')

@@ -19,8 +19,6 @@ import {
   Check,
   X,
   Trash2,
-  Grid3X3,
-  List,
   Search,
   Filter,
   Download,
@@ -108,14 +106,8 @@ export default function Home() {
   // Edit state for inline note editing
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState<string>("");
-  // View mode state with localStorage persistence
-  const [viewMode, setViewMode] = useState<"card" | "list">(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('observationViewMode');
-      return (saved === 'card' || saved === 'list') ? saved : 'list';
-    }
-    return 'list';
-  });
+  // View mode state - always grid view
+  const viewMode = "card";
   // Search state
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
@@ -322,7 +314,6 @@ export default function Home() {
                 const compressedBlob = await compressImageForDownload(blob, 30);
                 finalBlob = compressedBlob;
                 extension = '.jpg'; // Compressed images are always JPEG
-                console.log(`Compressed image from ${(blob.size / 1024).toFixed(1)}KB to ${(compressedBlob.size / 1024).toFixed(1)}KB`);
               }
             } catch (compressionError) {
               console.warn(`Failed to compress image for observation ${obs.id}, attempting basic fallback compression:`, compressionError);
@@ -346,7 +337,6 @@ export default function Home() {
                         if (fallbackBlob) {
                           finalBlob = fallbackBlob;
                           extension = '.jpg';
-                          console.log(`Fallback compression: ${(blob.size / 1024).toFixed(1)}KB to ${(fallbackBlob.size / 1024).toFixed(1)}KB`);
                         }
                         resolve(fallbackBlob);
                       }, 'image/jpeg', 0.1);
@@ -396,7 +386,6 @@ export default function Home() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log(`Successfully downloaded ${downloadCount} photos in ZIP file`);
     } catch (error) {
       console.error("Error downloading photos:", error);
       alert("Failed to download photos. Please try again.");
@@ -609,14 +598,33 @@ export default function Home() {
       if (!confirmed) return;
 
       try {
-        const { error } = await supabase
+        // First check ownership
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          alert("You must be logged in to delete observations.");
+          return;
+        }
+
+        // Get the observation to check ownership
+        const observationToDelete = observations.find(obs => obs.id === observationId);
+        if (observationToDelete && 'user_id' in observationToDelete && observationToDelete.user_id !== user.id) {
+          alert("You can only delete your own observations. This observation was created by another user.");
+          return;
+        }
+
+        const { data, error, count } = await supabase
           .from("observations")
-          .delete()
+          .delete({ count: 'exact' })
           .eq("id", observationId);
 
         if (error) {
           console.error("Error deleting observation:", error);
           alert("Error deleting observation. Please try again.");
+          return;
+        }
+
+        if (count === 0) {
+          alert("You can only delete your own observations. This observation belongs to another user.");
           return;
         }
 
@@ -630,14 +638,12 @@ export default function Home() {
           newSelected.delete(observationId);
           return newSelected;
         });
-
-        console.log(`Observation ${observationId} deleted successfully`);
       } catch (error) {
         console.error("Error deleting observation:", error);
         alert("Error deleting observation. Please try again.");
       }
     },
-    [supabase],
+    [supabase, observations, setObservations],
   );
 
 
@@ -772,17 +778,10 @@ export default function Home() {
     }
   }, [viewMode, observations.length, refreshSignedUrls]);
 
-  // Save view mode to localStorage when it changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('observationViewMode', viewMode);
-    }
-  }, [viewMode]);
 
   // ===== DATA FETCHING =====
   // Main effect that runs when the component mounts to fetch user data and observations
   useEffect(() => {
-    console.log('Main useEffect triggered');
     const fetchData = async () => {
       try {
 
@@ -804,26 +803,21 @@ export default function Home() {
             .eq('id', authData.user.id)
             .single();
 
-          console.log('Profile check:', { profile, profileError });
 
           // Redirect to onboarding if:
           // 1. Profile doesn't exist, OR
           // 2. Profile exists but onboarding_completed is false
           if (!profile || (profile && !profile.onboarding_completed)) {
-            console.log('Redirecting to onboarding - user needs to complete onboarding');
             router.push("/onboarding");
             return;
           } else {
-            console.log('User has completed onboarding - continuing to main app');
           }
         } catch (error) {
           console.warn('Error checking onboarding status, continuing to main app:', error);
         }
 
         // Step 2: Fetch observations using Zustand store
-        console.log('About to call fetchInitialObservations for user:', authData.user.id);
         await fetchInitialObservations(authData.user.id);
-        console.log('fetchInitialObservations completed');
       } catch (e) {
         console.error("Error in fetchData:", e);
       }
@@ -940,24 +934,6 @@ export default function Home() {
                     <Filter className="h-4 w-4" />
                   </Button>
 
-                  {/* View Mode Toggle */}
-                  <button
-                    onClick={() =>
-                      setViewMode(viewMode === "list" ? "card" : "list")
-                    }
-                    className="h-8 w-8 px-0 border border-gray-300 transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center"
-                    title={
-                      viewMode === "list"
-                        ? t("switchToCardView")
-                        : t("switchToListView")
-                    }
-                  >
-                    {viewMode === "list" ? (
-                      <Grid3X3 className="h-4 w-4" />
-                    ) : (
-                      <List className="h-4 w-4" />
-                    )}
-                  </button>
                 </>
               )}
             </div>
@@ -1713,6 +1689,17 @@ export default function Home() {
                                 title="View photo"
                               >
                                 <ZoomIn className="h-6 w-6 text-white drop-shadow-lg" />
+                              </button>
+
+                              {/* Delete button - appears on hover */}
+                              <button
+                                onClick={(e) =>
+                                  handleDeleteObservation(observation.id, e)
+                                }
+                                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg"
+                                title="Delete observation"
+                              >
+                                <Trash2 className="h-3 w-3" />
                               </button>
 
                               {/* Note overlay - bottom of thumbnail */}

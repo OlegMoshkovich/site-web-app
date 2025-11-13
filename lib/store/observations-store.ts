@@ -96,13 +96,11 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     
     // Don't refetch if we already have observations for the same user
     if (currentState.observations.length > 0 && currentState.currentUserId === userId) {
-      console.log('Skipping fetch - observations already loaded for this user');
       return;
     }
     
     // If user changed, clear existing data
     if (currentState.currentUserId && currentState.currentUserId !== userId) {
-      console.log('User changed, clearing existing observations');
       set({
         observations: [],
         observationsWithPhotos: [],
@@ -260,7 +258,6 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         .filter(obs => obs.photo_url)
         .map(obs => obs.photo_url);
 
-        console.log('photoUrls', photoUrls);
       
       
       // Process photos sequentially to avoid stack overflow
@@ -278,12 +275,9 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
               const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
               const mimeType = fileData.type || 'image/jpeg';
               const dataUrl = `data:${mimeType};base64,${base64}`;
-              console.log('dataUrl from process photo', dataUrl);
               
               observationsWithPhotos.push({ ...observation, dataUrl });
-              console.log(`Successfully processed photo for observation ${observation.id}`);
             } else {
-              console.log(`No file data for observation ${observation.id} - photo: ${observation.photo_url}`);
               failedPhotos.push(observation.photo_url);
               observationsWithPhotos.push({ ...observation, dataUrl: null });
             }
@@ -305,10 +299,6 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         }
       }
       
-      console.log(`Finished processing photos. Total: ${observationsWithPhotos.length}`);
-      if (failedPhotos.length > 0) {
-        console.log(`Failed photos:`, failedPhotos);
-      }
       
       set({ observationsWithPhotos, isLoading: false });
     } catch (error) {
