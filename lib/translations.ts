@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 export const translations = {
   en: {
     // Navigation
-    siteTitle: "clone:it",
+    siteTitle: "Simple Site",
     
     // Hero section
     welcomeTitle: "Simple solution for a digital construction site",
@@ -271,7 +271,7 @@ export const translations = {
   
   de: {
     // Navigation
-    siteTitle: "clone:it",
+    siteTitle: "Simple Site",
     
     // Hero section
     welcomeTitle: "Die Lösung für eine digitale Baustelle",

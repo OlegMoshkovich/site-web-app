@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import type { Observation } from "@/types/supabase";
 
 // Extended observation with signed URL for secure photo access
@@ -24,6 +26,7 @@ interface PhotoModalProps {
   onNext?: () => void;
   hasPrevious?: boolean;
   hasNext?: boolean;
+  onObservationUpdate?: (updatedObservation: ObservationWithUrl) => void;
 }
 
 export function PhotoModal({ 
@@ -34,10 +37,19 @@ export function PhotoModal({
   onPrevious, 
   onNext, 
   hasPrevious = false, 
-  hasNext = false 
+  hasNext = false,
+  onObservationUpdate
 }: PhotoModalProps) {
+  const supabase = createClient();
   const [imageLoading, setImageLoading] = useState(true);
   const [shareSuccess, setShareSuccess] = useState(false);
+  
+  // Editing state
+  const [editingNote, setEditingNote] = useState(false);
+  const [editNoteValue, setEditNoteValue] = useState("");
+  const [editingLabels, setEditingLabels] = useState(false);
+  const [editLabelsValue, setEditLabelsValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   
   // Zoom and pan state
   const [scale, setScale] = useState(1);
@@ -198,6 +210,14 @@ export function PhotoModal({
     return processedLabel.replace(/\s+/g, " ").trim();
   };
 
+  // Reset editing state when observation changes
+  useEffect(() => {
+    setEditingNote(false);
+    setEditingLabels(false);
+    setEditNoteValue("");
+    setEditLabelsValue("");
+  }, [observation.id]);
+
   const handleShare = useCallback(async () => {
     try {
       const shareUrl = `${window.location.origin}/shared/${observation.id}`;
@@ -208,6 +228,92 @@ export function PhotoModal({
       console.error('Failed to copy link:', error);
     }
   }, [observation.id]);
+
+  const handleStartEditNote = useCallback(() => {
+    setEditNoteValue(observation.note || "");
+    setEditingNote(true);
+  }, [observation.note]);
+
+  const handleCancelEditNote = useCallback(() => {
+    setEditingNote(false);
+    setEditNoteValue("");
+  }, []);
+
+  const handleSaveNote = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("observations")
+        .update({ note: editNoteValue || null })
+        .eq("id", observation.id);
+
+      if (error) {
+        console.error("Error updating note:", error);
+        alert("Error updating note. Please try again.");
+        setIsSaving(false);
+        return;
+      }
+
+      const updatedObservation = { ...observation, note: editNoteValue || null };
+      if (onObservationUpdate) {
+        onObservationUpdate(updatedObservation);
+      }
+      
+      setEditingNote(false);
+      setEditNoteValue("");
+    } catch (error) {
+      console.error("Error updating note:", error);
+      alert("Error updating note. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [supabase, observation, editNoteValue, onObservationUpdate]);
+
+  const handleStartEditLabels = useCallback(() => {
+    setEditLabelsValue(observation.labels?.join(", ") || "");
+    setEditingLabels(true);
+  }, [observation.labels]);
+
+  const handleCancelEditLabels = useCallback(() => {
+    setEditingLabels(false);
+    setEditLabelsValue("");
+  }, []);
+
+  const handleSaveLabels = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      // Parse labels from comma-separated string
+      const labels = editLabelsValue
+        .split(",")
+        .map(label => label.trim())
+        .filter(label => label.length > 0);
+
+      const { error } = await supabase
+        .from("observations")
+        .update({ labels: labels.length > 0 ? labels : null })
+        .eq("id", observation.id);
+
+      if (error) {
+        console.error("Error updating labels:", error);
+        alert("Error updating labels. Please try again.");
+        setIsSaving(false);
+        return;
+      }
+
+      const updatedObservation = { ...observation, labels: labels.length > 0 ? labels : null };
+      if (onObservationUpdate) {
+        onObservationUpdate(updatedObservation);
+      }
+      
+      setEditingLabels(false);
+      setEditLabelsValue("");
+    } catch (error) {
+      console.error("Error updating labels:", error);
+      alert("Error updating labels. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [supabase, observation, editLabelsValue, onObservationUpdate]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
@@ -347,12 +453,72 @@ export function PhotoModal({
         <div className="p-6 border-t bg-white max-h-64 overflow-y-auto">
           <div className="space-y-4">
             {/* Note */}
-            {observation.note && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Note</h3>
-                <p className="text-gray-700">{observation.note}</p>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-900">Note</h3>
+                {!editingNote && (
+                  <button
+                    onClick={handleStartEditNote}
+                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                    title="Edit note"
+                    disabled={isSaving}
+                  >
+                    <Edit3 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-            )}
+              {editingNote ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={editNoteValue}
+                    onChange={(e) => setEditNoteValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        handleSaveNote();
+                      }
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        handleCancelEditNote();
+                      }
+                    }}
+                    className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    placeholder="Add a note..."
+                    autoFocus
+                    disabled={isSaving}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleSaveNote}
+                      size="sm"
+                      disabled={isSaving}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Save
+                    </Button>
+                    <Button
+                      onClick={handleCancelEditNote}
+                      size="sm"
+                      variant="outline"
+                      disabled={isSaving}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Cancel
+                    </Button>
+                    <span className="text-xs text-gray-500">
+                      Ctrl+Enter to save • Esc to cancel
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-700 min-h-[1.5rem]">
+                  {observation.note || <span className="text-gray-400 italic">No note</span>}
+                </p>
+              )}
+            </div>
             
             {/* Metadata */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -403,22 +569,84 @@ export function PhotoModal({
             </div>
             
             {/* Labels */}
-            {observation.labels && observation.labels.length > 0 && (
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
-                <div className="flex flex-wrap gap-2">
-                  {observation.labels.map((label, idx) => (
-                    <Badge
-                      key={`modal-label-${idx}`}
-                      variant="outline"
-                      className="text-xs px-2 py-1 border border-gray-300 bg-white"
-                    >
-                      {processLabel(label)}
-                    </Badge>
-                  ))}
-                </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium text-gray-900">Labels</h4>
+                {!editingLabels && (
+                  <button
+                    onClick={handleStartEditLabels}
+                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                    title="Edit labels"
+                    disabled={isSaving}
+                  >
+                    <Edit3 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-            )}
+              {editingLabels ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={editLabelsValue}
+                    onChange={(e) => setEditLabelsValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        handleSaveLabels();
+                      }
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        handleCancelEditLabels();
+                      }
+                    }}
+                    className="w-full p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter labels separated by commas (e.g., tag1, tag2, tag3)"
+                    autoFocus
+                    disabled={isSaving}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleSaveLabels}
+                      size="sm"
+                      disabled={isSaving}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Save
+                    </Button>
+                    <Button
+                      onClick={handleCancelEditLabels}
+                      size="sm"
+                      variant="outline"
+                      disabled={isSaving}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Cancel
+                    </Button>
+                    <span className="text-xs text-gray-500">
+                      Ctrl+Enter to save • Esc to cancel
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
+                  {observation.labels && observation.labels.length > 0 ? (
+                    observation.labels.map((label, idx) => (
+                      <Badge
+                        key={`modal-label-${idx}`}
+                        variant="outline"
+                        className="text-xs px-2 py-1 border border-gray-300 bg-white"
+                      >
+                        {processLabel(label)}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 italic text-sm">No labels</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

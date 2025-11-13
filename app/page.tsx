@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 // Note: Card components removed as they're no longer used in grid view
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 // Lucide React icons
 import {
   Calendar,
@@ -90,6 +91,7 @@ export default function Home() {
     fetchInitialObservations,
     loadMoreObservations,
     setObservations,
+    setAvailableLabels,
     clearStore
   } = useObservationsStore();
   // Set of selected observation IDs for bulk operations
@@ -764,9 +766,9 @@ export default function Home() {
     }
   }, [observations, setObservations]);
 
-  // Refresh signed URLs when switching to a view that needs photos
+  // Refresh signed URLs when observations change
   useEffect(() => {
-    if (viewMode === "list" && observations.length > 0) {
+    if (observations.length > 0) {
       // Only refresh if we have observations with photos but no signed URLs
       const needsRefresh = observations.some(obs => 
         obs.photo_url && obs.photo_url.trim() && !obs.signedUrl
@@ -776,7 +778,7 @@ export default function Home() {
         refreshSignedUrls();
       }
     }
-  }, [viewMode, observations.length, refreshSignedUrls]);
+  }, [observations.length, refreshSignedUrls]);
 
 
   // ===== DATA FETCHING =====
@@ -1402,241 +1404,10 @@ export default function Home() {
                       </div>
 
                       {/* Observations for this date */}
-                      <div
-                        className={
-                          viewMode === "card"
-                            ? "grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3"
-                            : "space-y-3 px-1 sm:px-0"
-                        }
-                      >
+                      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
                         {groupedObservations[dateKey].map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
                           const labels = observation.labels ?? [];
-
-                          if (viewMode === "list") {
-                            return (
-                              <div
-                                key={observation.id}
-                                className={`flex items-start gap-3 p-4 border hover:shadow-md transition-all cursor-pointer group ${
-                                  selectedObservations.has(observation.id)
-                                    ? "ring-2 ring-primary shadow-md bg-primary/5"
-                                    : "hover:bg-muted/50"
-                                }`}
-                                onClick={() => {
-                                  const newSelected = new Set(
-                                    selectedObservations,
-                                  );
-                                  if (newSelected.has(observation.id)) {
-                                    newSelected.delete(observation.id);
-                                  } else {
-                                    newSelected.add(observation.id);
-                                  }
-                                  setSelectedObservations(newSelected);
-                                }}
-                              >
-                                {/* Photo thumbnail - larger on desktop */}
-                                <div className="relative w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 flex-shrink-0 overflow-hidden group/photo">
-                                  {hasPhoto ? (
-                                    <>
-                                      {/* Skeleton loading background */}
-                                      <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-                                      <Image
-                                        src={observation.signedUrl as string}
-                                        alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, 160px"
-                                        priority={index < 3} // Prioritize first 3 images per day
-                                        onLoad={(e) => {
-                                          // Hide skeleton when image loads
-                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                          if (skeleton) skeleton.style.display = 'none';
-                                        }}
-                                      />
-                                    </>
-                                  ) : (
-                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center border">
-                                      <span className="text-sm font-medium text-gray-600">Note</span>
-                                    </div>
-                                  )}
-
-                                  {/* Zoom button for list view */}
-                                  {hasPhoto && (
-                                    <button
-                                      onClick={(e) => handleOpenPhotoModal(observation, e)}
-                                      className="absolute bottom-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg"
-                                      title="View photo"
-                                    >
-                                      <ZoomIn className="h-4 w-4" />
-                                    </button>
-                                  )}
-
-                                  {/* Delete button for list view */}
-                                  <button
-                                    onClick={(e) =>
-                                      handleDeleteObservation(observation.id, e)
-                                    }
-                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg"
-                                    title="Delete observation"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                  {editingNoteId === observation.id ? (
-                                    <div
-                                      className="space-y-2"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <textarea
-                                        value={editNoteValue}
-                                        onChange={(e) =>
-                                          setEditNoteValue(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                          if (
-                                            e.key === "Enter" &&
-                                            (e.ctrlKey || e.metaKey)
-                                          ) {
-                                            e.preventDefault();
-                                            handleSaveNote(observation.id);
-                                          }
-                                          if (e.key === "Escape") {
-                                            e.preventDefault();
-                                            handleCancelEdit();
-                                          }
-                                        }}
-                                        className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        rows={2}
-                                        placeholder="Add a note..."
-                                        autoFocus
-                                      />
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex gap-2">
-                                          <button
-                                            onClick={(e) =>
-                                              handleSaveNote(observation.id, e)
-                                            }
-                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                                          >
-                                            <Check className="h-3 w-3" />
-                                            Save
-                                          </button>
-                                          <button
-                                            onClick={handleCancelEdit}
-                                            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                                          >
-                                            <X className="h-3 w-3" />
-                                            Cancel
-                                          </button>
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          Ctrl+Enter to save • Esc to cancel
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      <div className="flex items-start justify-between gap-2">
-                                        <p
-                                          className={`text-sm flex-1 ${!observation.note ? "text-muted-foreground italic" : ""}`}
-                                        >
-                                          {observation.note ||
-                                            t("noDescription")}
-                                        </p>
-                                        <button
-                                          onClick={(e) =>
-                                            handleEditNote(
-                                              observation.id,
-                                              observation.note || "",
-                                              e,
-                                            )
-                                          }
-                                          className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-gray-500 hover:text-blue-600 transition-all"
-                                          title="Edit note"
-                                        >
-                                          <Edit3 className="h-3 w-3" />
-                                        </button>
-                                      </div>
-
-                                      {/* Metadata in compact form */}
-                                      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1 text-xs">
-                                          <Calendar className="h-3 w-3" />
-                                          {new Date(
-                                            observation.taken_at ||
-                                              observation.created_at,
-                                          ).toLocaleDateString()}
-                                        </span>
-                                        
-                                        {(observation.sites?.name || observation.site_id) && (
-                                          <span className="flex items-center gap-1 text-xs">
-                                            <MapPin className="h-3 w-3" />
-                                            <span className="truncate">
-                                              Site: {observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}
-                                            </span>
-                                          </span>
-                                        )}
-
-                                        {/* Tags/Labels section - positioned under site information */}
-                                        {labels && labels.length > 0 && (
-                                          <div className="flex flex-wrap gap-1 mt-1">
-                                            {labels.slice(0, 4).map((label, idx) => {
-                                              const cleanLabel = label.trim();
-                                              let processedLabel = cleanLabel;
-
-                                              // First, try to split by common separators
-                                              if (cleanLabel.includes(" ")) {
-                                                processedLabel = cleanLabel;
-                                              } else if (cleanLabel.includes("_")) {
-                                                processedLabel = cleanLabel.replace(/_/g, " ");
-                                              } else if (cleanLabel.includes("-")) {
-                                                processedLabel = cleanLabel.replace(/-/g, " ");
-                                              } else {
-                                                // Split camelCase and PascalCase more aggressively
-                                                processedLabel = cleanLabel
-                                                  .replace(/([a-z])([A-Z])/g, "$1 $2")
-                                                  .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
-                                                  .replace(/([a-z])([0-9])/g, "$1 $2")
-                                                  .replace(/([0-9])([a-zA-Z])/g, "$1 $2");
-                                              }
-
-                                              processedLabel = processedLabel.replace(/\s+/g, " ").trim();
-
-                                              return (
-                                                <Badge
-                                                  key={`${observation.id}-label-${idx}`}
-                                                  variant="outline"
-                                                  className="text-xs px-1.5 py-0.5 border border-gray-300 bg-white text-gray-700"
-                                                >
-                                                  {processedLabel}
-                                                </Badge>
-                                              );
-                                            })}
-                                            {labels.length > 4 && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-500"
-                                              >
-                                                +{labels.length - 4}
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        )}
-
-                                        <span className="flex items-center gap-1 text-xs">
-                                          <span className="font-medium">Created by:</span>
-                                          <span className="truncate">{observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}</span>
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          }
 
                           // Grid view - show only thumbnails
                           return hasPhoto ? (
@@ -1710,6 +1481,35 @@ export default function Home() {
                                   </p>
                                 </div>
                               )}
+
+                              {/* Checkbox - bottom-right corner */}
+                              <div 
+                                className="absolute bottom-2 right-2 z-20"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent card selection
+                                  const newSelected = new Set(selectedObservations);
+                                  if (newSelected.has(observation.id)) {
+                                    newSelected.delete(observation.id);
+                                  } else {
+                                    newSelected.add(observation.id);
+                                  }
+                                  setSelectedObservations(newSelected);
+                                }}
+                              >
+                                <Checkbox
+                                  checked={selectedObservations.has(observation.id)}
+                                  onCheckedChange={(checked) => {
+                                    const newSelected = new Set(selectedObservations);
+                                    if (checked) {
+                                      newSelected.add(observation.id);
+                                    } else {
+                                      newSelected.delete(observation.id);
+                                    }
+                                    setSelectedObservations(newSelected);
+                                  }}
+                                  className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                                />
+                              </div>
                               </div>
                               
                               {/* Tags under thumbnail */}
@@ -1866,7 +1666,7 @@ export default function Home() {
             onClick={handleDownloadPhotos}
             variant="outline"
             size="lg"
-            className="shadow-lg hover:shadow-xl transition-all"
+            className="hidden md:flex shadow-lg hover:shadow-xl transition-all"
           >
             <Download className="h-4 w-4 mr-2" />
             {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
@@ -1901,6 +1701,29 @@ export default function Home() {
             onNext={handleNextPhoto}
             hasPrevious={hasPrevious}
             hasNext={hasNext}
+            onObservationUpdate={(updatedObservation) => {
+              // Update the observation in the store
+              const updatedObservations = observations.map((obs) =>
+                obs.id === updatedObservation.id ? updatedObservation : obs
+              );
+              setObservations(updatedObservations);
+              
+              // Update available labels if labels were changed
+              if (updatedObservation.labels) {
+                const currentLabels = new Set(storeAvailableLabels);
+                updatedObservation.labels.forEach(label => {
+                  if (label && label.trim()) {
+                    currentLabels.add(label.trim());
+                  }
+                });
+                setAvailableLabels(Array.from(currentLabels).sort());
+              }
+              
+              // Update the currently selected photo observation if it's the one being edited
+              if (selectedPhotoObservation.id === updatedObservation.id) {
+                setSelectedPhotoObservation(updatedObservation);
+              }
+            }}
           />
         );
       })()}
