@@ -206,7 +206,7 @@ function ReportPageContent() {
           await new Promise((resolve, reject) => {
             logoImg.onload = resolve;
             logoImg.onerror = reject;
-            logoImg.src = observations[0].sites.logo_url;
+            logoImg.src = observations[0].sites!.logo_url!;
           });
 
           const logoCanvas = document.createElement('canvas');
@@ -257,7 +257,6 @@ function ReportPageContent() {
       // Process each observation with professional numbering
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
-        const observationNumber = i + 1;
         
         // Check if we need a new page (reserve more space for content)
         if (yPosition > pageHeight - 120) {
@@ -318,7 +317,7 @@ function ReportPageContent() {
                 await new Promise((resolve, reject) => {
                   photoLogoImg.onload = resolve;
                   photoLogoImg.onerror = reject;
-                  photoLogoImg.src = observation.sites.logo_url;
+                  photoLogoImg.src = observation.sites!.logo_url!;
                 });
 
                 const photoLogoCanvas = document.createElement('canvas');

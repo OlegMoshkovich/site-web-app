@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ZoomIn, ZoomOut, Info, X, Download } from "lucide-react";
-import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
 import { translations, type Language } from "@/lib/translations";
 import type { Observation } from "@/types/supabase";
@@ -204,9 +204,9 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
           <div className="flex items-center gap-2">
-            <a href="/" className="text-lg font-semibold hover:text-gray-700 transition-colors">
+            <Link href="/" className="text-lg font-semibold hover:text-gray-700 transition-colors">
               Simple Site
-            </a>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2">

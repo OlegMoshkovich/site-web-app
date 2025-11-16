@@ -34,7 +34,7 @@ import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
 import Image from "next/image";
 // Translation system
-import { translations, type Language, useLanguage } from "@/lib/translations";
+import { translations, useLanguage } from "@/lib/translations";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
@@ -99,7 +99,7 @@ export default function Home() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   // Language management with localStorage persistence
-  const { language, setLanguage, mounted } = useLanguage();
+  const { language, mounted } = useLanguage();
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
   // Search state

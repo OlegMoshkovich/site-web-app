@@ -14,11 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
   Info,
-  ArrowRight,
   X,
-  Share,
   Download,
-  Trash2,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -170,16 +167,6 @@ export default function ReportDetailPage() {
   }, [selectedPhoto, handleWheel, isDragging, handleMouseMove, handleMouseUp]);
 
   // Handler functions for report actions
-  const handleShareReport = async () => {
-    const shareUrl = `${window.location.origin}/reports/${reportId}`;
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert('Report link copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-      prompt('Copy this link to share the report:', shareUrl);
-    }
-  };
 
   const handleExportReport = async () => {
     try {
@@ -212,7 +199,7 @@ export default function ReportDetailPage() {
           await new Promise((resolve, reject) => {
             logoImg.onload = resolve;
             logoImg.onerror = reject;
-            logoImg.src = observations[0].sites.logo_url;
+            logoImg.src = observations[0].sites!.logo_url!;
           });
 
           const logoCanvas = document.createElement('canvas');
@@ -278,7 +265,7 @@ export default function ReportDetailPage() {
             await new Promise((resolve, reject) => {
               img.onload = resolve;
               img.onerror = reject;
-              img.src = observation.signedUrl;
+              img.src = observation.signedUrl!;
             });
 
             const canvas = document.createElement('canvas');
@@ -304,7 +291,7 @@ export default function ReportDetailPage() {
                 await new Promise((resolve, reject) => {
                   logoImg.onload = resolve;
                   logoImg.onerror = reject;
-                  logoImg.src = observation.sites.logo_url;
+                  logoImg.src = observation.sites!.logo_url!;
                 });
 
                 const logoCanvas = document.createElement('canvas');
@@ -412,43 +399,6 @@ export default function ReportDetailPage() {
     }
   };
 
-  const handleDeleteReport = async () => {
-    if (!confirm('Are you sure you want to delete this report?')) {
-      return;
-    }
-
-    try {
-      // First delete related report_observations
-      const { error: reportObsError } = await supabase
-        .from('report_observations')
-        .delete()
-        .eq('report_id', reportId);
-
-      if (reportObsError) {
-        console.error('Error deleting report observations:', reportObsError);
-        alert('Error deleting report. Please try again.');
-        return;
-      }
-
-      // Then delete the report
-      const { error: reportError } = await supabase
-        .from('reports')
-        .delete()
-        .eq('id', reportId);
-
-      if (reportError) {
-        console.error('Error deleting report:', reportError);
-        alert('Error deleting report. Please try again.');
-        return;
-      }
-
-      alert('Report deleted successfully!');
-      router.push('/reports');
-    } catch (error) {
-      console.error('Error deleting report:', error);
-      alert('Error deleting report. Please try again.');
-    }
-  };
 
   // Check authentication status
   useEffect(() => {
@@ -465,7 +415,8 @@ export default function ReportDetailPage() {
     getUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setIsAuthenticated(!!session?.user);
     });
 
