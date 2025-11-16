@@ -1498,7 +1498,7 @@ export default function Home() {
                 {/* Load More Buttons */}
                 {hasMore && (
                   <div className="flex flex-col items-center gap-4 py-8">
-                    <div className="text-sm text-gray-600 mb-2">Load more:</div>
+                    <div className="text-sm text-gray-600 mb-2">{t('loadMoreLabel')}</div>
                     <div className="flex flex-wrap justify-center gap-3">
                       <Button
                         onClick={() => handleLoadMore('week')}
@@ -1513,7 +1513,7 @@ export default function Home() {
                             Loading...
                           </>
                         ) : (
-                          'Last Week'
+                          t('lastWeek')
                         )}
                       </Button>
                       <Button
@@ -1529,7 +1529,7 @@ export default function Home() {
                             Loading...
                           </>
                         ) : (
-                          'Last Month'
+                          t('lastMonth')
                         )}
                       </Button>
                     </div>
@@ -1549,11 +1549,11 @@ export default function Home() {
                 <div className="text-center py-12">
                   <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                      No observations found for the past two days
+                      {t('noObservationsPastTwoDays')}
                     </p>
                     
                     <div className="space-y-4">
-                      <p className="text-sm text-gray-600">Load observations from a longer period:</p>
+                      <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
                       <div className="flex flex-wrap justify-center gap-3">
                         <Button
                           onClick={() => handleLoadMore('week')}
@@ -1568,7 +1568,7 @@ export default function Home() {
                               Loading...
                             </>
                           ) : (
-                            'Load Past Week'
+                            t('loadPastWeek')
                           )}
                         </Button>
                         <Button
@@ -1584,7 +1584,7 @@ export default function Home() {
                               Loading...
                             </>
                           ) : (
-                            'Load Past Month'
+                            t('loadPastMonth')
                           )}
                         </Button>
                       </div>

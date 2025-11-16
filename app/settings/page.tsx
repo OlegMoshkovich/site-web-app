@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1016,7 +1017,9 @@ export default function SettingsPage() {
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
-              {t("siteTitle")}
+              <Link href="/" className="hover:text-gray-700 transition-colors cursor-pointer">
+                {t("siteTitle")}
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               {/* Language selector */}

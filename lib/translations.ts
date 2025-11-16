@@ -47,6 +47,11 @@ export const translations = {
     clearSelection: "Clear Selection",
     generateReportSelected: "Generate Report ({count} selected)",
     loadMore: "Load More",
+    loadMoreLabel: "Load more:",
+    loadPastWeek: "Load Past Week",
+    loadPastMonth: "Load Past Month",
+    lastWeek: "Last Week",
+    lastMonth: "Last Month",
     info: "Info",
     
     // Date headers
@@ -65,6 +70,8 @@ export const translations = {
     errorLoading: "Error loading observations:",
     unexpectedError: "An unexpected error occurred.",
     noObservationsFound: "No observations found.",
+    noObservationsPastTwoDays: "No observations found for the past two days",
+    loadObservationsLongerPeriod: "Load observations from a longer period:",
     
     // Labels
     labels: "Labels",
@@ -325,6 +332,11 @@ export const translations = {
     clearSelection: "Auswahl löschen",
     generateReportSelected: "Bericht generieren ({count} ausgewählt)",
     loadMore: "Mehr laden",
+    loadMoreLabel: "Mehr laden:",
+    loadPastWeek: "Vergangene Woche laden",
+    loadPastMonth: "Vergangenen Monat laden",
+    lastWeek: "Letzte Woche",
+    lastMonth: "Letzter Monat",
     info: "Info",
     
     // Date headers
@@ -343,6 +355,8 @@ export const translations = {
     errorLoading: "Fehler beim Laden der Beobachtungen:",
     unexpectedError: "Ein unerwarteter Fehler ist aufgetreten.",
     noObservationsFound: "Keine Beobachtungen gefunden.",
+    noObservationsPastTwoDays: "Keine Beobachtungen in den letzten zwei Tagen gefunden",
+    loadObservationsLongerPeriod: "Beobachtungen aus einem längeren Zeitraum laden:",
     
     // Labels
     labels: "Labels",
