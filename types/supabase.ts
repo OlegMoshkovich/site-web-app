@@ -152,6 +152,64 @@ export interface Database {
           created_at?: string
         }
       }
+      sites: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          logo_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          logo_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      site_plans: {
+        Row: {
+          id: string
+          user_id: string
+          site_id: string
+          plan_name: string
+          plan_url: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          site_id: string
+          plan_name: string
+          plan_url: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          site_id?: string
+          plan_name?: string
+          plan_url?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
       reports: {
         Row: {
           id: string
@@ -240,6 +298,14 @@ export type CollaborationInvitationUpdate = Database['public']['Tables']['collab
 export type Report = Database['public']['Tables']['reports']['Row']
 export type ReportInsert = Database['public']['Tables']['reports']['Insert']
 export type ReportUpdate = Database['public']['Tables']['reports']['Update']
+
+export type Site = Database['public']['Tables']['sites']['Row']
+export type SiteInsert = Database['public']['Tables']['sites']['Insert']
+export type SiteUpdate = Database['public']['Tables']['sites']['Update']
+
+export type SitePlan = Database['public']['Tables']['site_plans']['Row']
+export type SitePlanInsert = Database['public']['Tables']['site_plans']['Insert']
+export type SitePlanUpdate = Database['public']['Tables']['site_plans']['Update']
 
 export type ReportObservation = Database['public']['Tables']['report_observations']['Row']
 export type ReportObservationInsert = Database['public']['Tables']['report_observations']['Insert']

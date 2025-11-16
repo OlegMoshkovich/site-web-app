@@ -31,6 +31,8 @@ interface Observation {
   anchor_y: number | null;
   photo_date: string | null;
   created_at: string;
+  site_id: string | null;
+  sites?: { name: string; logo_url?: string | null } | null;
 }
 
 interface ObservationWithUrl extends Observation {
@@ -44,6 +46,7 @@ function ReportPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [reportData, setReportData] = useState<{title: string, description: string | null} | null>(null);
   const { language, setLanguage } = useLanguage();
   
   // Display toggles
@@ -180,17 +183,59 @@ function ReportPageContent() {
       const margin = 20;
       let yPosition = margin;
 
-      // Header section with professional styling
+      // Header section with professional styling and logo
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('INSPECTION REPORT', margin, yPosition);
-      yPosition += 10;
+      const reportTitle = reportData?.title || 'INSPECTION REPORT';
+      
+      // Calculate available width for text (account for logo space)
+      const logoWidth = 20;
+      const logoSpace = 30; // Logo width + some margin
+      const maxTextWidth = pageWidth - 2 * margin - logoSpace;
+      
+      // Split title if it's too long to avoid logo overlap
+      const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
+      pdf.text(titleLines, margin, yPosition);
+      yPosition += titleLines.length * 7; // Adjust for multiple lines
+      
+      // Add site logo in top-right corner if available
+      if (observations.length > 0 && observations[0].sites?.logo_url) {
+        try {
+          const logoImg = new window.Image();
+          logoImg.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            logoImg.onload = resolve;
+            logoImg.onerror = reject;
+            logoImg.src = observations[0].sites.logo_url;
+          });
+
+          const logoCanvas = document.createElement('canvas');
+          const logoCtx = logoCanvas.getContext('2d');
+          logoCanvas.width = logoImg.width;
+          logoCanvas.height = logoImg.height;
+          logoCtx?.drawImage(logoImg, 0, 0);
+          
+          const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+          
+          // Position logo in top-right
+          const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+          pdf.addImage(logoData, 'JPEG', pageWidth - margin - logoWidth, margin - 5, logoWidth, logoHeight);
+        } catch (error) {
+          console.error('Error adding site logo to PDF header:', error);
+        }
+      }
+      
+      yPosition += 3;
       
       // Project details
       pdf.setFontSize(14);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Site Inspection Documentation', margin, yPosition);
-      yPosition += 8;
+      const reportDescription = reportData?.description || 'Baustelleninspektion Dokumentation';
+      
+      // Split description if it's too long to avoid logo overlap
+      const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
+      pdf.text(descriptionLines, margin, yPosition);
+      yPosition += descriptionLines.length * 6; // Adjust for multiple lines
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
@@ -201,10 +246,7 @@ function ReportPageContent() {
         hour: '2-digit',
         minute: '2-digit'
       });
-      pdf.text(`Date: ${dateText}`, margin, yPosition);
-      yPosition += 6;
-      
-      pdf.text(`Total Observations: ${observations.length}`, margin, yPosition);
+      pdf.text(`Datum: ${dateText}`, margin, yPosition);
       yPosition += 6;
       
       // Add a separator line
@@ -222,10 +264,7 @@ function ReportPageContent() {
           pdf.addPage();
           yPosition = margin;
           
-          // Add page header for continuation
-          pdf.setFontSize(10);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(`Inspection Report (continued) - Page ${(pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages()}`, margin, yPosition);
+          // Skip page header for continuation pages
           yPosition += 15;
         }
 
@@ -271,13 +310,44 @@ function ReportPageContent() {
             // Add the image
             pdf.addImage(imgData, 'JPEG', margin + 5, yPosition + 5, imgWidth, imgHeight);
             
+            // Add site logo overlay on photo if available
+            if (observation.sites?.logo_url) {
+              try {
+                const photoLogoImg = new window.Image();
+                photoLogoImg.crossOrigin = 'anonymous';
+                await new Promise((resolve, reject) => {
+                  photoLogoImg.onload = resolve;
+                  photoLogoImg.onerror = reject;
+                  photoLogoImg.src = observation.sites.logo_url;
+                });
+
+                const photoLogoCanvas = document.createElement('canvas');
+                const photoLogoCtx = photoLogoCanvas.getContext('2d');
+                photoLogoCanvas.width = photoLogoImg.width;
+                photoLogoCanvas.height = photoLogoImg.height;
+                photoLogoCtx?.drawImage(photoLogoImg, 0, 0);
+                
+                const photoLogoData = photoLogoCanvas.toDataURL('image/jpeg', 0.8);
+                
+                // Position small logo overlay on top-left of photo
+                const logoSize = 8;
+                const logoHeight = (photoLogoImg.height / photoLogoImg.width) * logoSize;
+                
+                // Add white background for logo visibility
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(margin + 8, yPosition + 8, logoSize + 2, logoHeight + 2, 'F');
+                
+                // Add the logo
+                pdf.addImage(photoLogoData, 'JPEG', margin + 9, yPosition + 9, logoSize, logoHeight);
+              } catch (error) {
+                console.error('Error adding photo logo overlay:', error);
+              }
+            }
+            
             // Add text content in the right column
             let textY = yPosition + 10;
             
-            // Add observation number and category
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(`${observationNumber}`, margin + 5, yPosition - 3);
+            // Add category (removed observation number)
             
             // Add category/type if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
@@ -291,8 +361,6 @@ function ReportPageContent() {
             pdf.setFont('helvetica', 'normal');
             const timestamp = new Date(observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
-            pdf.text(`Foto 1 von 1`, textStartX, textY);
-            textY += 5;
             pdf.text(timestamp, textStartX, textY);
             textY += 10;
             
@@ -374,10 +442,9 @@ function ReportPageContent() {
         pdf.setDrawColor(200, 200, 200);
         pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
         
-        // Footer text
+        // Footer text (page numbers only)
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('Site Inspection Report', margin, pageHeight - 12);
         pdf.text(`${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
       }
 
@@ -387,7 +454,7 @@ function ReportPageContent() {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
     }
-  }, [observations, displaySettings]);
+  }, [observations, displaySettings, reportData]);
 
   const handleDownloadWord = useCallback(async () => {
     try {
@@ -756,7 +823,26 @@ function ReportPageContent() {
 
   const fetchFromSavedReport = useCallback(async (reportId: string) => {
     try {
-      // First, get the observation IDs for this report
+      // First, get the report details
+      const { data: reportDetails, error: reportError } = await supabase
+        .from('reports')
+        .select('title, description')
+        .eq('id', reportId)
+        .single();
+
+      if (reportError) {
+        console.error('Error fetching report details:', reportError);
+        setError(`Error loading report: ${reportError.message}`);
+        return [];
+      }
+
+      // Set report data for PDF generation
+      setReportData({
+        title: reportDetails.title || 'INSPECTION REPORT',
+        description: reportDetails.description || 'Baustelleninspektion Dokumentation'
+      });
+
+      // Then, get the observation IDs for this report
       const { data: reportObsData, error: reportObsError } = await supabase
         .from('report_observations')
         .select('observation_id')
@@ -779,7 +865,10 @@ function ReportPageContent() {
       // Fetch the actual observations
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
-        .select("*")
+        .select(`
+          *,
+          sites(name, logo_url)
+        `)
         .in("id", observationIds)
         .order("created_at", { ascending: false });
 
@@ -807,7 +896,10 @@ function ReportPageContent() {
       // Fetch the selected observations directly
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
-        .select("*")
+        .select(`
+          *,
+          sites(name, logo_url)
+        `)
         .in("id", memoizedSelectedIds)
         .order("created_at", { ascending: false });
 
@@ -931,8 +1023,7 @@ function ReportPageContent() {
                   {[
                     { key: 'photo', label: 'Photo' },
                     { key: 'note', label: 'Note' },
-                    { key: 'labels', label: 'Labels' },
-                    { key: 'gps', label: 'GPS' }
+                    { key: 'labels', label: 'Labels' }
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -1209,8 +1300,33 @@ function ReportPageContent() {
               </Button>
             </div>
           </div>
-          <h1 className="text-3xl font-bold">INSPECTION REPORT</h1>
-          <h2 className="text-xl font-semibold text-gray-700 mt-2">Site Inspection Documentation</h2>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold">REPORT EINSTELLUNGEN</h1>
+              <h2 className="text-xl font-semibold text-gray-700 mt-2">Baustelleninspektion Dokumentation</h2>
+            </div>
+            {/* Site Logo in top-right */}
+            {observations.length > 0 && (
+              <div className="flex-shrink-0 ml-4">
+                {observations[0].sites?.logo_url ? (
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
+                    <img 
+                      src={observations[0].sites.logo_url} 
+                      alt={`${observations[0].sites.name} logo`}
+                      className="h-12 w-auto object-contain rounded"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-red-100 border border-red-300 rounded-lg p-3 text-xs text-red-600">
+                    Debug: {observations[0].sites ? 
+                      `Site: ${observations[0].sites.name}, No logo_url` : 
+                      `No site data for observation ${observations[0].id.slice(0, 8)}`
+                    }
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <div className="mt-4 space-y-1 text-sm text-gray-600">
             <p>Date: {new Date().toLocaleDateString('en-US', { 
               year: 'numeric', 
@@ -1227,8 +1343,7 @@ function ReportPageContent() {
             {[
               { key: 'photo', label: 'Photo' },
               { key: 'note', label: 'Note' },
-              { key: 'labels', label: 'Labels' },
-              { key: 'gps', label: 'GPS' }
+              { key: 'labels', label: 'Labels' }
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-1 cursor-pointer text-sm">
                 <input
@@ -1264,14 +1379,34 @@ function ReportPageContent() {
                     {displaySettings.photo && (
                       <div className="relative group/photo">
                         {observation.signedUrl ? (
-                          <Image
-                            src={observation.signedUrl}
-                            alt={`Photo for ${observation.plan ?? "observation"}`}
-                            width={400}
-                            height={200}
-                            className="photo"
-                            style={{ objectFit: 'cover' }}
-                          />
+                          <>
+                            <Image
+                              src={observation.signedUrl}
+                              alt={`Photo for ${observation.plan ?? "observation"}`}
+                              width={400}
+                              height={200}
+                              className="photo"
+                              style={{ objectFit: 'cover' }}
+                            />
+                            {/* Site Logo overlay on each photo */}
+                            {observation.sites?.logo_url ? (
+                              <div className={`absolute top-2 z-10 ${anchorNumber ? 'left-10' : 'left-2'}`}>
+                                <div className="bg-white/60 backdrop-blur-sm rounded-lg p-1.5 shadow-lg opacity-80">
+                                  <img 
+                                    src={observation.sites.logo_url} 
+                                    alt={`${observation.sites.name} logo`}
+                                    className="h-6 w-auto object-contain rounded opacity-90"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className={`absolute bottom-2 z-10 ${anchorNumber ? 'left-10' : 'left-2'}`}>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded px-1 py-0.5 text-xs text-yellow-700">
+                                  {observation.sites ? 'No logo' : 'No site'}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div className="no-photo">
                             <span className="no-photo-text">No photo available</span>

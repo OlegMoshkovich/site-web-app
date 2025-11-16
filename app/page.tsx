@@ -925,7 +925,7 @@ export default function Home() {
             
             <div className="flex items-center gap-2">              
               {/* Language selector */}
-              <select
+              {/* <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
                 className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
@@ -934,7 +934,7 @@ export default function Home() {
               >
                 <option value="en">EN</option>
                 <option value="de">DE</option>
-              </select>
+              </select> */}
 
               {/* Reports */}
               {user && (

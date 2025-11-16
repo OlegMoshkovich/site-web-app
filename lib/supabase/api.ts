@@ -461,7 +461,7 @@ export async function fetchCollaborativeObservationsByTimeRange(
   // Build base query
   let query = supabase.from('observations').select(`
     *,
-    sites(name)
+    sites(name, logo_url)
   `, { count: 'exact' });
 
   if (!userSites || userSites.length === 0) {
@@ -587,7 +587,7 @@ export async function fetchCollaborativeObservationsPaginated(
   // Build base query
   let query = supabase.from('observations').select(`
     *,
-    sites(name)
+    sites(name, logo_url)
   `, { count: 'exact' });
 
   if (!userSites || userSites.length === 0) {
@@ -680,7 +680,7 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
     .from('observations')
     .select(`
       *,
-      sites(name)
+      sites(name, logo_url)
     `);
 
   // Build query to include ALL user's own observations PLUS collaborative observations
@@ -857,7 +857,7 @@ export async function fetchSharedObservation(observationId: string): Promise<Obs
     .from('observations')
     .select(`
       *,
-      sites(name)
+      sites(name, logo_url)
     `)
     .eq('id', observationId)
     .single();
