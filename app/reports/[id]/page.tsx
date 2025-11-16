@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
   Info,
-  ArrowRight,
   X,
+  Download,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
+import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import Image from "next/image";
@@ -49,6 +52,7 @@ interface Observation {
   latitude: number | null;
   longitude: number | null;
   site_id: string | null;
+  sites?: { name: string; logo_url?: string | null } | null;
 }
 
 interface ObservationWithUrl extends Observation {
@@ -65,10 +69,359 @@ export default function ReportDetailPage() {
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Photo modal state
+  const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
   const reportId = params.id as string;
+
+  // Photo modal handlers
+  const openPhotoModal = (observation: ObservationWithUrl) => {
+    setSelectedPhoto(observation);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const closePhotoModal = () => {
+    setSelectedPhoto(null);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Zoom and pan handlers
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.01;
+    const newScale = Math.min(Math.max(0.5, scale + delta), 3);
+    setScale(newScale);
+  }, [scale]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  }, [scale, position]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  const zoomIn = useCallback(() => {
+    const newScale = Math.min(scale * 1.3, 3);
+    setScale(newScale);
+  }, [scale]);
+
+  const zoomOut = useCallback(() => {
+    const newScale = Math.max(scale / 1.3, 0.5);
+    setScale(newScale);
+    if (newScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [scale]);
+
+  // Mouse and touch event listeners for modal
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    
+    const container = imageContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (isDragging) {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      }
+    };
+  }, [selectedPhoto, handleWheel, isDragging, handleMouseMove, handleMouseUp]);
+
+  // Handler functions for report actions
+
+  const handleExportReport = async () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = margin;
+
+      // Header section with professional styling and logo
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      const reportTitle = report?.title || 'INSPECTION REPORT';
+      
+      // Calculate available width for text (account for logo space)
+      const logoWidth = 20;
+      const logoSpace = 30; // Logo width + some margin
+      const maxTextWidth = pageWidth - 2 * margin - logoSpace;
+      
+      // Split title if it's too long to avoid logo overlap
+      const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
+      pdf.text(titleLines, margin, yPosition);
+      yPosition += titleLines.length * 7; // Adjust for multiple lines
+      
+      // Add site logo in top-right corner if available
+      if (observations.length > 0 && observations[0].sites?.logo_url) {
+        try {
+          const logoImg = new window.Image();
+          logoImg.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            logoImg.onload = resolve;
+            logoImg.onerror = reject;
+            logoImg.src = observations[0].sites!.logo_url!;
+          });
+
+          const logoCanvas = document.createElement('canvas');
+          const logoCtx = logoCanvas.getContext('2d');
+          logoCanvas.width = logoImg.width;
+          logoCanvas.height = logoImg.height;
+          logoCtx?.drawImage(logoImg, 0, 0);
+          
+          const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+          
+          // Position logo in top-right
+          const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+          pdf.addImage(logoData, 'JPEG', pageWidth - margin - logoWidth, margin - 5, logoWidth, logoHeight);
+        } catch (error) {
+          console.error('Error adding site logo to PDF header:', error);
+        }
+      }
+      
+      yPosition += 3;
+      
+      // Project details
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
+      
+      // Split description if it's too long to avoid logo overlap
+      const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
+      pdf.text(descriptionLines, margin, yPosition);
+      yPosition += descriptionLines.length * 6; // Adjust for multiple lines
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const dateText = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Datum: ${dateText}`, margin, yPosition);
+      yPosition += 6;
+      
+      // Add a separator line
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 15;
+
+      // Process each observation
+      for (let i = 0; i < observations.length; i++) {
+        const observation = observations[i];
+        
+        // Check if we need a new page
+        if (yPosition > pageHeight - 120) {
+          pdf.addPage();
+          yPosition = margin + 15;
+        }
+
+        // Add observation content
+        if (observation.signedUrl) {
+          try {
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = observation.signedUrl!;
+            });
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx?.drawImage(img, 0, 0);
+            
+            const imgData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Calculate image dimensions for PDF
+            const imgWidth = 50;
+            const imgHeight = (img.height / img.width) * imgWidth;
+            
+            // Add image
+            pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
+            
+            // Add logo overlay on photo if available
+            if (observation.sites?.logo_url) {
+              try {
+                const logoImg = new window.Image();
+                logoImg.crossOrigin = 'anonymous';
+                await new Promise((resolve, reject) => {
+                  logoImg.onload = resolve;
+                  logoImg.onerror = reject;
+                  logoImg.src = observation.sites!.logo_url!;
+                });
+
+                const logoCanvas = document.createElement('canvas');
+                const logoCtx = logoCanvas.getContext('2d');
+                logoCanvas.width = logoImg.width;
+                logoCanvas.height = logoImg.height;
+                logoCtx?.drawImage(logoImg, 0, 0);
+                
+                const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+                
+                // Position logo on bottom-right of photo
+                const photoLogoWidth = 8;
+                const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
+                pdf.addImage(logoData, 'JPEG', margin + imgWidth - photoLogoWidth - 2, yPosition + imgHeight - photoLogoHeight - 2, photoLogoWidth, photoLogoHeight);
+              } catch (error) {
+                console.error('Error adding logo overlay to photo:', error);
+              }
+            }
+            
+            // Add text content next to image
+            const textStartX = margin + imgWidth + 10;
+            const textWidth = pageWidth - textStartX - margin;
+            let textY = yPosition + 5;
+            
+            // Add category if available from labels
+            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Kategorie: ${category}`, textStartX, textY);
+            textY += 7;
+            
+            // Add timestamp
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
+                             new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+            pdf.text(timestamp, textStartX, textY);
+            textY += 10;
+            
+            // Add note
+            if (observation.note) {
+              pdf.setFontSize(11);
+              pdf.setFont('helvetica', 'bold');
+              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
+              pdf.text(noteLines, textStartX, textY);
+              textY += noteLines.length * 6 + 5;
+            }
+            
+            // Add labels
+            if (observation.labels && observation.labels.length > 0) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const labelText = 'Labels: ' + observation.labels.join(', ');
+              const labelLines = pdf.splitTextToSize(labelText, textWidth);
+              pdf.text(labelLines, textStartX, textY);
+              textY += labelLines.length * 5 + 3;
+            }
+            
+            yPosition += Math.max(imgHeight, textY - yPosition) + 10;
+            
+          } catch (error) {
+            console.error('Error adding observation to PDF:', error);
+            // Fallback: just add text without image
+            if (observation.note) {
+              pdf.setFontSize(12);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text(`${i + 1}. ${observation.note}`, margin, yPosition);
+              yPosition += 8;
+            }
+            
+            if (observation.labels && observation.labels.length > 0) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
+              yPosition += 8;
+            }
+            
+            yPosition += 15;
+          }
+        }
+      }
+
+      // Add footer to all pages
+      const totalPages = (pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        
+        // Footer line
+        pdf.setLineWidth(0.5);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+        
+        // Footer text (page numbers only)
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
+      }
+
+      // Save the PDF
+      const filename = report?.title ? `${report.title.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf` : `report-${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(filename);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
+
+
+  // Check authentication status
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+      } catch (error) {
+        console.error('Error getting user:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   useEffect(() => {
     const fetchReportAndObservations = async () => {
@@ -112,7 +465,10 @@ export default function ReportDetailPage() {
       // Fetch the actual observations
       const { data: observationsData, error: obsError } = await supabase
         .from('observations')
-        .select('*')
+        .select(`
+          *,
+          sites(name, logo_url)
+        `)
         .in('id', observationIds);
 
       if (obsError) {
@@ -212,37 +568,36 @@ export default function ReportDetailPage() {
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="text-lg font-semibold">
+            <button 
+              onClick={() => router.push('/')}
+              className="text-lg font-semibold hover:text-blue-600 transition-colors cursor-pointer"
+            >
               Simple Site
-            </div>
+            </button>
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Language selector */}
-            <select
-              value="en"
-              onChange={() => {}} // Add empty handler to fix React warning
-              className="h-8 px-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded"
-              title="Change Language"
-            >
-              <option value="en">EN</option>
-              <option value="de">DE</option>
-            </select>
-            
-            <button
+            {isAuthenticated && (
+              <Button
+                onClick={handleExportReport}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 transition-all"
+                title="Download Report"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Download</span>
+              </Button>
+            )}
+            <Button
               onClick={() => setShowInfoModal(true)}
-              className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded flex items-center gap-1"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 transition-all"
+              title="Info"
             >
               <Info className="h-4 w-4" />
-              <span className="hidden sm:inline">Info</span>
-            </button>
-            <button
-              onClick={() => router.push('/')}
-              className="h-8 w-8 p-0 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition-colors rounded flex items-center justify-center"
-              title="Go to Home"
-            >
-              <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </nav>
@@ -254,10 +609,24 @@ export default function ReportDetailPage() {
           {/* Report Info Card */}
           <Card>
             <CardHeader>
-              <div>
-                <CardTitle className="mb-3">{report.title}</CardTitle>
-                {report.description && (
-                  <CardDescription className="text-black text-sm" style={{ fontSize: '14px' }}>{report.description}</CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="mb-3">{report.title}</CardTitle>
+                  {report.description && (
+                    <CardDescription className="text-black text-sm" style={{ fontSize: '14px' }}>{report.description}</CardDescription>
+                  )}
+                </div>
+                {/* Site Logo in top-right */}
+                {observations.length > 0 && observations[0].sites?.logo_url && (
+                  <div className="flex-shrink-0 ml-4">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
+                      <img 
+                        src={observations[0].sites.logo_url} 
+                        alt={`${observations[0].sites.name} logo`}
+                        className="h-12 w-auto object-contain rounded"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </CardHeader>
@@ -270,7 +639,7 @@ export default function ReportDetailPage() {
                 if (uniqueLabels.length > 0) {
                   return (
                     <div className="mt-4 pt-4 border-t">
-                      <h4 className="font-medium text-gray-900 mb-2">Categories</h4>
+                      <h4 className="font-medium text-gray-900 mb-2">Kategorien</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
@@ -281,7 +650,7 @@ export default function ReportDetailPage() {
                       <div className="flex justify-end">
                         <div className="text-sm text-gray-500 flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>Created {formatDate(report.created_at)}</span>
+                          <span>Erstellt {formatDate(report.created_at)}</span>
                         </div>
                       </div>
                     </div>
@@ -301,19 +670,35 @@ export default function ReportDetailPage() {
                     <div className="flex flex-col lg:flex-row print:flex-row">
                       {/* Image */}
                       {observation.signedUrl && (
-                        <div className="flex-shrink-0 relative bg-transparent border border-gray-200" style={{ width: '320px' }}>
+                        <div 
+                          className="flex-shrink-0 relative bg-transparent border border-gray-200 cursor-pointer" 
+                          style={{ width: '320px' }}
+                          onClick={() => openPhotoModal(observation)}
+                        >
                           <Image
                             src={observation.signedUrl}
                             alt="Observation"
                             width={400}
                             height={300}
-                            className="w-full h-auto object-contain"
+                            className="w-full h-auto object-contain hover:opacity-90 transition-opacity"
                             style={{ maxHeight: '280px' }}
                           />
                           {/* Photo number overlay */}
                           <div className="absolute top-0 left-0 w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold shadow-md">
                             {index + 1}
                           </div>
+                          {/* Site Logo overlay on each photo */}
+                          {observation.sites?.logo_url && (
+                            <div className="absolute bottom-2 right-2 z-10">
+                              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-1.5 shadow-lg opacity-80">
+                                <img 
+                                  src={observation.sites.logo_url} 
+                                  alt={`${observation.sites.name} logo`}
+                                  className="h-6 w-auto object-contain rounded opacity-90"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       
@@ -386,20 +771,20 @@ export default function ReportDetailPage() {
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               <div>
-                <p className="text-gray-600 mb-4">Essential for collecting observations in the field</p>
+                <p className="text-gray-600 mb-4">Unverzichtbar für das Sammeln von Beobachtungen vor Ort</p>
                 
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">Take photos and add notes on-site</span>
+                    <span className="text-gray-700">Fotos aufnehmen und Notizen vor Ort hinzufügen</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">GPS location tracking</span>
+                    <span className="text-gray-700">GPS-Standortverfolgung</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">Automatic sync with your sites</span>
+                    <span className="text-gray-700">Automatische Synchronisation mit Ihren Standorten</span>
                   </li>
                 </ul>
               </div>
@@ -410,12 +795,12 @@ export default function ReportDetailPage() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium text-gray-900">Web Portal:</h4>
-                    <p className="text-gray-600 text-sm">View team observations, generate reports, and manage settings</p>
+                    <p className="text-gray-600 text-sm">Team-Beobachtungen anzeigen, Berichte erstellen und Einstellungen verwalten</p>
                   </div>
                   
                   <div>
                     <h4 className="font-medium text-gray-900">Mobile App:</h4>
-                    <p className="text-gray-600 text-sm">Required for collecting observations in the field</p>
+                    <p className="text-gray-600 text-sm">Erforderlich für das Sammeln von Beobachtungen vor Ort</p>
                   </div>
                 </div>
               </div>
@@ -424,10 +809,134 @@ export default function ReportDetailPage() {
               <div className="text-center">
                 <div className="inline-block bg-black text-white px-4 py-2 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs">Available on the</span>
+                    <span className="text-xs">Verfügbar im</span>
                   </div>
                   <div className="text-lg font-semibold">App Store</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Modal */}
+      {selectedPhoto && selectedPhoto.signedUrl && (
+        <div className="fixed inset-0 bg-white backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative w-full h-full max-w-7xl max-h-full flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+              <div className="text-gray-900">
+                <h3 className="text-lg font-semibold">
+                  {selectedPhoto.note || `Observation ${observations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {new Date(selectedPhoto.taken_at || selectedPhoto.created_at).toLocaleDateString('de-DE')}
+                </p>
+              </div>
+              <button
+                onClick={closePhotoModal}
+                className="p-2 hover:bg-gray-100 rounded transition-colors text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Image Container */}
+            <div 
+              ref={imageContainerRef}
+              className="flex-1 relative bg-gray-100 overflow-hidden"
+              style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+            >
+              {/* Zoom Controls */}
+              <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+                <button
+                  onClick={zoomIn}
+                  className="bg-white/90 hover:bg-white text-gray-700 p-2 transition-colors rounded shadow-lg border border-gray-200"
+                  disabled={scale >= 3}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={zoomOut}
+                  className="bg-white/90 hover:bg-white text-gray-700 p-2 transition-colors rounded shadow-lg border border-gray-200"
+                  disabled={scale <= 0.5}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+                {scale !== 1 && (
+                  <button
+                    onClick={resetZoom}
+                    className="bg-white/90 hover:bg-white text-gray-700 px-2 py-1 text-xs transition-colors rounded shadow-lg border border-gray-200"
+                  >
+                    1:1
+                  </button>
+                )}
+              </div>
+
+              {/* Zoom indicator */}
+              {scale !== 1 && (
+                <div className="absolute bottom-4 right-4 z-30 bg-white/90 text-gray-700 px-2 py-1 text-xs rounded shadow-lg border border-gray-200">
+                  {Math.round(scale * 100)}%
+                </div>
+              )}
+
+              {/* Site logo overlay */}
+              {selectedPhoto.sites?.logo_url && (
+                <div className="absolute top-4 left-4 z-30">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200">
+                    <img 
+                      src={selectedPhoto.sites.logo_url} 
+                      alt={`${selectedPhoto.sites.name} logo`}
+                      className="w-12 h-12 object-contain rounded"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Zoomable/Pannable Image Container */}
+              <div
+                className="absolute inset-0 transition-transform duration-200 ease-out"
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                  transformOrigin: 'center center'
+                }}
+                onMouseDown={handleMouseDown}
+              >
+                <Image
+                  src={selectedPhoto.signedUrl}
+                  alt="Observation"
+                  fill
+                  className="object-contain select-none"
+                  sizes="100vw"
+                  draggable={false}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Info Panel */}
+            <div className="bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 max-h-32 overflow-y-auto">
+              <div className="space-y-2">
+                {selectedPhoto.labels && selectedPhoto.labels.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPhoto.labels.map((label, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"
+                        >
+                          {processLabel(label)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {selectedPhoto.note && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-1">Note</h4>
+                    <p className="text-sm text-gray-700">{selectedPhoto.note}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

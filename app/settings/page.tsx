@@ -3,12 +3,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
+import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage, Edit } from "lucide-react";
 import { Language, useTranslations, useLanguage } from "@/lib/translations";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { inviteUserToSite, getSitePendingInvitations, removeCollaborator, getPendingInvitationsForUser, updateCollaboratorRole } from "@/lib/supabase/api";
@@ -23,9 +25,18 @@ export default function SettingsPage() {
   const t = useTranslations(language);
 
   // Site management state
-  const [sites, setSites] = useState<{name: string; id: string; description?: string | null}[]>([]);
+  const [sites, setSites] = useState<{name: string; id: string; description?: string | null; logo_url?: string | null}[]>([]);
   const [newSiteName, setNewSiteName] = useState("");
   const [newSiteDescription, setNewSiteDescription] = useState("");
+  const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  
+  // Edit site modal state
+  const [editingSite, setEditingSite] = useState<{id: string; name: string; description?: string | null; logo_url?: string | null} | null>(null);
+  const [editSiteName, setEditSiteName] = useState("");
+  const [editSiteDescription, setEditSiteDescription] = useState("");
+  const [editSiteLogo, setEditSiteLogo] = useState<File | null>(null);
+  const [isUpdatingSite, setIsUpdatingSite] = useState(false);
 
   // Label management state
   const [labels, setLabels] = useState<{name: string; id: string; description?: string | null; category: string; parent_id?: string | null}[]>([]);
@@ -66,7 +77,7 @@ export default function SettingsPage() {
       // Query the actual sites table for this user
       const { data: sites, error } = await supabase
         .from('sites')
-        .select('id, name, description')
+        .select('id, name, description, logo_url')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
@@ -78,10 +89,11 @@ export default function SettingsPage() {
       console.log('User sites loaded:', sites);
       
       // Transform to the expected format
-      const siteObjects = (sites || []).map((site: {id: string; name: string; description?: string | null}) => ({ 
+      const siteObjects = (sites || []).map((site: {id: string; name: string; description?: string | null; logo_url?: string | null}) => ({ 
         name: site.name, 
         id: site.id,
-        description: site.description 
+        description: site.description,
+        logo_url: site.logo_url
       }));
       setSites(siteObjects);
     } catch (error) {
@@ -332,15 +344,48 @@ export default function SettingsPage() {
     if (!newSiteName.trim() || !user) return;
     
     try {
+      setIsUploadingLogo(true);
+      let logoUrl = null;
+      
+      // Upload logo if selected
+      if (selectedLogo) {
+        const fileExt = selectedLogo.name.split('.').pop()?.toLowerCase();
+        const fileName = `logo_${Date.now()}.${fileExt}`;
+        const filePath = `logos/${fileName}`;
+
+        // Upload logo to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from('site-assets')
+          .upload(filePath, selectedLogo);
+
+        if (uploadError) {
+          console.error('Logo upload error:', uploadError);
+          alert('Failed to upload logo. Creating site without logo.');
+        } else {
+          // Get signed URL for the uploaded logo (expires in 1 year)
+          const { data: urlData, error: urlError } = await supabase.storage
+            .from('site-assets')
+            .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+          if (urlError) {
+            console.error('Error creating signed URL for logo:', urlError);
+            alert('Failed to create access URL for logo. Creating site without logo.');
+          } else {
+            logoUrl = urlData.signedUrl;
+          }
+        }
+      }
+
       // Insert into the sites table
       const { data: newSite, error } = await supabase
         .from('sites')
         .insert({
           user_id: user.id,
           name: newSiteName.trim(),
-          description: newSiteDescription.trim() || null
+          description: newSiteDescription.trim() || null,
+          logo_url: logoUrl
         })
-        .select('id, name, description')
+        .select('id, name, description, logo_url')
         .single();
       
       if (error) {
@@ -354,18 +399,28 @@ export default function SettingsPage() {
         setSites(prev => [{ 
           name: newSite.name, 
           id: newSite.id,
-          description: newSite.description 
+          description: newSite.description,
+          logo_url: newSite.logo_url
         }, ...prev]);
       }
       
       setNewSiteName("");
       setNewSiteDescription("");
+      setSelectedLogo(null);
+      
+      // Reset logo file input
+      const logoInput = document.getElementById('logoFile') as HTMLInputElement;
+      if (logoInput) {
+        logoInput.value = '';
+      }
       
       // Show success message
       alert(`Site "${newSiteName}" created successfully!`);
     } catch (error) {
       console.error('Error creating site:', error);
       alert('Failed to create site. Please try again.');
+    } finally {
+      setIsUploadingLogo(false);
     }
   };
 
@@ -490,6 +545,30 @@ export default function SettingsPage() {
       // Still remove from local state
       setLabels(prev => prev.filter(label => label.id !== labelId));
       alert(`Label "${labelName}" removed locally.`);
+    }
+  };
+
+  const handleLogoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate that it's an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (PNG, JPG, etc.) for the logo.');
+        return;
+      }
+      setSelectedLogo(file);
+    }
+  };
+
+  const handleEditLogoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate that it's an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (PNG, JPG, etc.) for the logo.');
+        return;
+      }
+      setEditSiteLogo(file);
     }
   };
 
@@ -793,6 +872,106 @@ export default function SettingsPage() {
     }
   };
 
+  const handleEditSite = (site: {id: string; name: string; description?: string | null; logo_url?: string | null}) => {
+    setEditingSite(site);
+    setEditSiteName(site.name);
+    setEditSiteDescription(site.description || "");
+    setEditSiteLogo(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingSite(null);
+    setEditSiteName("");
+    setEditSiteDescription("");
+    setEditSiteLogo(null);
+    
+    // Reset edit logo file input
+    const editLogoInput = document.getElementById('editLogoFile') as HTMLInputElement;
+    if (editLogoInput) {
+      editLogoInput.value = '';
+    }
+  };
+
+  const handleUpdateSite = async () => {
+    if (!editingSite || !editSiteName.trim() || !user) return;
+    
+    try {
+      setIsUpdatingSite(true);
+      let logoUrl = editingSite.logo_url; // Keep existing logo by default
+      
+      // Upload new logo if selected
+      if (editSiteLogo) {
+        const fileExt = editSiteLogo.name.split('.').pop()?.toLowerCase();
+        const fileName = `logo_${Date.now()}.${fileExt}`;
+        const filePath = `logos/${fileName}`;
+
+        // Upload new logo to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from('site-assets')
+          .upload(filePath, editSiteLogo);
+
+        if (uploadError) {
+          console.error('Logo upload error:', uploadError);
+          alert('Failed to upload new logo. Updating site without logo change.');
+        } else {
+          // Get signed URL for the uploaded logo (expires in 1 year)
+          const { data: urlData, error: urlError } = await supabase.storage
+            .from('site-assets')
+            .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+          if (urlError) {
+            console.error('Error creating signed URL for logo:', urlError);
+            alert('Failed to create access URL for new logo. Updating site without logo change.');
+          } else {
+            logoUrl = urlData.signedUrl;
+          }
+        }
+      }
+
+      // Update the site in the database
+      const { data: updatedSite, error } = await supabase
+        .from('sites')
+        .update({
+          name: editSiteName.trim(),
+          description: editSiteDescription.trim() || null,
+          logo_url: logoUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingSite.id)
+        .eq('user_id', user.id)
+        .select('id, name, description, logo_url')
+        .single();
+      
+      if (error) {
+        console.error('Error updating site:', error);
+        alert('Failed to update site. Please try again.');
+        return;
+      }
+      
+      // Update local state
+      if (updatedSite) {
+        setSites(prev => prev.map(site => 
+          site.id === editingSite.id 
+            ? { 
+                name: updatedSite.name, 
+                id: updatedSite.id,
+                description: updatedSite.description,
+                logo_url: updatedSite.logo_url
+              }
+            : site
+        ));
+      }
+      
+      handleCloseEditModal();
+      alert(`Site "${editSiteName}" updated successfully!`);
+    } catch (error) {
+      console.error('Error updating site:', error);
+      alert('Failed to update site. Please try again.');
+    } finally {
+      setIsUpdatingSite(false);
+    }
+  };
+
   const handleUpdateCollaboratorRole = async (
     collaboratorId: string, 
     email: string, 
@@ -838,7 +1017,9 @@ export default function SettingsPage() {
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
             <div className="flex text-lg gap-5 items-center font-semibold">
-              {t("siteTitle")}
+              <Link href="/" className="hover:text-gray-700 transition-colors cursor-pointer">
+                {t("siteTitle")}
+              </Link>
             </div>
             <div className="flex items-center gap-2">
               {/* Language selector */}
@@ -946,6 +1127,7 @@ export default function SettingsPage() {
                   value={newSiteName}
                   onChange={(e) => setNewSiteName(e.target.value)}
                   placeholder={t('enterSiteName')}
+                  disabled={isUploadingLogo}
                 />
               </div>
               <div className="space-y-2">
@@ -956,11 +1138,37 @@ export default function SettingsPage() {
                   onChange={(e) => setNewSiteDescription(e.target.value)}
                   placeholder={t('enterSiteDescription')}
                   rows={3}
+                  disabled={isUploadingLogo}
                 />
               </div>
-              <Button onClick={handleCreateSite} className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('createSite')}
+              <div className="space-y-2">
+                <Label htmlFor="logoFile">Logo (Optional)</Label>
+                <Input
+                  id="logoFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoSelect}
+                  disabled={isUploadingLogo}
+                  className="cursor-pointer"
+                />
+                {selectedLogo && (
+                  <div className="text-sm text-gray-600">
+                    Selected logo: {selectedLogo.name}
+                  </div>
+                )}
+              </div>
+              <Button onClick={handleCreateSite} className="w-full" disabled={isUploadingLogo}>
+                {isUploadingLogo ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('createSite')}
+                  </>
+                )}
               </Button>
 
               {/* Existing sites */}
@@ -969,11 +1177,37 @@ export default function SettingsPage() {
                   <Label>{t('existingSites')}</Label>
                   <div className="space-y-2">
                     {sites.map((site, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 border rounded">
-                        <span>{site.name}</span>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteSite(site.id, site.name)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div key={index} className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 transition-colors">
+                        <div 
+                          className="flex items-center gap-3 flex-1 cursor-pointer"
+                          onClick={() => handleEditSite(site)}
+                        >
+                          {site.logo_url ? (
+                            <img 
+                              src={site.logo_url} 
+                              alt={`${site.name} logo`}
+                              className="w-8 h-8 object-cover rounded border"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-500">
+                              No Logo
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-medium">{site.name}</span>
+                            {site.description && (
+                              <p className="text-sm text-gray-600">{site.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEditSite(site)} title="Edit site">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteSite(site.id, site.name)} title="Delete site">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1601,6 +1835,102 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Site Modal */}
+      {editingSite && (
+        <Modal 
+          isOpen={!!editingSite} 
+          onClose={handleCloseEditModal}
+        >
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">{t('editSite')}</h2>
+            <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="editSiteName">{t('siteName')}</Label>
+              <Input
+                id="editSiteName"
+                value={editSiteName}
+                onChange={(e) => setEditSiteName(e.target.value)}
+                placeholder={t('enterSiteName')}
+                disabled={isUpdatingSite}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editSiteDescription">{t('descriptionOptional')}</Label>
+              <Textarea
+                id="editSiteDescription"
+                value={editSiteDescription}
+                onChange={(e) => setEditSiteDescription(e.target.value)}
+                placeholder={t('enterSiteDescription')}
+                rows={3}
+                disabled={isUpdatingSite}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>{t('currentLogo')}</Label>
+              <div className="flex items-center gap-3">
+                {editingSite.logo_url ? (
+                  <img 
+                    src={editingSite.logo_url} 
+                    alt={`${editingSite.name} logo`}
+                    className="w-16 h-16 object-cover rounded border"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center text-sm text-gray-500">
+                    {t('noLogo')}
+                  </div>
+                )}
+                <div className="text-sm text-gray-600">
+                  {editingSite.logo_url ? t('currentLogoText') : t('noLogoUploaded')}
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editLogoFile">{t('uploadNewLogoOptional')}</Label>
+              <Input
+                id="editLogoFile"
+                type="file"
+                accept="image/*"
+                onChange={handleEditLogoSelect}
+                disabled={isUpdatingSite}
+                className="cursor-pointer"
+              />
+              {editSiteLogo && (
+                <div className="text-sm text-gray-600">
+                  {t('newLogoSelected')}: {editSiteLogo.name}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={handleCloseEditModal}
+                disabled={isUpdatingSite}
+              >
+                {t('cancel')}
+              </Button>
+              <Button 
+                onClick={handleUpdateSite}
+                disabled={!editSiteName.trim() || isUpdatingSite}
+              >
+                {isUpdatingSite ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {t('updating')}
+                  </>
+                ) : (
+                  t('updateSite')
+                )}
+              </Button>
+            </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </main>
   );
 }

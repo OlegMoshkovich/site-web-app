@@ -34,7 +34,7 @@ import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
 import Image from "next/image";
 // Translation system
-import { translations, type Language, useLanguage } from "@/lib/translations";
+import { translations, useLanguage } from "@/lib/translations";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
@@ -99,7 +99,7 @@ export default function Home() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   // Language management with localStorage persistence
-  const { language, setLanguage, mounted } = useLanguage();
+  const { language, mounted } = useLanguage();
   // Toggle state for showing/hiding the date selector
   const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
   // Search state
@@ -925,7 +925,7 @@ export default function Home() {
             
             <div className="flex items-center gap-2">              
               {/* Language selector */}
-              <select
+              {/* <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
                 className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
@@ -934,7 +934,7 @@ export default function Home() {
               >
                 <option value="en">EN</option>
                 <option value="de">DE</option>
-              </select>
+              </select> */}
 
               {/* Reports */}
               {user && (
@@ -1498,7 +1498,7 @@ export default function Home() {
                 {/* Load More Buttons */}
                 {hasMore && (
                   <div className="flex flex-col items-center gap-4 py-8">
-                    <div className="text-sm text-gray-600 mb-2">Load more:</div>
+                    <div className="text-sm text-gray-600 mb-2">{t('loadMoreLabel')}</div>
                     <div className="flex flex-wrap justify-center gap-3">
                       <Button
                         onClick={() => handleLoadMore('week')}
@@ -1513,7 +1513,7 @@ export default function Home() {
                             Loading...
                           </>
                         ) : (
-                          'Last Week'
+                          t('lastWeek')
                         )}
                       </Button>
                       <Button
@@ -1529,7 +1529,7 @@ export default function Home() {
                             Loading...
                           </>
                         ) : (
-                          'Last Month'
+                          t('lastMonth')
                         )}
                       </Button>
                     </div>
@@ -1549,11 +1549,11 @@ export default function Home() {
                 <div className="text-center py-12">
                   <div className="space-y-6">
                     <p className="text-muted-foreground text-lg">
-                      No observations found for the past two days
+                      {t('noObservationsPastTwoDays')}
                     </p>
                     
                     <div className="space-y-4">
-                      <p className="text-sm text-gray-600">Load observations from a longer period:</p>
+                      <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
                       <div className="flex flex-wrap justify-center gap-3">
                         <Button
                           onClick={() => handleLoadMore('week')}
@@ -1568,7 +1568,7 @@ export default function Home() {
                               Loading...
                             </>
                           ) : (
-                            'Load Past Week'
+                            t('loadPastWeek')
                           )}
                         </Button>
                         <Button
@@ -1584,7 +1584,7 @@ export default function Home() {
                               Loading...
                             </>
                           ) : (
-                            'Load Past Month'
+                            t('loadPastMonth')
                           )}
                         </Button>
                       </div>

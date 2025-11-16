@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ZoomIn, ZoomOut, Info, X } from "lucide-react";
-import { AuthButtonClient } from "@/components/auth-button-client";
+import Link from "next/link";
+import { ZoomIn, ZoomOut, Info, X, Download } from "lucide-react";
 import { Footer } from "@/components/footer";
 import { translations, type Language } from "@/lib/translations";
 import type { Observation } from "@/types/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 interface SharedPhotoViewerProps {
-  observation: Observation & { sites?: { name: string } | null };
+  observation: Observation & { sites?: { name: string; logo_url?: string | null } | null };
   imageUrl: string;
 }
 
@@ -17,6 +18,8 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
   const [imageLoading, setImageLoading] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const supabase = createClient();
   
   // Translation function
   const t = (key: keyof typeof translations.en) => {
@@ -30,6 +33,52 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+      } catch (error) {
+        console.error('Error getting user:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: { user?: unknown } | null) => {
+        setIsAuthenticated(!!session?.user);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  // Download photo function
+  const downloadPhoto = useCallback(async () => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = `observation_${observation.id}_${new Date(observation.taken_at || observation.created_at).toISOString().split('T')[0]}.jpg`;
+      link.download = filename;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading photo:', error);
+    }
+  }, [imageUrl, observation.id, observation.taken_at, observation.created_at]);
 
   // Zoom and pan handlers
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -155,9 +204,9 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="text-lg font-semibold">
+            <Link href="/" className="text-lg font-semibold hover:text-gray-700 transition-colors">
               Simple Site
-            </div>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2">
@@ -172,15 +221,23 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
               <option value="en">EN</option>
               <option value="de">DE</option>
             </select>
+            {isAuthenticated && (
+              <button
+                onClick={downloadPhoto}
+                className="h-8 px-3 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors flex items-center gap-1"
+                title="Download photo"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+            )}
             
             <button
               onClick={() => setShowInfoModal(true)}
-              className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors rounded flex items-center gap-1"
+              className="h-8 px-3 text-gray-700 border border-gray-300 text-sm font-medium transition-colors flex items-center gap-1"
             >
               <Info className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("info")}</span>
             </button>
-            <AuthButtonClient />
+          
           </div>
         </div>
       </nav>
@@ -199,16 +256,26 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             </div>
           )}
           
-          {/* Banner logo overlay - top left */}
+          {/* Site logo overlay - top left */}
           <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30">
-            <Image
-              src="/images/banner.svg"
-              alt="Simple Site"
-              width={160}
-              height={40}
-              className="h-6 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
-              priority
-            />
+            {observation.sites?.logo_url ? (
+              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 shadow-lg opacity-80">
+                <img 
+                  src={observation.sites.logo_url} 
+                  alt={`${observation.sites.name} logo`}
+                  className="h-6 sm:h-8 w-auto object-contain rounded opacity-90"
+                />
+              </div>
+            ) : (
+              <Image
+                src="/images/banner.svg"
+                alt="Simple Site"
+                width={160}
+                height={40}
+                className="h-6 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
+                priority
+              />
+            )}
           </div>
           
           {/* Zoom controls */}
@@ -229,7 +296,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            {scale > 1 && (
+            {scale !== 1 && (
               <button
                 onClick={resetZoom}
                 className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors rounded"

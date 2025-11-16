@@ -14,7 +14,7 @@ import type { Label } from "@/lib/labels";
 // Extended observation with signed URL for secure photo access
 interface ObservationWithUrl extends Observation {
   signedUrl: string | null;      // Temporary signed URL for viewing the photo
-  sites?: { name: string } | null; // Site information from join
+  sites?: { name: string; logo_url?: string | null } | null; // Site information from join
   profiles?: { email: string } | null; // User profile information from join
   user_email?: string; // User email from the query
 }
@@ -333,7 +333,7 @@ export function PhotoModal({
         {/* Image container */}
         <div 
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0 overflow-hidden"
+          className="relative bg-gray-100 h-96 md:h-[400px] flex-shrink-0 overflow-hidden"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -342,6 +342,19 @@ export function PhotoModal({
             </div>
           )}
           
+          {/* Site Logo */}
+          {observation.sites?.logo_url && (
+            <div className="absolute top-4 left-4 z-30">
+              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 shadow-lg opacity-80">
+                <img 
+                  src={observation.sites.logo_url} 
+                  alt={`${observation.sites.name} logo`}
+                  className="w-12 h-12 object-contain rounded opacity-90"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Zoom controls */}
           <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
             <button
@@ -367,7 +380,7 @@ export function PhotoModal({
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            {scale > 1 && (
+            {scale !== 1 && (
               <button
                 onClick={resetZoom}
                 className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
@@ -462,8 +475,8 @@ export function PhotoModal({
         </div>
         
         {/* Info panel */}
-        <div className="p-6 border-t bg-white max-h-64 overflow-y-auto">
-          <div className="space-y-4">
+        <div className="p-6 border-t bg-white h-[400px] overflow-y-auto max-h-[400px]">
+         
             {/* Note */}
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -669,7 +682,7 @@ export function PhotoModal({
                 </div>
               )}
             </div>
-          </div>
+
         </div>
       </div>
     </Modal>
