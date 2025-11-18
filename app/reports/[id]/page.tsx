@@ -180,7 +180,7 @@ export default function ReportDetailPage() {
 
       // Header section with professional styling and logo
       pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont('helvetica', 'normal');
       const reportTitle = report?.title || 'INSPECTION REPORT';
       
       // Calculate available width for text (account for logo space)
@@ -224,7 +224,7 @@ export default function ReportDetailPage() {
       
       // Project details
       pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont('helvetica', 'normal');
       const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
       
       // Split description if it's too long to avoid logo overlap
@@ -234,15 +234,6 @@ export default function ReportDetailPage() {
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString('de-DE', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
-      pdf.text(`Datum: ${dateText}`, margin, yPosition);
-      yPosition += 6;
       
       // Add Ersteller if available
       if (report?.ersteller) {
@@ -255,6 +246,16 @@ export default function ReportDetailPage() {
         pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
         yPosition += 6;
       }
+      
+      const dateText = new Date().toLocaleDateString('de-DE', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+      pdf.text(`Datum: ${dateText}`, margin, yPosition);
+      yPosition += 6;
       
       // Add a separator line
       pdf.setLineWidth(0.5);
@@ -333,7 +334,7 @@ export default function ReportDetailPage() {
             // Add category if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
+            pdf.setFont('helvetica', 'normal');
             pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
@@ -348,7 +349,7 @@ export default function ReportDetailPage() {
             // Add note
             if (observation.note) {
               pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'bold');
+              pdf.setFont('helvetica', 'normal');
               const noteLines = pdf.splitTextToSize(observation.note, textWidth);
               pdf.text(noteLines, textStartX, textY);
               textY += noteLines.length * 6 + 5;
@@ -371,7 +372,7 @@ export default function ReportDetailPage() {
             // Fallback: just add text without image
             if (observation.note) {
               pdf.setFontSize(12);
-              pdf.setFont('helvetica', 'bold');
+              pdf.setFont('helvetica', 'normal');
               pdf.text(`${i + 1}. ${observation.note}`, margin, yPosition);
               yPosition += 8;
             }
