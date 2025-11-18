@@ -16,7 +16,6 @@ import {
   Calendar,
   Eye,
   Trash2,
-  Download,
   ArrowLeft,
   Share,
 } from "lucide-react";
@@ -136,9 +135,6 @@ export default function ReportsPage() {
     router.push(`/reports/${reportId}`);
   };
 
-  const handleExportReport = async (reportId: string) => {
-    router.push(`/report?reportId=${reportId}`);
-  };
 
   const handleShareReport = async (reportId: string) => {
     const shareUrl = `${window.location.origin}/reports/${reportId}`;
