@@ -223,7 +223,7 @@ export default function ReportsPage() {
                         >
                           <Share className="h-4 w-4" />
                         </Button>
-                        <Button
+                        {/* <Button
                           onClick={() => handleExportReport(report.id)}
                           variant="outline"
                           size="sm"
@@ -231,7 +231,7 @@ export default function ReportsPage() {
                           title="Export report"
                         >
                           <Download className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           onClick={() => handleDeleteReport(report.id)}
                           variant="outline"

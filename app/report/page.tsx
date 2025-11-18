@@ -187,7 +187,7 @@ function ReportPageContent() {
 
       // Header section with professional styling and logo
       pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont('helvetica', 'normal');
       const reportTitle = reportData?.title || 'INSPECTION REPORT';
       
       // Calculate available width for text (account for logo space)
@@ -231,7 +231,7 @@ function ReportPageContent() {
       
       // Project details
       pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont('helvetica', 'normal');
       const reportDescription = reportData?.description || 'Baustelleninspektion Dokumentation';
       
       // Split description if it's too long to avoid logo overlap
@@ -241,15 +241,6 @@ function ReportPageContent() {
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString('de-DE', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
-      pdf.text(`Datum: ${dateText}`, margin, yPosition);
-      yPosition += 6;
       
       // Add Ersteller if available
       if (reportData?.ersteller) {
@@ -262,6 +253,16 @@ function ReportPageContent() {
         pdf.text(`Baustelle: ${reportData.baustelle}`, margin, yPosition);
         yPosition += 6;
       }
+      
+      const dateText = new Date().toLocaleDateString('de-DE', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+      pdf.text(`Datum: ${dateText}`, margin, yPosition);
+      yPosition += 6;
       
       // Add a separator line
       pdf.setLineWidth(0.5);
@@ -365,7 +366,7 @@ function ReportPageContent() {
             // Add category/type if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
+            pdf.setFont('helvetica', 'normal');
             pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
@@ -380,7 +381,7 @@ function ReportPageContent() {
             // Add note
             if (displaySettings.note && observation.note) {
               pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'bold');
+              pdf.setFont('helvetica', 'normal');
               const noteLines = pdf.splitTextToSize(observation.note, textWidth);
               pdf.text(noteLines, textStartX, textY);
               textY += noteLines.length * 6 + 5;
@@ -411,7 +412,7 @@ function ReportPageContent() {
             console.error('Error adding observation to PDF:', error);
             // Fallback: just add text without image
             pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
+            pdf.setFont('helvetica', 'normal');
             if (observation.note) {
               const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
               pdf.text(noteLines, margin, yPosition);
@@ -422,7 +423,7 @@ function ReportPageContent() {
           // No photo: just add text content
           if (displaySettings.note && observation.note) {
             pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
+            pdf.setFont('helvetica', 'normal');
             const noteLines = pdf.splitTextToSize(observation.note, pageWidth - 2 * margin);
             pdf.text(noteLines, margin, yPosition);
             yPosition += noteLines.length * 6 + 5;
