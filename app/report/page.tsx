@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save } from "lucide-react";
+import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -63,6 +63,8 @@ function ReportPageContent() {
   
   // Save report state
   const [isSaving, setIsSaving] = useState(false);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
+  const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
   const [reportErsteller, setReportErsteller] = useState('');
@@ -178,6 +180,7 @@ function ReportPageContent() {
   }, [supabase]);
 
   const handleDownloadPDF = useCallback(async () => {
+    setIsDownloadingPDF(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -467,10 +470,13 @@ function ReportPageContent() {
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
+    } finally {
+      setIsDownloadingPDF(false);
     }
   }, [observations, displaySettings, reportData]);
 
   const handleDownloadWord = useCallback(async () => {
+    setIsDownloadingWord(true);
     try {
       
       const children = [];
@@ -707,6 +713,8 @@ function ReportPageContent() {
     } catch (error) {
       console.error('Error generating Word document:', error);
       alert('Error generating Word document. Please try again.');
+    } finally {
+      setIsDownloadingWord(false);
     }
   }, [observations, t, language, displaySettings]);
 
@@ -1313,17 +1321,37 @@ function ReportPageContent() {
                 onClick={handleDownloadPDF}
                 className="transition-all"
                 variant="outline"
+                disabled={isDownloadingPDF}
               >
-                <Download className="h-4 w-4 mr-2" />
-                PDF
+                {isDownloadingPDF ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF
+                  </>
+                )}
               </Button>
               <Button
                 onClick={handleDownloadWord}
                 className="transition-all"
                 variant="outline"
+                disabled={isDownloadingWord}
               >
-                <FileText className="h-4 w-4 mr-2" />
-                Word
+                {isDownloadingWord ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Word
+                  </>
+                )}
               </Button>
             </div>
           </div>
