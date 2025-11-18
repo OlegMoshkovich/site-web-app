@@ -489,11 +489,11 @@ export default function Home() {
           user_id: currentUser.id,
           title: reportTitle,
           description: reportDescription || null,
+          ersteller: reportErsteller || null,
+          baustelle: reportBaustelle || null,
           settings: {
             language,
-            selectedIds: Array.from(selectedObservations),
-            ersteller: reportErsteller || null,
-            baustelle: reportBaustelle || null
+            selectedIds: Array.from(selectedObservations)
           }
         })
         .select()
