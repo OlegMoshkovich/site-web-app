@@ -124,6 +124,8 @@ export default function Home() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
+  const [reportErsteller, setReportErsteller] = useState('');
+  const [reportBaustelle, setReportBaustelle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // ===== UTILITY FUNCTIONS =====
@@ -487,6 +489,8 @@ export default function Home() {
           user_id: currentUser.id,
           title: reportTitle,
           description: reportDescription || null,
+          ersteller: reportErsteller || null,
+          baustelle: reportBaustelle || null,
           settings: {
             language,
             selectedIds: Array.from(selectedObservations)
@@ -521,6 +525,8 @@ export default function Home() {
       setShowSaveDialog(false);
       setReportTitle('');
       setReportDescription('');
+      setReportErsteller('');
+      setReportBaustelle('');
       setSelectedObservations(new Set()); // Clear selections
       
       // Redirect to reports page
@@ -531,7 +537,7 @@ export default function Home() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, reportDescription, selectedObservations, language, supabase, router]);
+  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, selectedObservations, language, supabase, router]);
 
   // ===== DELETE FUNCTIONALITY =====
   // Handle observation deletion with confirmation
@@ -1710,6 +1716,33 @@ export default function Home() {
                 />
               </div>
               <div>
+                <label htmlFor="report-baustelle" className="block text-sm font-medium text-gray-700 mb-1">
+                  Baustelle
+                </label>
+                <input
+                  id="report-baustelle"
+                  type="text"
+                  value={reportBaustelle}
+                  onChange={(e) => setReportBaustelle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter construction site"
+                />
+              </div>
+              <div>
+                <label htmlFor="report-ersteller" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ersteller
+                </label>
+                <input
+                  id="report-ersteller"
+                  type="text"
+                  value={reportErsteller}
+                  onChange={(e) => setReportErsteller(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter report creator"
+                />
+              </div>
+              
+              <div>
                 <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
@@ -1722,6 +1755,8 @@ export default function Home() {
                   rows={3}
                 />
               </div>
+       
+              
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <Button
@@ -1729,6 +1764,8 @@ export default function Home() {
                   setShowSaveDialog(false);
                   setReportTitle('');
                   setReportDescription('');
+                  setReportErsteller('');
+                  setReportBaustelle('');
                 }}
                 variant="outline"
                 disabled={isSaving}

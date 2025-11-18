@@ -16,7 +16,6 @@ import {
   Calendar,
   Eye,
   Trash2,
-  Download,
   ArrowLeft,
   Share,
 } from "lucide-react";
@@ -136,9 +135,6 @@ export default function ReportsPage() {
     router.push(`/reports/${reportId}`);
   };
 
-  const handleExportReport = async (reportId: string) => {
-    router.push(`/report?reportId=${reportId}`);
-  };
 
   const handleShareReport = async (reportId: string) => {
     const shareUrl = `${window.location.origin}/reports/${reportId}`;
@@ -223,7 +219,7 @@ export default function ReportsPage() {
                         >
                           <Share className="h-4 w-4" />
                         </Button>
-                        <Button
+                        {/* <Button
                           onClick={() => handleExportReport(report.id)}
                           variant="outline"
                           size="sm"
@@ -231,7 +227,7 @@ export default function ReportsPage() {
                           title="Export report"
                         >
                           <Download className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           onClick={() => handleDeleteReport(report.id)}
                           variant="outline"
