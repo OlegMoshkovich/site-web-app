@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -46,7 +46,7 @@ function ReportPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [reportData, setReportData] = useState<{title: string, description: string | null} | null>(null);
+  const [reportData, setReportData] = useState<{title: string, description: string | null, ersteller?: string | null, baustelle?: string | null} | null>(null);
   const { language, setLanguage } = useLanguage();
   
   // Display toggles
@@ -65,6 +65,8 @@ function ReportPageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
+  const [reportErsteller, setReportErsteller] = useState('');
+  const [reportBaustelle, setReportBaustelle] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   
   const searchParams = useSearchParams();
@@ -239,15 +241,27 @@ function ReportPageContent() {
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString('en-US', { 
+      const dateText = new Date().toLocaleDateString('de-DE', { 
         year: 'numeric', 
         month: '2-digit', 
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit'
-      });
+      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
       pdf.text(`Datum: ${dateText}`, margin, yPosition);
       yPosition += 6;
+      
+      // Add Ersteller if available
+      if (reportData?.ersteller) {
+        pdf.text(`Ersteller: ${reportData.ersteller}`, margin, yPosition);
+        yPosition += 6;
+      }
+      
+      // Add Baustelle if available
+      if (reportData?.baustelle) {
+        pdf.text(`Baustelle: ${reportData.baustelle}`, margin, yPosition);
+        yPosition += 6;
+      }
       
       // Add a separator line
       pdf.setLineWidth(0.5);
@@ -716,6 +730,8 @@ function ReportPageContent() {
           user_id: user.id,
           title: reportTitle,
           description: reportDescription || null,
+          ersteller: reportErsteller || null,
+          baustelle: reportBaustelle || null,
           settings: {
             displaySettings,
             language,
@@ -751,6 +767,8 @@ function ReportPageContent() {
       setShowSaveDialog(false);
       setReportTitle('');
       setReportDescription('');
+      setReportErsteller('');
+      setReportBaustelle('');
       
       // Redirect to reports page
       window.location.href = '/reports';
@@ -760,7 +778,7 @@ function ReportPageContent() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, reportDescription, displaySettings, language, memoizedSelectedIds, observations, supabase]);
+  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, displaySettings, language, memoizedSelectedIds, observations, supabase]);
 
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
@@ -825,7 +843,7 @@ function ReportPageContent() {
       // First, get the report details
       const { data: reportDetails, error: reportError } = await supabase
         .from('reports')
-        .select('title, description')
+        .select('title, description, ersteller, baustelle, settings')
         .eq('id', reportId)
         .single();
 
@@ -838,7 +856,9 @@ function ReportPageContent() {
       // Set report data for PDF generation
       setReportData({
         title: reportDetails.title || 'INSPECTION REPORT',
-        description: reportDetails.description || 'Baustelleninspektion Dokumentation'
+        description: reportDetails.description || 'Baustelleninspektion Dokumentation',
+        ersteller: reportDetails.ersteller || null,
+        baustelle: reportDetails.baustelle || null
       });
 
       // Then, get the observation IDs for this report
@@ -1280,7 +1300,14 @@ function ReportPageContent() {
             <div></div>
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">
-              
+              <Button
+                onClick={() => setShowSaveDialog(true)}
+                className="transition-all"
+                variant="outline"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </Button>
               <Button
                 onClick={handleDownloadPDF}
                 className="transition-all"
@@ -1544,8 +1571,8 @@ function ReportPageContent() {
       
       {/* Save Report Dialog */}
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-none p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-none p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Save Report</h3>
             <div className="space-y-4">
               <div>
@@ -1557,8 +1584,34 @@ function ReportPageContent() {
                   type="text"
                   value={reportTitle}
                   onChange={(e) => setReportTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
                   placeholder="Enter report title"
+                />
+              </div>
+              <div>
+                <label htmlFor="report-baustelle" className="block text-sm font-medium text-gray-700 mb-1">
+                  Baustelle
+                </label>
+                <input
+                  id="report-baustelle"
+                  type="text"
+                  value={reportBaustelle}
+                  onChange={(e) => setReportBaustelle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter construction site"
+                />
+              </div>
+              <div>
+                <label htmlFor="report-ersteller" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ersteller
+                </label>
+                <input
+                  id="report-ersteller"
+                  type="text"
+                  value={reportErsteller}
+                  onChange={(e) => setReportErsteller(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter report creator"
                 />
               </div>
               <div>
@@ -1569,9 +1622,9 @@ function ReportPageContent() {
                   id="report-description"
                   value={reportDescription}
                   onChange={(e) => setReportDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
                   placeholder="Enter report description (optional)"
+                  rows={3}
                 />
               </div>
             </div>
@@ -1581,6 +1634,8 @@ function ReportPageContent() {
                   setShowSaveDialog(false);
                   setReportTitle('');
                   setReportDescription('');
+                  setReportErsteller('');
+                  setReportBaustelle('');
                 }}
                 variant="outline"
                 disabled={isSaving}

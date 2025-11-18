@@ -1693,7 +1693,7 @@ export default function Home() {
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-none p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
+            <h3 className="text-lg font-semibold mb-4">Save Report hello</h3>
             <div className="space-y-4">
               <div>
                 <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1710,6 +1710,35 @@ export default function Home() {
                 />
               </div>
               <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Baustelle
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportBaustelle}
+                  onChange={(e) => setReportBaustller(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter report title"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ersteller
+                </label>
+                <input
+                  id="report-title"
+                  type="text"
+                  value={reportErsteller}
+                  onChange={(e) => setReportErsteller(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  placeholder="Enter report title"
+                  autoFocus
+                />
+              </div>
+              
+              <div>
                 <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
@@ -1722,6 +1751,8 @@ export default function Home() {
                   rows={3}
                 />
               </div>
+       
+              
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <Button

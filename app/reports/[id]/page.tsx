@@ -28,6 +28,8 @@ interface Report {
   id: string;
   title: string;
   description: string | null;
+  ersteller?: string | null;
+  baustelle?: string | null;
   created_at: string;
   updated_at: string;
   settings: Record<string, unknown>;
@@ -232,15 +234,27 @@ export default function ReportDetailPage() {
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      const dateText = new Date().toLocaleDateString('en-US', { 
+      const dateText = new Date().toLocaleDateString('de-DE', { 
         year: 'numeric', 
         month: '2-digit', 
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit'
-      });
+      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
       pdf.text(`Datum: ${dateText}`, margin, yPosition);
       yPosition += 6;
+      
+      // Add Ersteller if available
+      if (report?.ersteller) {
+        pdf.text(`Ersteller: ${report.ersteller}`, margin, yPosition);
+        yPosition += 6;
+      }
+      
+      // Add Baustelle if available
+      if (report?.baustelle) {
+        pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
+        yPosition += 6;
+      }
       
       // Add a separator line
       pdf.setLineWidth(0.5);
@@ -431,7 +445,7 @@ export default function ReportDetailPage() {
       // Fetch report details
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
-        .select('*')
+        .select('id, title, description, ersteller, baustelle, created_at, updated_at, settings')
         .eq('id', reportId)
         .single();
 
