@@ -124,6 +124,8 @@ export default function Home() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
+  const [reportErsteller, setReportErsteller] = useState('');
+  const [reportBaustelle, setReportBaustelle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // ===== UTILITY FUNCTIONS =====
@@ -489,7 +491,9 @@ export default function Home() {
           description: reportDescription || null,
           settings: {
             language,
-            selectedIds: Array.from(selectedObservations)
+            selectedIds: Array.from(selectedObservations),
+            ersteller: reportErsteller || null,
+            baustelle: reportBaustelle || null
           }
         })
         .select()
@@ -521,6 +525,8 @@ export default function Home() {
       setShowSaveDialog(false);
       setReportTitle('');
       setReportDescription('');
+      setReportErsteller('');
+      setReportBaustelle('');
       setSelectedObservations(new Set()); // Clear selections
       
       // Redirect to reports page
@@ -531,7 +537,7 @@ export default function Home() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, reportDescription, selectedObservations, language, supabase, router]);
+  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, selectedObservations, language, supabase, router]);
 
   // ===== DELETE FUNCTIONALITY =====
   // Handle observation deletion with confirmation
@@ -1693,7 +1699,7 @@ export default function Home() {
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-none p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">Save Report hello</h3>
+            <h3 className="text-lg font-semibold mb-4">Save Report</h3>
             <div className="space-y-4">
               <div>
                 <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1710,31 +1716,29 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="report-baustelle" className="block text-sm font-medium text-gray-700 mb-1">
                   Baustelle
                 </label>
                 <input
-                  id="report-title"
+                  id="report-baustelle"
                   type="text"
                   value={reportBaustelle}
-                  onChange={(e) => setReportBaustller(e.target.value)}
+                  onChange={(e) => setReportBaustelle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  placeholder="Enter report title"
-                  autoFocus
+                  placeholder="Enter construction site"
                 />
               </div>
               <div>
-                <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="report-ersteller" className="block text-sm font-medium text-gray-700 mb-1">
                   Ersteller
                 </label>
                 <input
-                  id="report-title"
+                  id="report-ersteller"
                   type="text"
                   value={reportErsteller}
                   onChange={(e) => setReportErsteller(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  placeholder="Enter report title"
-                  autoFocus
+                  placeholder="Enter report creator"
                 />
               </div>
               
@@ -1760,6 +1764,8 @@ export default function Home() {
                   setShowSaveDialog(false);
                   setReportTitle('');
                   setReportDescription('');
+                  setReportErsteller('');
+                  setReportBaustelle('');
                 }}
                 variant="outline"
                 disabled={isSaving}

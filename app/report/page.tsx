@@ -366,7 +366,7 @@ function ReportPageContent() {
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
-            pdf.text(`Kategorie: ${category}`, textStartX, textY);
+            pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
             // Add timestamp
@@ -390,7 +390,7 @@ function ReportPageContent() {
             if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
-              const labelText = 'Labels: ' + observation.labels.join(', ');
+              const labelText = 'Bereich: ' + observation.labels.join(', ');
               const labelLines = pdf.splitTextToSize(labelText, textWidth);
               pdf.text(labelLines, textStartX, textY);
               textY += labelLines.length * 5 + 3;
@@ -431,7 +431,7 @@ function ReportPageContent() {
           if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
-            pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
+            pdf.text('Bereich: ' + observation.labels.join(', '), margin, yPosition);
             yPosition += 8;
           }
           
@@ -532,7 +532,7 @@ function ReportPageContent() {
         if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
           textContent.push(
             new Paragraph({
-              children: [new TextRun({ text: 'Labels: ' + observation.labels.join(', '), size: 20, font: 'Arial' })],
+              children: [new TextRun({ text: 'Bereich: ' + observation.labels.join(', '), size: 20, font: 'Arial' })],
               // spacing: { after: 100 }
             })
           );

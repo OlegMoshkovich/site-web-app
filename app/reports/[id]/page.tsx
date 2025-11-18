@@ -334,7 +334,7 @@ export default function ReportDetailPage() {
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
-            pdf.text(`Kategorie: ${category}`, textStartX, textY);
+            pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
             // Add timestamp
@@ -358,7 +358,7 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
-              const labelText = 'Labels: ' + observation.labels.join(', ');
+              const labelText = 'Bereich: ' + observation.labels.join(', ');
               const labelLines = pdf.splitTextToSize(labelText, textWidth);
               pdf.text(labelLines, textStartX, textY);
               textY += labelLines.length * 5 + 3;
@@ -379,7 +379,7 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
-              pdf.text('Labels: ' + observation.labels.join(', '), margin, yPosition);
+              pdf.text('Bereich: ' + observation.labels.join(', '), margin, yPosition);
               yPosition += 8;
             }
             
