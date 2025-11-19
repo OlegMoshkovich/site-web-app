@@ -184,8 +184,8 @@ export default function ReportDetailPage() {
       const reportTitle = report?.title || 'INSPECTION REPORT';
       
       // Calculate available width for text (account for logo space)
-      const logoWidth = 20;
-      const logoSpace = 30; // Logo width + some margin
+      const logoWidth = 30;
+      const logoSpace = 45; // Logo width + some margin
       const maxTextWidth = pageWidth - 2 * margin - logoSpace;
       
       // Split title if it's too long to avoid logo overlap
@@ -274,7 +274,8 @@ export default function ReportDetailPage() {
       yPosition += 6;
       
       // Add a separator line
-      pdf.setLineWidth(0.5);
+      pdf.setLineWidth(0.1);
+      pdf.setDrawColor(200, 200, 200);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 15;
 
@@ -329,14 +330,17 @@ export default function ReportDetailPage() {
                 const logoCtx = logoCanvas.getContext('2d');
                 logoCanvas.width = logoImg.width;
                 logoCanvas.height = logoImg.height;
-                logoCtx?.drawImage(logoImg, 0, 0);
+                if (logoCtx) {
+                  logoCtx.globalAlpha = 0.5; // Set 50% transparency
+                  logoCtx.drawImage(logoImg, 0, 0);
+                }
                 
-                const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+                const logoData = logoCanvas.toDataURL('image/png', 1.0); // Use PNG to preserve transparency
                 
                 // Position logo on bottom-right of photo
                 const photoLogoWidth = 8;
                 const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
-                pdf.addImage(logoData, 'JPEG', margin + imgWidth - photoLogoWidth - 2, yPosition + imgHeight - photoLogoHeight - 2, photoLogoWidth, photoLogoHeight);
+                pdf.addImage(logoData, 'PNG', margin + imgWidth - photoLogoWidth - 2, yPosition + imgHeight - photoLogoHeight - 2, photoLogoWidth, photoLogoHeight);
               } catch (error) {
                 console.error('Error adding logo overlay to photo:', error);
               }
