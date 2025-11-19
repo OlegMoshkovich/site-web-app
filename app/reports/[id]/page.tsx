@@ -18,6 +18,7 @@ import {
   Download,
   ZoomIn,
   ZoomOut,
+  Loader2,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -72,6 +73,7 @@ export default function ReportDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   
   // Photo modal state
   const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
@@ -172,6 +174,7 @@ export default function ReportDetailPage() {
 
   const handleExportReport = async () => {
     try {
+      setIsGeneratingPDF(true);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -179,7 +182,7 @@ export default function ReportDetailPage() {
       let yPosition = margin;
 
       // Header section with professional styling and logo
-      pdf.setFontSize(14);
+      pdf.setFontSize(12);
       pdf.setFont('helvetica', 'normal');
       const reportTitle = report?.title || 'INSPECTION REPORT';
       
@@ -223,7 +226,7 @@ export default function ReportDetailPage() {
       yPosition += 3;
       
       // Project details
-      pdf.setFontSize(12);
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
       
@@ -273,8 +276,8 @@ export default function ReportDetailPage() {
       pdf.line(margin, yPosition + 1.5, margin + textWidth, yPosition + 1.5);
       yPosition += 6;
       
-      // Add a separator line
-      pdf.setLineWidth(0.1);
+      // // Add a separator line
+      pdf.setLineWidth(0);
       pdf.setDrawColor(200, 200, 200);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 15;
@@ -431,6 +434,8 @@ export default function ReportDetailPage() {
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -619,9 +624,16 @@ export default function ReportDetailPage() {
                 size="sm"
                 className="h-8 px-3 transition-all"
                 title="Download Report"
+                disabled={isGeneratingPDF}
               >
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline ml-1">Download</span>
+                {isGeneratingPDF ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline ml-1">
+                  {isGeneratingPDF ? 'Generating...' : 'Download'}
+                </span>
               </Button>
             )}
             <Button
