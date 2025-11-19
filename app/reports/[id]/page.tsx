@@ -179,7 +179,7 @@ export default function ReportDetailPage() {
       let yPosition = margin;
 
       // Header section with professional styling and logo
-      pdf.setFontSize(18);
+      pdf.setFontSize(14);
       pdf.setFont('helvetica', 'normal');
       const reportTitle = report?.title || 'INSPECTION REPORT';
       
@@ -223,7 +223,7 @@ export default function ReportDetailPage() {
       yPosition += 3;
       
       // Project details
-      pdf.setFontSize(14);
+      pdf.setFontSize(12);
       pdf.setFont('helvetica', 'normal');
       const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
       
@@ -269,7 +269,7 @@ export default function ReportDetailPage() {
         pdf.getStringUnitWidth(datumLabel) *
         fontSize /
         (pdf.internal.scaleFactor || 1);
-      pdf.setLineWidth(0.3);
+      pdf.setLineWidth(0.1);
       pdf.line(margin, yPosition + 1.5, margin + textWidth, yPosition + 1.5);
       yPosition += 6;
       
@@ -283,8 +283,8 @@ export default function ReportDetailPage() {
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
         
-        // Check if we need a new page
-        if (yPosition > pageHeight - 120) {
+        // Check if we need a new page - adjusted for 3 observations per page
+        if (yPosition > pageHeight - 80) {
           pdf.addPage();
           yPosition = margin + 15;
         }
@@ -308,8 +308,8 @@ export default function ReportDetailPage() {
             
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
             
-            // Calculate image dimensions for PDF
-            const imgWidth = 50;
+            // Calculate image dimensions for PDF - reduced size for 3 per page
+            const imgWidth = 35;
             const imgHeight = (img.height / img.width) * imgWidth;
             
             // Add image
@@ -338,7 +338,7 @@ export default function ReportDetailPage() {
                 const logoData = logoCanvas.toDataURL('image/png', 1.0); // Use PNG to preserve transparency
                 
                 // Position logo on bottom-right of photo
-                const photoLogoWidth = 8;
+                const photoLogoWidth = 6;
                 const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
                 pdf.addImage(logoData, 'PNG', margin + imgWidth - photoLogoWidth - 2, yPosition + imgHeight - photoLogoHeight - 2, photoLogoWidth, photoLogoHeight);
               } catch (error) {
@@ -359,7 +359,7 @@ export default function ReportDetailPage() {
             textY += 7;
             
             // Add timestamp
-            pdf.setFontSize(9);
+            pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
             const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
@@ -368,7 +368,7 @@ export default function ReportDetailPage() {
             
             // Add note
             if (observation.note) {
-              pdf.setFontSize(11);
+              pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
               const noteLines = pdf.splitTextToSize(observation.note, textWidth);
               pdf.text(noteLines, textStartX, textY);
@@ -385,13 +385,13 @@ export default function ReportDetailPage() {
               textY += labelLines.length * 5 + 3;
             }
             
-            yPosition += Math.max(imgHeight, textY - yPosition) + 10;
+            yPosition += Math.max(imgHeight, textY - yPosition) + 5;
             
           } catch (error) {
             console.error('Error adding observation to PDF:', error);
             // Fallback: just add text without image
             if (observation.note) {
-              pdf.setFontSize(12);
+              pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
               pdf.text(`${i + 1}. ${observation.note}`, margin, yPosition);
               yPosition += 8;
@@ -404,7 +404,7 @@ export default function ReportDetailPage() {
               yPosition += 8;
             }
             
-            yPosition += 15;
+            yPosition += 8;
           }
         }
       }
@@ -415,12 +415,12 @@ export default function ReportDetailPage() {
         pdf.setPage(i);
         
         // Footer line
-        pdf.setLineWidth(0.5);
+        pdf.setLineWidth(0.1);
         pdf.setDrawColor(200, 200, 200);
         pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
         
         // Footer text (page numbers only)
-        pdf.setFontSize(8);
+        pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
         pdf.text(`Seite ${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
       }
