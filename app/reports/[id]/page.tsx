@@ -233,7 +233,7 @@ export default function ReportDetailPage() {
       // Split description if it's too long to avoid logo overlap
       const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
       pdf.text(descriptionLines, margin, yPosition);
-      yPosition += descriptionLines.length * 6; // Adjust for multiple lines
+      yPosition += descriptionLines.length * 5; // Adjust for multiple lines
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
@@ -241,13 +241,13 @@ export default function ReportDetailPage() {
       // Add Ersteller if available
       if (report?.ersteller) {
         pdf.text(`Ersteller: ${report.ersteller}`, margin, yPosition);
-        yPosition += 6;
+        yPosition += 5;
       }
       
       // Add Baustelle if available
       if (report?.baustelle) {
         pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
-        yPosition += 6;
+        yPosition += 5;
       }
       
       const dateText = new Date().toLocaleDateString('de-DE', { 
@@ -359,7 +359,7 @@ export default function ReportDetailPage() {
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Gebäude: ${category}`, textStartX, textY);
-            textY += 7;
+            textY += 5;
             
             // Add timestamp
             pdf.setFontSize(10);
@@ -367,17 +367,8 @@ export default function ReportDetailPage() {
             const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
             pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
-            textY += 10;
-            
-            // Add note
-            if (observation.note) {
-              pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'normal');
-              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
-              pdf.text(noteLines, textStartX, textY);
-              textY += noteLines.length * 6 + 5;
-            }
-            
+            textY += 5;
+
             // Add labels
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
@@ -385,8 +376,19 @@ export default function ReportDetailPage() {
               const labelText = 'Bereich: ' + observation.labels.join(', ');
               const labelLines = pdf.splitTextToSize(labelText, textWidth);
               pdf.text(labelLines, textStartX, textY);
-              textY += labelLines.length * 5 + 3;
+              textY += labelLines.length * 4 + 5;
             }
+            
+            // Add note
+            if (observation.note) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
+              pdf.text(noteLines, textStartX, textY);
+              textY += noteLines.length * 5 + 2;
+            }
+            
+  
             
             yPosition += Math.max(imgHeight, textY - yPosition) + 5;
             
