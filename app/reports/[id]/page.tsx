@@ -276,9 +276,9 @@ export default function ReportDetailPage() {
       pdf.line(margin, yPosition + 1.5, margin + textWidth, yPosition + 1.5);
       yPosition += 6;
       
-      // // Add a separator line
-      pdf.setLineWidth(0);
-      pdf.setDrawColor(200, 200, 200);
+      // Add a thin white separator line
+      pdf.setLineWidth(0.2);
+      pdf.setDrawColor(255, 255, 255);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 15;
 

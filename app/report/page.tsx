@@ -185,7 +185,7 @@ function ReportPageContent() {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 20;
+      const margin = 10;
       let yPosition = margin;
 
       // Header section with professional styling and logo
@@ -248,13 +248,13 @@ function ReportPageContent() {
       // Add Ersteller if available
       if (reportData?.ersteller) {
         pdf.text(`Ersteller: ${reportData.ersteller}`, margin, yPosition);
-        yPosition += 6;
+        yPosition += 5;
       }
       
       // Add Baustelle if available
       if (reportData?.baustelle) {
         pdf.text(`Baustelle: ${reportData.baustelle}`, margin, yPosition);
-        yPosition += 6;
+        yPosition += 5;
       }
       
       const dateText = new Date().toLocaleDateString('de-DE', { 
@@ -265,12 +265,13 @@ function ReportPageContent() {
         minute: '2-digit'
       }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
       pdf.text(`Datum: ${dateText}`, margin, yPosition);
-      yPosition += 6;
+      yPosition += 5;
       
-      // Add a separator line
+      // Add a separator line (white)
+      pdf.setDrawColor(255, 255, 255); // White color for the line
       pdf.setLineWidth(0.5);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 15;
+      yPosition += 5;
 
       // Process each observation with professional numbering
       for (let i = 0; i < observations.length; i++) {
@@ -320,7 +321,7 @@ function ReportPageContent() {
             
             // Draw border around the entire row
             pdf.setDrawColor(200, 200, 200);
-            pdf.setLineWidth(0.5);
+            pdf.setLineWidth(0.1);
             const rowHeight = Math.max(imgHeight + 10, 50);
             pdf.rect(margin, yPosition, pageWidth - 2 * margin, rowHeight);
             
@@ -455,7 +456,7 @@ function ReportPageContent() {
         pdf.setPage(i);
         
         // Footer line
-        pdf.setLineWidth(0.5);
+        pdf.setLineWidth(0.1);
         pdf.setDrawColor(200, 200, 200);
         pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
         
