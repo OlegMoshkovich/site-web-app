@@ -370,7 +370,7 @@ function ReportPageContent() {
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
+            pdf.text(`Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
             // Add timestamp
@@ -378,7 +378,7 @@ function ReportPageContent() {
             pdf.setFont('helvetica', 'normal');
             const timestamp = new Date(observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
-            pdf.text(timestamp, textStartX, textY);
+            pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
             textY += 10;
             
             // Add note
