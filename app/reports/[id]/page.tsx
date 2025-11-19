@@ -254,7 +254,23 @@ export default function ReportDetailPage() {
         hour: '2-digit',
         minute: '2-digit'
       }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
-      pdf.text(`Datum: ${dateText}`, margin, yPosition);
+      const datumLabel = `Datum: ${dateText}`;
+      pdf.text(datumLabel, margin, yPosition);
+      // Create underline below text
+      // Getting fontSize via pdf.internal.getFontSize() causes error—use pdf.getFontSize() if available, or hardcode as fallback
+      let fontSize;
+      if (typeof pdf.getFontSize === 'function') {
+        fontSize = pdf.getFontSize();
+      } else {
+        // fallback (default font size in jsPDF: 16, but here setFontSize(10) was set before)
+        fontSize = 10;
+      }
+      const textWidth =
+        pdf.getStringUnitWidth(datumLabel) *
+        fontSize /
+        (pdf.internal.scaleFactor || 1);
+      pdf.setLineWidth(0.3);
+      pdf.line(margin, yPosition + 1.5, margin + textWidth, yPosition + 1.5);
       yPosition += 6;
       
       // Add a separator line
@@ -335,7 +351,7 @@ export default function ReportDetailPage() {
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(`Sektor - Gebäude: ${category}`, textStartX, textY);
+            pdf.text(`Gebäude: ${category}`, textStartX, textY);
             textY += 7;
             
             // Add timestamp
@@ -343,7 +359,7 @@ export default function ReportDetailPage() {
             pdf.setFont('helvetica', 'normal');
             const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
-            pdf.text(timestamp, textStartX, textY);
+            pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
             textY += 10;
             
             // Add note
@@ -402,7 +418,7 @@ export default function ReportDetailPage() {
         // Footer text (page numbers only)
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
+        pdf.text(`Seite ${i}/${totalPages}`, pageWidth - margin - 10, pageHeight - 12);
       }
 
       // Save the PDF

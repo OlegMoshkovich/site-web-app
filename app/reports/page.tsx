@@ -191,7 +191,11 @@ export default function ReportsPage() {
           ) : (
             <div className="grid gap-4">
               {reports.map((report) => (
-                <Card key={report.id} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={report.id} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleViewReport(report.id)}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -202,7 +206,10 @@ export default function ReportsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={() => handleViewReport(report.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewReport(report.id);
+                          }}
                           variant="outline"
                           size="sm"
                           className="h-8 w-8 p-0"
@@ -211,7 +218,10 @@ export default function ReportsPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button
-                          onClick={() => handleShareReport(report.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShareReport(report.id);
+                          }}
                           variant="outline"
                           size="sm"
                           className="h-8 w-8 p-0"
@@ -229,7 +239,10 @@ export default function ReportsPage() {
                           <Download className="h-4 w-4" />
                         </Button> */}
                         <Button
-                          onClick={() => handleDeleteReport(report.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteReport(report.id);
+                          }}
                           variant="outline"
                           size="sm"
                           className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
