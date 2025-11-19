@@ -267,9 +267,9 @@ function ReportPageContent() {
       pdf.text(`Datum: ${dateText}`, margin, yPosition);
       yPosition += 5;
       
-      // Add a separator line (white)
-      pdf.setDrawColor(255, 255, 255); // White color for the line
-      pdf.setLineWidth(0.5);
+      // Add a separator line
+      pdf.setDrawColor(255, 255, 255);
+      pdf.setLineWidth(0.1);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 5;
 

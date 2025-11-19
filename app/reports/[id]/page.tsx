@@ -280,7 +280,7 @@ export default function ReportDetailPage() {
       pdf.setLineWidth(0.2);
       pdf.setDrawColor(255, 255, 255);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 15;
+      yPosition += 5;
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
