@@ -289,7 +289,7 @@ export default function ReportDetailPage() {
         // Check if we need a new page - adjusted for 3 observations per page
         if (yPosition > pageHeight - 80) {
           pdf.addPage();
-          yPosition = margin + 15;
+          yPosition = 10; // 20px from top of page
         }
 
         // Add observation content
@@ -307,7 +307,17 @@ export default function ReportDetailPage() {
             const ctx = canvas.getContext('2d');
             canvas.width = img.width;
             canvas.height = img.height;
-            ctx?.drawImage(img, 0, 0);
+            
+            if (ctx) {
+              // Create rounded rectangle clipping path
+              const radius = 10; // Adjust this value to change corner roundness
+              ctx.beginPath();
+              ctx.roundRect(0, 0, canvas.width, canvas.height, radius);
+              ctx.clip();
+              
+              // Draw the image with rounded corners
+              ctx.drawImage(img, 0, 0);
+            }
             
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
             
