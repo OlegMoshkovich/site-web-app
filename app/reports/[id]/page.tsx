@@ -678,7 +678,7 @@ export default function ReportDetailPage() {
                 {/* Site Logo in top-right */}
                 {observations.length > 0 && observations[0].sites?.logo_url && (
                   <div className="flex-shrink-0 ml-4">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
                       <img 
                         src={observations[0].sites.logo_url} 
                         alt={`${observations[0].sites.name} logo`}
@@ -748,7 +748,7 @@ export default function ReportDetailPage() {
                           {/* Site Logo overlay on each photo */}
                           {observation.sites?.logo_url && (
                             <div className="absolute bottom-2 right-2 z-10">
-                              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-1.5 shadow-lg opacity-80">
+                              <div className="rounded-lg p-1.5 shadow-lg opacity-80">
                                 <img 
                                   src={observation.sites.logo_url} 
                                   alt={`${observation.sites.name} logo`}
