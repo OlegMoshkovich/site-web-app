@@ -163,7 +163,7 @@ export default function ReportsPage() {
               className="hover:opacity-80 transition-opacity cursor-pointer"
             >
               <Image
-                src="/images/banner.png"
+                src="/images/banner_logo.png"
                 alt="Site Logo"
                 width={120}
                 height={32}
