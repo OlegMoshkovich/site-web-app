@@ -761,12 +761,17 @@ export default function ReportDetailPage() {
                       )}
                       
                       {/* Content */}
-                      <div className="flex-1">
+                      <div className="flex-1 w-full lg:w-auto">
+                        {/* Always show CardHeader for consistent layout */}
                         <CardHeader className="pb-3 print:pb-2">
                           <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                              {observation.note && (
+                            <div className="space-y-1 w-full">
+                              {observation.note ? (
                                 <CardTitle className="text-lg print:text-base">{observation.note}</CardTitle>
+                              ) : (
+                                <CardTitle className="text-lg print:text-base text-gray-600">
+                                  Observation {index + 1}
+                                </CardTitle>
                               )}
                             </div>
                           </div>
