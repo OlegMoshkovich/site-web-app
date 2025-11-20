@@ -622,9 +622,15 @@ export default function ReportDetailPage() {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => router.push('/')}
-              className="text-lg font-semibold hover:text-blue-600 transition-colors cursor-pointer"
+              className="hover:opacity-80 transition-opacity cursor-pointer"
             >
-              Simple Site
+              <Image
+                src="/images/banner.png"
+                alt="Site Logo"
+                width={120}
+                height={32}
+                className="w-auto object-contain lg:h-6 h-5"
+              />
             </button>
           </div>
           
@@ -748,7 +754,7 @@ export default function ReportDetailPage() {
                           {/* Site Logo overlay on each photo */}
                           {observation.sites?.logo_url && (
                             <div className="absolute bottom-2 right-2 z-10">
-                              <div className="rounded-lg p-1.5 shadow-lg opacity-80">
+                              <div className="rounded-lg p-1.5 opacity-80">
                                 <img 
                                   src={observation.sites.logo_url} 
                                   alt={`${observation.sites.name} logo`}
@@ -870,12 +876,20 @@ export default function ReportDetailPage() {
               
               {/* App Store Button */}
               <div className="text-center">
-                <div className="inline-block bg-black text-white px-4 py-2 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs">Verfügbar im</span>
-                  </div>
-                  <div className="text-lg font-semibold">App Store</div>
-                </div>
+                <a 
+                  href="https://apps.apple.com/us/app/simple-site/id6749160249"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/app_screens/available-app-store.png"
+                    alt="Available on the App Store"
+                    width={180}
+                    height={60}
+                    className="mx-auto"
+                  />
+                </a>
               </div>
             </div>
           </div>

@@ -16,12 +16,12 @@ import {
   Calendar,
   Eye,
   Trash2,
-  ArrowLeft,
   Share,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-
+import Image from "next/image";
+    
 interface Report {
   id: string;
   title: string;
@@ -158,16 +158,18 @@ export default function ReportsPage() {
         {/* Header */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => router.push('/')}
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 border-gray-300"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </div>
+          <button 
+              onClick={() => router.push('/')}
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <Image
+                src="/images/banner.png"
+                alt="Site Logo"
+                width={120}
+                height={32}
+                className="w-auto object-contain lg:h-6 h-5"
+              />
+            </button>
           </div>
         </nav>
 
