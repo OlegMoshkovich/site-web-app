@@ -726,12 +726,11 @@ export default function ReportDetailPage() {
               <div className="grid gap-4 print:gap-2">
                 {observations.map((observation, index) => (
                   <Card key={observation.id} className="overflow-hidden print:break-inside-avoid p-0">
-                    <div className="flex flex-col lg:flex-row print:flex-row">
+                    <div className="flex flex-col lg:flex-row print:flex-row items-center lg:items-stretch print:items-stretch">
                       {/* Image */}
                       {observation.signedUrl && (
                         <div 
-                          className="flex-shrink-0 relative bg-transparent border border-gray-200 cursor-pointer" 
-                          style={{ width: '320px' }}
+                          className="flex-shrink-0 relative bg-transparent cursor-pointer w-80 lg:w-80 lg:border lg:border-gray-200"
                           onClick={() => openPhotoModal(observation)}
                         >
                           <Image
