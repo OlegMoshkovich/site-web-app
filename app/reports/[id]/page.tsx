@@ -23,6 +23,7 @@ import {
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+import { generateWordReport, downloadWordDocument } from "@/lib/wordExport";
 import Image from "next/image";
 
 interface Report {
@@ -74,6 +75,7 @@ export default function ReportDetailPage() {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   
   // Photo modal state
   const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
@@ -451,6 +453,44 @@ export default function ReportDetailPage() {
     }
   };
 
+  const handleExportWord = async () => {
+    try {
+      setIsGeneratingWord(true);
+      
+      // Prepare report data
+      const reportData = {
+        title: report?.title,
+        description: report?.description,
+        ersteller: report?.ersteller,
+        baustelle: report?.baustelle,
+        created_at: report?.created_at
+      };
+      
+      // Display settings - for now we'll include everything
+      const displaySettings = {
+        photo: true,
+        note: true,
+        labels: true,
+        gps: true
+      };
+      
+      // Generate Word document
+      const blob = await generateWordReport(observations, reportData, displaySettings);
+      
+      // Download the document
+      const filename = report?.title 
+        ? `${report.title.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.docx`
+        : `report-${new Date().toISOString().split('T')[0]}.docx`;
+      
+      downloadWordDocument(blob, filename);
+      
+    } catch (error) {
+      console.error('Error generating Word document:', error);
+      alert('Error generating Word document. Please try again.');
+    } finally {
+      setIsGeneratingWord(false);
+    }
+  };
 
   // Check authentication status
   useEffect(() => {
@@ -636,23 +676,42 @@ export default function ReportDetailPage() {
           
           <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <Button
-                onClick={handleExportReport}
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 transition-all"
-                title="Download Report"
-                disabled={isGeneratingPDF}
-              >
-                {isGeneratingPDF ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                <span className="hidden sm:inline ml-1">
-                  {isGeneratingPDF ? 'Generating...' : 'Download'}
-                </span>
-              </Button>
+              <>
+                <Button
+                  onClick={handleExportReport}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 transition-all"
+                  title="Download PDF Report"
+                  disabled={isGeneratingPDF}
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline ml-1">
+                    {isGeneratingPDF ? 'Generating...' : 'PDF'}
+                  </span>
+                </Button>
+                <Button
+                  onClick={handleExportWord}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 transition-all"
+                  title="Download Word Report"
+                  disabled={isGeneratingWord}
+                >
+                  {isGeneratingWord ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline ml-1">
+                    {isGeneratingWord ? 'Generating...' : 'Word'}
+                  </span>
+                </Button>
+              </>
             )}
             <Button
               onClick={() => setShowInfoModal(true)}
