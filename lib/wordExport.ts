@@ -103,8 +103,7 @@ export async function generateWordReport(
   }
   
   children.push(new Paragraph({}));
-  children.push(new Paragraph({}));
-  children.push(new Paragraph({}));
+
   // Process each observation
   for (let i = 0; i < observations.length; i++) {
     const observation = observations[i];
