@@ -672,13 +672,15 @@ export default function ReportDetailPage() {
                 className="w-auto object-contain lg:h-6 h-5"
               />
             </button>
-            <button 
-              onClick={() => router.push('/reports')}
-              className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
-              title="Back to Reports"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-600" />
-            </button>
+            {isAuthenticated && (
+              <button 
+                onClick={() => router.push('/reports')}
+                className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
+                title="Back to Reports"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-600" />
+              </button>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
