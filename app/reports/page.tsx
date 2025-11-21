@@ -17,6 +17,7 @@ import {
   Eye,
   Trash2,
   Share,
+  ArrowLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -157,7 +158,7 @@ export default function ReportsPage() {
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Header */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
+          <div className="w-full max-w-5xl flex justify-start items-center px-3 sm:px-5 text-sm">
           <button 
               onClick={() => router.push('/')}
               className="hover:opacity-80 transition-opacity cursor-pointer"
@@ -170,6 +171,15 @@ export default function ReportsPage() {
                 className="w-auto object-contain lg:h-6 h-5"
               />
             </button>
+            <Button
+              onClick={() => router.push('/')}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 transition-all ml-4"
+              title="Back to Reports"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
           </div>
         </nav>
 
@@ -199,14 +209,10 @@ export default function ReportsPage() {
                   onClick={() => handleViewReport(report.id)}
                 >
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg">{report.title}</CardTitle>
-                        {report.description && (
-                          <CardDescription>{report.description}</CardDescription>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
+                    {/* Title and buttons on same line */}
+                    <div className="flex items-start justify-between pb-3">
+                      <CardTitle className="text-lg flex-1 line-clamp-2 sm:line-clamp-none">{report.title}</CardTitle>
+                      <div className="flex items-center gap-2 pl-4">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -254,6 +260,12 @@ export default function ReportsPage() {
                         </Button>
                       </div>
                     </div>
+                    {/* Description in separate container below */}
+                    {report.description && (
+                      <div className="mt-3">
+                        <CardDescription>{report.description}</CardDescription>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between text-sm text-gray-500">

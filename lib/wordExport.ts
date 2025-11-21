@@ -55,7 +55,7 @@ export async function generateWordReport(
       new Paragraph({
         children: [new TextRun({ 
           text: reportData.description, 
-          size: 24, 
+          size: 20, 
           font: 'Arial' 
         })],
         spacing: { after: 200 }
@@ -125,7 +125,7 @@ export async function generateWordReport(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: 'Beschreibung: ', font: 'Arial', size: 20, bold: true }),
+            new TextRun({ text: 'Beschreibung: ', font: 'Arial', size: 20,}),
             new TextRun({ text: observation.note, font: 'Arial', size: 20 })
           ],
           spacing: { after: 150 }

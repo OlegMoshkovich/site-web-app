@@ -19,6 +19,7 @@ import {
   ZoomIn,
   ZoomOut,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -672,6 +673,15 @@ export default function ReportDetailPage() {
                 className="w-auto object-contain lg:h-6 h-5"
               />
             </button>
+            <Button
+              onClick={() => router.push('/reports')}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 transition-all"
+              title="Back to Reports"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
           </div>
           
           <div className="flex items-center gap-2">
@@ -698,7 +708,7 @@ export default function ReportDetailPage() {
                   onClick={handleExportWord}
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 transition-all"
+                  className="h-8 px-3 transition-all hidden sm:inline-flex"
                   title="Download Word Report"
                   disabled={isGeneratingWord}
                 >
@@ -733,36 +743,44 @@ export default function ReportDetailPage() {
           {/* Report Info Card */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="mb-3">{report.title}</CardTitle>
-                  {report.description && (
-                    <CardDescription className="text-black text-sm" style={{ fontSize: '14px' }}>{report.description}</CardDescription>
-                  )}
-                </div>
-                {/* Site Logo in top-right */}
+              {/* Title and Logo on same line */}
+              <div className="flex justify-between items-center mb-4">
+                <CardTitle className="flex-1">{report.title}</CardTitle>
+                {/* Site Logo */}
                 {observations.length > 0 && observations[0].sites?.logo_url && (
-                  <div className="flex-shrink-0 ml-4">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
+                  <div className="flex-shrink-0">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2">
                       <img 
                         src={observations[0].sites.logo_url} 
                         alt={`${observations[0].sites.name} logo`}
-                        className="h-12 w-auto object-contain rounded"
+                        className="h-10 sm:h-12 w-auto object-contain rounded"
                       />
                     </div>
                   </div>
                 )}
               </div>
+              {/* Description in separate container below, full width */}
+              {report.description && (
+                <div className="mt-3">
+                  <CardDescription className="text-black text-sm pb-3" style={{ fontSize: '14px' }}>{report.description}</CardDescription>
+                </div>
+              )}
+              <div className="flex justify-start">
+                        <div className="text-sm text-gray-500 flex items-center gap-1">
+                          {/* <Calendar className="h-4 w-4" /> */}
+                          <span>Erstellt {formatDate(report.created_at)}</span>
+                        </div>
+                      </div>
             </CardHeader>
-            <CardContent>
-              
+            
+            <CardContent className="pt-0">
               {/* All unique labels */}
               {(() => {
                 const allLabels = observations.flatMap(obs => obs.labels || []);
                 const uniqueLabels = [...new Set(allLabels)];
                 if (uniqueLabels.length > 0) {
                   return (
-                    <div className="mt-4 pt-4 border-t">
+                    <div className="border-t pt-4">
                       <h4 className="font-medium text-gray-900 mb-2">Kategorien</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
@@ -771,12 +789,7 @@ export default function ReportDetailPage() {
                           </Badge>
                         ))}
                       </div>
-                      <div className="flex justify-end">
-                        <div className="text-sm text-gray-500 flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Erstellt {formatDate(report.created_at)}</span>
-                        </div>
-                      </div>
+                      
                     </div>
                   );
                 }
