@@ -171,15 +171,13 @@ export default function ReportsPage() {
                 className="w-auto object-contain lg:h-6 h-5"
               />
             </button>
-            <Button
+            <button 
               onClick={() => router.push('/')}
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 transition-all"
-              title="Back to Reports"
+              className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
+              title="Back to Home"
             >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
+            </button>
           </div>
         </nav>
 

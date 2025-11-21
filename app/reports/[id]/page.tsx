@@ -672,15 +672,13 @@ export default function ReportDetailPage() {
                 className="w-auto object-contain lg:h-6 h-5"
               />
             </button>
-            <Button
+            <button 
               onClick={() => router.push('/reports')}
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 transition-all"
+              className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
               title="Back to Reports"
             >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
+            </button>
           </div>
           
           <div className="flex items-center gap-2">
