@@ -175,7 +175,7 @@ export default function ReportsPage() {
               onClick={() => router.push('/')}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 transition-all ml-4"
+              className="h-8 w-8 p-0 transition-all"
               title="Back to Reports"
             >
               <ArrowLeft className="h-4 w-4" />
