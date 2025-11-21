@@ -894,11 +894,12 @@ export default function Home() {
             
             {/* Center banner - only show when user is logged in */}
             {user && (
-              <div className="absolute left-1/2 transform -translate-x-1/2 hidden sm:block">
+              <div className="absolute left-1/2 transform -translate-x-1/2  sm:block">
                 <div 
                   onClick={() => window.location.reload()}
                   className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded" 
-                  title={t("refreshObservations")}
+                  // title={t("refreshObservations")}
+                  title={'hello'}
                 >
                   <Image
                     src="/images/banner.svg"
@@ -910,7 +911,7 @@ export default function Home() {
                 </div>
               </div>
             )}
-            {user && (
+            {/* {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2 block sm:hidden">
                 <div 
                   onClick={() => window.location.reload()}
@@ -926,7 +927,7 @@ export default function Home() {
                   />
                 </div>
               </div>
-            )}
+            )} */}
             
             
             <div className="flex items-center gap-2">              
