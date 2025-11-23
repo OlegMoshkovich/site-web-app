@@ -283,7 +283,18 @@ export const translations = {
     // Partnerships
     dbPartnershipContent: "Strategic partnership with DB focusing on advanced technology development and implementation of innovative construction management solutions for large-scale infrastructure and transportation projects.",
     drSauberPartnershipContent: "Collaborative pilot program with Dr Sauber + Partners, concentrating on pioneering construction methodologies, advanced quality assurance protocols, and integrated project delivery systems for complex engineering projects.",
-    strabagPartnershipContent: "Strategic partnership with STRABAG, one of Europe's leading construction groups, focusing on large-scale project management optimization and comprehensive technology integration across diverse European construction markets."
+    strabagPartnershipContent: "Strategic partnership with STRABAG, one of Europe's leading construction groups, focusing on large-scale project management optimization and comprehensive technology integration across diverse European construction markets.",
+    
+    // AI Assistant
+    aiAssistant: "AI Assistant",
+    aiAssistantIntro: "Hi! I'm your AI assistant.",
+    quickSummaries: "Quick summaries:",
+    summarizeToday: "Summarize Today",
+    lastSevenDaysSummary: "Last 7 Days Summary", 
+    lastFourteenDaysSummary: "Last 14 Days Summary",
+    askAiAboutObservations: "Ask AI about your observations...",
+    analyze: "Analyze",
+    thinking: "Thinking..."
   },
   
   de: {
@@ -568,7 +579,18 @@ export const translations = {
     // Partnerships
     dbPartnershipContent: "Strategische Partnerschaft mit der DB, die sich auf fortschrittliche Technologie Entwicklung und Implementierung innovativer Bau Verwaltungs Lösungen für große Infrastruktur und Verkehrs Projekte konzentriert.",
     drSauberPartnershipContent: "Kollaboratives Pilot Programm mit Dr Sauber + Partners, das sich auf innovative Bau Methoden, fortschrittliche Qualitäts Sicherungs Protokolle und integrierte Projekt Lieferungs Systeme für komplexe Ingenieur Projekte konzentriert.",
-    strabagPartnershipContent: "Strategische Partnerschaft mit STRABAG, einer der führenden europäischen Bau Gruppen, die sich auf groß maßstäbliche Projekt Management Optimierung und umfassende Technologie Integration in verschiedenen europäischen Bau Märkten konzentriert."
+    strabagPartnershipContent: "Strategische Partnerschaft mit STRABAG, einer der führenden europäischen Bau Gruppen, die sich auf groß maßstäbliche Projekt Management Optimierung und umfassende Technologie Integration in verschiedenen europäischen Bau Märkten konzentriert.",
+    
+    // AI Assistant
+    aiAssistant: "AI-Assistent",
+    aiAssistantIntro: "Hallo! Ich bin Ihr AI-Assistent.",
+    quickSummaries: "Schnelle Zusammenfassungen:",
+    summarizeToday: "Heute zusammenfassen",
+    lastSevenDaysSummary: "Letzte 7 Tage Zusammenfassung",
+    lastFourteenDaysSummary: "Letzte 14 Tage Zusammenfassung", 
+    askAiAboutObservations: "KI über Ihre Beobachtungen fragen...",
+    analyze: "Analysieren",
+    thinking: "Denke nach..."
   }
 };
 
