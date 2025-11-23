@@ -29,6 +29,8 @@ import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
 // Photo modal component
 import { PhotoModal } from "@/components/photo-modal";
+// Claude chat component
+import { ClaudeChat } from "@/components/claude-chat";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -1739,8 +1741,7 @@ export default function Home() {
                   rows={3}
                 />
               </div>
-       
-              
+
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <Button
@@ -1765,6 +1766,20 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Claude Chat Component */}
+      {user && (
+        <ClaudeChat 
+          selectedObservations={selectedObservations}
+          allObservations={observations.filter(obs => obs.taken_at !== null).map(obs => ({
+            ...obs,
+            taken_at: obs.taken_at!
+          }))}
+          onLoadMoreData={async (period: 'week' | 'month') => {
+            await loadMoreObservations(user.id, period);
+          }}
+        />
       )}
     </main>
   );
