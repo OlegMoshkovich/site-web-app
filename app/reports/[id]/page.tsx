@@ -181,93 +181,105 @@ export default function ReportDetailPage() {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 20;
-      let yPosition = margin;
 
-      // Header section with professional styling and logo
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
-      const reportTitle = report?.title || 'INSPECTION REPORT';
-      
-      // Calculate available width for text (account for logo space)
-      const logoWidth = 30;
-      const logoSpace = 45; // Logo width + some margin
-      const maxTextWidth = pageWidth - 2 * margin - logoSpace;
-      
-      // Split title if it's too long to avoid logo overlap
-      const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
-      pdf.text(titleLines, margin, yPosition);
-      yPosition += titleLines.length * 7; // Adjust for multiple lines
-      
-      // Add site logo in top-right corner if available
-      if (observations.length > 0 && observations[0].sites?.logo_url) {
-        try {
-          const logoImg = new window.Image();
-          logoImg.crossOrigin = 'anonymous';
-          await new Promise((resolve, reject) => {
-            logoImg.onload = resolve;
-            logoImg.onerror = reject;
-            logoImg.src = observations[0].sites!.logo_url!;
-          });
+      // Function to add header to current page
+      const addHeader = async () => {
+        let yPosition = margin;
 
-          const logoCanvas = document.createElement('canvas');
-          const logoCtx = logoCanvas.getContext('2d');
-          logoCanvas.width = logoImg.width;
-          logoCanvas.height = logoImg.height;
-          logoCtx?.drawImage(logoImg, 0, 0);
-          
-          const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
-          
-          // Position logo in top-right
-          const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-          pdf.addImage(logoData, 'JPEG', pageWidth - margin - logoWidth, margin - 5, logoWidth, logoHeight);
-        } catch (error) {
-          console.error('Error adding site logo to PDF header:', error);
+        // Header section with professional styling and logo
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        const reportTitle = report?.title || 'INSPECTION REPORT';
+        
+        // Calculate available width for text (account for logo space)
+        const logoWidth = 30;
+        const logoSpace = 45; // Logo width + some margin
+        const maxTextWidth = pageWidth - 2 * margin - logoSpace;
+        
+        // Split title if it's too long to avoid logo overlap
+        const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
+        pdf.text(titleLines, margin, yPosition);
+        yPosition += titleLines.length * 7; // Adjust for multiple lines
+        
+        // Add site logo in top-right corner if available
+        if (observations.length > 0 && observations[0].sites?.logo_url) {
+          try {
+            const logoImg = new window.Image();
+            logoImg.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+              logoImg.onload = resolve;
+              logoImg.onerror = reject;
+              logoImg.src = observations[0].sites!.logo_url!;
+            });
+
+            const logoCanvas = document.createElement('canvas');
+            const logoCtx = logoCanvas.getContext('2d');
+            logoCanvas.width = logoImg.width;
+            logoCanvas.height = logoImg.height;
+            logoCtx?.drawImage(logoImg, 0, 0);
+            
+            const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+            
+            // Position logo in top-right
+            const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
+            pdf.addImage(logoData, 'JPEG', pageWidth - margin - logoWidth, margin - 5, logoWidth, logoHeight);
+          } catch (error) {
+            console.error('Error adding site logo to PDF header:', error);
+          }
         }
-      }
-      
-      yPosition += 3;
-      
-      // Project details
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
-      
-      // Split description if it's too long to avoid logo overlap
-      const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
-      pdf.text(descriptionLines, margin, yPosition);
-      yPosition += descriptionLines.length * 5; // Adjust for multiple lines
-      
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      
-      // Add Ersteller if available
-      if (report?.ersteller) {
-        pdf.text(`Ersteller: ${report.ersteller}`, margin, yPosition);
+        
+        yPosition += 3;
+        
+        // Project details
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
+        
+        // Split description if it's too long to avoid logo overlap
+        const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
+        pdf.text(descriptionLines, margin, yPosition);
+        yPosition += descriptionLines.length * 5; // Adjust for multiple lines
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        
+        // Add Ersteller if available
+        if (report?.ersteller) {
+          pdf.text(`Ersteller: ${report.ersteller}`, margin, yPosition);
+          yPosition += 5;
+        }
+        
+        // Add Baustelle if available
+        if (report?.baustelle) {
+          pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
+          yPosition += 5;
+        }
+        
+        const dateText = new Date().toLocaleDateString('de-DE', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Datum: ', margin, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        const datumWidth = pdf.getTextWidth('Datum: ');
+        pdf.text(dateText, margin + datumWidth + 1, yPosition);
+        yPosition += 6;
+        
+        // Add a horizontal separator line under the header
+        pdf.setLineWidth(0.3);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, yPosition, pageWidth - margin, yPosition);
         yPosition += 5;
-      }
-      
-      // Add Baustelle if available
-      if (report?.baustelle) {
-        pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
-        yPosition += 5;
-      }
-      
-      const dateText = new Date().toLocaleDateString('de-DE', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
-      const datumLabel = `Datum: ${dateText}`;
-      pdf.text(datumLabel, margin, yPosition);
-      yPosition += 6;
-      
-      // Add a horizontal separator line under the header
-      pdf.setLineWidth(0.3);
-      pdf.setDrawColor(200, 200, 200);
-      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 5;
+
+        return yPosition;
+      };
+
+      // Add header to first page
+      let yPosition = await addHeader();
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
@@ -276,7 +288,7 @@ export default function ReportDetailPage() {
         // Check if we need a new page - adjusted for 2 observations per page
         if (yPosition > pageHeight - 120) {
           pdf.addPage();
-          yPosition = 10; // 20px from top of page
+          yPosition = await addHeader(); // Add header to new page
         }
 
         // Add observation content
@@ -366,25 +378,34 @@ export default function ReportDetailPage() {
             // Add category if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Gebäude: ', textStartX, textY);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(`Gebäude: ${category}`, textStartX, textY);
+            const gebaudeWidth = pdf.getTextWidth('Gebäude: ');
+            pdf.text(category, textStartX + gebaudeWidth + 1, textY);
             textY += 5;
             
             // Add timestamp
             pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Aufgenommen am: ', textStartX, textY);
             pdf.setFont('helvetica', 'normal');
             const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
                              new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
-            pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
+            const aufgenommenWidth = pdf.getTextWidth('Aufgenommen am: ');
+            pdf.text(timestamp, textStartX + aufgenommenWidth + 2, textY);
             textY += 5;
 
             // Add labels
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text('Bereich: ', textStartX, textY);
               pdf.setFont('helvetica', 'normal');
-              const labelText = 'Bereich: ' + observation.labels.join(', ');
-              const labelLines = pdf.splitTextToSize(labelText, textWidth);
-              pdf.text(labelLines, textStartX, textY);
+              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              const labelText = observation.labels.join(', ');
+              const labelLines = pdf.splitTextToSize(labelText, textWidth - bereichWidth - 2);
+              pdf.text(labelLines, textStartX + bereichWidth + 1, textY);
               textY += labelLines.length * 4 + 5;
             }
             
@@ -413,8 +434,11 @@ export default function ReportDetailPage() {
             
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text('Bereich: ', margin, yPosition);
               pdf.setFont('helvetica', 'normal');
-              pdf.text('Bereich: ' + observation.labels.join(', '), margin, yPosition);
+              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              pdf.text(observation.labels.join(', '), margin + bereichWidth + 2, yPosition);
               yPosition += 8;
             }
             
