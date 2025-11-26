@@ -346,10 +346,10 @@ export default function ReportDetailPage() {
                 
                 const logoData = logoCanvas.toDataURL('image/png', 1.0); // Use PNG to preserve transparency
                 
-                // Position logo on bottom-right of photo
-                const photoLogoWidth = 6;
+                // Position logo on top-left of photo
+                const photoLogoWidth = 12; // Double the size from 6 to 12
                 const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
-                pdf.addImage(logoData, 'PNG', margin + imgWidth - photoLogoWidth - 2, yPosition + imgHeight - photoLogoHeight - 2, photoLogoWidth, photoLogoHeight);
+                pdf.addImage(logoData, 'PNG', margin + 2, yPosition + 2, photoLogoWidth, photoLogoHeight);
               } catch (error) {
                 console.error('Error adding logo overlay to photo:', error);
               }
