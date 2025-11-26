@@ -261,26 +261,11 @@ export default function ReportDetailPage() {
       }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
       const datumLabel = `Datum: ${dateText}`;
       pdf.text(datumLabel, margin, yPosition);
-      // Create underline below text
-      // Getting fontSize via pdf.internal.getFontSize() causes error—use pdf.getFontSize() if available, or hardcode as fallback
-      let fontSize;
-      if (typeof pdf.getFontSize === 'function') {
-        fontSize = pdf.getFontSize();
-      } else {
-        // fallback (default font size in jsPDF: 16, but here setFontSize(10) was set before)
-        fontSize = 10;
-      }
-      const textWidth =
-        pdf.getStringUnitWidth(datumLabel) *
-        fontSize /
-        (pdf.internal.scaleFactor || 1);
-      pdf.setLineWidth(0.1);
-      pdf.line(margin, yPosition + 1.5, margin + textWidth, yPosition + 1.5);
       yPosition += 6;
       
-      // Add a thin white separator line
-      pdf.setLineWidth(0.2);
-      pdf.setDrawColor(255, 255, 255);
+      // Add a horizontal separator line under the header
+      pdf.setLineWidth(0.3);
+      pdf.setDrawColor(200, 200, 200);
       pdf.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 5;
 
@@ -333,7 +318,7 @@ export default function ReportDetailPage() {
             const imgData = canvas.toDataURL('image/jpeg', 0.6);
             
             // Calculate image dimensions for PDF - increased size for 2 per page
-            const imgWidth = 90;
+            const imgWidth = 80;
             const imgHeight = (img.height / img.width) * imgWidth;
             
             // Add image
