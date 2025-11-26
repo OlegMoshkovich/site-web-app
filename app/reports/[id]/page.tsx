@@ -288,8 +288,8 @@ export default function ReportDetailPage() {
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
         
-        // Check if we need a new page - adjusted for 3 observations per page
-        if (yPosition > pageHeight - 80) {
+        // Check if we need a new page - adjusted for 2 observations per page
+        if (yPosition > pageHeight - 120) {
           pdf.addPage();
           yPosition = 10; // 20px from top of page
         }
@@ -323,8 +323,8 @@ export default function ReportDetailPage() {
             
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
             
-            // Calculate image dimensions for PDF - reduced size for 3 per page
-            const imgWidth = 35;
+            // Calculate image dimensions for PDF - increased size for 2 per page
+            const imgWidth = 100;
             const imgHeight = (img.height / img.width) * imgWidth;
             
             // Add image
@@ -402,7 +402,7 @@ export default function ReportDetailPage() {
             
   
             
-            yPosition += Math.max(imgHeight, textY - yPosition) + 5;
+            yPosition += Math.max(imgHeight, textY - yPosition) + 15;
             
           } catch (error) {
             console.error('Error adding observation to PDF:', error);
