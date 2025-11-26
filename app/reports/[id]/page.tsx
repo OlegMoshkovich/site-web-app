@@ -293,17 +293,17 @@ export default function ReportDetailPage() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Scale down to reasonable size for PDF while maintaining quality
-            // Target around 600px max dimension for good balance of quality/size
-            const maxDimension = 600;
+            // Aggressive scaling for smaller PDF file size
+            // Target around 400px max dimension to significantly reduce file size
+            const maxDimension = 400;
             const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
             
             if (ctx) {
-              // Enable high-quality image smoothing for better downscaling
+              // Use medium quality smoothing to reduce processing overhead
               ctx.imageSmoothingEnabled = true;
-              ctx.imageSmoothingQuality = 'high';
+              ctx.imageSmoothingQuality = 'medium';
               
               // Create rounded rectangle clipping path
               const radius = Math.round(10 * scale); // Scale radius proportionally
@@ -315,7 +315,7 @@ export default function ReportDetailPage() {
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
             
-            const imgData = canvas.toDataURL('image/jpeg', 0.6);
+            const imgData = canvas.toDataURL('image/jpeg', 0.4);
             
             // Calculate image dimensions for PDF - increased size for 2 per page
             const imgWidth = 80;
@@ -337,19 +337,22 @@ export default function ReportDetailPage() {
 
                 const logoCanvas = document.createElement('canvas');
                 const logoCtx = logoCanvas.getContext('2d');
-                logoCanvas.width = logoImg.width;
-                logoCanvas.height = logoImg.height;
+                // Scale down logo to reduce file size
+                const logoMaxSize = 100;
+                const logoScale = Math.min(1, logoMaxSize / Math.max(logoImg.width, logoImg.height));
+                logoCanvas.width = Math.round(logoImg.width * logoScale);
+                logoCanvas.height = Math.round(logoImg.height * logoScale);
                 if (logoCtx) {
                   logoCtx.globalAlpha = 0.5; // Set 50% transparency
-                  logoCtx.drawImage(logoImg, 0, 0);
+                  logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
                 }
                 
-                const logoData = logoCanvas.toDataURL('image/png', 1.0); // Use PNG to preserve transparency
+                const logoData = logoCanvas.toDataURL('image/jpeg', 0.4); // Use JPEG instead of PNG for smaller size
                 
                 // Position logo on top-left of photo
                 const photoLogoWidth = 12; // Double the size from 6 to 12
                 const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
-                pdf.addImage(logoData, 'PNG', margin + 2, yPosition + 2, photoLogoWidth, photoLogoHeight);
+                pdf.addImage(logoData, 'JPEG', margin + 2, yPosition + 2, photoLogoWidth, photoLogoHeight);
               } catch (error) {
                 console.error('Error adding logo overlay to photo:', error);
               }
