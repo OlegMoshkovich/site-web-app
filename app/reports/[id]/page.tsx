@@ -307,24 +307,33 @@ export default function ReportDetailPage() {
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            
+            // Scale down to reasonable size for PDF while maintaining quality
+            // Target around 600px max dimension for good balance of quality/size
+            const maxDimension = 600;
+            const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
             
             if (ctx) {
+              // Enable high-quality image smoothing for better downscaling
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              
               // Create rounded rectangle clipping path
-              const radius = 10; // Adjust this value to change corner roundness
+              const radius = Math.round(10 * scale); // Scale radius proportionally
               ctx.beginPath();
               ctx.roundRect(0, 0, canvas.width, canvas.height, radius);
               ctx.clip();
               
-              // Draw the image with rounded corners
-              ctx.drawImage(img, 0, 0);
+              // Draw the scaled image with rounded corners
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
             
-            const imgData = canvas.toDataURL('image/jpeg', 0.8);
+            const imgData = canvas.toDataURL('image/jpeg', 0.6);
             
             // Calculate image dimensions for PDF - increased size for 2 per page
-            const imgWidth = 110;
+            const imgWidth = 90;
             const imgHeight = (img.height / img.width) * imgWidth;
             
             // Add image
@@ -684,44 +693,40 @@ export default function ReportDetailPage() {
           </div>
           
           <div className="flex items-center gap-2">
-            {isAuthenticated && (
-              <>
-                <Button
-                  onClick={handleExportReport}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 transition-all"
-                  title="Download PDF Report"
-                  disabled={isGeneratingPDF}
-                >
-                  {isGeneratingPDF ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline ml-1">
-                    {isGeneratingPDF ? 'Generating...' : 'PDF'}
-                  </span>
-                </Button>
-                <Button
-                  onClick={handleExportWord}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 transition-all hidden sm:inline-flex"
-                  title="Download Word Report"
-                  disabled={isGeneratingWord}
-                >
-                  {isGeneratingWord ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline ml-1">
-                    {isGeneratingWord ? 'Generating...' : 'Word'}
-                  </span>
-                </Button>
-              </>
-            )}
+            <Button
+              onClick={handleExportReport}
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 transition-all"
+              title="Download PDF Report"
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline ml-1">
+                {isGeneratingPDF ? 'Generating...' : 'PDF'}
+              </span>
+            </Button>
+            <Button
+              onClick={handleExportWord}
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 transition-all hidden sm:inline-flex"
+              title="Download Word Report"
+              disabled={isGeneratingWord}
+            >
+              {isGeneratingWord ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline ml-1">
+                {isGeneratingWord ? 'Generating...' : 'Word'}
+              </span>
+            </Button>
             <Button
               onClick={() => setShowInfoModal(true)}
               variant="outline"
