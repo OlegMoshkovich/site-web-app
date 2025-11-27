@@ -27,6 +27,7 @@ interface Report {
   id: string;
   title: string;
   description: string | null;
+  report_date?: string | null;
   created_at: string;
   updated_at: string;
   settings: Record<string, unknown>;
@@ -58,7 +59,7 @@ export default function ReportsPage() {
         // Fetch reports
         const { data: reportsData, error } = await supabase
           .from('reports')
-          .select('*')
+          .select('*, report_date')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -274,7 +275,7 @@ export default function ReportsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{formatDate(report.created_at)}</span>
+                          <span>{formatDate(report.report_date || report.created_at)}</span>
                         </div>
                       </div>
                       <Badge variant="secondary">Report</Badge>

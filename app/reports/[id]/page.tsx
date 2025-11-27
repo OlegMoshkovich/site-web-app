@@ -32,6 +32,7 @@ interface Report {
   description: string | null;
   ersteller?: string | null;
   baustelle?: string | null;
+  report_date?: string | null;
   created_at: string;
   updated_at: string;
   settings: Record<string, unknown>;
@@ -180,7 +181,7 @@ export default function ReportDetailPage() {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 20;
+      const margin = 14;
 
       // Function to add header to current page
       const addHeader = async () => {
@@ -194,8 +195,7 @@ export default function ReportDetailPage() {
         // Calculate available width for text (account for logo space)
         const logoWidth = 30;
         const logoSpace = 45; // Logo width + some margin
-        const maxTextWidth = pageWidth - 2 * margin - logoSpace;
-        
+        const maxTextWidth = pageWidth - margin - logoSpace;
         // Split title if it's too long to avoid logo overlap
         const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
         pdf.text(titleLines, margin, yPosition);
@@ -255,13 +255,21 @@ export default function ReportDetailPage() {
           yPosition += 5;
         }
         
-        const dateText = new Date().toLocaleDateString('de-DE', { 
-          year: 'numeric', 
-          month: '2-digit', 
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+        const dateText = report?.report_date 
+          ? new Date(report.report_date).toLocaleDateString('de-DE', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr')
+          : new Date().toLocaleDateString('de-DE', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
         pdf.setFont('helvetica', 'bold');
         pdf.text('Datum: ', margin, yPosition);
         pdf.setFont('helvetica', 'normal');
@@ -330,7 +338,7 @@ export default function ReportDetailPage() {
             const imgData = canvas.toDataURL('image/jpeg', 0.4);
             
             // Calculate image dimensions for PDF - increased size for 2 per page
-            const imgWidth = 80;
+            const imgWidth = 74;
             const imgHeight = (img.height / img.width) * imgWidth;
             
             // Add image
@@ -419,8 +427,8 @@ export default function ReportDetailPage() {
             }
             
   
-            
-            yPosition += Math.max(imgHeight, textY - yPosition) + 15;
+            //spacing
+            yPosition += Math.max(imgHeight, textY - yPosition) + 10;
             
           } catch (error) {
             console.error('Error adding observation to PDF:', error);
@@ -484,6 +492,7 @@ export default function ReportDetailPage() {
         description: report?.description,
         ersteller: report?.ersteller,
         baustelle: report?.baustelle,
+        report_date: report?.report_date,
         created_at: report?.created_at
       };
       
@@ -544,7 +553,7 @@ export default function ReportDetailPage() {
       // Fetch report details
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
-        .select('id, title, description, ersteller, baustelle, created_at, updated_at, settings')
+        .select('id, title, description, ersteller, baustelle, report_date, created_at, updated_at, settings')
         .eq('id', reportId)
         .single();
 
@@ -784,7 +793,7 @@ export default function ReportDetailPage() {
               <div className="flex justify-start">
                         <div className="text-sm text-gray-500 flex items-center gap-1">
                           {/* <Calendar className="h-4 w-4" /> */}
-                          <span>Erstellt {formatDate(report.created_at)}</span>
+                          <span>Erstellt {formatDate(report.report_date || report.created_at)}</span>
                         </div>
                       </div>
             </CardHeader>

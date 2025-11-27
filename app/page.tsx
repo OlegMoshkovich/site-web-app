@@ -128,6 +128,7 @@ export default function Home() {
   const [reportDescription, setReportDescription] = useState('');
   const [reportErsteller, setReportErsteller] = useState('');
   const [reportBaustelle, setReportBaustelle] = useState('');
+  const [reportDate, setReportDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // ===== UTILITY FUNCTIONS =====
@@ -493,6 +494,7 @@ export default function Home() {
           description: reportDescription || null,
           ersteller: reportErsteller || null,
           baustelle: reportBaustelle || null,
+          report_date: reportDate || null,
           settings: {
             language,
             selectedIds: Array.from(selectedObservations)
@@ -529,6 +531,7 @@ export default function Home() {
       setReportDescription('');
       setReportErsteller('');
       setReportBaustelle('');
+      setReportDate('');
       setSelectedObservations(new Set()); // Clear selections
       
       // Redirect to reports page
@@ -539,7 +542,7 @@ export default function Home() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, selectedObservations, language, supabase, router]);
+  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, reportDate, selectedObservations, language, supabase, router]);
 
   // ===== DELETE FUNCTIONALITY =====
   // Handle observation deletion with confirmation
@@ -1727,7 +1730,18 @@ export default function Home() {
                   placeholder="Enter report creator"
                 />
               </div>
-              
+              <div>
+                <label htmlFor="report-date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Report Date
+                </label>
+                <input
+                  id="report-date"
+                  type="datetime-local"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+              </div>
               <div>
                 <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description
@@ -1751,6 +1765,7 @@ export default function Home() {
                   setReportDescription('');
                   setReportErsteller('');
                   setReportBaustelle('');
+                  setReportDate('');
                 }}
                 variant="outline"
                 disabled={isSaving}

@@ -46,7 +46,7 @@ function ReportPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [reportData, setReportData] = useState<{title: string, description: string | null, ersteller?: string | null, baustelle?: string | null} | null>(null);
+  const [reportData, setReportData] = useState<{title: string, description: string | null, ersteller?: string | null, baustelle?: string | null, report_date?: string | null} | null>(null);
   const { language, setLanguage } = useLanguage();
   
   // Display toggles
@@ -69,6 +69,7 @@ function ReportPageContent() {
   const [reportDescription, setReportDescription] = useState('');
   const [reportErsteller, setReportErsteller] = useState('');
   const [reportBaustelle, setReportBaustelle] = useState('');
+  const [reportDate, setReportDate] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   
   const searchParams = useSearchParams();
@@ -257,13 +258,21 @@ function ReportPageContent() {
         yPosition += 5;
       }
       
-      const dateText = new Date().toLocaleDateString('de-DE', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+      const dateText = reportData?.report_date 
+        ? new Date(reportData.report_date).toLocaleDateString('de-DE', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr')
+        : new Date().toLocaleDateString('de-DE', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
       pdf.text(`Datum: ${dateText}`, margin, yPosition);
       yPosition += 5;
       
@@ -492,9 +501,12 @@ function ReportPageContent() {
       );
 
       // Add date
+      const reportDateText = reportData?.report_date 
+        ? new Date(reportData.report_date).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')
+        : new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'), size: 20, font: 'Arial' })],
+          children: [new TextRun({ text: reportDateText, size: 20, font: 'Arial' })],
           // alignment: AlignmentType.CENTER,
         })
       );
@@ -742,6 +754,7 @@ function ReportPageContent() {
           description: reportDescription || null,
           ersteller: reportErsteller || null,
           baustelle: reportBaustelle || null,
+          report_date: reportDate || null,
           settings: {
             displaySettings,
             language,
@@ -779,6 +792,7 @@ function ReportPageContent() {
       setReportDescription('');
       setReportErsteller('');
       setReportBaustelle('');
+      setReportDate('');
       
       // Redirect to reports page
       window.location.href = '/reports';
@@ -853,7 +867,7 @@ function ReportPageContent() {
       // First, get the report details
       const { data: reportDetails, error: reportError } = await supabase
         .from('reports')
-        .select('title, description, ersteller, baustelle, settings')
+        .select('title, description, ersteller, baustelle, report_date, settings')
         .eq('id', reportId)
         .single();
 
@@ -868,7 +882,8 @@ function ReportPageContent() {
         title: reportDetails.title || 'INSPECTION REPORT',
         description: reportDetails.description || 'Baustelleninspektion Dokumentation',
         ersteller: reportDetails.ersteller || null,
-        baustelle: reportDetails.baustelle || null
+        baustelle: reportDetails.baustelle || null,
+        report_date: reportDetails.report_date || null
       });
 
       // Then, get the observation IDs for this report
@@ -1645,6 +1660,18 @@ function ReportPageContent() {
                 />
               </div>
               <div>
+                <label htmlFor="report-date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Report Date
+                </label>
+                <input
+                  id="report-date"
+                  type="datetime-local"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+              </div>
+              <div>
                 <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
@@ -1666,6 +1693,7 @@ function ReportPageContent() {
                   setReportDescription('');
                   setReportErsteller('');
                   setReportBaustelle('');
+                  setReportDate('');
                 }}
                 variant="outline"
                 disabled={isSaving}
