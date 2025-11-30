@@ -126,7 +126,6 @@ export async function fetchObservationDates(userId: string): Promise<string[]> {
  * Example path: "users/123/2025-08-17/photo.jpg"
  */
 export async function downloadPhoto(path: string) {
-    // console.log('downloadPhoto path from the function', path);
   try {
     if (!path?.trim()) {
       console.error('Invalid storage path provided:', path);

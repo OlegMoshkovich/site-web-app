@@ -236,15 +236,6 @@ export default function ReportsPage() {
                         >
                           <Share className="h-4 w-4" />
                         </Button>
-                        {/* <Button
-                          onClick={() => handleExportReport(report.id)}
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          title="Export report"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button> */}
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();

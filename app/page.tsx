@@ -903,8 +903,7 @@ export default function Home() {
                 <div 
                   onClick={() => window.location.reload()}
                   className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded" 
-                  // title={t("refreshObservations")}
-                  title={'hello'}
+                  title={t("refreshObservations")}
                 >
                   <Image
                     src="/images/banner_logo.png"
@@ -919,17 +918,6 @@ export default function Home() {
             
             
             <div className="flex items-center gap-2">              
-              {/* Language selector */}
-              {/* <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-                className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
-                style={{ textAlignLast: "center" }}
-                title={t("changeLanguage")}
-              >
-                <option value="en">EN</option>
-                <option value="de">DE</option>
-              </select> */}
 
               {/* Reports */}
               {user && (
@@ -973,7 +961,6 @@ export default function Home() {
                 <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">
                   {t("welcomeTitle")}
                 </h1>
-                {/* <p className="text-muted-foreground text-sm">{t('pleaseSignIn')}</p> */}
 
                 {/* App Screenshots */}
                 <div className="mt-8 max-w-lg mx-auto">

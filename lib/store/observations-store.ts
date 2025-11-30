@@ -328,7 +328,6 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
           try {
             // Simple download without timeout - the downloadPhoto function already handles errors gracefully
             const fileData = await downloadPhoto(observation.photo_url);
-            // console.log('fileData from process photo', fileData);
             
             if (fileData) {
               // Convert to data URL
