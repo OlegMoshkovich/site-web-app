@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLanguage, useTranslations } from "@/lib/translations";
@@ -96,9 +97,19 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="border-none shadow-none bg-transparent">
       <CardHeader>
-          <CardTitle className="text-2xl">Simple Site </CardTitle>
+          <div className="flex justify-left mb-4">
+            <Link href="/" className="cursor-pointer">
+              <Image
+                src="/images/banner_logo.png"
+                alt="Site Banner"
+                width={150}
+                height={40}
+                className="h-8 w-auto hover:opacity-80 transition-opacity"
+              />
+            </Link>
+          </div>
           <CardDescription>
             {invitationToken ? 
               "Sign in to accept your collaboration invitation" : 
@@ -168,7 +179,7 @@ export function LoginForm({
                 )}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-6 text-left text-sm">
               {t('dontHaveAccount')}{" "}
               <Link
                 href="/auth/sign-up"

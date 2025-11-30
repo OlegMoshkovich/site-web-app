@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLanguage, useTranslations } from "@/lib/translations";
@@ -69,9 +70,19 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="border-none shadow-none bg-transparent">
         <CardHeader>
-          <CardTitle className="text-2xl">Simple Site</CardTitle>
+          <div className="flex justify-left mb-4">
+            <Link href="/" className="cursor-pointer">
+              <Image
+                src="/images/banner_logo.png"
+                alt="Site Banner"
+                width={150}
+                height={40}
+                className="h-8 w-auto hover:opacity-80 transition-opacity"
+              />
+            </Link>
+          </div>
           <CardDescription>{t('createNewAccount')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,7 +100,7 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
+                <div className="flex items-left">
                   <Label htmlFor="password">{t('password')}</Label>
                 </div>
                 <div className="relative">
@@ -115,7 +126,7 @@ export function SignUpForm({
                 </div>
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
+                <div className="flex items-start">
                   <Label htmlFor="repeat-password">{t('repeatPassword')}</Label>
                 </div>
                 <div className="relative">
@@ -156,7 +167,7 @@ export function SignUpForm({
                 )}
               </Button>
             </div>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-6 text-left text-sm">
               {t('alreadyHaveAccount')}{" "}
               <Link href="/auth/login" className="underline underline-offset-4">
                 {t('login')}

@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import { useEffect, useState, useMemo, useCallback, Suspense, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Download, FileText, Edit3, Check, X, Trash2, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -67,6 +67,7 @@ function ReportPageContent() {
   const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
+  const [localDescription, setLocalDescription] = useState(''); // Local state for immediate UI updates
   const [reportErsteller, setReportErsteller] = useState('');
   const [reportBaustelle, setReportBaustelle] = useState('');
   const [reportDate, setReportDate] = useState('');
@@ -731,11 +732,41 @@ function ReportPageContent() {
     }
   }, [observations, t, language, displaySettings]);
 
+  // Debounce timer ref
+  const descriptionTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Optimize textarea onChange handler with immediate local update
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setLocalDescription(value); // Immediate UI update
+    
+    // Debounce the actual state update
+    if (descriptionTimerRef.current) {
+      clearTimeout(descriptionTimerRef.current);
+    }
+    
+    descriptionTimerRef.current = setTimeout(() => {
+      setReportDescription(value);
+    }, 100); // Very short delay to batch rapid keystrokes
+  }, []);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (descriptionTimerRef.current) {
+        clearTimeout(descriptionTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleSaveReport = useCallback(async () => {
     if (!reportTitle.trim()) {
       alert('Please enter a title for the report');
       return;
     }
+
+    // Ensure reportDescription is up to date with localDescription
+    const finalDescription = localDescription;
 
     setIsSaving(true);
     try {
@@ -751,7 +782,7 @@ function ReportPageContent() {
         .insert({
           user_id: user.id,
           title: reportTitle,
-          description: reportDescription || null,
+          description: finalDescription || null,
           ersteller: reportErsteller || null,
           baustelle: reportBaustelle || null,
           report_date: reportDate || null,
@@ -802,7 +833,7 @@ function ReportPageContent() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, reportDescription, reportErsteller, reportBaustelle, displaySettings, language, memoizedSelectedIds, observations, supabase]);
+  }, [reportTitle, localDescription, reportErsteller, reportBaustelle, displaySettings, language, memoizedSelectedIds, observations, supabase]);
 
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
@@ -1677,11 +1708,12 @@ function ReportPageContent() {
                 </label>
                 <textarea
                   id="report-description"
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
+                  value={localDescription}
+                  onChange={handleDescriptionChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
                   placeholder="Enter report description (optional)"
                   rows={3}
+                  maxLength={290}
                 />
               </div>
             </div>

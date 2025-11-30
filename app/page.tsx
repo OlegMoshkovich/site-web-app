@@ -843,10 +843,16 @@ export default function Home() {
         <nav className={getNavbarClasses().container}>
           <div className={getNavbarClasses().content}>
             <div className="flex items-center gap-2">
-              {/* Show "Simple site" title when not logged in */}
+              {/* Show banner when not logged in */}
               {!user && (
-                <div className="text-lg font-semibold">
-                  {t("siteTitle")}
+                <div className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center rounded">
+                  <Image
+                    src="/images/banner_logo.png"
+                    alt="Site Banner"
+                    width={120}
+                    height={32}
+                    className="h-4 sm:h-6 w-auto max-w-none"
+                  />
                 </div>
               )}
               
@@ -910,7 +916,7 @@ export default function Home() {
                     alt="Site Banner"
                     width={120}
                     height={32}
-                    className="h-4 sm:h-6 w-auto max-w-none"
+                    className="h-5 sm:h-6 w-auto max-w-none"
                   />
                 </div>
               </div>
