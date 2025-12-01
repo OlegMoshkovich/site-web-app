@@ -342,7 +342,7 @@ export default function ReportDetailPage() {
             const imgData = canvas.toDataURL('image/jpeg', 0.4);
 
             // Calculate image dimensions for PDF - increased size for 2 per page
-            const imgWidth = 78;
+            const imgWidth = 74;
             const imgHeight = (img.height / img.width) * imgWidth;
 
             // Add image
