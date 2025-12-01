@@ -66,7 +66,7 @@ function ReportPageContent() {
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
-  const [reportDescription, setReportDescription] = useState('');
+  const [, setReportDescription] = useState('');
   const [localDescription, setLocalDescription] = useState(''); // Local state for immediate UI updates
   const [reportErsteller, setReportErsteller] = useState('');
   const [reportBaustelle, setReportBaustelle] = useState('');

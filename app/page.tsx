@@ -76,7 +76,7 @@ export default function Home() {
   // ===== STATE MANAGEMENT =====
   // Current authenticated user (null if not logged in)
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  
+
   // Zustand store for observations
   const {
     observations,
@@ -115,7 +115,7 @@ export default function Home() {
   // User filter state
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [availableUsers, setAvailableUsers] = useState<{id: string, displayName: string}[]>([]);
-  // Site filter state  
+  // Site filter state
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [availableSites, setAvailableSites] = useState<{id: string, name: string}[]>([]);
   // Photo modal state
@@ -182,7 +182,7 @@ export default function Home() {
         img.onload = () => {
           try {
             clearTimeout(timeout);
-            
+
             // Multi-pass compression: try different dimension sizes
             const compressionPasses = [
               { maxDim: 600, quality: 0.3 },  // Very aggressive first pass
@@ -207,7 +207,7 @@ export default function Home() {
 
               const pass = compressionPasses[passIndex];
               let { width, height } = img;
-              
+
               // Calculate dimensions for this pass
               if (width > height && width > pass.maxDim) {
                 height = (height * pass.maxDim) / width;
@@ -274,7 +274,7 @@ export default function Home() {
 
     try {
       // Get selected observations
-      const selectedObs = observations.filter(obs => 
+      const selectedObs = observations.filter(obs =>
         selectedObservations.has(obs.id)
       );
 
@@ -291,7 +291,7 @@ export default function Home() {
       const zip = new JSZip();
 
       let downloadCount = 0;
-      
+
       // Download each photo and add to ZIP
       for (const obs of obsWithPhotos) {
         try {
@@ -299,14 +299,14 @@ export default function Home() {
             // Fetch the image
             const response = await fetch(obs.signedUrl);
             if (!response.ok) continue;
-            
+
             const blob = await response.blob();
-            
+
             // Try to compress the image for download, fallback to original if it fails
             let finalBlob = blob;
-            let extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' : 
+            let extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' :
                            blob.type.includes('png') ? '.png' : '.jpg';
-            
+
             try {
               // Attempt compression for images only (target 30KB for very small files)
               if (blob.type.startsWith('image/')) {
@@ -316,7 +316,7 @@ export default function Home() {
               }
             } catch (compressionError) {
               console.warn(`Failed to compress image for observation ${obs.id}, attempting basic fallback compression:`, compressionError);
-              
+
               // Try a simple fallback compression
               try {
                 if (blob.type.startsWith('image/')) {
@@ -324,14 +324,14 @@ export default function Home() {
                   const ctx = canvas.getContext('2d');
                   const img = typeof window !== "undefined" ? new window.Image() : null;
                   if (!img) throw new Error("Could not create Image object in this environment");
-                  
+
                   await new Promise((resolve, reject) => {
                     img.onload = () => {
                       // Very small dimensions
                       canvas.width = 300;
                       canvas.height = 300;
                       ctx?.drawImage(img, 0, 0, 300, 300);
-                      
+
                       canvas.toBlob((fallbackBlob) => {
                         if (fallbackBlob) {
                           finalBlob = fallbackBlob;
@@ -349,14 +349,14 @@ export default function Home() {
                 // Keep using the original blob and extension
               }
             }
-            
+
             // Create a filename based on observation data
             const date = obs.taken_at || obs.created_at;
             const dateStr = new Date(date).toISOString().split('T')[0];
             const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
-            
+
             const filename = `${dateStr}${site}_${obs.id.slice(0, 8)}${extension}`;
-            
+
             // Add image to ZIP (compressed or original)
             zip.file(filename, finalBlob);
             downloadCount++;
@@ -374,7 +374,7 @@ export default function Home() {
 
       // Generate ZIP file
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      
+
       // Download the ZIP file
       const url = URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
@@ -397,7 +397,7 @@ export default function Home() {
   // ===== UTILITY FUNCTIONS =====
   const getFilteredObservations = useCallback(() => {
     let filteredObservations = observations;
-    
+
     // Apply date range filter if both dates are set
     if (showDateSelector && startDate && endDate) {
       filteredObservations = filterObservationsByDateRange(
@@ -406,39 +406,39 @@ export default function Home() {
         endDate
       );
     }
-    
+
     // Then apply user filter if active
     if (selectedUserId) {
       filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
     }
-    
+
     // Then apply site filter if active
     if (selectedSiteId) {
       filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
     }
-    
+
     // Then apply search filter if active
     if (showSearchSelector && searchQuery.trim()) {
       filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
     }
-    
+
     // Then apply label filter if active
     if (showLabelSelector && selectedLabels.length > 0) {
       filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
     }
-    
+
     return filteredObservations;
   }, [observations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // ===== PHOTO MODAL FUNCTIONALITY =====
   const handleOpenPhotoModal = useCallback((observation: ObservationWithUrl, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent card selection
-    
+
     // Find the index of the clicked observation in the filtered list
     const filteredObservations = getFilteredObservations();
     const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
     const index = photoObservations.findIndex(obs => obs.id === observation.id);
-    
+
     setCurrentPhotoIndex(index);
     setSelectedPhotoObservation(observation);
     setPhotoModalOpen(true);
@@ -533,7 +533,7 @@ export default function Home() {
       setReportBaustelle('');
       setReportDate('');
       setSelectedObservations(new Set()); // Clear selections
-      
+
       // Redirect to reports page
       router.push('/reports');
     } catch (error) {
@@ -616,7 +616,7 @@ export default function Home() {
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
     let filteredObservations = observations;
-    
+
     // Apply date range filter if both dates are set
     if (showDateSelector && startDate && endDate) {
       filteredObservations = filterObservationsByDateRange(
@@ -625,27 +625,27 @@ export default function Home() {
         endDate
       );
     }
-    
+
     // Then apply user filter if active
     if (selectedUserId) {
       filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
     }
-    
+
     // Then apply site filter if active
     if (selectedSiteId) {
       filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
     }
-    
+
     // Then apply search filter if active
     if (showSearchSelector && searchQuery.trim()) {
       filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
     }
-    
+
     // Then apply label filter if active
     if (showLabelSelector && selectedLabels.length > 0) {
       filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
     }
-    
+
     const visibleIds = filteredObservations.map((obs) => obs.id);
 
     // If all visible observations are already selected, unselect all
@@ -691,7 +691,7 @@ export default function Home() {
   // ===== REFRESH SIGNED URLS =====
   const refreshSignedUrls = useCallback(async () => {
     if (!observations.length) return;
-    
+
     try {
       const updatedObservations = await Promise.all(
         observations.map(async (obs) => {
@@ -709,12 +709,12 @@ export default function Home() {
           return obs;
         })
       );
-      
+
       // Only update if we have meaningful changes to prevent unnecessary re-renders
-      const hasChanges = updatedObservations.some((obs, index) => 
+      const hasChanges = updatedObservations.some((obs, index) =>
         obs.signedUrl !== observations[index].signedUrl
       );
-      
+
       if (hasChanges) {
         setObservations(updatedObservations);
       }
@@ -727,10 +727,10 @@ export default function Home() {
   useEffect(() => {
     if (observations.length > 0) {
       // Only refresh if we have observations with photos but no signed URLs
-      const needsRefresh = observations.some(obs => 
+      const needsRefresh = observations.some(obs =>
         obs.photo_url && obs.photo_url.trim() && !obs.signedUrl
       );
-      
+
       if (needsRefresh) {
         refreshSignedUrls();
       }
@@ -819,7 +819,7 @@ export default function Home() {
       }
     });
     setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-    
+
     // Extract unique sites from all observations
     const allSites = new Map<string, string>();
     observations.forEach(obs => {
@@ -855,7 +855,7 @@ export default function Home() {
                   />
                 </div>
               )}
-              
+
               {/* Left side controls: Search, Tags, Filter, Grid */}
               {user && (
                 <>
@@ -902,13 +902,13 @@ export default function Home() {
                 </>
               )}
             </div>
-            
+
             {/* Center banner - only show when user is logged in */}
             {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2 sm:block">
-                <div 
+                <div
                   onClick={() => window.location.reload()}
-                  className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded" 
+                  className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded"
                   title={t("refreshObservations")}
                 >
                   <Image
@@ -921,9 +921,9 @@ export default function Home() {
                 </div>
               </div>
             )}
-            
-            
-            <div className="flex items-center gap-2">              
+
+
+            <div className="flex items-center gap-2">
 
               {/* Reports */}
               {user && (
@@ -1008,10 +1008,10 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  
+
                   {/* App Store Badge */}
-                  <div className="mt-8 flex justify-center">
-                    <a 
+                  <div className="h-14 mt-6 flex justify-center">
+                    <a
                       href="https://apps.apple.com/us/app/simple-site/id6749160249"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -1022,7 +1022,7 @@ export default function Home() {
                         alt="Available on the App Store"
                         width={100}
                         height={30}
-                        className="w-auto h-auto object-contain"
+                        className="h-14 w-auto object-contain max-w-[300px]"
                       />
                     </a>
                   </div>
@@ -1149,7 +1149,7 @@ export default function Home() {
                           {(() => {
                             // Get currently visible (filtered) observations count for button text
                             let filteredObservations = observations;
-                            
+
                             // Apply date range filter if both dates are set
                             if (showDateSelector && startDate && endDate) {
                               filteredObservations = filterObservationsByDateRange(
@@ -1158,30 +1158,30 @@ export default function Home() {
                                 endDate
                               );
                             }
-                            
+
                             // Then apply user filter if active
                             if (selectedUserId) {
                               filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
                             }
-                            
+
                             // Then apply site filter if active
                             if (selectedSiteId) {
                               filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
                             }
-                            
+
                             // Then apply search filter if active
                             if (showSearchSelector && searchQuery.trim()) {
                               filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
                             }
-                            
+
                             // Then apply label filter if active
                             if (showLabelSelector && selectedLabels.length > 0) {
                               filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
                             }
-                            
+
                             const visibleIds = filteredObservations.map((obs) => obs.id);
                             const allVisibleSelected = visibleIds.every(id => selectedObservations.has(id));
-                            
+
                             return allVisibleSelected ? t("unselectAll") : t("selectAll");
                           })()}
                         </Button>
@@ -1192,7 +1192,7 @@ export default function Home() {
 
                 {/* Search Input - Conditionally rendered */}
                 {showSearchSelector && (
-                  <div 
+                  <div
                     className="sticky z-10 flex flex-col gap-2 w-full p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
                     style={{ top: showDateSelector ? '140px' : '64px' }}
                   >
@@ -1223,10 +1223,10 @@ export default function Home() {
 
                 {/* Label Filter - Conditionally rendered */}
                 {showLabelSelector && (
-                  <div 
+                  <div
                     className="sticky z-10 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
-                    style={{ 
-                      top: showDateSelector && showSearchSelector ? '240px' : 
+                    style={{
+                      top: showDateSelector && showSearchSelector ? '240px' :
                            showDateSelector ? '140px' :
                            showSearchSelector ? '164px' : '64px'
                     }}
@@ -1284,7 +1284,7 @@ export default function Home() {
                 {(() => {
                   // Start with all observations
                   let filteredObservations = observations;
-                  
+
                   // Apply date range filter if both dates are set
                   if (showDateSelector && startDate && endDate) {
                     filteredObservations = filterObservationsByDateRange(
@@ -1293,22 +1293,22 @@ export default function Home() {
                       endDate
                     );
                   }
-                  
+
                   // Then apply user filter if active
                   if (selectedUserId) {
                     filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
                   }
-                  
+
                   // Then apply site filter if active
                   if (selectedSiteId) {
                     filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
                   }
-                  
+
                   // Then apply search filter if active
                   if (showSearchSelector && searchQuery.trim()) {
                     filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
                   }
-                  
+
                   // Then apply label filter if active
                   if (showLabelSelector && selectedLabels.length > 0) {
                     filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false); // OR logic - match any selected label
@@ -1379,7 +1379,7 @@ export default function Home() {
                                   if (skeleton) skeleton.style.display = 'none';
                                 }}
                               />
-                              
+
                               {/* Timestamp overlay - top of thumbnail */}
                               <div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-1.5 text-xs">
                                 <p className="text-center leading-tight">
@@ -1417,7 +1417,7 @@ export default function Home() {
                               )}
 
                               {/* Checkbox - bottom-right corner, visible on hover */}
-                              <div 
+                              <div
                                 className={`absolute bottom-1 right-2 z-20 transition-opacity w-5 h-5 flex items-center justify-center ${
                                   selectedObservations.has(observation.id)
                                     ? "opacity-100"
@@ -1449,7 +1449,7 @@ export default function Home() {
                                 />
                               </div>
                               </div>
-                              
+
                               {/* Tags under thumbnail */}
                               {labels && labels.length > 0 && (
                                 <div className="mt-1 flex flex-wrap gap-1">
@@ -1539,7 +1539,7 @@ export default function Home() {
                     <p className="text-muted-foreground text-lg">
                       {t('noObservationsPastTwoDays')}
                     </p>
-                    
+
                     <div className="space-y-4">
                       <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
                       <div className="flex flex-wrap justify-center gap-3">
@@ -1581,7 +1581,7 @@ export default function Home() {
                 </div>
               )
             )}
-            
+
             {!isLoading && (
               <Footer />
             )}
@@ -1628,17 +1628,17 @@ export default function Home() {
         const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
         const hasPrevious = currentPhotoIndex > 0;
         const hasNext = currentPhotoIndex < photoObservations.length - 1;
-        
+
         // Get site labels for the current observation
-        const currentSiteLabels = selectedPhotoObservation.site_id 
+        const currentSiteLabels = selectedPhotoObservation.site_id
           ? (siteLabels.get(selectedPhotoObservation.site_id) || [])
           : [];
-        
+
         // Fetch labels if not already loaded
         if (selectedPhotoObservation.site_id && user && currentSiteLabels.length === 0) {
           fetchSiteLabels(selectedPhotoObservation.site_id, user.id);
         }
-        
+
         return (
           <PhotoModal
             isOpen={photoModalOpen}
@@ -1656,7 +1656,7 @@ export default function Home() {
                 obs.id === updatedObservation.id ? updatedObservation : obs
               );
               setObservations(updatedObservations);
-              
+
               // Update available labels if labels were changed
               if (updatedObservation.labels) {
                 const currentLabels = new Set(storeAvailableLabels);
@@ -1667,7 +1667,7 @@ export default function Home() {
                 });
                 setAvailableLabels(Array.from(currentLabels).sort());
               }
-              
+
               // Update the currently selected photo observation if it's the one being edited
               if (selectedPhotoObservation.id === updatedObservation.id) {
                 setSelectedPhotoObservation(updatedObservation);
@@ -1778,7 +1778,7 @@ export default function Home() {
 
       {/* Claude Chat Component */}
       {user && (
-        <ClaudeChat 
+        <ClaudeChat
           selectedObservations={selectedObservations}
           allObservations={observations.filter(obs => obs.taken_at !== null).map(obs => ({
             ...obs,

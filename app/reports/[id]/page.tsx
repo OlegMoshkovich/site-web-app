@@ -77,7 +77,7 @@ export default function ReportDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
-  
+
   // Photo modal state
   const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
   const [scale, setScale] = useState(1);
@@ -85,7 +85,7 @@ export default function ReportDetailPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
@@ -153,12 +153,12 @@ export default function ReportDetailPage() {
   // Mouse and touch event listeners for modal
   useEffect(() => {
     if (!selectedPhoto) return;
-    
+
     const container = imageContainerRef.current;
     if (!container) return;
 
     container.addEventListener('wheel', handleWheel, { passive: false });
-    
+
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -184,14 +184,14 @@ export default function ReportDetailPage() {
       const margin = 14;
 
       // Function to add header to current page
-      const addHeader = async () => {
+      const addHeader = async (isFirstPage: boolean = false) => {
         let yPosition = margin;
 
         // Header section with professional styling and logo
         pdf.setFontSize(12);
         pdf.setFont('helvetica', 'bold');
         const reportTitle = report?.title || 'INSPECTION REPORT';
-        
+
         // Calculate available width for text (account for logo space)
         const logoWidth = 30;
         const logoSpace = 45; // Logo width + some margin
@@ -200,7 +200,7 @@ export default function ReportDetailPage() {
         const titleLines = pdf.splitTextToSize(reportTitle, maxTextWidth);
         pdf.text(titleLines, margin, yPosition);
         yPosition += titleLines.length * 7; // Adjust for multiple lines
-        
+
         // Add site logo in top-right corner if available
         if (observations.length > 0 && observations[0].sites?.logo_url) {
           try {
@@ -217,9 +217,9 @@ export default function ReportDetailPage() {
             logoCanvas.width = logoImg.width;
             logoCanvas.height = logoImg.height;
             logoCtx?.drawImage(logoImg, 0, 0);
-            
+
             const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
-            
+
             // Position logo in top-right
             const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
             pdf.addImage(logoData, 'JPEG', pageWidth - margin - logoWidth, margin - 5, logoWidth, logoHeight);
@@ -227,45 +227,49 @@ export default function ReportDetailPage() {
             console.error('Error adding site logo to PDF header:', error);
           }
         }
-        
+
         yPosition += 3;
-        
-        // Project details
+
+        // Only show description on first page
+        if (isFirstPage) {
+          // Project details
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
+          const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
+
+          // Split description if it's too long to avoid logo overlap
+          const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
+          pdf.text(descriptionLines, margin, yPosition);
+          yPosition += descriptionLines.length * 5; // Adjust for multiple lines
+        }
+
+        // Show Ersteller, Baustelle, and Date on every page
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'bold');
-        const reportDescription = report?.description || 'Baustelleninspektion Dokumentation';
-        
-        // Split description if it's too long to avoid logo overlap
-        const descriptionLines = pdf.splitTextToSize(reportDescription, maxTextWidth);
-        pdf.text(descriptionLines, margin, yPosition);
-        yPosition += descriptionLines.length * 5; // Adjust for multiple lines
-        
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'bold');
-        
+
         // Add Ersteller if available
         if (report?.ersteller) {
           pdf.text(`Ersteller: ${report.ersteller}`, margin, yPosition);
           yPosition += 5;
         }
-        
+
         // Add Baustelle if available
         if (report?.baustelle) {
           pdf.text(`Baustelle: ${report.baustelle}`, margin, yPosition);
           yPosition += 5;
         }
-        
-        const dateText = report?.report_date 
-          ? new Date(report.report_date).toLocaleDateString('de-DE', { 
-              year: 'numeric', 
-              month: '2-digit', 
+
+        const dateText = report?.report_date
+          ? new Date(report.report_date).toLocaleDateString('de-DE', {
+              year: 'numeric',
+              month: '2-digit',
               day: '2-digit',
               hour: '2-digit',
               minute: '2-digit'
             }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr')
-          : new Date().toLocaleDateString('de-DE', { 
-              year: 'numeric', 
-              month: '2-digit', 
+          : new Date().toLocaleDateString('de-DE', {
+              year: 'numeric',
+              month: '2-digit',
               day: '2-digit',
               hour: '2-digit',
               minute: '2-digit'
@@ -276,7 +280,7 @@ export default function ReportDetailPage() {
         const datumWidth = pdf.getTextWidth('Datum: ');
         pdf.text(dateText, margin + datumWidth + 1, yPosition);
         yPosition += 6;
-        
+
         // Add a horizontal separator line under the header
         pdf.setLineWidth(0.3);
         pdf.setDrawColor(200, 200, 200);
@@ -286,17 +290,17 @@ export default function ReportDetailPage() {
         return yPosition;
       };
 
-      // Add header to first page
-      let yPosition = await addHeader();
+      // Add header to first page with full details
+      let yPosition = await addHeader(true);
 
       // Process each observation
       for (let i = 0; i < observations.length; i++) {
         const observation = observations[i];
-        
+
         // Check if we need a new page - adjusted for 2 observations per page
         if (yPosition > pageHeight - 120) {
           pdf.addPage();
-          yPosition = await addHeader(); // Add header to new page
+          yPosition = await addHeader(false); // Add header to new page without description
         }
 
         // Add observation content
@@ -312,38 +316,38 @@ export default function ReportDetailPage() {
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            
+
             // Aggressive scaling for smaller PDF file size
             // Target around 400px max dimension to significantly reduce file size
             const maxDimension = 400;
             const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
-            
+
             if (ctx) {
               // Use medium quality smoothing to reduce processing overhead
               ctx.imageSmoothingEnabled = true;
               ctx.imageSmoothingQuality = 'medium';
-              
+
               // Create rounded rectangle clipping path
               const radius = Math.round(10 * scale); // Scale radius proportionally
               ctx.beginPath();
               ctx.roundRect(0, 0, canvas.width, canvas.height, radius);
               ctx.clip();
-              
+
               // Draw the scaled image with rounded corners
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
-            
+
             const imgData = canvas.toDataURL('image/jpeg', 0.4);
-            
+
             // Calculate image dimensions for PDF - increased size for 2 per page
-            const imgWidth = 74;
+            const imgWidth = 78;
             const imgHeight = (img.height / img.width) * imgWidth;
-            
+
             // Add image
             pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
-            
+
             // Add logo overlay on photo if available
             if (observation.sites?.logo_url) {
               try {
@@ -366,9 +370,9 @@ export default function ReportDetailPage() {
                   logoCtx.globalAlpha = 0.5; // Set 50% transparency
                   logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
                 }
-                
+
                 const logoData = logoCanvas.toDataURL('image/jpeg', 0.4); // Use JPEG instead of PNG for smaller size
-                
+
                 // Position logo on top-left of photo
                 const photoLogoWidth = 12; // Double the size from 6 to 12
                 const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
@@ -377,12 +381,12 @@ export default function ReportDetailPage() {
                 console.error('Error adding logo overlay to photo:', error);
               }
             }
-            
+
             // Add text content next to image
             const textStartX = margin + imgWidth + 10;
             const textWidth = pageWidth - textStartX - margin;
             let textY = yPosition + 5;
-            
+
             // Add category if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
@@ -392,13 +396,13 @@ export default function ReportDetailPage() {
             const gebaudeWidth = pdf.getTextWidth('Gebäude: ');
             pdf.text(category, textStartX + gebaudeWidth + 1, textY);
             textY += 5;
-            
+
             // Add timestamp
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
             pdf.text('Aufgenommen am: ', textStartX, textY);
             pdf.setFont('helvetica', 'normal');
-            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
+            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' +
                              new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
             const aufgenommenWidth = pdf.getTextWidth('Aufgenommen am: ');
             pdf.text(timestamp, textStartX + aufgenommenWidth + 2, textY);
@@ -416,7 +420,7 @@ export default function ReportDetailPage() {
               pdf.text(labelLines, textStartX + bereichWidth + 1, textY);
               textY += labelLines.length * 4 + 5;
             }
-            
+
             // Add note
             if (observation.note) {
               pdf.setFontSize(10);
@@ -425,11 +429,11 @@ export default function ReportDetailPage() {
               pdf.text(noteLines, textStartX, textY);
               textY += noteLines.length * 5 + 2;
             }
-            
-  
+
+
             //spacing
             yPosition += Math.max(imgHeight, textY - yPosition) + 10;
-            
+
           } catch (error) {
             console.error('Error adding observation to PDF:', error);
             // Fallback: just add text without image
@@ -439,7 +443,7 @@ export default function ReportDetailPage() {
               pdf.text(`${i + 1}. ${observation.note}`, margin, yPosition);
               yPosition += 8;
             }
-            
+
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'bold');
@@ -449,7 +453,7 @@ export default function ReportDetailPage() {
               pdf.text(observation.labels.join(', '), margin + bereichWidth + 2, yPosition);
               yPosition += 8;
             }
-            
+
             yPosition += 8;
           }
         }
@@ -459,12 +463,12 @@ export default function ReportDetailPage() {
       const totalPages = (pdf.internal as unknown as { getNumberOfPages(): number }).getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
-        
+
         // Footer line
         pdf.setLineWidth(0.1);
         pdf.setDrawColor(200, 200, 200);
         pdf.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
-        
+
         // Footer text (page numbers only)
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
@@ -485,7 +489,7 @@ export default function ReportDetailPage() {
   const handleExportWord = async () => {
     try {
       setIsGeneratingWord(true);
-      
+
       // Prepare report data
       const reportData = {
         title: report?.title,
@@ -495,7 +499,7 @@ export default function ReportDetailPage() {
         report_date: report?.report_date,
         created_at: report?.created_at
       };
-      
+
       // Display settings - for now we'll include everything
       const displaySettings = {
         photo: true,
@@ -503,17 +507,17 @@ export default function ReportDetailPage() {
         labels: true,
         gps: true
       };
-      
+
       // Generate Word document
       const blob = await generateWordReport(observations, reportData, displaySettings);
-      
+
       // Download the document
-      const filename = report?.title 
+      const filename = report?.title
         ? `${report.title.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.docx`
         : `report-${new Date().toISOString().split('T')[0]}.docx`;
-      
+
       downloadWordDocument(blob, filename);
-      
+
     } catch (error) {
       console.error('Error generating Word document:', error);
       alert('Error generating Word document. Please try again.');
@@ -549,7 +553,7 @@ export default function ReportDetailPage() {
     const fetchReportAndObservations = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch report details
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
@@ -597,7 +601,7 @@ export default function ReportDetailPage() {
         console.error('Error fetching observations:', obsError);
         return;
       }
-      
+
       const observationsWithUrls: ObservationWithUrl[] = await Promise.all(
         observationsData.map(async (obs: Observation) => {
           let signedUrl = null;
@@ -614,7 +618,7 @@ export default function ReportDetailPage() {
               console.error(`Error getting signed URL for ${obs.photo_url}:`, error);
             }
           }
-          
+
           return {
             ...obs,
             signedUrl
@@ -690,7 +694,7 @@ export default function ReportDetailPage() {
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={() => router.push('/')}
               className="hover:opacity-80 transition-opacity cursor-pointer"
             >
@@ -703,7 +707,7 @@ export default function ReportDetailPage() {
               />
             </button>
             {isAuthenticated && (
-              <button 
+              <button
                 onClick={() => router.push('/reports')}
                 className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
                 title="Back to Reports"
@@ -712,7 +716,7 @@ export default function ReportDetailPage() {
               </button>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button
               onClick={handleExportReport}
@@ -775,8 +779,8 @@ export default function ReportDetailPage() {
                 {observations.length > 0 && observations[0].sites?.logo_url && (
                   <div className="flex-shrink-0">
                     <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2">
-                      <img 
-                        src={observations[0].sites.logo_url} 
+                      <img
+                        src={observations[0].sites.logo_url}
                         alt={`${observations[0].sites.name} logo`}
                         className="h-10 sm:h-12 w-auto object-contain rounded"
                       />
@@ -797,7 +801,7 @@ export default function ReportDetailPage() {
                         </div>
                       </div>
             </CardHeader>
-            
+
             <CardContent className="pt-0">
               {/* All unique labels */}
               {(() => {
@@ -814,7 +818,7 @@ export default function ReportDetailPage() {
                           </Badge>
                         ))}
                       </div>
-                      
+
                     </div>
                   );
                 }
@@ -832,7 +836,7 @@ export default function ReportDetailPage() {
                     <div className="flex flex-col lg:flex-row print:flex-row items-center lg:items-stretch print:items-stretch">
                       {/* Image */}
                       {observation.signedUrl && (
-                        <div 
+                        <div
                           className="flex-shrink-0 relative bg-transparent cursor-pointer w-80 lg:w-80 lg:border lg:border-gray-200"
                           onClick={() => openPhotoModal(observation)}
                         >
@@ -852,8 +856,8 @@ export default function ReportDetailPage() {
                           {observation.sites?.logo_url && (
                             <div className="absolute bottom-2 right-2 z-10">
                               <div className="rounded-lg p-1.5 opacity-80">
-                                <img 
-                                  src={observation.sites.logo_url} 
+                                <img
+                                  src={observation.sites.logo_url}
                                   alt={`${observation.sites.name} logo`}
                                   className="h-6 w-auto object-contain rounded opacity-90"
                                 />
@@ -862,7 +866,7 @@ export default function ReportDetailPage() {
                           )}
                         </div>
                       )}
-                      
+
                       {/* Content */}
                       <div className="flex-1 w-full lg:w-auto">
                         {/* Always show CardHeader for consistent layout */}
@@ -879,7 +883,7 @@ export default function ReportDetailPage() {
                             </div>
                           </div>
                         </CardHeader>
-                        
+
                         <CardContent className="pt-0 print:pt-0">
                           <div className="space-y-3 print:space-y-2">
                             {/* Labels */}
@@ -898,7 +902,7 @@ export default function ReportDetailPage() {
                                 </div>
                               </div>
                             )}
-                            
+
                             {/* Date */}
                             <div className="text-xs text-gray-500 mt-auto">
                               {formatDate(observation.taken_at || observation.created_at)}
@@ -933,12 +937,12 @@ export default function ReportDetailPage() {
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
-            
+
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               <div>
                 <p className="text-gray-600 mb-4">Unverzichtbar für das Sammeln von Beobachtungen vor Ort</p>
-                
+
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
@@ -954,26 +958,26 @@ export default function ReportDetailPage() {
                   </li>
                 </ul>
               </div>
-              
+
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Web vs Mobile:</h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium text-gray-900">Web Portal:</h4>
                     <p className="text-gray-600 text-sm">Team-Beobachtungen anzeigen, Berichte erstellen und Einstellungen verwalten</p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-gray-900">Mobile App:</h4>
                     <p className="text-gray-600 text-sm">Erforderlich für das Sammeln von Beobachtungen vor Ort</p>
                   </div>
                 </div>
               </div>
-              
+
               {/* App Store Button */}
               <div className="text-center">
-                <a 
+                <a
                   href="https://apps.apple.com/us/app/simple-site/id6749160249"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1016,7 +1020,7 @@ export default function ReportDetailPage() {
             </div>
 
             {/* Image Container */}
-            <div 
+            <div
               ref={imageContainerRef}
               className="flex-1 relative bg-gray-100 overflow-hidden"
               style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
@@ -1058,15 +1062,15 @@ export default function ReportDetailPage() {
               {selectedPhoto.sites?.logo_url && (
                 <div className="absolute top-4 left-4 z-30">
                   <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200">
-                    <img 
-                      src={selectedPhoto.sites.logo_url} 
+                    <img
+                      src={selectedPhoto.sites.logo_url}
                       alt={`${selectedPhoto.sites.name} logo`}
                       className="w-12 h-12 object-contain rounded"
                     />
                   </div>
                 </div>
               )}
-              
+
               {/* Zoomable/Pannable Image Container */}
               <div
                 className="absolute inset-0 transition-transform duration-200 ease-out"
