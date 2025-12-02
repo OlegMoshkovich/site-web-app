@@ -31,6 +31,8 @@ import { Footer } from "@/components/footer";
 import { PhotoModal } from "@/components/photo-modal";
 // Claude chat component
 import { ClaudeChat } from "@/components/claude-chat";
+// User manual carousel component
+import { UserManualCarousel } from "@/components/user-manual-carousel";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -968,45 +970,10 @@ export default function Home() {
                   {t("welcomeTitle")}
                 </h1>
 
-                {/* App Screenshots */}
-                <div className="mt-8 max-w-lg mx-auto">
-                  <div className="flex justify-center items-center gap-0 space-x-1 mx-auto">
-                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
-                      <Image
-                        src="/app_screens/Screen1.jpeg"
-                        alt="App Screenshot 1"
-                        width={130}
-                        height={240}
-                        className="w-full h-full object-cover"
-                        priority
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
-                      />
-                    </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
-                      <Image
-                        src="/app_screens/Screen2.jpeg"
-                        alt="App Screenshot 2"
-                        width={130}
-                        height={240}
-                        className="w-full h-full object-cover"
-                        priority
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
-                      />
-                    </div>
-                    <div className="relative overflow-hidden rounded-lg shadow-lg  bg-gray-100">
-                      <Image
-                        src="/app_screens/Screen3.jpeg"
-                        alt="App Screenshot 3"
-                        width={130}
-                        height={240}
-                        className="w-full h-full object-cover"
-                        priority
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDEzMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPg=="
-                      />
-                    </div>
+                {/* User Manual Carousel */}
+                <div className="mt-8">
+                  <div className="flex justify-center">
+                    <UserManualCarousel width={600} height={400} />
                   </div>
 
                   {/* App Store Badge */}
