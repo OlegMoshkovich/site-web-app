@@ -29,10 +29,11 @@ export function UserManualCarousel({
 
   // User manual images
   const images = [
-    { src: "/userManual/1.png", alt: "User Manual Page 1" },
-    { src: "/userManual/2.png", alt: "User Manual Page 2" },
+
     { src: "/userManual/3.png", alt: "User Manual Page 3" },
     { src: "/userManual/4.png", alt: "User Manual Page 4" },
+    { src: "/userManual/2.png", alt: "User Manual Page 2" },
+
     { src: "/userManual/5.png", alt: "User Manual Page 5" },
   ];
 
