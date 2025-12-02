@@ -22,6 +22,10 @@ export function UserManualCarousel({
 }: UserManualCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  
+  // Touch/swipe handling
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // User manual images
   const images = [
@@ -53,6 +57,33 @@ export function UserManualCarousel({
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
+  // Minimum swipe distance for a swipe to be registered
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      goToNext(); // Swipe left = next image
+    }
+    if (isRightSwipe) {
+      goToPrevious(); // Swipe right = previous image
+    }
+  };
+
 
   return (
     <div 
@@ -73,6 +104,9 @@ export function UserManualCarousel({
             '--desktop-height': `${desktopHeight}px`
           })
         }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <div 
           className="flex transition-transform duration-500 ease-in-out h-full"
