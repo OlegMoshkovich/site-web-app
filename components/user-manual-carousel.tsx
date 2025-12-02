@@ -41,7 +41,14 @@ export function UserManualCarousel({
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex((prev) => {
+        // Stop at the last slide and disable auto-play
+        if (prev === images.length - 1) {
+          setIsAutoPlaying(false);
+          return prev;
+        }
+        return prev + 1;
+      });
     }, 3000);
 
     return () => clearInterval(interval);
@@ -49,12 +56,12 @@ export function UserManualCarousel({
 
   const goToPrevious = () => {
     setIsAutoPlaying(false);
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
   };
 
   const goToNext = () => {
     setIsAutoPlaying(false);
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => Math.min(images.length - 1, prev + 1));
   };
 
   // Minimum swipe distance for a swipe to be registered
@@ -76,11 +83,11 @@ export function UserManualCarousel({
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
-      goToNext(); // Swipe left = next image
+    if (isLeftSwipe && currentIndex < images.length - 1) {
+      goToNext(); // Swipe left = next image (only if not at last)
     }
-    if (isRightSwipe) {
-      goToPrevious(); // Swipe right = previous image
+    if (isRightSwipe && currentIndex > 0) {
+      goToPrevious(); // Swipe right = previous image (only if not at first)
     }
   };
 
@@ -133,7 +140,8 @@ export function UserManualCarousel({
           onClick={goToPrevious}
           variant="outline"
           size="icon"
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300"
+          disabled={currentIndex === 0}
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -142,7 +150,8 @@ export function UserManualCarousel({
           onClick={goToNext}
           variant="outline"
           size="icon"
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300"
+          disabled={currentIndex === images.length - 1}
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
