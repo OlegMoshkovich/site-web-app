@@ -9,15 +9,19 @@ interface UserManualCarouselProps {
   className?: string;
   width?: number;
   height?: number;
+  mobileHeight?: number;
+  desktopHeight?: number;
 }
 
 export function UserManualCarousel({ 
   className = "", 
   width = 320, 
-  height = 480 
+  height = 480,
+  mobileHeight,
+  desktopHeight
 }: UserManualCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
   // User manual images
   const images = [
@@ -57,8 +61,18 @@ export function UserManualCarousel({
     >
       {/* Main carousel container */}
       <div 
-        className="overflow-hidden rounded-lg bg-white"
-        style={{ height: `${height}px` }}
+        className={`overflow-hidden rounded-lg bg-white ${
+          mobileHeight && desktopHeight 
+            ? 'h-[var(--mobile-height)] sm:h-[var(--desktop-height)]' 
+            : ''
+        }`}
+        style={{ 
+          height: mobileHeight && desktopHeight ? undefined : `${height}px`,
+          ...(mobileHeight && desktopHeight && {
+            '--mobile-height': `${mobileHeight}px`,
+            '--desktop-height': `${desktopHeight}px`
+          })
+        }}
       >
         <div 
           className="flex transition-transform duration-500 ease-in-out h-full"
