@@ -49,10 +49,6 @@ export function UserManualCarousel({
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
-  const goToSlide = (index: number) => {
-    setIsAutoPlaying(false);
-    setCurrentIndex(index);
-  };
 
   return (
     <div 
