@@ -35,6 +35,7 @@ export function UserManualCarousel({
     { src: "/userManual/2.png", alt: "User Manual Page 2" },
 
     { src: "/userManual/5.png", alt: "User Manual Page 5" },
+    { src: "/userManual/6.png", alt: "User Manual Page 6" },
   ];
 
   // Auto-play functionality
