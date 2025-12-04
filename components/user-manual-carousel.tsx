@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface UserManualCarouselProps {
   className?: string;
@@ -23,6 +24,11 @@ export function UserManualCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   
+  // Next.js routing hooks
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   // Touch/swipe handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -30,13 +36,36 @@ export function UserManualCarousel({
   // User manual images
   const images = [
 
-    { src: "/userManual/3.png", alt: "User Manual Page 3" },
-    { src: "/userManual/4.png", alt: "User Manual Page 4" },
-    { src: "/userManual/2.png", alt: "User Manual Page 2" },
+    { src: "/userManual/3.png", alt: "User Manual Page 1" },
+    { src: "/userManual/4.png", alt: "User Manual Page 2" },
+    { src: "/userManual/2.png", alt: "User Manual Page 3" },
 
-    { src: "/userManual/5.png", alt: "User Manual Page 5" },
-    { src: "/userManual/6.png", alt: "User Manual Page 6" },
+    // { src: "/userManual/5.png", alt: "User Manual Page 5" },
+    { src: "/userManual/6.png", alt: "User Manual Page 4" },
   ];
+
+  // Function to update URL with current slide
+  const updateURL = useCallback((slideIndex: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (slideIndex > 0) {
+      params.set('slide', (slideIndex + 1).toString());
+    } else {
+      params.delete('slide');
+    }
+    const newURL = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newURL, { scroll: false });
+  }, [searchParams, pathname, router]);
+
+  // Initialize from URL parameter
+  useEffect(() => {
+    const slideParam = searchParams.get('slide');
+    if (slideParam) {
+      const slideNumber = parseInt(slideParam, 10);
+      if (!isNaN(slideNumber) && slideNumber >= 1 && slideNumber <= images.length) {
+        setCurrentIndex(slideNumber - 1);
+      }
+    }
+  }, [searchParams, images.length]);
 
   // Auto-play functionality
   useEffect(() => {
@@ -49,21 +78,31 @@ export function UserManualCarousel({
           setIsAutoPlaying(false);
           return prev;
         }
-        return prev + 1;
+        const newIndex = prev + 1;
+        updateURL(newIndex);
+        return newIndex;
       });
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, images.length]);
+  }, [isAutoPlaying, images.length, updateURL]);
 
   const goToPrevious = () => {
     setIsAutoPlaying(false);
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
+    setCurrentIndex((prev) => {
+      const newIndex = Math.max(0, prev - 1);
+      updateURL(newIndex);
+      return newIndex;
+    });
   };
 
   const goToNext = () => {
     setIsAutoPlaying(false);
-    setCurrentIndex((prev) => Math.min(images.length - 1, prev + 1));
+    setCurrentIndex((prev) => {
+      const newIndex = Math.min(images.length - 1, prev + 1);
+      updateURL(newIndex);
+      return newIndex;
+    });
   };
 
   // Minimum swipe distance for a swipe to be registered
