@@ -43,8 +43,7 @@ import { translations, useLanguage } from "@/lib/translations";
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
 import { useObservationsStore } from "@/lib/store/observations-store";
-// API functions
-import { getSignedPhotoUrl } from "@/lib/supabase/api";
+// API functions (getSignedPhotoUrl now used in observation-utils)
 // Utility functions
 import {
   filterObservationsBySearch,
@@ -71,12 +70,12 @@ import {
   extractSites,
   needsSignedUrlRefresh,
 } from "@/lib/observation-utils";
-// Month utilities
-import {
-  getMonthName,
-  getCurrentMonthState,
-  getPreviousMonth,
-} from "@/lib/month-utils";
+// Month utilities (currently unused but available for future dynamic month navigation)
+// import {
+//   getMonthName,
+//   getCurrentMonthState,
+//   getPreviousMonth,
+// } from "@/lib/month-utils";
 // Types
 import type { Observation } from "@/types/supabase";
 
@@ -1274,36 +1273,20 @@ export default function Home() {
                       <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
                       <div className="flex flex-wrap justify-center gap-3">
                         <Button
-                          onClick={() => handleLoadMore('week')}
-                          disabled={isLoadingMore}
+                          onClick={handleLoadPastWeek}
                           variant="outline"
                           size="sm"
                           className="shadow-md hover:shadow-lg transition-all"
                         >
-                          {isLoadingMore ? (
-                            <>
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
-                              Loading...
-                            </>
-                          ) : (
-                            t('loadPastWeek')
-                          )}
+                          {t('loadPastWeek')}
                         </Button>
                         <Button
-                          onClick={() => handleLoadMore('month')}
-                          disabled={isLoadingMore}
+                          onClick={handleLoadPastMonth}
                           variant="outline"
                           size="sm"
                           className="shadow-md hover:shadow-lg transition-all"
                         >
-                          {isLoadingMore ? (
-                            <>
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
-                              Loading...
-                            </>
-                          ) : (
-                            t('loadPastMonth')
-                          )}
+                          {t('loadPastMonth')}
                         </Button>
                       </div>
                     </div>
