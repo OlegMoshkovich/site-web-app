@@ -4,7 +4,7 @@
 export const dynamic = "force-dynamic";
 
 // React hooks for state management and side effects
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 // Supabase client for database operations
 import { createClient } from "@/lib/supabase/client";
 // UI components from shadcn/ui
@@ -55,6 +55,28 @@ import {
   groupObservationsByDate,
   processLabel,
 } from "@/lib/search-utils";
+// Date utilities
+import {
+  getAvailableDateRange,
+  getPastWeekRange,
+  getPastMonthRange,
+  getCurrentMonthRange,
+} from "@/lib/date-utils";
+// Download utilities
+import { downloadPhotosAsZip } from "@/lib/download-utils";
+// Observation utilities
+import {
+  refreshSignedUrls,
+  extractUsers,
+  extractSites,
+  needsSignedUrlRefresh,
+} from "@/lib/observation-utils";
+// Month utilities
+import {
+  getMonthName,
+  getCurrentMonthState,
+  getPreviousMonth,
+} from "@/lib/month-utils";
 // Types
 import type { Observation } from "@/types/supabase";
 
@@ -157,241 +179,11 @@ export default function Home() {
     setShowSaveDialog(true);
   }, [selectedObservations]);
 
-  // Compress image blob for download with multi-pass approach
-  const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 50): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      // If it's not an image, return as-is
-      if (!blob.type.startsWith('image/')) {
-        resolve(blob);
-        return;
-      }
-
-      // Even if it's small, still compress it to ensure consistency
-      try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = typeof window !== "undefined" ? new window.Image() : null;
-        if (!img) {
-          reject(new Error("Could not create Image object in this environment"));
-          return;
-        }
-
-        // Set up timeout to prevent hanging
-        const timeout = setTimeout(() => {
-          reject(new Error('Image compression timeout'));
-        }, 30000);
-
-        img.onload = () => {
-          try {
-            clearTimeout(timeout);
-
-            // Multi-pass compression: try different dimension sizes
-            const compressionPasses = [
-              { maxDim: 600, quality: 0.3 },  // Very aggressive first pass
-              { maxDim: 500, quality: 0.25 }, // Even more aggressive
-              { maxDim: 400, quality: 0.2 },  // Very small
-              { maxDim: 300, quality: 0.15 }  // Tiny but readable
-            ];
-
-            let passIndex = 0;
-
-            const tryPass = () => {
-              if (passIndex >= compressionPasses.length) {
-                // If all passes fail, use the tiniest possible version
-                canvas.width = 200;
-                canvas.height = 200;
-                ctx?.drawImage(img, 0, 0, 200, 200);
-                canvas.toBlob((finalBlob) => {
-                  resolve(finalBlob || blob);
-                }, 'image/jpeg', 0.1);
-                return;
-              }
-
-              const pass = compressionPasses[passIndex];
-              let { width, height } = img;
-
-              // Calculate dimensions for this pass
-              if (width > height && width > pass.maxDim) {
-                height = (height * pass.maxDim) / width;
-                width = pass.maxDim;
-              } else if (height > pass.maxDim) {
-                width = (width * pass.maxDim) / height;
-                height = pass.maxDim;
-              }
-
-              canvas.width = width;
-              canvas.height = height;
-
-              if (!ctx) {
-                reject(new Error('Failed to get canvas context'));
-                return;
-              }
-
-              // Draw image
-              ctx.drawImage(img, 0, 0, width, height);
-
-              // Try compression with current pass settings
-              canvas.toBlob((compressedBlob) => {
-                if (!compressedBlob) {
-                  passIndex++;
-                  tryPass(); // Try next pass
-                  return;
-                }
-
-                // If this pass achieves target size, use it
-                if (compressedBlob.size <= targetSizeKB * 1024) {
-                  resolve(compressedBlob);
-                } else {
-                  // Try next pass
-                  passIndex++;
-                  tryPass();
-                }
-              }, 'image/jpeg', pass.quality);
-            };
-
-            tryPass();
-          } catch (error) {
-            clearTimeout(timeout);
-            reject(error);
-          }
-        };
-
-        img.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error('Failed to load image for compression'));
-        };
-
-        // Set CORS to anonymous to handle cross-origin issues
-        img.crossOrigin = 'anonymous';
-        img.src = URL.createObjectURL(blob);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }, []);
 
   // Download photos for selected observations as a ZIP file
   const handleDownloadPhotos = useCallback(async () => {
-    if (selectedObservations.size === 0) return;
-
-    try {
-      // Get selected observations
-      const selectedObs = observations.filter(obs =>
-        selectedObservations.has(obs.id)
-      );
-
-      // Filter only observations that have photos
-      const obsWithPhotos = selectedObs.filter(obs => obs.signedUrl);
-
-      if (obsWithPhotos.length === 0) {
-        alert("No photos found in selected observations");
-        return;
-      }
-
-      // Dynamically import JSZip
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
-
-      let downloadCount = 0;
-
-      // Download each photo and add to ZIP
-      for (const obs of obsWithPhotos) {
-        try {
-          if (obs.signedUrl) {
-            // Fetch the image
-            const response = await fetch(obs.signedUrl);
-            if (!response.ok) continue;
-
-            const blob = await response.blob();
-
-            // Try to compress the image for download, fallback to original if it fails
-            let finalBlob = blob;
-            let extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' :
-                           blob.type.includes('png') ? '.png' : '.jpg';
-
-            try {
-              // Attempt compression for images only (target 30KB for very small files)
-              if (blob.type.startsWith('image/')) {
-                const compressedBlob = await compressImageForDownload(blob, 30);
-                finalBlob = compressedBlob;
-                extension = '.jpg'; // Compressed images are always JPEG
-              }
-            } catch (compressionError) {
-              console.warn(`Failed to compress image for observation ${obs.id}, attempting basic fallback compression:`, compressionError);
-
-              // Try a simple fallback compression
-              try {
-                if (blob.type.startsWith('image/')) {
-                  const canvas = document.createElement('canvas');
-                  const ctx = canvas.getContext('2d');
-                  const img = typeof window !== "undefined" ? new window.Image() : null;
-                  if (!img) throw new Error("Could not create Image object in this environment");
-
-                  await new Promise((resolve, reject) => {
-                    img.onload = () => {
-                      // Very small dimensions
-                      canvas.width = 300;
-                      canvas.height = 300;
-                      ctx?.drawImage(img, 0, 0, 300, 300);
-
-                      canvas.toBlob((fallbackBlob) => {
-                        if (fallbackBlob) {
-                          finalBlob = fallbackBlob;
-                          extension = '.jpg';
-                        }
-                        resolve(fallbackBlob);
-                      }, 'image/jpeg', 0.1);
-                    };
-                    img.onerror = reject;
-                    img.src = URL.createObjectURL(blob);
-                  });
-                }
-              } catch (fallbackError) {
-                console.warn(`Fallback compression also failed for ${obs.id}, using original:`, fallbackError);
-                // Keep using the original blob and extension
-              }
-            }
-
-            // Create a filename based on observation data
-            const date = obs.taken_at || obs.created_at;
-            const dateStr = new Date(date).toISOString().split('T')[0];
-            const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
-
-            const filename = `${dateStr}${site}_${obs.id.slice(0, 8)}${extension}`;
-
-            // Add image to ZIP (compressed or original)
-            zip.file(filename, finalBlob);
-            downloadCount++;
-          }
-        } catch (error) {
-          console.error(`Failed to download photo for observation ${obs.id}:`, error);
-          // Continue with other photos
-        }
-      }
-
-      if (downloadCount === 0) {
-        alert("Failed to download any photos");
-        return;
-      }
-
-      // Generate ZIP file
-      const zipBlob = await zip.generateAsync({ type: "blob" });
-
-      // Download the ZIP file
-      const url = URL.createObjectURL(zipBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `observations_photos_${new Date().toISOString().split('T')[0]}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-    } catch (error) {
-      console.error("Error downloading photos:", error);
-      alert("Failed to download photos. Please try again.");
-    }
-  }, [selectedObservations, observations, compressImageForDownload]);
+    await downloadPhotosAsZip(selectedObservations, observations, language);
+  }, [selectedObservations, observations, language]);
 
   // ===== NOTE EDITING =====
   // Note: Note editing is now handled in the PhotoModal component
@@ -663,25 +455,8 @@ export default function Home() {
     }
   }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
-  // Calculate the minimum and maximum dates available in the observations
-  // This is used to set the min/max values for date input fields
-  const getAvailableDateRange = useCallback(() => {
-    if (observations.length === 0) return { min: "", max: "" };
-
-    // Extract all dates from observations (photo_date or created_at)
-    const dates = observations.map(
-      (obs) => new Date(obs.taken_at || obs.created_at),
-    );
-    // Find the earliest and latest dates
-    const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
-    const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
-
-    // Return dates in YYYY-MM-DD format for HTML date inputs
-    return {
-      min: minDate.toISOString().split("T")[0], // Earliest available date
-      max: maxDate.toISOString().split("T")[0], // Latest available date
-    };
-  }, [observations]);
+  // Get available date range for date inputs
+  const availableDateRange = useMemo(() => getAvailableDateRange(observations), [observations]);
 
 
   // ===== LOAD MORE FUNCTIONALITY =====
@@ -690,54 +465,44 @@ export default function Home() {
     await loadMoreObservations(user.id, type);
   }, [user, loadMoreObservations]);
 
+  // Load past week - sets date filter to show last 7 days
+  const handleLoadPastWeek = useCallback(() => {
+    const { startDate: start, endDate: end } = getPastWeekRange();
+    setStartDate(start);
+    setEndDate(end);
+    setShowDateSelector(true);
+  }, []);
+
+  // Load past month - sets date filter to show last 30 days
+  const handleLoadPastMonth = useCallback(() => {
+    const { startDate: start, endDate: end } = getPastMonthRange();
+    setStartDate(start);
+    setEndDate(end);
+    setShowDateSelector(true);
+  }, []);
+
+  // Load current month - sets date filter to show current month with smart year detection
+  const handleLoadMonth = useCallback(() => {
+    const { startDate: start, endDate: end } = getCurrentMonthRange(observations);
+    setStartDate(start);
+    setEndDate(end);
+    setShowDateSelector(true);
+  }, [observations]);
+
   // ===== REFRESH SIGNED URLS =====
-  const refreshSignedUrls = useCallback(async () => {
-    if (!observations.length) return;
-
-    try {
-      const updatedObservations = await Promise.all(
-        observations.map(async (obs) => {
-          if (obs.photo_url && obs.photo_url.trim()) {
-            try {
-              const freshSignedUrl = await getSignedPhotoUrl(obs.photo_url, 3600);
-              // Only update if we got a valid signed URL, otherwise keep the existing one
-              return { ...obs, signedUrl: freshSignedUrl || obs.signedUrl };
-            } catch (err) {
-              console.warn(`Failed to refresh signed URL for observation ${obs.id}:`, err);
-              // Keep the existing signed URL if refresh fails
-              return obs;
-            }
-          }
-          return obs;
-        })
-      );
-
-      // Only update if we have meaningful changes to prevent unnecessary re-renders
-      const hasChanges = updatedObservations.some((obs, index) =>
-        obs.signedUrl !== observations[index].signedUrl
-      );
-
-      if (hasChanges) {
-        setObservations(updatedObservations);
-      }
-    } catch (error) {
-      console.error('Error refreshing signed URLs:', error);
+  const handleRefreshSignedUrls = useCallback(async () => {
+    const updatedObservations = await refreshSignedUrls(observations);
+    if (updatedObservations !== observations) {
+      setObservations(updatedObservations);
     }
   }, [observations, setObservations]);
 
   // Refresh signed URLs when observations change
   useEffect(() => {
-    if (observations.length > 0) {
-      // Only refresh if we have observations with photos but no signed URLs
-      const needsRefresh = observations.some(obs =>
-        obs.photo_url && obs.photo_url.trim() && !obs.signedUrl
-      );
-
-      if (needsRefresh) {
-        refreshSignedUrls();
-      }
+    if (observations.length > 0 && needsSignedUrlRefresh(observations)) {
+      handleRefreshSignedUrls();
     }
-  }, [observations, refreshSignedUrls]);
+  }, [observations, handleRefreshSignedUrls]);
 
 
   // ===== DATA FETCHING =====
@@ -745,15 +510,25 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Step 1: First check for existing session and restore it
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        let currentUser = null;
+        if (sessionData.session?.user) {
+          currentUser = sessionData.session.user;
+        } else {
+          // If no session, try to get user (this will work if user is logged in but session not yet restored)
+          const { data: authData, error: userError } = await supabase.auth.getUser();
+          if (!userError && authData.user) {
+            currentUser = authData.user;
+          }
+        }
 
-        // Step 1: Authenticate the current user
-        const { data: authData, error: userError } =
-          await supabase.auth.getUser();
-        if (userError || !authData.user) {
+        if (!currentUser) {
           setUser(null);
           return;
         }
-        setUser(authData.user);
+        setUser(currentUser);
 
         // Step 1.5: Check if user should see onboarding
         try {
@@ -761,7 +536,7 @@ export default function Home() {
           const { data: profile } = await supabase
             .from('profiles')
             .select('onboarding_completed')
-            .eq('id', authData.user.id)
+            .eq('id', currentUser.id)
             .single();
 
 
@@ -778,7 +553,7 @@ export default function Home() {
         }
 
         // Step 2: Fetch observations using Zustand store
-        await fetchInitialObservations(authData.user.id);
+        await fetchInitialObservations(currentUser.id);
       } catch (e) {
         console.error("Error in fetchData:", e);
       }
@@ -794,13 +569,21 @@ export default function Home() {
         event: string,
         session: { user: { id: string; email?: string } } | null,
       ) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         if (event === "SIGNED_OUT") {
           setUser(null);
           clearStore();
           setSelectedObservations(new Set());
-        } else if (event === "SIGNED_IN" && session?.user) {
-          // Refetch data when user signs in
-          fetchData();
+        } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+          // Update user state and refetch data when user signs in or token refreshes
+          setUser(session.user);
+          if (event === "SIGNED_IN") {
+            fetchData();
+          }
+        } else if (event === "INITIAL_SESSION" && session?.user) {
+          // Handle initial session restoration
+          setUser(session.user);
         }
       },
     );
@@ -810,27 +593,8 @@ export default function Home() {
 
   // Extract users and sites when observations change
   useEffect(() => {
-    if (observations.length === 0) return;
-
-    // Extract unique users from all observations
-    const allUsers = new Map<string, string>();
-    observations.forEach(obs => {
-      if (obs.user_id) {
-        const displayName = obs.user_email || `User ${obs.user_id.slice(0, 8)}...`;
-        allUsers.set(obs.user_id, displayName);
-      }
-    });
-    setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-
-    // Extract unique sites from all observations
-    const allSites = new Map<string, string>();
-    observations.forEach(obs => {
-      if (obs.site_id) {
-        const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
-        allSites.set(obs.site_id, siteName);
-      }
-    });
-    setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
+    setAvailableUsers(extractUsers(observations));
+    setAvailableSites(extractSites(observations));
   }, [observations]);
 
   // ===== MAIN RENDER =====
@@ -1027,8 +791,8 @@ export default function Home() {
 
                             // No longer auto-selecting - just filtering the display
                           }}
-                          min={getAvailableDateRange().min}
-                          max={endDate || getAvailableDateRange().max}
+                          min={availableDateRange.min}
+                          max={endDate || availableDateRange.max}
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
@@ -1049,8 +813,8 @@ export default function Home() {
 
                             // No longer auto-selecting - just filtering the display
                           }}
-                          min={startDate || getAvailableDateRange().min}
-                          max={getAvailableDateRange().max}
+                          min={startDate || availableDateRange.min}
+                          max={availableDateRange.max}
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
