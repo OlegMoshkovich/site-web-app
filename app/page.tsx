@@ -345,7 +345,7 @@ export default function Home() {
 
       // Show confirmation dialog
       const confirmed = window.confirm(
-        "Are you sure you want to delete this observation? This action cannot be undone.",
+        "Are you sure you want to  this observation? This action cannot be undone.",
       );
       if (!confirmed) return;
 
