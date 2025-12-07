@@ -1151,6 +1151,38 @@ export default function Home() {
                             return allVisibleSelected ? t("unselectAll") : t("selectAll");
                           })()}
                         </Button>
+                        <Button
+                          onClick={() => handleLoadMore('week')}
+                          disabled={isLoadingMore}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:w-auto text-xs px-2"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-1"></div>
+                              Loading...
+                            </>
+                          ) : (
+                            t('lastWeek')
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => handleLoadMore('month')}
+                          disabled={isLoadingMore}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 sm:w-auto text-xs px-2"
+                        >
+                          {isLoadingMore ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-1"></div>
+                              Loading...
+                            </>
+                          ) : (
+                            t('lastMonth')
+                          )}
+                        </Button>
                       </div>
                     </div>
                   </div>
