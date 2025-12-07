@@ -263,17 +263,13 @@ export default function ReportDetailPage() {
           ? new Date(report.report_date).toLocaleDateString('de-DE', {
               year: 'numeric',
               month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit'
-            }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr')
+              day: '2-digit'
+            })
           : new Date().toLocaleDateString('de-DE', {
               year: 'numeric',
               month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit'
-            }).replace(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})/, '$1.$2.$3 $4:$5 Uhr');
+              day: '2-digit'
+            });
         pdf.setFont('helvetica', 'bold');
         pdf.text('Datum: ', margin, yPosition);
         pdf.setFont('helvetica', 'normal');
@@ -388,7 +384,7 @@ export default function ReportDetailPage() {
             let textY = yPosition + 5;
 
             // Add category if available from labels
-            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
+            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Fotodokumentation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
             pdf.text('Gebäude: ', textStartX, textY);
@@ -402,8 +398,11 @@ export default function ReportDetailPage() {
             pdf.setFont('helvetica', 'bold');
             pdf.text('Aufgenommen am: ', textStartX, textY);
             pdf.setFont('helvetica', 'normal');
-            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE') + ' ' +
-                             new Date(observation.taken_at || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            });
             const aufgenommenWidth = pdf.getTextWidth('Aufgenommen am: ');
             pdf.text(timestamp, textStartX + aufgenommenWidth + 2, textY);
             textY += 5;
@@ -569,11 +568,12 @@ export default function ReportDetailPage() {
 
       setReport(reportData);
 
-      // First, get the observation IDs for this report
+      // First, get the observation IDs for this report in the order they were added
       const { data: reportObsData, error: reportObsError } = await supabase
         .from('report_observations')
-        .select('observation_id')
-        .eq('report_id', reportId);
+        .select('observation_id, created_at')
+        .eq('report_id', reportId)
+        .order('created_at', { ascending: true });
 
       if (reportObsError) {
         console.error('Error fetching report observations:', reportObsError);
@@ -585,7 +585,7 @@ export default function ReportDetailPage() {
         return;
       }
 
-      // Extract observation IDs
+      // Extract observation IDs in the correct order
       const observationIds = reportObsData.map((item: { observation_id: string }) => item.observation_id);
 
       // Fetch the actual observations
@@ -602,8 +602,13 @@ export default function ReportDetailPage() {
         return;
       }
 
+      // Sort observations to match the report order
+      const sortedObservationsData = observationIds.map((id: string) => 
+        observationsData.find((obs: Observation) => obs.id === id)
+      ).filter(Boolean);
+
       const observationsWithUrls: ObservationWithUrl[] = await Promise.all(
-        observationsData.map(async (obs: Observation) => {
+        sortedObservationsData.map(async (obs: Observation) => {
           let signedUrl = null;
           if (obs.photo_url) {
             try {
@@ -810,7 +815,7 @@ export default function ReportDetailPage() {
                 if (uniqueLabels.length > 0) {
                   return (
                     <div className="border-t pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Kategorien</h4>
+                      <h4 className="font-medium text-gray-900 mb-2">Bereich</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
@@ -877,7 +882,7 @@ export default function ReportDetailPage() {
                                 <CardTitle className="text-lg print:text-base">{observation.note}</CardTitle>
                               ) : (
                                 <CardTitle className="text-lg print:text-base text-gray-600">
-                                  Observation {index + 1}
+                                  Fotodokumentation {index + 1}
                                 </CardTitle>
                               )}
                             </div>
@@ -1005,10 +1010,14 @@ export default function ReportDetailPage() {
             <div className="flex items-center justify-between p-4 bg-white/95 backdrop-blur-sm border-b border-gray-200">
               <div className="text-gray-900">
                 <h3 className="text-lg font-semibold">
-                  {selectedPhoto.note || `Observation ${observations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
+                  {selectedPhoto.note || `Fotodokumentation ${observations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {new Date(selectedPhoto.taken_at || selectedPhoto.created_at).toLocaleDateString('de-DE')}
+                  {new Date(selectedPhoto.taken_at || selectedPhoto.created_at).toLocaleDateString('de-DE', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                  })}
                 </p>
               </div>
               <button

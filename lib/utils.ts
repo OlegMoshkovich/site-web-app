@@ -49,11 +49,15 @@ export async function getPhotoDataUrl(photoUrl: string, supabase: { storage: { f
 }
 
 /**
- * Format date to readable string
+ * Format date to readable string in DD.MM.YYYY format
  */
 export function formatDate(dateString: string): string {
   try {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('de-DE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   } catch {
     return 'Invalid date';
   }
