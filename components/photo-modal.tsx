@@ -480,7 +480,7 @@ export function PhotoModal({
             {/* Note */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">Note</h3>
+                <h3 className="font-semibold text-gray-900">Beschreibung</h3>
                 {!editingNote && (
                   <button
                     onClick={handleStartEditNote}
@@ -509,7 +509,7 @@ export function PhotoModal({
                     }}
                     className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
-                    placeholder="Add a note..."
+                    placeholder="Notiz hinzufügen..."
                     autoFocus
                     disabled={isSaving}
                   />
@@ -540,7 +540,7 @@ export function PhotoModal({
                 </div>
               ) : (
                 <p className="text-gray-700 min-h-[1.5rem]">
-                  {observation.note || <span className="text-gray-400 italic">No note</span>}
+                  {observation.note || <span className="text-gray-400 italic">Keine Anmerkungen</span>}
                 </p>
               )}
             </div>
@@ -565,7 +565,7 @@ export function PhotoModal({
                 )}
                 
                 <div className="text-gray-600">
-                  <span className="font-medium">Created by:</span>{" "}
+                  <span className="font-medium">Erstellt von:</span>{" "}
                   {observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}
                 </div>
               </div>
@@ -596,7 +596,7 @@ export function PhotoModal({
             {/* Labels */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">Labels</h4>
+                <h4 className="font-medium text-gray-900">Bereich</h4>
                 {!editingLabels && (
                   <button
                     onClick={handleStartEditLabels}
@@ -677,7 +677,7 @@ export function PhotoModal({
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-gray-400 italic text-sm">No labels</span>
+                    <span className="text-gray-400 italic text-sm">Keine Labels</span>
                   )}
                 </div>
               )}
