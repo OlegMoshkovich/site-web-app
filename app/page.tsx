@@ -955,7 +955,7 @@ export default function Home() {
               )}
 
               {/* About - available to all users */}
-              <Button
+              {/* <Button
                 onClick={() => router.push('/about')}
                 variant="outline"
                 size="sm"
@@ -963,7 +963,7 @@ export default function Home() {
                 title={t("about")}
               >
                 <Info className="h-4 w-4" />
-              </Button>
+              </Button> */}
 
               <AuthButtonClient />
             </div>
