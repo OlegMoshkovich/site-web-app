@@ -22,6 +22,7 @@ import {
   Tag,
   ZoomIn,
   FileText,
+  Info,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -953,6 +954,17 @@ export default function Home() {
                 </Button>
               )}
 
+              {/* About - available to all users */}
+              <Button
+                onClick={() => router.push('/about')}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                title={t("about")}
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+
               <AuthButtonClient />
             </div>
           </div>
@@ -1008,7 +1020,7 @@ export default function Home() {
               <div className="space-y-8">
                 {/* Date Range Selection - Conditionally rendered */}
                 {showDateSelector && (
-                  <div className="sticky top-16 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+                  <div className="sticky top-16 z-10 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
                       <div className="flex flex-col gap-1">
                         <label
@@ -1054,6 +1066,7 @@ export default function Home() {
                           className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
                         />
                       </div>
+
                       <div className="flex flex-col gap-1">
                         <label
                           htmlFor="userFilter"
@@ -1184,6 +1197,9 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 italic">
+                      {t("filteringNote")}
                     </div>
                   </div>
                 )}

@@ -13,7 +13,7 @@ export const LAYOUT_CONSTANTS = {
   // Navigation bar styling
   navbar: {
     maxWidth: "max-w-6xl",           // Maximum width constraint for navbar container
-    padding: "px-3 sm:px-0",         // Horizontal padding (mobile: 12px, desktop: 20px)
+    padding: "px-3 sm:px-8",         // Horizontal padding (mobile: 12px, desktop: 20px)
     height: "h-16",                  // Fixed height for navbar
     background: "bg-white/95 backdrop-blur-sm",  // Background with transparency
     border: "border-b border-gray-200",          // Bottom border
@@ -25,14 +25,14 @@ export const LAYOUT_CONSTANTS = {
                                      // Options: max-w-xs, max-w-sm, max-w-md, max-w-lg, max-w-xl, 
                                      //          max-w-2xl, max-w-3xl, max-w-4xl, max-w-5xl, max-w-6xl, max-w-7xl
     alignment: "mx-auto",            // Center alignment
-    padding: "px-3 sm:px-5",         // Horizontal padding to match navbar
+    padding: "px-3 sm:px-8",         // Horizontal padding to match navbar
     verticalPadding: "py-1 sm:py-3 md:py-4",  // Vertical padding
   },
 
   // Footer styling (inherits from content width when placed inside content area)
   footer: {
     marginTop: "mt-12 sm:mt-12",     // Top margin
-    padding: "pt-0 pb-0",            // Internal padding
+    padding: "px-3 sm:px-8 pt-0 pb-0",            // Internal padding
     border: "border-t border-gray-100",  // Top border
   }
 } as const;

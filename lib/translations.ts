@@ -31,6 +31,7 @@ export const translations = {
     clear: "Clear",
     selectAll: "Select All",
     unselectAll: "Unselect All",
+    filteringNote: "*Only loaded observations can be filtered. If date options are disabled, please load more observations.",
     
     // Selection status
     clickToSelect: "Click on observations to select them.",
@@ -53,6 +54,7 @@ export const translations = {
     lastWeek: "Last Week",
     lastMonth: "Last Month",
     info: "Info",
+    about: "About",
     
     // Date headers
     dateFormat: {
@@ -261,9 +263,9 @@ export const translations = {
     settingUp: "Setting up...",
 
     // Company page
-    companyHeroTitle: "We are a comprehensive construction services and technology enterprise. Our core expertise lies in construction site supervision, backed by advanced AI and Augmented Reality solutions that enhance project management and site oversight capabilities.",
+    companyHeroTitle: "We are construction services and technology enterprise. Our core expertise lies in construction site supervision, backed by AI and AR solutions that enhance project management and site oversight capabilities.",
     companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
-    companyProjectsTitle: "We take great pride in our portfolio of successfully completed projects and the lasting value we deliver. Below are select examples of our current and past construction endeavors, showcasing our expertise across diverse sectors.",
+    companyProjectsTitle: " Below are select examples of our current construction endeavors",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
     
     // Services
@@ -327,6 +329,7 @@ export const translations = {
     clear: "Löschen",
     selectAll: "Alle auswählen",
     unselectAll: "Alle abwählen",
+    filteringNote: "*Nur geladene Beobachtungen können gefiltert werden. Wenn Datumsoptionen deaktiviert sind, laden Sie bitte mehr Beobachtungen.",
     
     // Selection status
     clickToSelect: "Klicken Sie auf Beobachtungen, um sie auszuwählen.",
@@ -346,9 +349,10 @@ export const translations = {
     loadMoreLabel: "Mehr laden:",
     loadPastWeek: "Vergangene Woche laden",
     loadPastMonth: "Vergangenen Monat laden",
-    lastWeek: "Letzte Woche",
-    lastMonth: "Letzter Monat",
+    lastWeek: "Letzte Woch",
+    lastMonth: "Letzter Mon",
     info: "Info",
+    about: "Über uns",
     
     // Date headers
     dateFormat: {
@@ -557,10 +561,10 @@ export const translations = {
     settingUp: "Wird eingerichtet...",
 
     // Company page
-    companyHeroTitle: "Wir sind ein umfassendes Bau und Technik Unternehmen. Unsere Kernkompetenz liegt in der Baustellen Überwachung, unterstützt durch moderne AI und AR Lösungen, die das Projekt Management und die Baustellen Aufsicht verbessern.",
-    companyTechnologyTitle: "Als Branchen Praktiker sind wir die ersten Nutzer unserer eigenen Tech Lösungen. Unsere Tools werden in unseren eigenen Bau Projekten getestet und verfeinert, bevor sie der Bau Industrie zur Verfügung gestellt werden.",
-    companyProjectsTitle: "Wir sind stolz auf unser Portfolio erfolgreich fertig gestellter Projekte und den Wert, den wir liefern. Hier finden Sie Beispiele unserer aktuellen und vergangenen Bau Vorhaben, die unsere Expertise in verschiedenen Bereichen zeigen.",
-    companyPartnershipsTitle: "Als erfahrene Branchen Profis verstehen wir die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige Anforderungen hat, arbeiten wir mit führenden AEC Partnern zusammen, um die besten Bau Management Lösungen zu entwickeln.",
+    companyHeroTitle: "Wir sind ein Bau- und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch KI- und AR-Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
+    companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer eigenen Technologielösungen. Unsere Tools werden in unseren eigenen Bauvorhaben getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
+    companyProjectsTitle: "Hier finden Sie ausgewählte Beispiele unserer aktuellen Bauvorhaben",
+    companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",
     
     // Services
     sitePlanningContent: "Strategische Baustellen Planung mit detailliertem Layout Design, optimaler Ressourcen Zuteilung und Zeit Optimierung, um Projekt Effizienz und erfolgreiche Lieferung innerhalb von Budget und Terminen zu gewährleisten.",

@@ -12,7 +12,8 @@ import Link from "next/link";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
-
+import Image from "next/image";
+// Supabase client for database operations
 export default function CompanyPage() {
   // Language management with localStorage persistence
   const { language, setLanguage, mounted } = useLanguage();
@@ -39,7 +40,15 @@ export default function CompanyPage() {
                 href="/" 
                 className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
               >
-                {t("siteTitle")}
+
+                  <Image
+                    src="/images/banner_logo.png"
+                    alt="Site Banner"
+                    width={120}
+                    height={32}
+                    className="h-4 sm:h-6 w-auto max-w-none"
+                  />
+              
               </Link>
             </div>
             <div className="flex items-center gap-2">
@@ -111,9 +120,11 @@ export default function CompanyPage() {
                 <AccordionContent>
                 
                   
-                  <img
+                  <Image
                     src="/products/site.png"
                     alt="Site Management App"
+                    width={400}
+                    height={300}
                     className="w-full h-auto rounded-lg mb-4 object-cover"
                   />
                     <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">
@@ -127,9 +138,11 @@ export default function CompanyPage() {
                 <AccordionContent>
                 
                  
-                  <img
+                  <Image
                     src="/products/ar.png"
-                    alt="DB Partnership"
+                    alt="Augmented Reality App"
+                    width={400}
+                    height={300}
                     className="w-full h-auto rounded-lg mb-4 object-cover"
                   />
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0">
@@ -153,21 +166,17 @@ export default function CompanyPage() {
               <AccordionItem value="power-plant">
                   <AccordionTrigger>Geothermal Plant</AccordionTrigger>
                 <AccordionContent>
-                <img
+                <Image
                     src="/projects/powerplant.png"
-                    alt="DB Partnership"
+                    alt="Geothermal Plant"
+                    width={400}
+                    height={300}
                     className="w-full h-auto rounded-lg mb-4 object-cover"
                   />
                   <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("powerPlantContent")}</p>
                 </AccordionContent>
               </AccordionItem>
               
-              <AccordionItem value="cheese-factory">
-                <AccordionTrigger>Cheese Factory</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-xl  md:text-xl  text-black mb-8 leading-tight ml-[10px] md:ml-0"> {t("cheeseFactoryContent")}</p>
-                </AccordionContent>
-              </AccordionItem>
               
 
             </Accordion>
@@ -175,7 +184,7 @@ export default function CompanyPage() {
         </div>
 
         {/* Partnership Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
            <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
           {t("companyPartnershipsTitle")}
               </h1>
@@ -220,7 +229,7 @@ export default function CompanyPage() {
               </AccordionItem>
             </Accordion>
           </div>
-        </div>
+        </div> */}
 
         {/* Footer Section */}
         <div className="text-center">
@@ -228,7 +237,7 @@ export default function CompanyPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-[10px] md:mx-auto">
             <div className="flex flex-col">
               <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
-                <img src="/images/paul.png" alt="Paul" className="w-full h-full object-cover" />
+                <Image src="/images/paul.png" alt="Paul" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-md font-medium">Paul</span>
@@ -236,28 +245,36 @@ export default function CompanyPage() {
             </div>
             <div className="flex flex-col">
               <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
-                <img src="/images/liebhard.jpg" alt="Liebhard" className="w-full h-full object-cover" />
+                <Image src="/images/liebhard.jpg" alt="Liebhard" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Liebhard</span>
+                <span className="text-md font-medium">Liebhard </span>
               </div>
             </div>
-            <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
-                <img src="/images/timur.jpg" alt="Timur" className="w-full h-full object-cover" />
-              </div>
+            <div className="flex flex-col ml-2">
+              <a
+                href="https://www.convex.at/projekte/ccpp-muenchen-sued/?lang=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-full bg-black overflow-hidden flex items-center justify-center"
+              >
+                <Image src="/images/timur.jpg" alt="Timur" width={200} height={200} className="w-full h-full object-cover " />
+              </a>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Timur</span>
+                <span className="text-md font-medium">Timur </span>
               </div>
             </div>
+            
             <div className="flex flex-col">
               <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center">
-                <img src="/images/oleg.png" alt="Oleg" className="w-full h-full object-cover" />
+                <Image src="/images/oleg.png" alt="Oleg" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Oleg</span>
+                <span className="text-md font-medium">Oleg </span>
               </div>
             </div>
+
+       
           </div>
         </div>
 

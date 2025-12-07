@@ -730,7 +730,7 @@ function ReportPageContent() {
     } finally {
       setIsDownloadingWord(false);
     }
-  }, [observations, t, language, displaySettings]);
+  }, [observations, t, language, displaySettings, reportData?.report_date]);
 
   // Debounce timer ref
   const descriptionTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -833,7 +833,7 @@ function ReportPageContent() {
     } finally {
       setIsSaving(false);
     }
-  }, [reportTitle, localDescription, reportErsteller, reportBaustelle, displaySettings, language, memoizedSelectedIds, observations, supabase]);
+  }, [reportTitle, localDescription, reportErsteller, reportBaustelle, reportDate, displaySettings, language, memoizedSelectedIds, observations, supabase]);
 
   // Helper function to get anchor point (same as PlanDisplayWidget)
   const getAnchorPoint = (item: ObservationWithUrl) => {
