@@ -5,7 +5,11 @@
       "Bash(npm run dev:*)",
       "Bash(npm run lint)",
       "Bash(npx tsc:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm update:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm view:*)",
+      "Bash(npx next lint:*)"
     ],
     "deny": [],
     "ask": []
