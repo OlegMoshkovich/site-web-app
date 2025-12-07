@@ -265,7 +265,7 @@ export const translations = {
     // Company page
     companyHeroTitle: "We are construction services and technology enterprise. Our core expertise lies in construction site supervision, backed by AI and AR solutions that enhance project management and site oversight capabilities.",
     companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
-    companyProjectsTitle: " Below are select examples of our current construction endeavors",
+    companyProjectsTitle: "Current projects",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
     
     // Services
@@ -563,7 +563,7 @@ export const translations = {
     // Company page
     companyHeroTitle: "Wir sind ein Bau- und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch KI- und AR-Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
     companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer eigenen Technologielösungen. Unsere Tools werden in unseren eigenen Bauvorhaben getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
-    companyProjectsTitle: "Hier finden Sie ausgewählte Beispiele unserer aktuellen Bauvorhaben",
+    companyProjectsTitle: "Aktuelle Projekte",
     companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",
     
     // Services
