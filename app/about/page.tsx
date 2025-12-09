@@ -72,7 +72,7 @@ export default function CompanyPage() {
         <div className={getContentClasses().widthOnly}>
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
-              <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+              <h1 className="text-2xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
                 {t("companyHeroTitle")}
               </h1>
           
@@ -107,7 +107,7 @@ export default function CompanyPage() {
         <div className="mb-16">
           <div className="max-w-2xl mx-auto text-center mb-12">
           </div>
-          <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+          <h1 className="text-2xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
               {t("companyTechnologyTitle")}
               </h1>
           
@@ -159,7 +159,7 @@ export default function CompanyPage() {
 
         {/* Projects Section */}
         <div className="mb-16">
-        <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+        <h1 className="text-2xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
         {t("companyProjectsTitle")}
               </h1>
           
@@ -239,7 +239,7 @@ export default function CompanyPage() {
 
         {/* Footer Section */}
         <div className="text-center">
-        <h1 className="text-2xl md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
+        <h1 className="text-2xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
         Team
         </h1>
           
