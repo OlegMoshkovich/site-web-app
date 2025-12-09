@@ -79,7 +79,7 @@ export default function CompanyPage() {
 
 
         {/* Offered Services */}
-        <div className="mb-16">
+        <div className="mb-8">
           
        
         <div className="space-y-2 mx-[10px] md:mx-0">
@@ -104,7 +104,7 @@ export default function CompanyPage() {
         </div>
 
         {/* Technology Section */}
-        <div className="mb-16">
+        <div className="mb-8">
           <div className="max-w-2xl mx-auto text-center mb-12">
           </div>
           <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
@@ -158,7 +158,7 @@ export default function CompanyPage() {
         </div>
 
         {/* Projects Section */}
-        <div className="mb-16">
+        <div className="mb-8">
         <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
         {t("companyProjectsTitle")}
               </h1>
