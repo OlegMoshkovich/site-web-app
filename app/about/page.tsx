@@ -71,18 +71,18 @@ export default function CompanyPage() {
         {/* Main content area */}
         <div className={getContentClasses().widthOnly}>
           <div>
-            <div className="text-left pt-[50px] pb-20 sm:py-12">
-              <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
-                {t("companyHeroTitle")}
-              </h1>
+           
           
 
 
         {/* Offered Services */}
-        <div className="mb-8">
-          
-       
-        <div className="space-y-2 mx-[10px] md:mx-0">
+        <div className="mb-0">
+          <div className="text-left pt-[50px]">
+              <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+                {t("companyHeroTitle")}
+              </h1>
+
+          <div className="space-y-2 mx-[10px] md:mx-0">
             <Accordion type="multiple" >
               <AccordionItem value="site-planning">
                 <AccordionTrigger>Site Planning</AccordionTrigger>
@@ -159,8 +159,8 @@ export default function CompanyPage() {
 
         {/* Projects Section */}
         <div className="mb-8">
-        <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
-        {t("companyProjectsTitle")}
+          <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
+            {t("companyProjectsTitle")}
               </h1>
           
            
