@@ -263,7 +263,7 @@ export const translations = {
     settingUp: "Setting up...",
 
     // Company page
-    companyHeroTitle: "We are construction services and technology enterprise. Our core expertise lies in construction site supervision, backed by AI and AR solutions that enhance project management and site oversight capabilities.",
+    companyHeroTitle: "We are construction services and technology company. Our core expertise lies in construction site supervision, backed by AI and AR solutions that enhance project management and site oversight capabilities.",
     companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
     companyProjectsTitle: "Current projects",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
