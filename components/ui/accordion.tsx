@@ -27,7 +27,7 @@ const AccordionTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         // On mobile, text-xs (font-size: 0.75rem ~12px), on md+ keep text-4xl.
-        "flex flex-1 items-center justify-between py-2 px-2 font-medium transition-all [&[data-state=open]>svg]:rotate-180 bg-white text-black outline-1 border border-gray-200 text-xl md:text-xl break-words hyphens-auto tracking-wide",
+        "flex flex-1 items-center justify-between py-2 px-2  transition-all [&[data-state=open]>svg]:rotate-180 bg-white text-black outline-1 border border-gray-200 text-lg md:text-lg break-words hyphens-auto",
         className
       )}
       {...props}
@@ -45,10 +45,10 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden text-xl md:text-lg break-words  data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
-    <div className={cn("py-4 px-4 border border-gray-200 text-gray-700 break-words hyphens-auto", className)}>{children}</div>
+    <div className={cn("py-3 px-3 border border-gray-200 text-gray-700 break-words hyphens-auto", className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;

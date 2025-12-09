@@ -87,14 +87,14 @@ export default function CompanyPage() {
               <AccordionItem value="site-planning">
                 <AccordionTrigger>Site Planning</AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-xl  md:text-xl  text-black mb-3 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">{t("sitePlanningContent")}</p>
+                  {t("sitePlanningContent")}
                 </AccordionContent>
               </AccordionItem>
               
               <AccordionItem value="site-supervision">
                 <AccordionTrigger>Site Supervision</AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-xl  md:text-xl  text-black mb-3 leading-tight ml-[10px] md:ml-0">{t("siteSupervisionContent")}</p> 
+                {t("siteSupervisionContent")}
                 </AccordionContent>
               </AccordionItem>
               
@@ -119,17 +119,18 @@ export default function CompanyPage() {
                 <AccordionTrigger>Site Management App</AccordionTrigger>
                 <AccordionContent>
                 
-                  
+                <div className="flex justify-center">
                   <Image
                     src="/products/site.png"
                     alt="Site Management App"
                     width={400}
                     height={300}
-                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                    className="w-1/2 h-auto rounded-lg mb-4 object-cover"
                   />
-                    <p className="text-xl  md:text-xl  text-black mb-3 leading-tight ml-[10px] md:ml-0">
+                  </div>
+       
                   {t("siteManagementAppContent")}
-                  </p>
+        
                 </AccordionContent>
               </AccordionItem>
               
@@ -138,16 +139,18 @@ export default function CompanyPage() {
                 <AccordionContent>
                 
                  
-                  <Image
-                    src="/products/ar.png"
-                    alt="Augmented Reality App"
-                    width={400}
-                    height={300}
-                    className="w-full h-auto rounded-lg mb-4 object-cover"
-                  />
-                  <p className="text-xl  md:text-xl  text-black mb-3 leading-tight ml-[10px] md:ml-0">
+                  <div className="flex justify-center">
+                    <Image
+                      src="/products/ar.png"
+                      alt="Augmented Reality App"
+                      width={200}
+                      height={150}
+                      className="w-1/2 h-auto rounded-lg mb-4 object-cover"
+                    />
+                  </div>
+                
                 {t("augmentedRealityContent")}
-                  </p>
+             
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -166,14 +169,17 @@ export default function CompanyPage() {
               <AccordionItem value="power-plant">
                   <AccordionTrigger>Geothermal Plant</AccordionTrigger>
                 <AccordionContent>
+                <div className="flex justify-center">
                 <Image
                     src="/projects/powerplant.png"
                     alt="Geothermal Plant"
                     width={400}
                     height={300}
-                    className="w-full h-auto rounded-lg mb-4 object-cover"
+                    className="w-1/2 h-auto rounded-lg mb-4 object-cover"
                   />
-                  <p className="text-xl  md:text-xl  text-black mb-3 leading-tight ml-[10px] md:ml-0"> {t("powerPlantContent")}</p>
+                  </div>
+                  {t("powerPlantContent")}
+                  
                 </AccordionContent>
               </AccordionItem>
               
@@ -233,9 +239,9 @@ export default function CompanyPage() {
 
         {/* Footer Section */}
         <div className="text-center">
-        <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+        <h1 className="text-2xl md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
         Team
-              </h1>
+        </h1>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-[10px] md:mx-auto">
             <div className="flex flex-col">
