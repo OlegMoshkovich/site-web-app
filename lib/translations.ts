@@ -561,7 +561,7 @@ export const translations = {
     settingUp: "Wird eingerichtet...",
 
     // Company page
-    companyHeroTitle: "Wir sind ein Bau- und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch KI- und AR-Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
+    companyHeroTitle: "Wir sind ein Bau - und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch KI - und AR - Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
     companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer eigenen Technologielösungen. Unsere Tools werden in unseren eigenen Bauvorhaben getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
     companyProjectsTitle: "Aktuelle Projekte",
     companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",

@@ -72,7 +72,7 @@ export default function CompanyPage() {
         <div className={getContentClasses().widthOnly}>
           <div>
             <div className="text-left pt-[50px] pb-20 sm:py-12">
-              <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+              <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
                 {t("companyHeroTitle")}
               </h1>
           
@@ -105,9 +105,9 @@ export default function CompanyPage() {
 
         {/* Technology Section */}
         <div className="mb-16">
-          <div className="max-w-3xl mx-auto text-center mb-12">
+          <div className="max-w-2xl mx-auto text-center mb-12">
           </div>
-          <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+          <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
               {t("companyTechnologyTitle")}
               </h1>
           
@@ -156,8 +156,8 @@ export default function CompanyPage() {
 
         {/* Projects Section */}
         <div className="mb-16">
-          <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
-          {t("companyProjectsTitle")}
+        <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+        {t("companyProjectsTitle")}
               </h1>
           
            
@@ -185,7 +185,7 @@ export default function CompanyPage() {
 
         {/* Partnership Section */}
         {/* <div className="mb-16">
-           <h1 className="text-3xl  md:text-4xl font-bold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+           <h1 className="text-2xl  md:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
           {t("companyPartnershipsTitle")}
               </h1>
 
@@ -240,7 +240,8 @@ export default function CompanyPage() {
                 <Image src="/images/paul.png" alt="Paul" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Paul</span>
+                <span className="text-sm font-medium">Paul</span>
+                <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
             <div className="flex flex-col">
@@ -248,31 +249,36 @@ export default function CompanyPage() {
                 <Image src="/images/liebhard.jpg" alt="Liebhard" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Liebhard </span>
+                <span className="text-sm font-medium">Liebhard </span>
+                <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
-            <div className="flex flex-col ml-2">
-              <a
-                href="https://www.convex.at/projekte/ccpp-muenchen-sued/?lang=en"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-full bg-black overflow-hidden flex items-center justify-center"
-              >
-                <Image src="/images/timur.jpg" alt="Timur" width={200} height={200} className="w-full h-full object-cover " />
-              </a>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Timur </span>
-              </div>
-            </div>
+
             
             <div className="flex flex-col">
               <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center">
                 <Image src="/images/oleg.png" alt="Oleg" width={200} height={200} className="w-full h-full object-cover " />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-md font-medium">Oleg </span>
+                <span className="text-sm font-medium">Oleg </span>
+                <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
+
+            <div className="flex flex-col">
+              <a
+                href="https://www.convex.at/projekte/ccpp-muenchen-sued/?lang=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-full bg-black overflow-hidden flex items-center justify-center"
+              >
+                <Image src="/images/timur.jpg" alt="Timur" width={200} height={200} className="w-full h-full object-cover grayscale" />
+              </a>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm font-medium">Timur </span>
+                <span className="text-sm font-medium text-gray-300">Enginner PhD</span>
+              </div>
+            </div> 
 
        
           </div>
