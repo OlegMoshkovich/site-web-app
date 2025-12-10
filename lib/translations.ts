@@ -296,7 +296,14 @@ export const translations = {
     lastFourteenDaysSummary: "Last 14 Days Summary",
     askAiAboutObservations: "Ask AI about your observations...",
     analyze: "Analyze",
-    thinking: "Thinking..."
+    thinking: "Thinking...",
+    
+    // Sign up success
+    thankYouForSigningUp: "Thank you for signing up!",
+    checkEmailToConfirm: "Please check your email to confirm your account before",
+    signInLink: "signing in",
+    checkEmailToConfirmAfter: ". Please also check your spam folder, sometimes emails end up there.",
+    ifYouHaveQuestions: "If you have any questions, please contact us at"
   },
   
   de: {
@@ -594,7 +601,14 @@ export const translations = {
     lastFourteenDaysSummary: "Letzte 14 Tage Zusammenfassung", 
     askAiAboutObservations: "KI über Ihre Beobachtungen fragen...",
     analyze: "Analysieren",
-    thinking: "Denke nach..."
+    thinking: "Denke nach...",
+    
+    // Sign up success
+    thankYouForSigningUp: "Vielen Dank für Ihre Registrierung!",
+    checkEmailToConfirm: "Bitte überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen, bevor Sie sich",
+    signInLink: "anmelden",
+    checkEmailToConfirmAfter: ". Bitte überprüfen Sie auch Ihren Spam-Ordner, manchmal landen E-Mails dort.",
+    ifYouHaveQuestions: "Wenn Sie Fragen haben, kontaktieren Sie uns bitte unter"
   }
 };
 
