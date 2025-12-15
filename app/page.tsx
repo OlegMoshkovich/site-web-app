@@ -12,6 +12,12 @@ import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 // Lucide React icons
 import {
   Trash2,
@@ -1332,28 +1338,36 @@ export default function Home() {
                   const { groups: groupedObservations, sortedDates } =
                     groupObservationsByDate(filteredObservations);
 
-                  return sortedDates.map((dateKey) => (
-                    <div key={dateKey} className="space-y-4">
-                      {/* Date Header */}
-                      <div className="border-b border-gray-200 pb-1">
-                        <div className="text-sm ">
-                          {new Date(dateKey)
-                            .toLocaleDateString(
-                              language === "de" ? "de-DE" : "en-US",
-                              {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              },
-                            )
-                            .toUpperCase()}
-                        </div>
-                      </div>
+                  return sortedDates.map((dateKey) => {
+                    const observationsForDate = groupedObservations[dateKey];
+                    const formattedDate = new Date(dateKey)
+                      .toLocaleDateString(
+                        language === "de" ? "de-DE" : "en-US",
+                        {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )
+                      .toUpperCase();
 
-                      {/* Observations for this date */}
-                      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
-                        {groupedObservations[dateKey].map((observation, index) => {
+                    return (
+                      <div key={dateKey} className="space-y-2">
+                        {/* Collapsible observations for this date (title = date) */}
+                        <Accordion
+                          type="single"
+                          collapsible
+                          defaultValue="observations"
+                          className="mt-1"
+                        >
+                          <AccordionItem value="observations">
+                            <AccordionTrigger>
+                              {formattedDate} ({observationsForDate.length})
+                            </AccordionTrigger>
+                            <AccordionContent className="p-0 border-none">
+                              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+                        {observationsForDate.map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
                           const labels = observation.labels ?? [];
 
@@ -1458,7 +1472,7 @@ export default function Home() {
                                       newSelected.delete(observation.id);
                                     }
                                     setSelectedObservations(newSelected);
-                                  }}
+                                }}
                                   className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 shadow-md w-5 h-5"
                                 />
                               </div>
@@ -1492,9 +1506,13 @@ export default function Home() {
                             </div>
                           ) : null;
                         })}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       </div>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
 
                 {/* Load More Buttons */}
