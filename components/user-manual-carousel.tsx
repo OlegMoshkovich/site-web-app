@@ -45,24 +45,34 @@ export function UserManualCarousel({
 
   // Function to update URL with current slide
   const updateURL = useCallback((slideIndex: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (slideIndex > 0) {
-      params.set('slide', (slideIndex + 1).toString());
-    } else {
-      params.delete('slide');
+    try {
+      const params = new URLSearchParams(searchParams?.toString() || '');
+      if (slideIndex > 0) {
+        params.set('slide', (slideIndex + 1).toString());
+      } else {
+        params.delete('slide');
+      }
+      const newURL = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(newURL, { scroll: false });
+    } catch (error) {
+      // Ignore URL update errors in case searchParams is not ready
+      console.warn('Could not update URL:', error);
     }
-    const newURL = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-    router.replace(newURL, { scroll: false });
   }, [searchParams, pathname, router]);
 
   // Initialize from URL parameter
   useEffect(() => {
-    const slideParam = searchParams.get('slide');
-    if (slideParam) {
-      const slideNumber = parseInt(slideParam, 10);
-      if (!isNaN(slideNumber) && slideNumber >= 1 && slideNumber <= images.length) {
-        setCurrentIndex(slideNumber - 1);
+    try {
+      const slideParam = searchParams?.get('slide');
+      if (slideParam) {
+        const slideNumber = parseInt(slideParam, 10);
+        if (!isNaN(slideNumber) && slideNumber >= 1 && slideNumber <= images.length) {
+          setCurrentIndex(slideNumber - 1);
+        }
       }
+    } catch (error) {
+      // Ignore URL reading errors in case searchParams is not ready
+      console.warn('Could not read URL params:', error);
     }
   }, [searchParams, images.length]);
 

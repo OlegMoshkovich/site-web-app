@@ -4,7 +4,7 @@
 export const dynamic = "force-dynamic";
 
 // React hooks for state management and side effects
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 // Supabase client for database operations
 import { createClient } from "@/lib/supabase/client";
 // UI components from shadcn/ui
@@ -846,12 +846,33 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center" style={!user ? {
-      backgroundImage: 'url(/images/backgound.png)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    } : {}}>
+    <main className="min-h-screen flex flex-col items-center relative">
+      {!user && (
+        <div className="fixed inset-0 -z-10">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error('Video failed to load, using fallback image');
+              // Fallback to background image
+              const videoElement = e.currentTarget;
+              const parent = videoElement.parentElement;
+              if (parent) {
+                parent.style.backgroundImage = 'url(/images/backgound.png)';
+                parent.style.backgroundSize = 'cover';
+                parent.style.backgroundPosition = 'center';
+                parent.style.backgroundRepeat = 'no-repeat';
+                videoElement.style.display = 'none';
+              }
+            }}
+          >
+            <source src="/video/background.mp4" type="video/mp4" />
+          </video>
+        </div>
+      )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className={getNavbarClasses().container}>
@@ -995,7 +1016,9 @@ export default function Home() {
                 {/* User Manual Carousel */}
                 <div className="mt-8">
                   <div className="flex justify-center">
-                    <UserManualCarousel width={600} mobileHeight={300} desktopHeight={400} />
+                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-gray-200 animate-pulse rounded-lg"></div>}>
+                      <UserManualCarousel width={600} mobileHeight={300} desktopHeight={400} />
+                    </Suspense>
                   </div>
 
                   {/* App Store Badge */}
