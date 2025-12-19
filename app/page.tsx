@@ -848,7 +848,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center relative">
       {!user && (
-        <div className="fixed inset-0 -z-10">
+        <div className="fixed inset-0 -z-10 bg-black">
           <video
             autoPlay
             muted
