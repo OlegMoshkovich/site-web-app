@@ -846,7 +846,12 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
+    <main className="min-h-screen flex flex-col items-center" style={!user ? {
+      backgroundImage: 'url(/images/backgound.png)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    } : {}}>
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
         <nav className={getNavbarClasses().container}>
@@ -854,7 +859,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               {/* Show banner when not logged in */}
               {!user && (
-                <div className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center rounded">
+                <div className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center rounded">
                   <Image
                     src="/images/banner_logo.png"
                     alt="Site Banner"
@@ -917,7 +922,7 @@ export default function Home() {
               <div className="absolute left-1/2 transform -translate-x-1/2 sm:block">
                 <div
                   onClick={() => window.location.reload()}
-                  className="h-8 px-2 sm:px-3 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 rounded"
+                  className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center cursor-pointer hover:opacity-80 rounded"
                   title={t("refreshObservations")}
                 >
                   <Image
@@ -983,7 +988,7 @@ export default function Home() {
             {!user ? (
               // Show welcome message when user is not logged in
               <div className="text-center py-8 sm:py-10">
-                <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-gray-900 mb-8">
+                <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-6xl font-bold text-white mb-8">
                   {t("welcomeTitle")}
                 </h1>
 
@@ -994,7 +999,7 @@ export default function Home() {
                   </div>
 
                   {/* App Store Badge */}
-                  <div className="h-14 mt-6 flex justify-center">
+                  <div className="h-14 mt-2 flex justify-center ">
                     <a
                       href="https://apps.apple.com/us/app/simple-site/id6749160249"
                       target="_blank"
@@ -1002,11 +1007,12 @@ export default function Home() {
                       className="relative hover:opacity-80 transition-opacity"
                     >
                       <Image
-                        src="/app_screens/available-app-store.png"
+                        src="/app_screens/available-app-store_1.png"
                         alt="Available on the App Store"
                         width={100}
                         height={30}
-                        className="h-14 w-auto object-contain max-w-[300px]"
+                        className="h-10 w-auto object-contain max-w-[300px] rounded-lg"
+                        style={{ mixBlendMode: 'screen' }}
                       />
                     </a>
                   </div>
@@ -1615,7 +1621,7 @@ export default function Home() {
             )}
 
             {!isLoading && (
-              <Footer />
+              <Footer user={user} />
             )}
           </div>
         </div>

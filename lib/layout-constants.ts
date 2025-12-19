@@ -15,8 +15,8 @@ export const LAYOUT_CONSTANTS = {
     maxWidth: "max-w-6xl",           // Maximum width constraint for navbar container
     padding: "px-3 sm:px-8",         // Horizontal padding (mobile: 12px, desktop: 20px)
     height: "h-16",                  // Fixed height for navbar
-    background: "bg-white/95 backdrop-blur-sm",  // Background with transparency
-    border: "border-b border-gray-200",          // Bottom border
+    background: "bg-transparent",  // Transparent background to show image through
+    border: "",          // No border
   },
 
   // Main content area styling

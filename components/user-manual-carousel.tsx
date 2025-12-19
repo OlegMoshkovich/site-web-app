@@ -35,12 +35,12 @@ export function UserManualCarousel({
 
   // User manual images
   const images = [
-    { src: "/userManual/1.png", alt: "User Manual Page 1" },
-    { src: "/userManual/2.png", alt: "User Manual Page 2" },
-    { src: "/userManual/3.png", alt: "User Manual Page 3" },
-    { src: "/userManual/4.png", alt: "User Manual Page 4" },
-    { src: "/userManual/6.png", alt: "User Manual Page 5" },
-    { src: "/userManual/5.png", alt: "User Manual Page 6" },
+    { src: "/userManual/1_.png", alt: "User Manual Page 1" },
+    { src: "/userManual/2_.png", alt: "User Manual Page 2" },
+    { src: "/userManual/3_.png", alt: "User Manual Page 3" },
+    // { src: "/userManual/4.png", alt: "User Manual Page 4" },
+    // { src: "/userManual/6.png", alt: "User Manual Page 5" },
+    // { src: "/userManual/5.png", alt: "User Manual Page 6" },
   ];
 
   // Function to update URL with current slide
@@ -139,7 +139,7 @@ export function UserManualCarousel({
     >
       {/* Main carousel container */}
       <div 
-        className={`overflow-hidden rounded-lg bg-white ${
+        className={`overflow-hidden rounded-lg ${
           mobileHeight && desktopHeight 
             ? 'h-[var(--mobile-height)] sm:h-[var(--desktop-height)]' 
             : ''
@@ -165,7 +165,7 @@ export function UserManualCarousel({
                 src={image.src}
                 alt={image.alt}
                 fill
-                sizes={`(max-width: 512px) 100vw, ${width}px`}
+                // sizes={`(max-width: 512px) 100vw, ${width}px`}
                 className="object-contain"
                 priority={index === 0}
                 placeholder="blur"
@@ -181,7 +181,7 @@ export function UserManualCarousel({
           variant="outline"
           size="icon"
           disabled={currentIndex === 0}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute rounded-full left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -191,7 +191,7 @@ export function UserManualCarousel({
           variant="outline"
           size="icon"
           disabled={currentIndex === images.length - 1}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="absolute rounded-full right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white/90 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

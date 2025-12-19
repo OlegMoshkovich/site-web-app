@@ -989,7 +989,7 @@ export default function ReportDetailPage() {
                   className="inline-block hover:opacity-80 transition-opacity"
                 >
                   <Image
-                    src="/app_screens/available-app-store.png"
+                    src="/app_screens/available-app-store_1.png"
                     alt="Available on the App Store"
                     width={180}
                     height={60}

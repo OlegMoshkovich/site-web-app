@@ -1,14 +1,20 @@
 import React from 'react';
 
-export function Footer() {
+interface FooterProps {
+  user?: { id: string; email?: string } | null;
+}
+
+export function Footer({ user }: FooterProps) {
+  const textColor = user ? 'text-black' : 'text-white';
+  
   return (
-    <footer className="w-full border-t border-gray-100 pt-8 pb-0 mt-12 sm:mt-12">
+    <footer className="w-full pt-8 pb-0 mt-12 sm:mt-12">
       <div className="mx-[10px] md:mx-0">
         
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           {/* Left Column - Company Information */}
           <div className="text-left">
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className={`text-xs ${textColor} space-y-1`}>
               <div className="font-medium text-gray-900">clone:it GmbH</div>
               <div>Am Katzelbach 9, 8054 Graz</div>
               <div>Phone: +43 676 755 5310</div>
@@ -30,7 +36,7 @@ export function Footer() {
           
           {/* Right Column - Legal Information */}
           <div className="text-left">
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className={`text-xs ${textColor} space-y-1`}>
               <div>Firmenbuchnummer: FN 601893 m</div>
               <div>Firmenbuchgericht: Graz</div>
               <div>UID-Nr.: ATU79501148</div>

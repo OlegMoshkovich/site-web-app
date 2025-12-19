@@ -419,7 +419,7 @@ export default function OnboardingPage() {
                     className="hover:opacity-80 transition-opacity"
                   >
                     <Image
-                      src="/app_screens/available-app-store.png"
+                      src="/app_screens/available-app-store_1.png"
                       alt={t('availableOnAppStore')}
                       width={120}
                       height={40}
