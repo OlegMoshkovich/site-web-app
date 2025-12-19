@@ -274,7 +274,7 @@ export default function CompanyPage() {
               </div>
             </div>
 
-            <div className="flex flex-col">
+            {/* <div className="flex flex-col">
               <a
                 href="https://www.convex.at/projekte/ccpp-muenchen-sued/?lang=en"
                 target="_blank"
@@ -287,7 +287,7 @@ export default function CompanyPage() {
                 <span className="text-sm font-medium">Timur </span>
                 <span className="text-sm font-medium text-gray-300">Enginner PhD</span>
               </div>
-            </div> 
+            </div>  */}
 
        
           </div>
