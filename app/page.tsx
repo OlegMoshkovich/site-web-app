@@ -999,12 +999,12 @@ export default function Home() {
                   </div>
 
                   {/* App Store Badge */}
-                  <div className="h-14 mt-2 flex justify-center ">
+                  <div className="h-14 mt-2 flex justify-center o">
                     <a
                       href="https://apps.apple.com/us/app/simple-site/id6749160249"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative hover:opacity-80 transition-opacity"
+                      className="relative transition-opacity hover:opacity-80"
                     >
                       <Image
                         src="/app_screens/available-app-store_1.png"
@@ -1012,7 +1012,7 @@ export default function Home() {
                         width={100}
                         height={30}
                         className="h-10 w-auto object-contain max-w-[300px] rounded-lg"
-                        style={{ mixBlendMode: 'screen' }}
+    
                       />
                     </a>
                   </div>

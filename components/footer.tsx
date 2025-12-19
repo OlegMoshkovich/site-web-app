@@ -15,7 +15,7 @@ export function Footer({ user }: FooterProps) {
           {/* Left Column - Company Information */}
           <div className="text-left">
             <div className={`text-xs ${textColor} space-y-1`}>
-              <div className="font-medium text-gray-900">clone:it GmbH</div>
+              <div className="font-medium text-white">clone:it GmbH</div>
               <div>Am Katzelbach 9, 8054 Graz</div>
               <div>Phone: +43 676 755 5310</div>
               <div>
