@@ -13,10 +13,15 @@ import { translations, type Language, useLanguage } from "@/lib/translations";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 import Image from "next/image";
+import { TypewriterText } from "@/components/typewriter-text";
+import { useState } from "react";
 // Supabase client for database operations
 export default function CompanyPage() {
   // Language management with localStorage persistence
   const { language, setLanguage, mounted } = useLanguage();
+  // State for controlling typewriter sequence
+  const [showFirstTitle, setShowFirstTitle] = useState(false);
+  const [showSecondTitle, setShowSecondTitle] = useState(false);
 
   // Helper function to get translated text based on current language
   const t = (key: keyof typeof translations.en) => {
@@ -76,14 +81,20 @@ export default function CompanyPage() {
         {/* Offered Services */}
         <div className="mb-0 px-4">
           <div className="text-left pt-[20px] pr-8 pl-0">
-              <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
-                {t("companyHeroTitle")}
-              </h1>
-              <h1 className="text-xl  md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-8 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
-              {t("companyTechnologyTitle")}
-              </h1>
+              <div style={{ height: "80px" }} className="flex items-center">
+                <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+                  <TypewriterText 
+                    text={t("companyHeroTitle")} 
+                    speed={80}
+                    onComplete={() => {
+                      setShowSecondTitle(true);
+                      // Scroll into view or any action AFTER all text is displayed
+                    }}
+                  />
+                </h1>
+              </div>
 
-          <div className="space-y-2 pr-0 pl-0">
+          <div className="space-y-2 pr-0 pl-0 pt-10">
             <Accordion type="multiple" >
               <AccordionItem value="site-planning">
                 <AccordionTrigger>Site Planning</AccordionTrigger>
@@ -99,13 +110,13 @@ export default function CompanyPage() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="site-management-app">
-                <AccordionTrigger>Site Management App</AccordionTrigger>
+                <AccordionTrigger>IT Services</AccordionTrigger>
                 <AccordionContent>
                 
                 <div className="flex justify-center">
                   <Image
                     src="/products/site.png"
-                    alt="Site Management App"
+                    alt="IT Services"
                     width={400}
                     height={300}
                     className="w-1/2 h-auto rounded-lg mb-4 object-cover"
@@ -116,39 +127,6 @@ export default function CompanyPage() {
         
                 </AccordionContent>
               </AccordionItem>
-              {/* <AccordionItem value="augmented-reality-app">
-                <AccordionTrigger>Augmented Reality</AccordionTrigger>
-                <AccordionContent>               
-                  <div className="flex justify-center">
-                    <Image
-                      src="/products/ar.png"
-                      alt="Augmented Reality App"
-                      width={200}
-                      height={150}
-                      className="w-1/2 h-auto rounded-lg mb-4 object-cover"
-                    />
-                  </div>
-                
-                {t("augmentedRealityContent")}
-             
-                </AccordionContent>
-              </AccordionItem> */}
-              <AccordionItem value="power-plant">
-                  <AccordionTrigger>Geothermal Plant</AccordionTrigger>
-                <AccordionContent>
-                <div className="flex justify-center">
-                <Image
-                    src="/projects/powerplant.png"
-                    alt="Geothermal Plant"
-                    width={400}
-                    height={300}
-                    className="w-1/2 h-auto rounded-lg mb-4 object-cover"
-                  />
-                  </div>
-                  {t("powerPlantContent")}
-                  
-                </AccordionContent>
-              </AccordionItem>
             </Accordion>
           </div>
         </div>
@@ -157,7 +135,7 @@ export default function CompanyPage() {
 
         {/* Footer Section */}
         <div className="text-center">
-        <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-10 mt-10 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
+        <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-6 mt-6 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
         Team
         </h1>
           

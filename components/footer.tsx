@@ -1,12 +1,17 @@
 import React from 'react';
 
-interface FooterProps {
+export interface FooterProps {
   user?: { id: string; email?: string } | null;
 }
 
-export function Footer({ user }: FooterProps) {
-  const textColor = user ? 'text-black' : 'text-white';
-  
+export interface FooterProps {
+  user?: { id: string; email?: string } | null;
+  textColor?: string;
+}
+
+export function Footer({ user, textColor }: FooterProps) {
+  // Use `textColor` prop if provided, otherwise fall back to default logic
+  const resolvedTextColor = textColor ?? (user ? 'text-black' : 'text-white');
   return (
     <footer className="w-full pt-8 pb-0 mt-12 sm:mt-12">
       <div className="mx-[10px] md:mx-0">
