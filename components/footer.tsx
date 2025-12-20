@@ -13,14 +13,14 @@ export function Footer({ user, textColor }: FooterProps) {
   // Use `textColor` prop if provided, otherwise fall back to default logic
   const resolvedTextColor = textColor ?? (user ? 'text-black' : 'text-white');
   return (
-    <footer className="w-full pt-8 pb-0 mt-12 sm:mt-12">
+    <footer className="w-full pt-8 pb-0 mt-12 sm:mt-12 mb-8">
       <div className="mx-[10px] md:mx-0">
         
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           {/* Left Column - Company Information */}
           <div className="text-left">
             <div className={`text-xs ${textColor} space-y-1`}>
-              <div className="font-medium text-white">clone:it GmbH</div>
+              <div className="font-medium ">clone:it GmbH</div>
               <div>Am Katzelbach 9, 8054 Graz</div>
               <div>Phone: +43 676 755 5310</div>
               <div>

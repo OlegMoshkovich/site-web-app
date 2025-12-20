@@ -80,8 +80,8 @@ export default function CompanyPage() {
 
         {/* Offered Services */}
         <div className="mb-0 px-4">
-          <div className="text-left pt-[20px] pr-8 pl-0">
-              <div style={{ height: "80px" }} className="flex items-center">
+          <div className="text-left pt-[30px] pr-8 pl-0">
+              <div className="flex items-center h-[200px] md:h-[80px]">
                 <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
                   <TypewriterText 
                     text={t("companyHeroTitle")} 
@@ -134,42 +134,57 @@ export default function CompanyPage() {
 
 
         {/* Footer Section */}
-        <div className="text-center">
-        <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-6 mt-6 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
+        <div className="text-center mt-10 mr-8">
+        {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-6 mt-6 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
         Team
-        </h1>
+        </h1> */}
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-[10px] md:mx-auto">
-            <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
-                <Image src="/images/paul.png" alt="Paul" width={200} height={200} className="w-full h-full object-cover " />
+          <div className="flex justify-center items-center gap-8 flex-wrap max-w-2xl mx-[10px] md:mx-auto">
+            <div className="flex flex-col items-center">
+                  <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/images/paul.png"
+                  alt="Paul"
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex flex-col items-center mt-2">
                 <span className="text-sm font-medium">Paul</span>
                 <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
-            <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center ">
-                <Image src="/images/liebhard.jpg" alt="Liebhard" width={200} height={200} className="w-full h-full object-cover " />
+            <div className="flex flex-col items-center">
+                <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/images/liebhard.jpg"
+                  alt="Liebhard"
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-medium">Liebhard </span>
+              <div className="flex flex-col items-center mt-2">
+                <span className="text-sm font-medium">Liebhard</span>
                 <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
-
-            
-            <div className="flex flex-col">
-              <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center">
-                <Image src="/images/oleg.png" alt="Oleg" width={200} height={200} className="w-full h-full object-cover " />
+            <div className="flex flex-col items-center">
+              <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/images/oleg.png"
+                  alt="Oleg"
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-medium">Oleg </span>
+              <div className="flex flex-col items-center mt-2">
+                <span className="text-sm font-medium">Oleg</span>
                 <span className="text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
-     
           </div>
         </div>
 
