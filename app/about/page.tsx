@@ -80,7 +80,7 @@ export default function CompanyPage() {
         {/* Offered Services */}
         <div className="mb-0">
           <div className="pt-[30px]">
-              <div className="flex items-center h-[200px] md:h-[80px]">
+              <div className="flex items-center h-[140px] md:h-[80px]">
                 <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
                   <TypewriterText 
                     text={t("companyHeroTitle")} 
