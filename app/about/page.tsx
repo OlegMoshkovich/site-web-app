@@ -56,7 +56,7 @@ export default function CompanyPage() {
               
               </Link>
             </div>
-            <div className="flex items-center gap-2 pr-10 pl-10">
+            <div className="flex items-center gap-2">
               {/* Language selector */}
               <select
                 value={language}
@@ -74,15 +74,14 @@ export default function CompanyPage() {
         </nav>
 
         {/* Main content area */}
-        <div className={getContentClasses().widthOnly}>
-          <div>
-           
+        <div className={getContentClasses().container}>
+          <div className={getContentClasses().inner}>
 
         {/* Offered Services */}
-        <div className="mb-0 px-4">
-          <div className="text-left pt-[30px] pr-8 pl-0">
+        <div className="mb-0">
+          <div className="pt-[30px]">
               <div className="flex items-center h-[200px] md:h-[80px]">
-                <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
+                <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
                   <TypewriterText 
                     text={t("companyHeroTitle")} 
                     speed={80}
@@ -94,8 +93,16 @@ export default function CompanyPage() {
                 </h1>
               </div>
 
-          <div className="space-y-2 pr-0 pl-0 pt-10">
+          <div className="space-y-2 pt-10">
             <Accordion type="multiple" >
+            <AccordionItem value="site-management-app">
+                <AccordionTrigger>Construction IT Services</AccordionTrigger>
+                <AccordionContent>
+                
+                  {t("siteManagementAppContent")}
+        
+                </AccordionContent>
+              </AccordionItem>
               <AccordionItem value="site-planning">
                 <AccordionTrigger>Site Planning</AccordionTrigger>
                 <AccordionContent>
@@ -109,14 +116,7 @@ export default function CompanyPage() {
                 {t("siteSupervisionContent")}
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="site-management-app">
-                <AccordionTrigger>IT Services</AccordionTrigger>
-                <AccordionContent>
-                
-                  {t("siteManagementAppContent")}
-        
-                </AccordionContent>
-              </AccordionItem>
+             
             </Accordion>
           </div>
         </div>
@@ -124,14 +124,14 @@ export default function CompanyPage() {
 
 
         {/* Footer Section */}
-        <div className="text-center mt-10 mr-8">
+        <div className="text-center mt-10">
         {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
         Team
         </h1> */}
           
-          <div className="flex justify-center items-center gap-8 flex-wrap max-w-2xl mx-[10px] md:mx-auto">
+          <div className="flex justify-center items-center gap-2 sm:gap-4 md:gap-8 flex-nowrap max-w-2xl mx-auto">
             <div className="flex flex-col items-center">
-                  <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+                  <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
                 <Image
                   src="/images/paul.png"
                   alt="Paul"
@@ -141,12 +141,12 @@ export default function CompanyPage() {
                 />
               </div>
               <div className="flex flex-col items-center mt-2">
-                <span className="text-sm font-medium">Paul</span>
-                <span className="text-sm font-medium text-gray-300">Enginner</span>
+                <span className="text-xs sm:text-sm font-medium">Paul</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
             <div className="flex flex-col items-center">
-                <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+                <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
                 <Image
                   src="/images/liebhard.jpg"
                   alt="Liebhard"
@@ -156,12 +156,12 @@ export default function CompanyPage() {
                 />
               </div>
               <div className="flex flex-col items-center mt-2">
-                <span className="text-sm font-medium">Liebhard</span>
-                <span className="text-sm font-medium text-gray-300">Enginner</span>
+                <span className="text-xs sm:text-sm font-medium">Liebhard</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="w-40 h-60 bg-black overflow-hidden flex items-center justify-center">
+              <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
                 <Image
                   src="/images/oleg.png"
                   alt="Oleg"
@@ -171,8 +171,8 @@ export default function CompanyPage() {
                 />
               </div>
               <div className="flex flex-col items-center mt-2">
-                <span className="text-sm font-medium">Oleg</span>
-                <span className="text-sm font-medium text-gray-300">Enginner</span>
+                <span className="text-xs sm:text-sm font-medium">Oleg</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
               </div>
             </div>
           </div>
