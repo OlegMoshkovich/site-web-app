@@ -82,7 +82,7 @@ export default function CompanyPage() {
         <div className="mb-0 px-4">
           <div className="text-left pt-[30px] pr-8 pl-0">
               <div className="flex items-center h-[200px] md:h-[80px]">
-                <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight ml-[10px] md:ml-0 break-words hyphens-auto">
+                <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
                   <TypewriterText 
                     text={t("companyHeroTitle")} 
                     speed={80}
@@ -135,7 +135,7 @@ export default function CompanyPage() {
 
         {/* Footer Section */}
         <div className="text-center mt-10 mr-8">
-        {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black mb-6 mt-6 leading-tight ml-[10px] md:ml-0 break-words hyphens-auto text-left">
+        {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
         Team
         </h1> */}
           
