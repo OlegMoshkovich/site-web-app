@@ -113,16 +113,6 @@ export default function CompanyPage() {
                 <AccordionTrigger>IT Services</AccordionTrigger>
                 <AccordionContent>
                 
-                <div className="flex justify-center">
-                  <Image
-                    src="/products/site.png"
-                    alt="IT Services"
-                    width={400}
-                    height={300}
-                    className="w-1/2 h-auto rounded-lg mb-4 object-cover"
-                  />
-                  </div>
-       
                   {t("siteManagementAppContent")}
         
                 </AccordionContent>

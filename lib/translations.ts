@@ -263,8 +263,8 @@ export const translations = {
     settingUp: "Setting up...",
 
     // Company page
-    companyHeroTitle: "We are construction services and technology company. Our core expertise lies in construction site supervision, we develope our oun tech soluction and sell our tech product, and consult in development of technology products for constcturion industry. ",
-    companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
+    companyHeroTitle: "We are construction services and technology company. Our core expertise is in construction site supervision, and applcation of bespoke technology solutions for construction industry. So far we developed two product, one is ai enhaced site supervision app, and AR app for site planning and management. ",
+    companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry. ",
     companyProjectsTitle: "Current projects",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
     
@@ -568,7 +568,7 @@ export const translations = {
     settingUp: "Wird eingerichtet...",
 
     // Company page
-    companyHeroTitle: "Wir sind ein Bau - und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung, unterstützt durch KI - und AR - Lösungen, die das Projektmanagement und die Baustellenaufsicht verbessern.",
+    companyHeroTitle: "Wir sind ein Bau- und Technologieunternehmen. Unsere Kernkompetenz liegt in der Baustellenüberwachung und der Anwendung maßgeschneiderter Technologielösungen für die Bauindustrie. Bisher haben wir zwei Produkte entwickelt: eine KI-verbesserte Baustellenüberwachungs-App und eine AR-App für Baustellenplanung und -management.",
     companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer eigenen Technologielösungen. Unsere Tools werden in unseren eigenen Bauvorhaben getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
     companyProjectsTitle: "Aktuelle Projekte",
     companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",
