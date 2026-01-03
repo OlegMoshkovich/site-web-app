@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "clone:it Simple Site",
   description: "Site web app",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  themeColor: "#000000",
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+  },
 };
 
 const geistSans = Geist({

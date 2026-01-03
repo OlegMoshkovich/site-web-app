@@ -62,13 +62,29 @@
   * {
     @apply border-border;
   }
+  html {
+    overscroll-behavior: none;
+    background-color: #000000;
+    min-height: 100vh;
+  }
   body {
     @apply bg-background text-foreground;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    background-color: #000000;
+    min-height: 100vh;
   }
-  html {
-    overscroll-behavior: none;
+}
+
+/* Ensure dark theme for mobile Safari */
+@media screen and (max-width: 768px) {
+  html, body {
+    background-color: #000000 !important;
+  }
+  
+  /* Force dark appearance for mobile Safari */
+  body {
+    color-scheme: dark;
   }
 }
 
