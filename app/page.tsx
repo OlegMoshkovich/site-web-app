@@ -854,7 +854,8 @@ export default function Home() {
             muted
             loop
             playsInline
-            className="w-full h-full object-cover"
+            poster="/images/background.png"
+            className="bg-video-fixed"
             onError={(e) => {
               console.error('Video failed to load, using fallback image');
               // Fallback to background image

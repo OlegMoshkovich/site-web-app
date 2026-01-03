@@ -66,3 +66,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Prevent mobile scroll zoom for video backgrounds */
+video.bg-video-fixed {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: cover !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-transform: translateZ(0) !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Prevent viewport zooming on mobile */
+@media screen and (max-width: 768px) {
+  .bg-video-fixed {
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    will-change: auto !important;
+  }
+}
