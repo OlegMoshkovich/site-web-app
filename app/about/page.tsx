@@ -77,54 +77,7 @@ export default function CompanyPage() {
         <div className={getContentClasses().container}>
           <div className={getContentClasses().inner}>
 
-        {/* Offered Services */}
-        <div className="mb-0">
-          <div className="pt-[30px]">
-              <div className="flex items-center h-[140px] md:h-[80px]">
-                <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
-                  <TypewriterText 
-                    text={t("companyHeroTitle")} 
-                    speed={80}
-                    onComplete={() => {
-                      setShowSecondTitle(true);
-                      // Scroll into view or any action AFTER all text is displayed
-                    }}
-                  />
-                </h1>
-              </div>
-
-          <div className="space-y-2 pt-10">
-            <Accordion type="multiple" >
-            <AccordionItem value="site-management-app">
-                <AccordionTrigger>Construction IT Services</AccordionTrigger>
-                <AccordionContent>
-                
-                  {t("siteManagementAppContent")}
-        
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="site-planning">
-                <AccordionTrigger>Site Planning</AccordionTrigger>
-                <AccordionContent>
-                  {t("sitePlanningContent")}
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="site-supervision">
-                <AccordionTrigger>Site Supervision</AccordionTrigger>
-                <AccordionContent>
-                {t("siteSupervisionContent")}
-                </AccordionContent>
-              </AccordionItem>
-             
-            </Accordion>
-          </div>
-        </div>
-
-
-
-        {/* Footer Section */}
-        <div className="text-center mt-10">
+          <div className="text-center mt-10">
         {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
         Team
         </h1> */}
@@ -177,6 +130,54 @@ export default function CompanyPage() {
             </div>
           </div>
         </div>
+        {/* Offered Services */}
+        <div className="mb-0">
+          <div className="pt-[30px]">
+              <div className="flex items-center h-[140px] md:h-[80px]">
+                <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
+                  <TypewriterText 
+                    text={t("companyHeroTitle")} 
+                    speed={80}
+                    onComplete={() => {
+                      setShowSecondTitle(true);
+                      // Scroll into view or any action AFTER all text is displayed
+                    }}
+                  />
+                </h1>
+              </div>
+
+          <div className="space-y-2 pt-10">
+            <Accordion type="multiple" >
+            <AccordionItem value="site-management-app">
+                <AccordionTrigger>Construction IT Services</AccordionTrigger>
+                <AccordionContent>
+                
+                  {t("siteManagementAppContent")}
+        
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="site-planning">
+                <AccordionTrigger>Site Planning</AccordionTrigger>
+                <AccordionContent>
+                  {t("sitePlanningContent")}
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="site-supervision">
+                <AccordionTrigger>Site Supervision</AccordionTrigger>
+                <AccordionContent>
+                {t("siteSupervisionContent")}
+                </AccordionContent>
+              </AccordionItem>
+             
+            </Accordion>
+          </div>
+        </div>
+
+
+
+        {/* Footer Section */}
+       
 
         {/* Footer */}
         <Footer />

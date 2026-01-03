@@ -274,8 +274,8 @@ export const translations = {
     siteManagementContent: "Comprehensive end-to-end site management solutions encompassing sophisticated logistics coordination, strategic personnel management, and advanced progress tracking systems to optimize operational efficiency and project outcomes.",
     
     // Technology
-    siteManagementAppContent: "Professional mobile application platform enabling real-time site management capabilities including photo collection, centralized data repository creation, and AI-powered analysis for easy record retrieval and summarization.",
-    augmentedRealityContent: "Advanced Augmented Reality technology for three-dimensional visualization of construction plans, proactive issue identification, and enhanced on-site decision-making capabilities that improve project accuracy and reduce costly errors.",
+    siteManagementAppContent: "We develop mobile applications for construction operations, including site supervision, planning, and management. Leveraging the infrastructure built for our own technology solutions, we create tailored applications that fit your specific operations, giving you full control over the user experience and data handling. We build, deploy and manade a complete ecosystem. You get a fully customized application at a fraction of the typical cost. Contact us to schedule a demo.",
+   augmentedRealityContent: "Advanced Augmented Reality technology for three-dimensional visualization of construction plans, proactive issue identification, and enhanced on-site decision-making capabilities that improve project accuracy and reduce costly errors.",
     
     // Projects
     powerPlantContent: "Major power generation facility construction in Munich, incorporating state-of-the-art energy infrastructure, cutting-edge sustainable technologies, and adherence to the highest environmental and safety standards.",
@@ -579,7 +579,7 @@ export const translations = {
     siteManagementContent: "Umfassende End-to-End Baustellen Management Lösungen mit ausgeklügelter Logistik Koordination, strategischem Personal Management und fortschrittlichen Fortschritts Systemen, um operative Effizienz und Projekt Ergebnisse zu optimieren.",
     
     // Technology
-    siteManagementAppContent: "Professionelle mobile App-Plattform für Echtzeit-Baustellenmanagement einschließlich Foto-Sammlung, Erstellung zentraler Daten-Repositories und KI-gestützter Analyse für einfache Datenabruf und Zusammenfassung.",
+    siteManagementAppContent: "Wir entwickeln mobile Anwendungen für Bauvorhaben, einschließlich Baustellenüberwachung, Planung und Management. Basierend auf der Infrastruktur unserer eigenen Technologielösungen erstellen wir maßgeschneiderte Anwendungen, die zu Ihren spezifischen Abläufen passen und Ihnen die vollständige Kontrolle über die Benutzererfahrung und Datenverarbeitung geben. Wir bauen, implementieren und verwalten ein komplettes Ökosystem. Sie erhalten eine vollständig angepasste Anwendung zu einem Bruchteil der üblichen Kosten. Kontaktieren Sie uns, um eine Demo zu vereinbaren.",
     augmentedRealityContent: "Fortschrittliche AR Technologie für 3D Visualisierung von Bau Plänen, proaktive Problem Identifikation und verbesserte Entscheidungs Findung vor Ort, die Projekt Genauigkeit verbessert und kostspielige Fehler reduziert.",
     
     // Projects
