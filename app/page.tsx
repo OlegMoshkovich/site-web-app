@@ -848,26 +848,29 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center relative">
       {!user && (
-        <div className="fixed inset-0 -z-10 bg-black">
+        <div 
+          className="fixed inset-0 -z-10 bg-black"
+          style={{
+            backgroundImage: 'url(/images/background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
           <video
             autoPlay
             muted
             loop
             playsInline
-            poster="/images/background.png"
-            className="bg-video-fixed"
+            className="bg-video-fixed opacity-0 transition-opacity duration-1000"
+            onLoadedData={(e) => {
+              // Fade in video once it's loaded
+              e.currentTarget.classList.remove('opacity-0');
+              e.currentTarget.classList.add('opacity-100');
+            }}
             onError={(e) => {
-              console.error('Video failed to load, using fallback image');
-              // Fallback to background image
-              const videoElement = e.currentTarget;
-              const parent = videoElement.parentElement;
-              if (parent) {
-                parent.style.backgroundImage = 'url(/images/backgound.png)';
-                parent.style.backgroundSize = 'cover';
-                parent.style.backgroundPosition = 'center';
-                parent.style.backgroundRepeat = 'no-repeat';
-                videoElement.style.display = 'none';
-              }
+              console.error('Video failed to load, keeping background image');
+              e.currentTarget.style.display = 'none';
             }}
           >
             <source src="/video/background.mp4" type="video/mp4" />
