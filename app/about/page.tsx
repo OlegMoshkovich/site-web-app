@@ -10,15 +10,41 @@ import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
 import { translations, type Language, useLanguage } from "@/lib/translations";
+import { useState, useEffect, useCallback } from "react";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 import Image from "next/image";
 import { TypewriterText } from "@/components/typewriter-text";
-import { useState } from "react";
 // Supabase client for database operations
+// Custom language hook that defaults to German for about page
+function useLanguageWithGermanDefault() {
+  const [language, setLanguageState] = useState<Language>('de');
+  const [mounted, setMounted] = useState(false);
+
+  // Load language from localStorage on mount, but default to German if nothing is saved
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('about-page-language') as Language;
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+      setLanguageState(savedLanguage);
+    } else {
+      // Default to German for about page
+      setLanguageState('de');
+    }
+    setMounted(true);
+  }, []);
+
+  // Save language to localStorage when it changes
+  const setLanguage = useCallback((newLanguage: Language) => {
+    setLanguageState(newLanguage);
+    localStorage.setItem('about-page-language', newLanguage);
+  }, []);
+
+  return { language, setLanguage, mounted };
+}
+
 export default function CompanyPage() {
-  // Language management with localStorage persistence
-  const { language, setLanguage, mounted } = useLanguage();
+  // Language management with German default for about page
+  const { language, setLanguage, mounted } = useLanguageWithGermanDefault();
   // State for controlling typewriter sequence
   const [showFirstTitle, setShowFirstTitle] = useState(false);
   const [showSecondTitle, setShowSecondTitle] = useState(false);
