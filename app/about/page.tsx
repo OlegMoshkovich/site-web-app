@@ -54,6 +54,8 @@ function CompanyPageContent() {
   const [showSecondTitle, setShowSecondTitle] = useState(false);
   // State for modal
   const [showModal, setShowModal] = useState(false);
+  // State for image loading
+  const [imageLoading, setImageLoading] = useState(true);
 
   // Check for modal parameter in URL on mount
   useEffect(() => {
@@ -65,6 +67,7 @@ function CompanyPageContent() {
   // Function to open modal and update URL
   const openModal = useCallback(() => {
     setShowModal(true);
+    setImageLoading(true); // Reset loading state when opening modal
     const params = new URLSearchParams(searchParams);
     params.set('modal', 'campaign');
     router.replace(`?${params.toString()}`, { scroll: false });
@@ -266,13 +269,24 @@ function CompanyPageContent() {
             >
               ×
             </button>
-            <div className="flex justify-center items-center w-full h-full p-4">
+            <div className="flex justify-center items-center w-full h-full p-4 relative">
+              {/* Loading spinner */}
+              {imageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                </div>
+              )}
+              
               <Image
                 src="/campaign/CloneitToTheMoon.png"
                 alt="Cloneit To The Moon Campaign"
                 width={1200}
                 height={800}
-                className="max-w-full max-h-full object-contain"
+                className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onLoad={() => setImageLoading(false)}
+                onError={() => setImageLoading(false)}
               />
             </div>
           </div>
