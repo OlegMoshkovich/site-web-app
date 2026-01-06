@@ -48,6 +48,8 @@ export default function CompanyPage() {
   // State for controlling typewriter sequence
   const [showFirstTitle, setShowFirstTitle] = useState(false);
   const [showSecondTitle, setShowSecondTitle] = useState(false);
+  // State for modal
+  const [showModal, setShowModal] = useState(false);
 
   // Helper function to get translated text based on current language
   const t = (key: keyof typeof translations.en) => {
@@ -83,6 +85,15 @@ export default function CompanyPage() {
               </Link>
             </div>
             <div className="flex items-center gap-2">
+              {/* Green square button */}
+              <button
+                onClick={() => setShowModal(true)}
+                className="h-8 w-8 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center"
+                title="View Campaign"
+              >
+                <span className="text-white text-xs"></span>
+              </button>
+              
               {/* Language selector */}
               <select
                 value={language}
@@ -211,6 +222,37 @@ export default function CompanyPage() {
           </div>
         </div>
       </div>
+      
+      {/* Modal for campaign image */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="bg-black p-4  max-w-4xl max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-white hover:text-gray-300 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <Image
+                src="/campaign/CloneitToTheMoon.png"
+                alt="Cloneit To The Moon Campaign"
+                width={800}
+                height={600}
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
