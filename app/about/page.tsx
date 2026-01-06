@@ -11,6 +11,7 @@ import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
 import { translations, type Language, useLanguage } from "@/lib/translations";
 import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 import Image from "next/image";
@@ -43,6 +44,9 @@ function useLanguageWithGermanDefault() {
 }
 
 export default function CompanyPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   // Language management with German default for about page
   const { language, setLanguage, mounted } = useLanguageWithGermanDefault();
   // State for controlling typewriter sequence
@@ -50,6 +54,29 @@ export default function CompanyPage() {
   const [showSecondTitle, setShowSecondTitle] = useState(false);
   // State for modal
   const [showModal, setShowModal] = useState(false);
+
+  // Check for modal parameter in URL on mount
+  useEffect(() => {
+    if (searchParams.get('modal') === 'campaign') {
+      setShowModal(true);
+    }
+  }, [searchParams]);
+
+  // Function to open modal and update URL
+  const openModal = useCallback(() => {
+    setShowModal(true);
+    const params = new URLSearchParams(searchParams);
+    params.set('modal', 'campaign');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  // Function to close modal and update URL
+  const closeModal = useCallback(() => {
+    setShowModal(false);
+    const params = new URLSearchParams(searchParams);
+    params.delete('modal');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
 
   // Helper function to get translated text based on current language
   const t = (key: keyof typeof translations.en) => {
@@ -87,7 +114,7 @@ export default function CompanyPage() {
             <div className="flex items-center gap-2">
               {/* Green square button */}
               <button
-                onClick={() => setShowModal(true)}
+                onClick={openModal}
                 className="h-8 w-8 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center"
                 title="View Campaign"
               >
@@ -226,28 +253,26 @@ export default function CompanyPage() {
       {/* Modal for campaign image */}
       {showModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowModal(false)}
+          className="fixed inset-0 bg-black flex items-center justify-center z-50"
+          onClick={closeModal}
         >
           <div 
-            className="bg-black p-4  max-w-4xl max-h-[90vh] overflow-auto"
+            className="bg-black w-full h-full relative flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-white hover:text-gray-300 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="flex justify-center">
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 text-3xl z-10"
+            >
+              ×
+            </button>
+            <div className="flex justify-center items-center w-full h-full p-4">
               <Image
                 src="/campaign/CloneitToTheMoon.png"
                 alt="Cloneit To The Moon Campaign"
-                width={800}
-                height={600}
-                className="max-w-full h-auto"
+                width={1200}
+                height={800}
+                className="max-w-full max-h-full object-contain"
               />
             </div>
           </div>
