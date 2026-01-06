@@ -10,7 +10,7 @@ import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
 import { translations, type Language, useLanguage } from "@/lib/translations";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
@@ -43,7 +43,7 @@ function useLanguageWithGermanDefault() {
   return { language, setLanguage, mounted };
 }
 
-export default function CompanyPage() {
+function CompanyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -279,5 +279,13 @@ export default function CompanyPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function CompanyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CompanyPageContent />
+    </Suspense>
   );
 }
