@@ -118,7 +118,7 @@ function CompanyPageContent() {
               {/* Green square button */}
               <button
                 onClick={openModal}
-                className="h-8 w-8 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center"
+                className="h-8 w-8 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center border border-gray-300"
                 title="View Campaign"
               >
                 <span className="text-white text-xs"></span>
