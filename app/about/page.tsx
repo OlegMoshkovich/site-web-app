@@ -58,6 +58,9 @@ function CompanyPageContent() {
   const [imageLoading, setImageLoading] = useState(true);
   // State for carousel slide index
   const [currentSlide, setCurrentSlide] = useState(0);
+  // State for touch/swipe handling
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
   // English campaign slides
   const englishSlides = [
@@ -66,6 +69,35 @@ function CompanyPageContent() {
     '/campaign/English/Campaign_EN_3.png',
     '/campaign/English/Campaign_EN_4.png',
   ];
+  
+  // Minimum swipe distance to trigger slide change
+  const minSwipeDistance = 50;
+  
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      // Swipe left = next slide
+      setCurrentSlide((prev) => (prev === englishSlides.length - 1 ? 0 : prev + 1));
+      setImageLoading(true);
+    } else if (isRightSwipe) {
+      // Swipe right = previous slide
+      setCurrentSlide((prev) => (prev === 0 ? englishSlides.length - 1 : prev - 1));
+      setImageLoading(true);
+    }
+  };
 
   // Check for modal parameter in URL on mount
   useEffect(() => {
@@ -285,7 +317,12 @@ function CompanyPageContent() {
             
             {language === 'en' ? (
               /* English carousel */
-              <div className="flex justify-center items-center w-full h-full p-4 relative">
+              <div 
+                className="flex justify-center items-center w-full h-full p-4 relative touch-pan-y"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
                 {/* Loading spinner */}
                 {imageLoading && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -293,13 +330,13 @@ function CompanyPageContent() {
                   </div>
                 )}
                 
-                {/* Previous button */}
+                {/* Previous button - hidden on mobile */}
                 <button
                   onClick={() => {
                     setCurrentSlide((prev) => (prev === 0 ? englishSlides.length - 1 : prev - 1));
                     setImageLoading(true);
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
+                  className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
                 >
                   ‹
                 </button>
@@ -309,20 +346,21 @@ function CompanyPageContent() {
                   alt={`Campaign Slide ${currentSlide + 1}`}
                   width={1200}
                   height={800}
-                  className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+                  className={`max-w-full max-h-full object-contain transition-opacity duration-300 select-none ${
                     imageLoading ? 'opacity-0' : 'opacity-100'
                   }`}
                   onLoad={() => setImageLoading(false)}
                   onError={() => setImageLoading(false)}
+                  draggable={false}
                 />
                 
-                {/* Next button */}
+                {/* Next button - hidden on mobile */}
                 <button
                   onClick={() => {
                     setCurrentSlide((prev) => (prev === englishSlides.length - 1 ? 0 : prev + 1));
                     setImageLoading(true);
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
+                  className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
                 >
                   ›
                 </button>
@@ -336,7 +374,7 @@ function CompanyPageContent() {
                         setCurrentSlide(index);
                         setImageLoading(true);
                       }}
-                      className={`w-2 h-2 rounded-full transition-colors ${
+                      className={`w-3 h-3 md:w-2 md:h-2 rounded-full transition-colors ${
                         index === currentSlide ? 'bg-white' : 'bg-gray-500 hover:bg-gray-400'
                       }`}
                     />

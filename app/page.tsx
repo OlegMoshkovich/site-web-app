@@ -970,8 +970,14 @@ export default function Home() {
                     setShowCampaignModal(true);
                     setCampaignImageLoading(true);
                   }}
-                  className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 mr-2 transition-colors cursor-pointer flex items-center justify-center "
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    setShowCampaignModal(true);
+                    setCampaignImageLoading(true);
+                  }}
+                  className="h-8 w-8 min-h-[32px] min-w-[32px] bg-[#00FF1A] hover:bg-green-600 active:bg-green-700 mr-2 transition-colors cursor-pointer flex items-center justify-center touch-manipulation"
                   title="View Campaign"
+                  aria-label="View Campaign"
                 >
                   <span className="text-white text-xs"></span>
                 </button>
