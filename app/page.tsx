@@ -1891,7 +1891,7 @@ export default function Home() {
               )}
               
               <Image
-                src="/campaign/CloneitToTheMoon.png"
+                src="/campaign/CloneitToTheMoon_DE.png"
                 alt="Cloneit To The Moon Campaign"
                 width={1200}
                 height={800}

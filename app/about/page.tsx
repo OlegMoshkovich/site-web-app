@@ -56,6 +56,16 @@ function CompanyPageContent() {
   const [showModal, setShowModal] = useState(false);
   // State for image loading
   const [imageLoading, setImageLoading] = useState(true);
+  // State for carousel slide index
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // English campaign slides
+  const englishSlides = [
+    '/campaign/English/Campaign_EN_1.png',
+    '/campaign/English/Campaign_EN_2.png',
+    '/campaign/English/Campaign_EN_3.png',
+    '/campaign/English/Campaign_EN_4.png',
+  ];
 
   // Check for modal parameter in URL on mount
   useEffect(() => {
@@ -68,6 +78,7 @@ function CompanyPageContent() {
   const openModal = useCallback(() => {
     setShowModal(true);
     setImageLoading(true); // Reset loading state when opening modal
+    setCurrentSlide(0); // Reset to first slide
     const params = new URLSearchParams(searchParams);
     params.set('modal', 'campaign');
     router.replace(`?${params.toString()}`, { scroll: false });
@@ -96,7 +107,7 @@ function CompanyPageContent() {
     <main className="flex flex-col items-center">
       <div className="w-full flex flex-col gap-0 items-center">
         {/* Navigation header with language selector and auth */}
-        <nav className={getNavbarClasses().container}>
+        <nav className={`${getNavbarClasses().container} bg-white`}>
           <div className={getNavbarClasses().content}>
             <div className="flex text-lg gap-5 items-center font-semibold">
               <Link 
@@ -118,7 +129,7 @@ function CompanyPageContent() {
               {/* Green square button */}
               <button
                 onClick={openModal}
-                className="h-8 w-8 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center border border-gray-300"
+                className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer mr-2 flex items-center justify-center "
                 title="View Campaign"
               >
                 <span className="text-white text-xs"></span>
@@ -218,9 +229,11 @@ function CompanyPageContent() {
             <AccordionItem value="site-management-app">
                 <AccordionTrigger>Construction IT Services</AccordionTrigger>
                 <AccordionContent>
-                
-                  {t("siteManagementAppContent")}
-        
+                  <div className="space-y-4">
+                    {t("siteManagementAppContent").split('\n\n').map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="site-planning">
@@ -269,26 +282,90 @@ function CompanyPageContent() {
             >
               ×
             </button>
-            <div className="flex justify-center items-center w-full h-full p-4 relative">
-              {/* Loading spinner */}
-              {imageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            
+            {language === 'en' ? (
+              /* English carousel */
+              <div className="flex justify-center items-center w-full h-full p-4 relative">
+                {/* Loading spinner */}
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                  </div>
+                )}
+                
+                {/* Previous button */}
+                <button
+                  onClick={() => {
+                    setCurrentSlide((prev) => (prev === 0 ? englishSlides.length - 1 : prev - 1));
+                    setImageLoading(true);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
+                >
+                  ‹
+                </button>
+                
+                <Image
+                  src={englishSlides[currentSlide]}
+                  alt={`Campaign Slide ${currentSlide + 1}`}
+                  width={1200}
+                  height={800}
+                  className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+                    imageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoad={() => setImageLoading(false)}
+                  onError={() => setImageLoading(false)}
+                />
+                
+                {/* Next button */}
+                <button
+                  onClick={() => {
+                    setCurrentSlide((prev) => (prev === englishSlides.length - 1 ? 0 : prev + 1));
+                    setImageLoading(true);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
+                >
+                  ›
+                </button>
+                
+                {/* Slide indicators */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                  {englishSlides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setCurrentSlide(index);
+                        setImageLoading(true);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-colors ${
+                        index === currentSlide ? 'bg-white' : 'bg-gray-500 hover:bg-gray-400'
+                      }`}
+                    />
+                  ))}
                 </div>
-              )}
-              
-              <Image
-                src="/campaign/CloneitToTheMoon.png"
-                alt="Cloneit To The Moon Campaign"
-                width={1200}
-                height={800}
-                className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
-                  imageLoading ? 'opacity-0' : 'opacity-100'
-                }`}
-                onLoad={() => setImageLoading(false)}
-                onError={() => setImageLoading(false)}
-              />
-            </div>
+              </div>
+            ) : (
+              /* German single image */
+              <div className="flex justify-center items-center w-full h-full p-4 relative">
+                {/* Loading spinner */}
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                  </div>
+                )}
+                
+                <Image
+                  src="/campaign/CloneitToTheMoon_DE.png"
+                  alt="Cloneit To The Moon Campaign"
+                  width={1200}
+                  height={800}
+                  className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+                    imageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoad={() => setImageLoading(false)}
+                  onError={() => setImageLoading(false)}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
