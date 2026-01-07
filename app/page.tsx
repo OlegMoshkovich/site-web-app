@@ -131,6 +131,9 @@ export default function Home() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
+  // Campaign modal state
+  const [showCampaignModal, setShowCampaignModal] = useState(false);
+  const [campaignImageLoading, setCampaignImageLoading] = useState(true);
   // Save report modal state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [reportTitle, setReportTitle] = useState('');
@@ -960,6 +963,17 @@ export default function Home() {
 
 
             <div className="flex items-center gap-2">
+              {/* Green square button for campaign modal */}
+              <button
+                onClick={() => {
+                  setShowCampaignModal(true);
+                  setCampaignImageLoading(true);
+                }}
+                className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 mr-2 transition-colors cursor-pointer flex items-center justify-center "
+                title="View Campaign"
+              >
+                <span className="text-white text-xs"></span>
+              </button>
 
               {/* Reports */}
               {user && (
@@ -1850,6 +1864,46 @@ export default function Home() {
             await loadMoreObservations(user.id, period);
           }}
         />
+      )}
+
+      {/* Campaign Modal */}
+      {showCampaignModal && (
+        <div 
+          className="fixed inset-0 bg-black flex items-center justify-center z-50"
+          onClick={() => setShowCampaignModal(false)}
+        >
+          <div 
+            className="bg-black w-full h-full relative flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowCampaignModal(false)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 text-3xl z-10"
+            >
+              ×
+            </button>
+            <div className="flex justify-center items-center w-full h-full p-4 relative">
+              {/* Loading spinner */}
+              {campaignImageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                </div>
+              )}
+              
+              <Image
+                src="/campaign/CloneitToTheMoon.png"
+                alt="Cloneit To The Moon Campaign"
+                width={1200}
+                height={800}
+                className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+                  campaignImageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onLoad={() => setCampaignImageLoading(false)}
+                onError={() => setCampaignImageLoading(false)}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
