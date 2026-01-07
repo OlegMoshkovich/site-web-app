@@ -963,17 +963,19 @@ export default function Home() {
 
 
             <div className="flex items-center gap-2">
-              {/* Green square button for campaign modal */}
-              <button
-                onClick={() => {
-                  setShowCampaignModal(true);
-                  setCampaignImageLoading(true);
-                }}
-                className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 mr-2 transition-colors cursor-pointer flex items-center justify-center "
-                title="View Campaign"
-              >
-                <span className="text-white text-xs"></span>
-              </button>
+              {/* Green square button for campaign modal - only show when not signed in */}
+              {!user && (
+                <button
+                  onClick={() => {
+                    setShowCampaignModal(true);
+                    setCampaignImageLoading(true);
+                  }}
+                  className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 mr-2 transition-colors cursor-pointer flex items-center justify-center "
+                  title="View Campaign"
+                >
+                  <span className="text-white text-xs"></span>
+                </button>
+              )}
 
               {/* Reports */}
               {user && (
