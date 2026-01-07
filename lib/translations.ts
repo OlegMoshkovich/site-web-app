@@ -263,8 +263,8 @@ export const translations = {
     settingUp: "Setting up...",
 
     // Company page
-    companyHeroTitle: "We are construction services and technology company. Our core expertise is in construction site supervision, and applcation of bespoke technology solutions for construction industry. So far we developed two product, one is ai enhaced site supervision app, and AR app for site planning and management. ",
-    companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry. ",
+    companyHeroTitle: "We are a construction services and technology company. Our core expertise is in construction site supervision and the application of bespoke technology solutions for the construction industry. So far we have developed two products: an AI-enhanced site supervision app and an AR app for site planning and management.",
+    companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
     companyProjectsTitle: "Current projects",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
     
@@ -618,7 +618,7 @@ export type TranslationKey = keyof typeof translations.en;
 // Hook for accessing translations
 export function useTranslations(language: Language) {
   return function t(key: TranslationKey): string {
-    const value = translations[language][key];
+   const value = translations[language][key];        
     return typeof value === 'string' ? value : '';
   };
 }

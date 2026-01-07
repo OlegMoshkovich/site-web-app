@@ -9,35 +9,36 @@ import {
 import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
-import { translations, type Language, useLanguage } from "@/lib/translations";
+import { translations, type Language } from "@/lib/translations";
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-// Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 import Image from "next/image";
 import { TypewriterText } from "@/components/typewriter-text";
-// Supabase client for database operations
-// Custom language hook that defaults to German for about page
+
+// Custom hook for language handling with German default
 function useLanguageWithGermanDefault() {
-  const [language, setLanguageState] = useState<Language>('de');
+  const [language, setLanguageState] = useState<Language>("de");
   const [mounted, setMounted] = useState(false);
 
-  // Load language from localStorage on mount, but default to German if nothing is saved
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('about-page-language') as Language;
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
-      setLanguageState(savedLanguage);
+    const preferred =
+      typeof window !== "undefined"
+        ? localStorage.getItem("about-page-language")
+        : null;
+    if (preferred === "en" || preferred === "de") {
+      setLanguageState(preferred as Language);
     } else {
-      // Default to German for about page
-      setLanguageState('de');
+      setLanguageState("de");
     }
     setMounted(true);
   }, []);
 
-  // Save language to localStorage when it changes
-  const setLanguage = useCallback((newLanguage: Language) => {
-    setLanguageState(newLanguage);
-    localStorage.setItem('about-page-language', newLanguage);
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("about-page-language", lang);
+    }
   }, []);
 
   return { language, setLanguage, mounted };
@@ -46,127 +47,103 @@ function useLanguageWithGermanDefault() {
 function CompanyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  // Language management with German default for about page
   const { language, setLanguage, mounted } = useLanguageWithGermanDefault();
-  // State for controlling typewriter sequence
-  const [showFirstTitle, setShowFirstTitle] = useState(false);
-  const [showSecondTitle, setShowSecondTitle] = useState(false);
-  // State for modal
+
+  // Campaign modal state
   const [showModal, setShowModal] = useState(false);
-  // State for image loading
   const [imageLoading, setImageLoading] = useState(true);
-  // State for carousel slide index
   const [currentSlide, setCurrentSlide] = useState(0);
-  // State for touch/swipe handling
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  
-  // English campaign slides
+
   const englishSlides = [
-    '/campaign/English/Campaign_EN_1.png',
-    '/campaign/English/Campaign_EN_2.png',
-    '/campaign/English/Campaign_EN_3.png',
-    '/campaign/English/Campaign_EN_4.png',
+    "/campaign/English/Campaign_EN_1.png",
+    "/campaign/English/Campaign_EN_2.png",
+    "/campaign/English/Campaign_EN_3.png",
+    "/campaign/English/Campaign_EN_4.png",
   ];
-  
-  // Minimum swipe distance to trigger slide change
   const minSwipeDistance = 50;
-  
-  const onTouchStart = (e: React.TouchEvent) => {
+
+  // Touch swipe handlers for mobile carousel
+  const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
-  
-  const onTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
-  
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+  const handleTouchEnd = () => {
+    if (touchStart === null || touchEnd === null) return;
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    
-    if (isLeftSwipe) {
-      // Swipe left = next slide
+    if (distance > minSwipeDistance) {
+      // swipe left: next
       setCurrentSlide((prev) => (prev === englishSlides.length - 1 ? 0 : prev + 1));
       setImageLoading(true);
-    } else if (isRightSwipe) {
-      // Swipe right = previous slide
+    } else if (distance < -minSwipeDistance) {
+      // swipe right: prev
       setCurrentSlide((prev) => (prev === 0 ? englishSlides.length - 1 : prev - 1));
       setImageLoading(true);
     }
   };
 
-  // Check for modal parameter in URL on mount
-  useEffect(() => {
-    if (searchParams.get('modal') === 'campaign') {
-      setShowModal(true);
-    }
-  }, [searchParams]);
-
-  // Function to open modal and update URL
+  // Open/Close modal logic + URL param
   const openModal = useCallback(() => {
     setShowModal(true);
-    setImageLoading(true); // Reset loading state when opening modal
-    setCurrentSlide(0); // Reset to first slide
-    const params = new URLSearchParams(searchParams);
-    params.set('modal', 'campaign');
+    setImageLoading(true);
+    setCurrentSlide(0);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("modal", "campaign");
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
-  // Function to close modal and update URL
   const closeModal = useCallback(() => {
     setShowModal(false);
-    const params = new URLSearchParams(searchParams);
-    params.delete('modal');
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("modal");
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
-  // Helper function to get translated text based on current language
-  const t = (key: keyof typeof translations.en) => {
-    const value = translations[language][key];
+  // Modal via query param on load
+  useEffect(() => {
+    if (searchParams.get("modal") === "campaign") setShowModal(true);
+  }, [searchParams]);
+
+  const t = (key: string) => {
+    const value = (translations[language] as Record<string, unknown>)[key];
     return typeof value === "string" ? value : "";
   };
 
-  // ===== MAIN RENDER =====
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
     <main className="flex flex-col items-center">
       <div className="w-full flex flex-col gap-0 items-center">
-        {/* Navigation header with language selector and auth */}
+        {/* Navbar */}
         <nav className={`${getNavbarClasses().container} bg-white`}>
           <div className={getNavbarClasses().content}>
             <div className="flex text-lg gap-5 items-center font-semibold">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
               >
-
-                  <Image
-                    src="/images/banner_logo.png"
-                    alt="Site Banner"
-                    width={120}
-                    height={32}
-                    className="h-4 sm:h-6 w-auto max-w-none"
-                  />
-              
+                <Image
+                  src="/images/banner_logo.png"
+                  alt="Site Banner"
+                  width={120}
+                  height={32}
+                  className="h-4 sm:h-6 w-auto max-w-none"
+                />
               </Link>
             </div>
             <div className="flex items-center gap-2">
-              {/* Green square button */}
+              {/* Modal info button */}
               <button
                 onClick={openModal}
                 className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer mr-2 flex items-center justify-center rounded-full"
                 title="View Campaign"
               >
-                <span className="text-black  text-sm font-bold">i</span>
+                <span className="text-black text-sm font-bold">i</span>
               </button>
-              
               {/* Language selector */}
               <select
                 value={language}
@@ -177,7 +154,6 @@ function CompanyPageContent() {
                 <option value="en">EN</option>
                 <option value="de">DE</option>
               </select>
-
               <AuthButtonClient />
             </div>
           </div>
@@ -186,125 +162,113 @@ function CompanyPageContent() {
         {/* Main content area */}
         <div className={getContentClasses().container}>
           <div className={getContentClasses().inner}>
-
-          <div className="text-center mt-10">
-        {/* <h1 className="text-xl md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight">
-        Team
-        </h1> */}
-          
-          <div className="flex justify-center items-center gap-2 sm:gap-4 md:gap-8 flex-nowrap max-w-2xl mx-auto">
-            <div className="flex flex-col items-center">
+            {/* Team Section */}
+            <div className="text-center mt-10">
+              <div className="flex justify-center items-center gap-2 sm:gap-4 md:gap-8 flex-nowrap max-w-2xl mx-auto">
+                <div className="flex flex-col items-center">
                   <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
-                <Image
-                  src="/images/paul.png"
-                  alt="Paul"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col items-center mt-2">
-                <span className="text-xs sm:text-sm font-medium">Paul</span>
-                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
-              </div>
-            </div>
-            <div className="flex flex-col items-center">
-                <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
-                <Image
-                  src="/images/liebhard.jpg"
-                  alt="Liebhard"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col items-center mt-2">
-                <span className="text-xs sm:text-sm font-medium">Liebhard</span>
-                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
-              </div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
-                <Image
-                  src="/images/oleg.png"
-                  alt="Oleg"
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col items-center mt-2">
-                <span className="text-xs sm:text-sm font-medium">Oleg</span>
-                <span className="text-xs sm:text-sm font-medium text-gray-300">Enginner</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Offered Services */}
-        <div className="mb-0">
-          <div className="pt-[30px]">
-              <div className="flex items-center h-[140px] md:h-[80px]">
-                <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
-                  <TypewriterText 
-                    text={t("companyHeroTitle")} 
-                    speed={80}
-                    onComplete={() => {
-                      setShowSecondTitle(true);
-                      // Scroll into view or any action AFTER all text is displayed
-                    }}
-                  />
-                </h1>
-              </div>
-
-          <div className="space-y-2 pt-10">
-            <Accordion type="multiple" >
-            <AccordionItem value="site-management-app">
-                <AccordionTrigger>Construction IT Services</AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    {t("siteManagementAppContent").split('\n\n').map((paragraph, index) => (
-                      <p key={index}>{paragraph}</p>
-                    ))}
+                    <Image
+                      src="/images/paul.png"
+                      alt="Paul"
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="site-planning">
-                <AccordionTrigger>Site Planning</AccordionTrigger>
-                <AccordionContent>
-                  {t("sitePlanningContent")}
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="site-supervision">
-                <AccordionTrigger>Site Supervision</AccordionTrigger>
-                <AccordionContent>
-                {t("siteSupervisionContent")}
-                </AccordionContent>
-              </AccordionItem>
-             
-            </Accordion>
-          </div>
-        </div>
+                  <div className="flex flex-col items-center mt-2">
+                    <span className="text-xs sm:text-sm font-medium">Paul</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-300">
+                      Engineer
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
+                    <Image
+                      src="/images/liebhard.jpg"
+                      alt="Liebhard"
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center mt-2">
+                    <span className="text-xs sm:text-sm font-medium">Liebhard</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-300">
+                      Engineer
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-60 bg-black overflow-hidden flex items-center justify-center">
+                    <Image
+                      src="/images/oleg.png"
+                      alt="Oleg"
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center mt-2">
+                    <span className="text-xs sm:text-sm font-medium">Oleg</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-300">
+                      Engineer
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-
-
-        {/* Footer Section */}
-       
-
-        {/* Footer */}
-        <Footer />
+            {/* Offered Services */}
+            <div className="mb-0">
+              <div className="pt-[30px]">
+                <div className="flex items-center h-[140px] md:h-[80px]">
+                  <h1 className="text-lg md:text-2xl sm:text-xl lg:text-2xl font-semibold text-black leading-tight w-full">
+                    <TypewriterText
+                      text={t("companyHeroTitle")}
+                      speed={80}
+                      onComplete={() => {}}
+                    />
+                  </h1>
+                </div>
+                <div className="space-y-2 pt-10">
+                  <Accordion type="multiple">
+                    <AccordionItem value="site-management-app">
+                      <AccordionTrigger>Construction IT Services</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-4">
+                          {t("siteManagementAppContent")
+                            .split("\n\n")
+                            .map((paragraph, idx) => (
+                              <p key={idx}>{paragraph}</p>
+                            ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="site-planning">
+                      <AccordionTrigger>Site Planning</AccordionTrigger>
+                      <AccordionContent>{t("sitePlanningContent")}</AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="site-supervision">
+                      <AccordionTrigger>Site Supervision</AccordionTrigger>
+                      <AccordionContent>{t("siteSupervisionContent")}</AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              </div>
+              <Footer />
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Modal for campaign image */}
       {showModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black flex items-center justify-center z-50"
           onClick={closeModal}
         >
-          <div 
+          <div
             className="bg-black w-full h-full relative flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
@@ -314,14 +278,14 @@ function CompanyPageContent() {
             >
               ×
             </button>
-            
-            {language === 'en' ? (
+
+            {language === "en" ? (
               /* English carousel */
-              <div 
+              <div
                 className="flex justify-center items-center w-full h-full p-4 relative touch-pan-y"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Loading spinner */}
                 {imageLoading && (
@@ -329,42 +293,46 @@ function CompanyPageContent() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                   </div>
                 )}
-                
+
                 {/* Previous button - hidden on mobile */}
                 <button
                   onClick={() => {
-                    setCurrentSlide((prev) => (prev === 0 ? englishSlides.length - 1 : prev - 1));
+                    setCurrentSlide((prev) =>
+                      prev === 0 ? englishSlides.length - 1 : prev - 1
+                    );
                     setImageLoading(true);
                   }}
                   className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
                 >
                   ‹
                 </button>
-                
+
                 <Image
                   src={englishSlides[currentSlide]}
                   alt={`Campaign Slide ${currentSlide + 1}`}
                   width={1200}
                   height={800}
                   className={`max-w-full max-h-full object-contain transition-opacity duration-300 select-none ${
-                    imageLoading ? 'opacity-0' : 'opacity-100'
+                    imageLoading ? "opacity-0" : "opacity-100"
                   }`}
                   onLoad={() => setImageLoading(false)}
                   onError={() => setImageLoading(false)}
                   draggable={false}
                 />
-                
+
                 {/* Next button - hidden on mobile */}
                 <button
                   onClick={() => {
-                    setCurrentSlide((prev) => (prev === englishSlides.length - 1 ? 0 : prev + 1));
+                    setCurrentSlide((prev) =>
+                      prev === englishSlides.length - 1 ? 0 : prev + 1
+                    );
                     setImageLoading(true);
                   }}
                   className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 text-4xl z-10 p-2"
                 >
                   ›
                 </button>
-                
+
                 {/* Slide indicators */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
                   {englishSlides.map((_, index) => (
@@ -375,7 +343,9 @@ function CompanyPageContent() {
                         setImageLoading(true);
                       }}
                       className={`w-3 h-3 md:w-2 md:h-2 rounded-full transition-colors ${
-                        index === currentSlide ? 'bg-white' : 'bg-gray-500 hover:bg-gray-400'
+                        index === currentSlide
+                          ? "bg-white"
+                          : "bg-gray-500 hover:bg-gray-400"
                       }`}
                     />
                   ))}
@@ -390,14 +360,14 @@ function CompanyPageContent() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                   </div>
                 )}
-                
+
                 <Image
                   src="/campaign/CloneitToTheMoon_DE.png"
                   alt="Cloneit To The Moon Campaign"
                   width={1200}
                   height={800}
                   className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
-                    imageLoading ? 'opacity-0' : 'opacity-100'
+                    imageLoading ? "opacity-0" : "opacity-100"
                   }`}
                   onLoad={() => setImageLoading(false)}
                   onError={() => setImageLoading(false)}
