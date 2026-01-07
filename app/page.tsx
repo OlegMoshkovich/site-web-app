@@ -879,7 +879,7 @@ export default function Home() {
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
-        <nav className={getNavbarClasses().container}>
+        <nav className={`${getNavbarClasses().container} ${user ? 'bg-white' : ''}`}>
           <div className={getNavbarClasses().content}>
             <div className="flex items-center gap-2">
               {/* Show banner when not logged in */}
