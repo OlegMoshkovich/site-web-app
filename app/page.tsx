@@ -975,11 +975,11 @@ export default function Home() {
                     setShowCampaignModal(true);
                     setCampaignImageLoading(true);
                   }}
-                  className="h-8 w-8 min-h-[32px] min-w-[32px] bg-[#00FF1A] hover:bg-green-600 active:bg-green-700 mr-2 transition-colors cursor-pointer flex items-center justify-center touch-manipulation"
+                  className="h-4 w-4 min-h-[32px] min-w-[32px] bg-[#00FF1A] hover:bg-green-600 active:bg-green-700 mr-2 transition-colors cursor-pointer flex items-center justify-center touch-manipulation rounded-full"
                   title="View Campaign"
                   aria-label="View Campaign"
                 >
-                  <span className="text-white text-xs"></span>
+                  <span className="text-black text-base font-bold">i</span>
                 </button>
               )}
 

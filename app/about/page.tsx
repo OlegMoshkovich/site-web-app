@@ -164,7 +164,7 @@ function CompanyPageContent() {
                 className="h-6 w-6 bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer mr-2 flex items-center justify-center "
                 title="View Campaign"
               >
-                <span className="text-white text-xs"></span>
+                <span className="text-white text-sm font-bold">i</span>
               </button>
               
               {/* Language selector */}
