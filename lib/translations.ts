@@ -263,7 +263,7 @@ export const translations = {
     settingUp: "Setting up...",
 
     // Company page
-    companyHeroTitle: "We are a construction services and technology company. Our core expertise is in construction site supervision and the application of bespoke technology solutions for the construction industry. So far we have developed two products: an AI-enhanced site supervision app and an AR app for site planning and management.",
+    companyHeroTitle: "We are a construction services and technology company. Our core expertise is in construction site supervision and the application of tech solutions for the construction industry.",
     companyTechnologyTitle: "As industry practitioners, we are the primary users of our proprietary technology solutions. Our tools are field-tested and refined through our own construction operations before being made available to the broader construction industry.",
     companyProjectsTitle: "Current projects",
     companyPartnershipsTitle: "As seasoned industry professionals, we possess deep understanding of construction site complexities and challenges. Recognizing that each construction site presents unique operational requirements, we collaborate with leading AEC industry partners to develop and refine the most effective construction management solutions.",
@@ -568,7 +568,7 @@ export const translations = {
     settingUp: "Wird eingerichtet...",
 
     // Company page
-    companyHeroTitle: "Wir sind ein Bau- und Tech-Unternehmen. Unsere Expertise liegt in der Baustellen-Aufsicht und Tech-Lösungen für die Branche. Wir haben zwei Produkte entwickelt: eine KI-App für Site-Aufsicht und eine AR-App für Planung und Management.",
+    companyHeroTitle: "Wir sind ein Bau- und Tech-Unternehmen. Unsere Expertise liegt in der Baustellen-Aufsicht und Tech-Lösungen für die Branche.",
     companyTechnologyTitle: "Als Branchenpraktiker sind wir die primären Nutzer unserer eigenen Technologielösungen. Unsere Tools werden in unseren eigenen Bauvorhaben getestet und verfeinert, bevor sie der breiteren Bauindustrie zur Verfügung gestellt werden.",
     companyProjectsTitle: "Aktuelle Projekte",
     companyPartnershipsTitle: "Als erfahrene Branchenprofis besitzen wir ein tiefes Verständnis für die Komplexität und Herausforderungen von Baustellen. Da jede Baustelle einzigartige betriebliche Anforderungen hat, arbeiten wir mit führenden AEC-Branchenpartnern zusammen, um die effektivsten Bauverwaltungslösungen zu entwickeln und zu verfeinern.",
