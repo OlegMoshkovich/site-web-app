@@ -72,25 +72,50 @@ export default function SettingsPage() {
 
   const loadSites = useCallback(async () => {
     if (!user) return;
-    
+
     try {
-      // Query the actual sites table for this user
-      const { data: sites, error } = await supabase
+      // Query sites owned by this user
+      const { data: ownedSites, error: ownedError } = await supabase
         .from('sites')
         .select('id, name, description, logo_url')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error loading sites:', error);
+
+      if (ownedError) {
+        console.error('Error loading owned sites:', ownedError);
         return;
       }
-      
-      console.log('User sites loaded:', sites);
-      
+
+      // Query sites where user is a collaborator with accepted status
+      const { data: collaborations, error: collabError } = await supabase
+        .from('site_collaborators')
+        .select('site_id, sites(id, name, description, logo_url)')
+        .eq('user_id', user.id)
+        .eq('status', 'accepted');
+
+      if (collabError) {
+        console.error('Error loading collaborative sites:', collabError);
+      }
+
+      // Extract site data from collaborations
+      const collaborativeSites = (collaborations || [])
+        .map((collab: any) => collab.sites)
+        .filter((site: any) => site !== null);
+
+      // Combine owned and collaborative sites, removing duplicates
+      const allSites = [...(ownedSites || []), ...collaborativeSites];
+      const uniqueSites = allSites.reduce((acc: any[], site: any) => {
+        if (!acc.find(s => s.id === site.id)) {
+          acc.push(site);
+        }
+        return acc;
+      }, []);
+
+      console.log('User sites loaded:', { owned: ownedSites?.length || 0, collaborative: collaborativeSites.length, total: uniqueSites.length });
+
       // Transform to the expected format
-      const siteObjects = (sites || []).map((site: {id: string; name: string; description?: string | null; logo_url?: string | null}) => ({ 
-        name: site.name, 
+      const siteObjects = uniqueSites.map((site: {id: string; name: string; description?: string | null; logo_url?: string | null}) => ({
+        name: site.name,
         id: site.id,
         description: site.description,
         logo_url: site.logo_url
