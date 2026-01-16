@@ -9,7 +9,8 @@
       "Bash(npm update:*)",
       "Bash(npm audit:*)",
       "Bash(npm view:*)",
-      "Bash(npx next lint:*)"
+      "Bash(npx next lint:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

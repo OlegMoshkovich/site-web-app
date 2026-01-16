@@ -10,11 +10,146 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Modal } from "@/components/ui/modal";
-import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Users, Tags, MapPin, Trash2, Settings, Upload, FileImage, Edit, GripVertical } from "lucide-react";
 import { Language, useTranslations, useLanguage } from "@/lib/translations";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { inviteUserToSite, getSitePendingInvitations, removeCollaborator, getPendingInvitationsForUser, updateCollaboratorRole } from "@/lib/supabase/api";
 import type { SiteCollaborator, CollaborationInvitation } from "@/types/supabase";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Label Component
+interface SortableLabelProps {
+  label: {
+    id: string;
+    name: string;
+    description?: string | null;
+    category: string;
+    parent_id?: string | null;
+    order_index?: number | null;
+  };
+  subLabels: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+    category: string;
+    parent_id?: string | null;
+    order_index?: number | null;
+  }>;
+  onEdit: (label: any) => void;
+  onDelete: (id: string, name: string) => void;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function SortableLabel({ label, subLabels, onEdit, onDelete, t }: SortableLabelProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: label.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="border rounded-md p-3"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 flex-1">
+          <button
+            className="cursor-grab active:cursor-grabbing touch-none p-1 hover:bg-gray-100 rounded"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-5 w-5 text-gray-400" />
+          </button>
+          <div>
+            <span className="font-medium">{label.name}</span>
+            {label.description && (
+              <p className="text-sm text-gray-600 mt-1">{label.description}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(label)}
+            title="Edit label"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(label.id, label.name)}
+            title="Delete label"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      {subLabels.length > 0 && (
+        <div className="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
+          <p className="text-sm font-medium text-gray-500 mb-2">{t('subLabels')}:</p>
+          {subLabels.map((subLabel) => (
+            <div key={subLabel.id} className="flex items-center justify-between py-1">
+              <div>
+                <span className="text-sm">{subLabel.name}</span>
+                {subLabel.description && (
+                  <p className="text-xs text-gray-500">{subLabel.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(subLabel)}
+                  title="Edit label"
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(subLabel.id, subLabel.name)}
+                  title="Delete label"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const supabase = createClient();
@@ -39,7 +174,7 @@ export default function SettingsPage() {
   const [isUpdatingSite, setIsUpdatingSite] = useState(false);
 
   // Label management state
-  const [labels, setLabels] = useState<{name: string; id: string; description?: string | null; category: string; parent_id?: string | null}[]>([]);
+  const [labels, setLabels] = useState<{name: string; id: string; description?: string | null; category: string; parent_id?: string | null; order_index?: number | null}[]>([]);
   const [selectedSiteForLabels, setSelectedSiteForLabels] = useState<string>("");
   const [newLabelName, setNewLabelName] = useState("");
   const [newLabelDescription, setNewLabelDescription] = useState("");
@@ -47,7 +182,7 @@ export default function SettingsPage() {
   const [newLabelParent, setNewLabelParent] = useState<string>("");
 
   // Edit label modal state
-  const [editingLabel, setEditingLabel] = useState<{id: string; name: string; description?: string | null; category: string; parent_id?: string | null} | null>(null);
+  const [editingLabel, setEditingLabel] = useState<{id: string; name: string; description?: string | null; category: string; parent_id?: string | null; order_index?: number | null} | null>(null);
   const [editLabelName, setEditLabelName] = useState("");
   const [editLabelDescription, setEditLabelDescription] = useState("");
   const [editLabelCategory, setEditLabelCategory] = useState<"location" | "gewerk" | "type">("location");
@@ -77,6 +212,59 @@ export default function SettingsPage() {
   // User pending invitations state
   const [userPendingInvitations, setUserPendingInvitations] = useState<(CollaborationInvitation & { site_name?: string })[]>([]);
 
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent, category: string) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const categoryLabels = labels.filter(label => label.category === category && !label.parent_id);
+    const oldIndex = categoryLabels.findIndex(label => label.id === active.id);
+    const newIndex = categoryLabels.findIndex(label => label.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = arrayMove(categoryLabels, oldIndex, newIndex);
+
+    // Update local state immediately for smooth UX
+    setLabels(prevLabels => {
+      const otherLabels = prevLabels.filter(label => label.category !== category || label.parent_id);
+      const allCategoryLabels = prevLabels.filter(label => label.category === category);
+      const subLabels = allCategoryLabels.filter(label => label.parent_id);
+
+      return [...otherLabels, ...newOrder, ...subLabels];
+    });
+
+    // Update database
+    try {
+      const updates = newOrder.map((label, index) =>
+        supabase
+          .from('labels')
+          .update({ order_index: index })
+          .eq('id', label.id)
+          .eq('user_id', user?.id)
+      );
+
+      await Promise.all(updates);
+      console.log('Label order updated successfully');
+    } catch (error) {
+      console.error('Error updating label order:', error);
+      // Reload labels on error to revert changes
+      if (selectedSiteForLabels) {
+        loadLabels(selectedSiteForLabels);
+      }
+    }
+  };
 
   const loadSites = useCallback(async () => {
     if (!user) return;
@@ -160,17 +348,19 @@ export default function SettingsPage() {
       
       // Transform to the expected format
       const labelObjects = (labelsData || []).map((label: {
-        id: string; 
-        name: string; 
+        id: string;
+        name: string;
         description?: string | null;
         category: string;
         parent_id?: string | null;
+        order_index?: number | null;
       }) => ({
         name: label.name,
         id: label.id,
         description: label.description,
         category: label.category,
-        parent_id: label.parent_id
+        parent_id: label.parent_id,
+        order_index: label.order_index
       }));
       
       setLabels(labelObjects);
@@ -462,8 +652,18 @@ export default function SettingsPage() {
       alert('Please select a site and enter a label name.');
       return;
     }
-    
+
     try {
+      // Calculate the next order_index for this category
+      const categoryLabels = labels.filter(
+        label => label.category === newLabelCategory && !label.parent_id
+      );
+      const maxOrderIndex = categoryLabels.reduce(
+        (max, label) => Math.max(max, label.order_index || 0),
+        -1
+      );
+      const nextOrderIndex = maxOrderIndex + 1;
+
       const { data: newLabel, error } = await supabase
         .from('labels')
         .insert({
@@ -472,32 +672,34 @@ export default function SettingsPage() {
           name: newLabelName.trim(),
           description: newLabelDescription.trim() || null,
           category: newLabelCategory,
-          parent_id: newLabelParent || null
+          parent_id: newLabelParent || null,
+          order_index: nextOrderIndex
         })
-        .select('id, name, description, category, parent_id')
+        .select('id, name, description, category, parent_id, order_index')
         .single();
-      
+
       if (error) {
         console.error('Error creating label:', error);
         alert('Failed to create label. Please try again.');
         return;
       }
-      
+
       if (newLabel) {
         // Successfully created in database
-        setLabels(prev => [{ 
-          name: newLabel.name, 
+        setLabels(prev => [{
+          name: newLabel.name,
           id: newLabel.id,
           description: newLabel.description,
           category: newLabel.category,
-          parent_id: newLabel.parent_id
+          parent_id: newLabel.parent_id,
+          order_index: newLabel.order_index
         }, ...prev]);
       }
-      
+
       setNewLabelName("");
       setNewLabelDescription("");
       setNewLabelParent("");
-      
+
       // Show success message
       alert(`Label "${newLabelName}" created successfully!`);
     } catch (error) {
@@ -1518,80 +1720,38 @@ export default function SettingsPage() {
                       {['location', 'gewerk', 'type'].map((category) => {
                         const categoryLabels = labels.filter(label => label.category === category);
                         const topLevelLabels = categoryLabels.filter(label => !label.parent_id);
-                        
+
                         if (topLevelLabels.length === 0) return null;
-                        
+
                         return (
                           <div key={category} className="mb-6">
                             <h4 className="font-medium text-gray-700 mb-2 capitalize">{category}</h4>
-                            <div className="space-y-2">
-                              {topLevelLabels.map((label) => {
-                                const subLabels = categoryLabels.filter(l => l.parent_id === label.id);
-                                return (
-                                  <div key={label.id} className="border rounded-md p-3">
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <span className="font-medium">{label.name}</span>
-                                        {label.description && (
-                                          <p className="text-sm text-gray-600 mt-1">{label.description}</p>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleEditLabel(label)}
-                                          title="Edit label"
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleDeleteLabel(label.id, label.name)}
-                                          title="Delete label"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    {subLabels.length > 0 && (
-                                      <div className="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
-                                        <p className="text-sm font-medium text-gray-500 mb-2">{t('subLabels')}:</p>
-                                        {subLabels.map((subLabel) => (
-                                          <div key={subLabel.id} className="flex items-center justify-between py-1">
-                                            <div>
-                                              <span className="text-sm">{subLabel.name}</span>
-                                              {subLabel.description && (
-                                                <p className="text-xs text-gray-500">{subLabel.description}</p>
-                                              )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleEditLabel(subLabel)}
-                                                title="Edit label"
-                                              >
-                                                <Edit className="h-3 w-3" />
-                                              </Button>
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteLabel(subLabel.id, subLabel.name)}
-                                                title="Delete label"
-                                              >
-                                                <Trash2 className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={(event) => handleDragEnd(event, category)}
+                            >
+                              <SortableContext
+                                items={topLevelLabels.map(l => l.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div className="space-y-2">
+                                  {topLevelLabels.map((label) => {
+                                    const subLabels = categoryLabels.filter(l => l.parent_id === label.id);
+                                    return (
+                                      <SortableLabel
+                                        key={label.id}
+                                        label={label}
+                                        subLabels={subLabels}
+                                        onEdit={handleEditLabel}
+                                        onDelete={handleDeleteLabel}
+                                        t={t}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              </SortableContext>
+                            </DndContext>
                           </div>
                         );
                       })}
