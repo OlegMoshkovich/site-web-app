@@ -46,6 +46,14 @@ export default function SettingsPage() {
   const [newLabelCategory, setNewLabelCategory] = useState<"location" | "gewerk" | "type">("location");
   const [newLabelParent, setNewLabelParent] = useState<string>("");
 
+  // Edit label modal state
+  const [editingLabel, setEditingLabel] = useState<{id: string; name: string; description?: string | null; category: string; parent_id?: string | null} | null>(null);
+  const [editLabelName, setEditLabelName] = useState("");
+  const [editLabelDescription, setEditLabelDescription] = useState("");
+  const [editLabelCategory, setEditLabelCategory] = useState<"location" | "gewerk" | "type">("location");
+  const [editLabelParent, setEditLabelParent] = useState<string>("");
+  const [isUpdatingLabel, setIsUpdatingLabel] = useState(false);
+
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("");
   const [selectedSiteForInvite, setSelectedSiteForInvite] = useState("");
@@ -548,7 +556,7 @@ export default function SettingsPage() {
   const handleDeleteLabel = async (labelId: string, labelName: string) => {
     const confirmed = window.confirm(`Are you sure you want to delete "${labelName}"? This action cannot be undone.`);
     if (!confirmed) return;
-    
+
     try {
       // Try to delete from labels table if it exists
       const { error } = await supabase
@@ -556,20 +564,88 @@ export default function SettingsPage() {
         .delete()
         .eq('id', labelId)
         .eq('user_id', user?.id); // Extra safety check
-      
+
       if (error) {
         console.log('Labels table may not exist or other error:', error);
       }
-      
+
       // Remove from local state regardless
       setLabels(prev => prev.filter(label => label.id !== labelId));
-      
+
       alert(`Label "${labelName}" deleted successfully.`);
     } catch (error) {
       console.error('Error deleting label:', error);
       // Still remove from local state
       setLabels(prev => prev.filter(label => label.id !== labelId));
       alert(`Label "${labelName}" removed locally.`);
+    }
+  };
+
+  const handleEditLabel = (label: {id: string; name: string; description?: string | null; category: string; parent_id?: string | null}) => {
+    setEditingLabel(label);
+    setEditLabelName(label.name);
+    setEditLabelDescription(label.description || "");
+    setEditLabelCategory(label.category as "location" | "gewerk" | "type");
+    setEditLabelParent(label.parent_id || "");
+  };
+
+  const handleCloseEditLabelModal = () => {
+    setEditingLabel(null);
+    setEditLabelName("");
+    setEditLabelDescription("");
+    setEditLabelCategory("location");
+    setEditLabelParent("");
+  };
+
+  const handleUpdateLabel = async () => {
+    if (!editingLabel || !editLabelName.trim() || !user) return;
+
+    try {
+      setIsUpdatingLabel(true);
+
+      // Update the label in the database
+      const { data: updatedLabel, error } = await supabase
+        .from('labels')
+        .update({
+          name: editLabelName.trim(),
+          description: editLabelDescription.trim() || null,
+          category: editLabelCategory,
+          parent_id: editLabelParent || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingLabel.id)
+        .eq('user_id', user.id)
+        .select('id, name, description, category, parent_id')
+        .single();
+
+      if (error) {
+        console.error('Error updating label:', error);
+        alert('Failed to update label. Please try again.');
+        return;
+      }
+
+      // Update local state
+      if (updatedLabel) {
+        setLabels(prev => prev.map(label =>
+          label.id === editingLabel.id
+            ? {
+                name: updatedLabel.name,
+                id: updatedLabel.id,
+                description: updatedLabel.description,
+                category: updatedLabel.category,
+                parent_id: updatedLabel.parent_id
+              }
+            : label
+        ));
+      }
+
+      handleCloseEditLabelModal();
+      alert(`Label "${editLabelName}" updated successfully!`);
+    } catch (error) {
+      console.error('Error updating label:', error);
+      alert('Failed to update label. Please try again.');
+    } finally {
+      setIsUpdatingLabel(false);
     }
   };
 
@@ -1460,13 +1536,24 @@ export default function SettingsPage() {
                                           <p className="text-sm text-gray-600 mt-1">{label.description}</p>
                                         )}
                                       </div>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => handleDeleteLabel(label.id, label.name)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                                      <div className="flex items-center gap-2">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleEditLabel(label)}
+                                          title="Edit label"
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleDeleteLabel(label.id, label.name)}
+                                          title="Delete label"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
                                     </div>
                                     {subLabels.length > 0 && (
                                       <div className="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
@@ -1479,13 +1566,24 @@ export default function SettingsPage() {
                                                 <p className="text-xs text-gray-500">{subLabel.description}</p>
                                               )}
                                             </div>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm" 
-                                              onClick={() => handleDeleteLabel(subLabel.id, subLabel.name)}
-                                            >
-                                              <Trash2 className="h-3 w-3" />
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleEditLabel(subLabel)}
+                                                title="Edit label"
+                                              >
+                                                <Edit className="h-3 w-3" />
+                                              </Button>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDeleteLabel(subLabel.id, subLabel.name)}
+                                                title="Delete label"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
                                           </div>
                                         ))}
                                       </div>
@@ -1952,6 +2050,118 @@ export default function SettingsPage() {
                 )}
               </Button>
             </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Label Modal */}
+      {editingLabel && (
+        <Modal
+          isOpen={!!editingLabel}
+          onClose={handleCloseEditLabelModal}
+        >
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">{t('editLabel')}</h2>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="editLabelName">{t('labelName')}</Label>
+                <Input
+                  id="editLabelName"
+                  value={editLabelName}
+                  onChange={(e) => setEditLabelName(e.target.value)}
+                  placeholder={t('enterLabelName')}
+                  disabled={isUpdatingLabel}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="editLabelCategory">{t('category')}</Label>
+                <select
+                  id="editLabelCategory"
+                  value={editLabelCategory}
+                  onChange={(e) => setEditLabelCategory(e.target.value as "location" | "gewerk" | "type")}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  disabled={isUpdatingLabel}
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="location">{t('location')}</option>
+                  <option value="gewerk">{t('gewerk')}</option>
+                  <option value="type">{t('type')}</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="editLabelParent">{t('parentLabelOptional')}</Label>
+                <select
+                  id="editLabelParent"
+                  value={editLabelParent}
+                  onChange={(e) => setEditLabelParent(e.target.value)}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  disabled={isUpdatingLabel}
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="">{t('noParentTopLevel')}</option>
+                  {labels
+                    .filter(label =>
+                      label.category === editLabelCategory &&
+                      !label.parent_id &&
+                      label.id !== editingLabel.id
+                    )
+                    .map((label) => (
+                      <option key={label.id} value={label.id}>
+                        {label.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="editLabelDescription">{t('descriptionOptional')}</Label>
+                <Textarea
+                  id="editLabelDescription"
+                  value={editLabelDescription}
+                  onChange={(e) => setEditLabelDescription(e.target.value)}
+                  placeholder={t('enterLabelDescription')}
+                  rows={3}
+                  disabled={isUpdatingLabel}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseEditLabelModal}
+                  disabled={isUpdatingLabel}
+                >
+                  {t('cancel')}
+                </Button>
+                <Button
+                  onClick={handleUpdateLabel}
+                  disabled={!editLabelName.trim() || isUpdatingLabel}
+                >
+                  {isUpdatingLabel ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      {t('updating')}
+                    </>
+                  ) : (
+                    t('updateLabel')
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </Modal>

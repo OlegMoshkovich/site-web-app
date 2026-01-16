@@ -160,6 +160,8 @@ export const translations = {
     createLabel: "Create Label",
     existingLabels: "Existing Labels",
     subLabels: "Sub-labels",
+    editLabel: "Edit Label",
+    updateLabel: "Update Label",
     
     // Plan upload
     uploadPlans: "Upload Plans",
@@ -465,6 +467,8 @@ export const translations = {
     createLabel: "Label erstellen",
     existingLabels: "Vorhandene Labels",
     subLabels: "Unter-Labels",
+    editLabel: "Label bearbeiten",
+    updateLabel: "Label aktualisieren",
     
     // Plan upload
     uploadPlans: "Pläne hochladen",
