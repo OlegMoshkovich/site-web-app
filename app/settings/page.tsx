@@ -1208,10 +1208,10 @@ export default function SettingsPage() {
                           onClick={() => handleEditSite(site)}
                         >
                           {site.logo_url ? (
-                            <img 
-                              src={site.logo_url} 
+                            <img
+                              src={site.logo_url}
                               alt={`${site.name} logo`}
-                              className="w-8 h-8 object-cover rounded border"
+                              className="w-8 h-8 object-contain rounded border"
                             />
                           ) : (
                             <div className="w-8 h-8 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-500">
@@ -1897,10 +1897,10 @@ export default function SettingsPage() {
               <Label>{t('currentLogo')}</Label>
               <div className="flex items-center gap-3">
                 {editingSite.logo_url ? (
-                  <img 
-                    src={editingSite.logo_url} 
+                  <img
+                    src={editingSite.logo_url}
                     alt={`${editingSite.name} logo`}
-                    className="w-16 h-16 object-cover rounded border"
+                    className="w-16 h-16 object-contain rounded border"
                   />
                 ) : (
                   <div className="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center text-sm text-gray-500">
