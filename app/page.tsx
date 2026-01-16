@@ -136,6 +136,8 @@ export default function Home() {
   const [campaignImageLoading, setCampaignImageLoading] = useState(true);
   // Save report modal state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  // Accordion state - start with all expanded
+  const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(true);
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
   const [reportErsteller, setReportErsteller] = useState('');
@@ -946,9 +948,9 @@ export default function Home() {
             {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2 sm:block">
                 <div
-                  onClick={() => window.location.reload()}
+                  onClick={() => setAreAccordionsExpanded(!areAccordionsExpanded)}
                   className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center cursor-pointer hover:opacity-80 rounded"
-                  title={t("refreshObservations")}
+                  title={areAccordionsExpanded ? "Collapse all" : "Expand all"}
                 >
                   <Image
                     src="/images/banner_logo.png"
@@ -1408,9 +1410,10 @@ export default function Home() {
                       <div key={dateKey} className="space-y-2">
                         {/* Collapsible observations for this date (title = date) */}
                         <Accordion
+                          key={`${dateKey}-${areAccordionsExpanded}`}
                           type="single"
                           collapsible
-                          defaultValue="observations"
+                          defaultValue={areAccordionsExpanded ? "observations" : ""}
                           className="mt-1"
                         >
                           <AccordionItem value="observations">
