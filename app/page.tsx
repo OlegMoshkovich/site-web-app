@@ -846,7 +846,63 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase, t, router, fetchInitialObservations, clearStore]);
 
-  // Extract users and sites when observations change
+  // Fetch all sites (owned + collaborative) when user is authenticated
+  useEffect(() => {
+    const fetchAllSites = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Query sites owned by this user
+        const { data: ownedSites, error: ownedError } = await supabase
+          .from('sites')
+          .select('id, name')
+          .eq('user_id', user.id)
+          .order('name', { ascending: true });
+
+        if (ownedError) {
+          console.error('Error loading owned sites:', ownedError);
+          return;
+        }
+
+        // Query sites where user is a collaborator with accepted status
+        const { data: collaborations, error: collabError } = await supabase
+          .from('site_collaborators')
+          .select('site_id, sites(id, name)')
+          .eq('user_id', user.id)
+          .eq('status', 'accepted');
+
+        if (collabError) {
+          console.error('Error loading collaborative sites:', collabError);
+        }
+
+        // Extract site data from collaborations
+        const collaborativeSites = (collaborations || [])
+          .map((collab: any) => collab.sites)
+          .filter((site: any) => site !== null);
+
+        // Combine owned and collaborative sites, removing duplicates
+        const allSites = [...(ownedSites || []), ...collaborativeSites];
+        const uniqueSites = allSites.reduce((acc: any[], site: any) => {
+          if (!acc.find(s => s.id === site.id)) {
+            acc.push(site);
+          }
+          return acc;
+        }, []);
+
+        // Sort by name
+        uniqueSites.sort((a, b) => a.name.localeCompare(b.name));
+
+        setAvailableSites(uniqueSites);
+        console.log('All user sites loaded:', uniqueSites.length);
+      } catch (error) {
+        console.error('Error fetching sites:', error);
+      }
+    };
+
+    fetchAllSites();
+  }, [user, supabase]);
+
+  // Extract users from observations when they change
   useEffect(() => {
     if (observations.length === 0) return;
 
@@ -859,16 +915,6 @@ export default function Home() {
       }
     });
     setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-
-    // Extract unique sites from all observations
-    const allSites = new Map<string, string>();
-    observations.forEach(obs => {
-      if (obs.site_id) {
-        const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
-        allSites.set(obs.site_id, siteName);
-      }
-    });
-    setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
   }, [observations]);
 
   // ===== MAIN RENDER =====
