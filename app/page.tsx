@@ -1034,7 +1034,7 @@ export default function Home() {
       {!user && (
         <div
           className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/images/background.png)' }}
+          style={{ backgroundImage: 'url(/images/backgound.png)' }}
         />
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
