@@ -280,11 +280,13 @@ export function FolderUploadModal({
 
   return (
     <Modal isOpen={isOpen} onClose={handleCancel}>
-      <div className="p-6 max-w-2xl">
-        <h2 className="text-2xl font-bold mb-4">Upload Images</h2>
+      <div className="p-6 max-w-2xl max-h-[90vh] flex flex-col">
+        <h2 className="text-2xl font-bold mb-4 flex-shrink-0">Upload Images</h2>
 
-        {/* Summary */}
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 -mx-6 px-6">
+          {/* Summary */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium">Files: {filesWithProgress.length}</span>
             <span className="font-medium">
@@ -352,7 +354,7 @@ export function FolderUploadModal({
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[60px]">
+                <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[60px] max-h-40 overflow-y-auto">
                   {availableLabels.map(label => {
                     const isSelected = selectedLabels.includes(label.name);
                     return (
@@ -437,9 +439,11 @@ export function FolderUploadModal({
             </div>
           </div>
         )}
+        </div>
+        {/* End Scrollable Content */}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 justify-end">
+        {/* Action Buttons - Fixed at bottom */}
+        <div className="flex gap-3 justify-end mt-4 flex-shrink-0">
           <Button
             onClick={handleCancel}
             variant="outline"
