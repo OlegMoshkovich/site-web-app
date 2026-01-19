@@ -109,9 +109,14 @@ export default function Home() {
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(
     new Set(),
   );
-  // Drag-to-select state
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartSelection, setDragStartSelection] = useState<Set<string>>(new Set());
+  // Selection box drag state
+  const [selectionBox, setSelectionBox] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+  const [initialSelection, setInitialSelection] = useState<Set<string>>(new Set());
   // Date range selection for filtering observations
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -656,53 +661,101 @@ export default function Home() {
     }
   }, [user, fetchInitialObservations]);
 
-  // Drag-to-select handlers
-  const handleDragSelectStart = useCallback((observationId: string, event: React.MouseEvent) => {
-    // Only start drag on left mouse button, not on buttons or checkboxes
+  // Selection box handlers
+  const handleSelectionStart = useCallback((event: React.MouseEvent) => {
+    // Only start on left mouse button
     if (event.button !== 0) return;
+
     const target = event.target as HTMLElement;
-    if (target.closest('button') || target.closest('[role="checkbox"]')) return;
+    // Don't start selection if clicking on interactive elements
+    if (
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('input') ||
+      target.closest('select') ||
+      target.closest('[role="checkbox"]') ||
+      target.tagName === 'IMG'
+    ) {
+      return;
+    }
 
     event.preventDefault();
-    setIsDragging(true);
-    setDragStartSelection(new Set(selectedObservations));
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
 
-    // Toggle the clicked observation
-    const newSelected = new Set(selectedObservations);
-    if (newSelected.has(observationId)) {
-      newSelected.delete(observationId);
-    } else {
-      newSelected.add(observationId);
-    }
-    setSelectedObservations(newSelected);
+    setSelectionBox({
+      startX: event.clientX + scrollX,
+      startY: event.clientY + scrollY,
+      currentX: event.clientX + scrollX,
+      currentY: event.clientY + scrollY,
+    });
+    setInitialSelection(new Set(selectedObservations));
   }, [selectedObservations]);
 
-  const handleDragSelectOver = useCallback((observationId: string) => {
-    if (!isDragging) return;
+  const handleSelectionMove = useCallback((event: MouseEvent) => {
+    if (!selectionBox) return;
 
-    // Add to selection while dragging
-    setSelectedObservations(prev => {
-      const newSelected = new Set(prev);
-      newSelected.add(observationId);
-      return newSelected;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
+    setSelectionBox(prev => prev ? {
+      ...prev,
+      currentX: event.clientX + scrollX,
+      currentY: event.clientY + scrollY,
+    } : null);
+
+    // Calculate which photos are in the selection box
+    const boxLeft = Math.min(selectionBox.startX, event.clientX + scrollX);
+    const boxTop = Math.min(selectionBox.startY, event.clientY + scrollY);
+    const boxRight = Math.max(selectionBox.startX, event.clientX + scrollX);
+    const boxBottom = Math.max(selectionBox.startY, event.clientY + scrollY);
+
+    const photoElements = document.querySelectorAll('[data-observation-id]');
+    const newSelection = new Set(initialSelection);
+
+    photoElements.forEach(element => {
+      const rect = element.getBoundingClientRect();
+      const elementLeft = rect.left + scrollX;
+      const elementTop = rect.top + scrollY;
+      const elementRight = rect.right + scrollX;
+      const elementBottom = rect.bottom + scrollY;
+
+      // Check if element intersects with selection box
+      const intersects = !(
+        elementRight < boxLeft ||
+        elementLeft > boxRight ||
+        elementBottom < boxTop ||
+        elementTop > boxBottom
+      );
+
+      if (intersects) {
+        const observationId = element.getAttribute('data-observation-id');
+        if (observationId) newSelection.add(observationId);
+      }
     });
-  }, [isDragging]);
 
-  const handleDragSelectEnd = useCallback(() => {
-    setIsDragging(false);
+    setSelectedObservations(newSelection);
+  }, [selectionBox, initialSelection]);
+
+  const handleSelectionEnd = useCallback(() => {
+    setSelectionBox(null);
   }, []);
 
-  // Add document-level mouseup handler to stop dragging
+  // Add document-level handlers for selection box
   useEffect(() => {
-    const handleDocumentMouseUp = () => {
-      if (isDragging) {
-        setIsDragging(false);
-      }
-    };
+    if (!selectionBox) return;
 
-    document.addEventListener('mouseup', handleDocumentMouseUp);
-    return () => document.removeEventListener('mouseup', handleDocumentMouseUp);
-  }, [isDragging]);
+    const handleMouseMove = (e: MouseEvent) => handleSelectionMove(e);
+    const handleMouseUp = () => handleSelectionEnd();
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [selectionBox, handleSelectionMove, handleSelectionEnd]);
 
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
@@ -975,8 +1028,8 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen flex flex-col items-center relative ${isDragging ? 'select-none' : ''}`}
-      style={isDragging ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
+      className={`min-h-screen flex flex-col items-center relative ${selectionBox ? 'select-none' : ''}`}
+      style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
     >
       {!user && (
         <div className="fixed inset-0 -z-10 bg-black">
@@ -1547,7 +1600,10 @@ export default function Home() {
                               {formattedDate} ({observationsForDate.length})
                             </AccordionTrigger>
                             <AccordionContent className="p-0 border-none">
-                              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+                              <div
+                                className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3"
+                                onMouseDown={handleSelectionStart}
+                              >
                         {observationsForDate.map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
                           const labels = observation.labels ?? [];
@@ -1557,15 +1613,23 @@ export default function Home() {
                             <div key={observation.id} className="w-full">
                               <div
                                 data-observation-id={observation.id}
-                                className={`relative aspect-square w-full overflow-hidden group select-none ${
-                                  isDragging ? 'cursor-crosshair' : 'cursor-pointer'
-                                } ${
+                                className={`relative aspect-square w-full overflow-hidden group select-none cursor-pointer ${
                                   selectedObservations.has(observation.id)
                                     ? "ring-2 ring-blue-500 ring-offset-1"
                                     : ""
                                 }`}
-                                onMouseDown={(e) => handleDragSelectStart(observation.id, e)}
-                                onMouseEnter={() => handleDragSelectOver(observation.id)}
+                                onClick={(e) => {
+                                  // Only handle click if not dragging a selection box
+                                  if (selectionBox) return;
+
+                                  const newSelected = new Set(selectedObservations);
+                                  if (newSelected.has(observation.id)) {
+                                    newSelected.delete(observation.id);
+                                  } else {
+                                    newSelected.add(observation.id);
+                                  }
+                                  setSelectedObservations(newSelected);
+                                }}
                             >
                               {/* Enhanced skeleton loading background */}
                               <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
@@ -1999,6 +2063,28 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* Selection Box Overlay */}
+      {selectionBox && (() => {
+        const left = Math.min(selectionBox.startX, selectionBox.currentX);
+        const top = Math.min(selectionBox.startY, selectionBox.currentY);
+        const width = Math.abs(selectionBox.currentX - selectionBox.startX);
+        const height = Math.abs(selectionBox.currentY - selectionBox.startY);
+
+        return (
+          <div
+            className="fixed pointer-events-none z-50"
+            style={{
+              left: `${left}px`,
+              top: `${top}px`,
+              width: `${width}px`,
+              height: `${height}px`,
+              border: '2px solid #3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            }}
+          />
+        );
+      })()}
 
       {/* Campaign Modal */}
       {showCampaignModal && (
