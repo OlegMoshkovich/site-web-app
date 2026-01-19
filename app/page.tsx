@@ -853,31 +853,10 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center relative">
       {!user && (
-        <div className="fixed inset-0 -z-10 bg-black">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/images/background.png"
-            className="bg-video-fixed"
-            onError={(e) => {
-              console.error('Video failed to load, using fallback image');
-              // Fallback to background image
-              const videoElement = e.currentTarget;
-              const parent = videoElement.parentElement;
-              if (parent) {
-                parent.style.backgroundImage = 'url(/images/backgound.png)';
-                parent.style.backgroundSize = 'cover';
-                parent.style.backgroundPosition = 'center';
-                parent.style.backgroundRepeat = 'no-repeat';
-                videoElement.style.display = 'none';
-              }
-            }}
-          >
-            <source src="/video/background.mp4" type="video/mp4" />
-          </video>
-        </div>
+        <div
+          className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(/images/background.png)' }}
+        />
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         {/* Top navigation bar with site title, language selector, and auth */}
