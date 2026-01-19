@@ -40,6 +40,9 @@ import { PhotoModal } from "@/components/photo-modal";
 import { ClaudeChat } from "@/components/claude-chat";
 // User manual carousel component
 import { UserManualCarousel } from "@/components/user-manual-carousel";
+// Folder upload components
+import { FolderUploadDropZone } from "@/components/folder-upload-drop-zone";
+import { FolderUploadModal } from "@/components/folder-upload-modal";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -106,6 +109,14 @@ export default function Home() {
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(
     new Set(),
   );
+  // Selection box drag state
+  const [selectionBox, setSelectionBox] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+  const [initialSelection, setInitialSelection] = useState<Set<string>>(new Set());
   // Date range selection for filtering observations
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -131,6 +142,9 @@ export default function Home() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
+  // Folder upload state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   // Campaign modal state
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [campaignImageLoading, setCampaignImageLoading] = useState(true);
@@ -627,6 +641,122 @@ export default function Home() {
     setSelectedSiteId("");
   }, []);
 
+  // Folder upload handlers
+  const handleFolderDrop = useCallback((files: File[]) => {
+    console.log('handleFolderDrop called with files:', files.length, 'User:', user?.id);
+    if (!user?.id) {
+      alert('Please log in before uploading files.');
+      return;
+    }
+    setDroppedFiles(files);
+    setShowUploadModal(true);
+  }, [user]);
+
+  const handleUploadComplete = useCallback(() => {
+    setShowUploadModal(false);
+    setDroppedFiles([]);
+    // Refresh observations
+    if (user?.id) {
+      fetchInitialObservations(user.id);
+    }
+  }, [user, fetchInitialObservations]);
+
+  // Selection box handlers
+  const handleSelectionStart = useCallback((event: React.MouseEvent) => {
+    // Only start on left mouse button
+    if (event.button !== 0) return;
+
+    const target = event.target as HTMLElement;
+    // Don't start selection if clicking on interactive elements
+    if (
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('input') ||
+      target.closest('select') ||
+      target.closest('[role="checkbox"]') ||
+      target.tagName === 'IMG'
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
+    setSelectionBox({
+      startX: event.clientX + scrollX,
+      startY: event.clientY + scrollY,
+      currentX: event.clientX + scrollX,
+      currentY: event.clientY + scrollY,
+    });
+    setInitialSelection(new Set(selectedObservations));
+  }, [selectedObservations]);
+
+  const handleSelectionMove = useCallback((event: MouseEvent) => {
+    if (!selectionBox) return;
+
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
+    setSelectionBox(prev => prev ? {
+      ...prev,
+      currentX: event.clientX + scrollX,
+      currentY: event.clientY + scrollY,
+    } : null);
+
+    // Calculate which photos are in the selection box
+    const boxLeft = Math.min(selectionBox.startX, event.clientX + scrollX);
+    const boxTop = Math.min(selectionBox.startY, event.clientY + scrollY);
+    const boxRight = Math.max(selectionBox.startX, event.clientX + scrollX);
+    const boxBottom = Math.max(selectionBox.startY, event.clientY + scrollY);
+
+    const photoElements = document.querySelectorAll('[data-observation-id]');
+    const newSelection = new Set(initialSelection);
+
+    photoElements.forEach(element => {
+      const rect = element.getBoundingClientRect();
+      const elementLeft = rect.left + scrollX;
+      const elementTop = rect.top + scrollY;
+      const elementRight = rect.right + scrollX;
+      const elementBottom = rect.bottom + scrollY;
+
+      // Check if element intersects with selection box
+      const intersects = !(
+        elementRight < boxLeft ||
+        elementLeft > boxRight ||
+        elementBottom < boxTop ||
+        elementTop > boxBottom
+      );
+
+      if (intersects) {
+        const observationId = element.getAttribute('data-observation-id');
+        if (observationId) newSelection.add(observationId);
+      }
+    });
+
+    setSelectedObservations(newSelection);
+  }, [selectionBox, initialSelection]);
+
+  const handleSelectionEnd = useCallback(() => {
+    setSelectionBox(null);
+  }, []);
+
+  // Add document-level handlers for selection box
+  useEffect(() => {
+    if (!selectionBox) return;
+
+    const handleMouseMove = (e: MouseEvent) => handleSelectionMove(e);
+    const handleMouseUp = () => handleSelectionEnd();
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [selectionBox, handleSelectionMove, handleSelectionEnd]);
+
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
     let filteredObservations = observations;
@@ -820,7 +950,63 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase, t, router, fetchInitialObservations, clearStore]);
 
-  // Extract users and sites when observations change
+  // Fetch all sites (owned + collaborative) when user is authenticated
+  useEffect(() => {
+    const fetchAllSites = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Query sites owned by this user
+        const { data: ownedSites, error: ownedError } = await supabase
+          .from('sites')
+          .select('id, name')
+          .eq('user_id', user.id)
+          .order('name', { ascending: true });
+
+        if (ownedError) {
+          console.error('Error loading owned sites:', ownedError);
+          return;
+        }
+
+        // Query sites where user is a collaborator with accepted status
+        const { data: collaborations, error: collabError } = await supabase
+          .from('site_collaborators')
+          .select('site_id, sites(id, name)')
+          .eq('user_id', user.id)
+          .eq('status', 'accepted');
+
+        if (collabError) {
+          console.error('Error loading collaborative sites:', collabError);
+        }
+
+        // Extract site data from collaborations
+        const collaborativeSites = (collaborations || [])
+          .map((collab: any) => collab.sites)
+          .filter((site: any) => site !== null);
+
+        // Combine owned and collaborative sites, removing duplicates
+        const allSites = [...(ownedSites || []), ...collaborativeSites];
+        const uniqueSites = allSites.reduce((acc: any[], site: any) => {
+          if (!acc.find(s => s.id === site.id)) {
+            acc.push(site);
+          }
+          return acc;
+        }, []);
+
+        // Sort by name
+        uniqueSites.sort((a, b) => a.name.localeCompare(b.name));
+
+        setAvailableSites(uniqueSites);
+        console.log('All user sites loaded:', uniqueSites.length);
+      } catch (error) {
+        console.error('Error fetching sites:', error);
+      }
+    };
+
+    fetchAllSites();
+  }, [user, supabase]);
+
+  // Extract users from observations when they change
   useEffect(() => {
     if (observations.length === 0) return;
 
@@ -833,16 +1019,6 @@ export default function Home() {
       }
     });
     setAvailableUsers(Array.from(allUsers.entries()).map(([id, displayName]) => ({ id, displayName })).sort((a, b) => a.displayName.localeCompare(b.displayName)));
-
-    // Extract unique sites from all observations
-    const allSites = new Map<string, string>();
-    observations.forEach(obs => {
-      if (obs.site_id) {
-        const siteName = obs.sites?.name || `Site ${obs.site_id.slice(0, 8)}...`;
-        allSites.set(obs.site_id, siteName);
-      }
-    });
-    setAvailableSites(Array.from(allSites.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)));
   }, [observations]);
 
   // ===== MAIN RENDER =====
@@ -851,11 +1027,14 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center relative">
+    <main
+      className={`min-h-screen flex flex-col items-center relative ${selectionBox ? 'select-none' : ''}`}
+      style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
+    >
       {!user && (
         <div
           className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/images/background.png)' }}
+          style={{ backgroundImage: 'url(/images/backgound.png)' }}
         />
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
@@ -1400,7 +1579,10 @@ export default function Home() {
                               {formattedDate} ({observationsForDate.length})
                             </AccordionTrigger>
                             <AccordionContent className="p-0 border-none">
-                              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+                              <div
+                                className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3"
+                                onMouseDown={handleSelectionStart}
+                              >
                         {observationsForDate.map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
                           const labels = observation.labels ?? [];
@@ -1409,12 +1591,16 @@ export default function Home() {
                           return hasPhoto ? (
                             <div key={observation.id} className="w-full">
                               <div
-                                className={`relative aspect-square w-full overflow-hidden cursor-pointer group ${
+                                data-observation-id={observation.id}
+                                className={`relative aspect-square w-full overflow-hidden group select-none cursor-pointer ${
                                   selectedObservations.has(observation.id)
                                     ? "ring-2 ring-blue-500 ring-offset-1"
                                     : ""
                                 }`}
-                                onClick={() => {
+                                onClick={(e) => {
+                                  // Only handle click if not dragging a selection box
+                                  if (selectionBox) return;
+
                                   const newSelected = new Set(selectedObservations);
                                   if (newSelected.has(observation.id)) {
                                     newSelected.delete(observation.id);
@@ -1432,7 +1618,8 @@ export default function Home() {
                                 src={observation.signedUrl as string}
                                 alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                 fill
-                                className="object-cover hover:scale-105 transition-transform duration-200"
+                                draggable={false}
+                                className="object-cover hover:scale-105 transition-transform duration-200 pointer-events-none"
                                 sizes="(max-width: 480px) 50vw, (max-width: 640px) 25vw, (max-width: 768px) 20vw, (max-width: 1024px) 17vw, 16vw"
                                 priority={index < 6} // Prioritize first 6 images per day in tile view
                                 onLoad={(e) => {
@@ -1856,6 +2043,28 @@ export default function Home() {
         />
       )}
 
+      {/* Selection Box Overlay */}
+      {selectionBox && (() => {
+        const left = Math.min(selectionBox.startX, selectionBox.currentX);
+        const top = Math.min(selectionBox.startY, selectionBox.currentY);
+        const width = Math.abs(selectionBox.currentX - selectionBox.startX);
+        const height = Math.abs(selectionBox.currentY - selectionBox.startY);
+
+        return (
+          <div
+            className="fixed pointer-events-none z-[5]"
+            style={{
+              left: `${left}px`,
+              top: `${top}px`,
+              width: `${width}px`,
+              height: `${height}px`,
+              border: '2px solid #3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            }}
+          />
+        );
+      })()}
+
       {/* Campaign Modal */}
       {showCampaignModal && (
         <div 
@@ -1895,6 +2104,21 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Folder Upload Components */}
+      {user && (
+        <FolderUploadDropZone onFilesDropped={handleFolderDrop} />
+      )}
+
+      <FolderUploadModal
+        isOpen={showUploadModal}
+        files={droppedFiles}
+        onClose={() => setShowUploadModal(false)}
+        onUploadComplete={handleUploadComplete}
+        userId={user?.id || ''}
+        availableSites={availableSites}
+        initialSiteId={selectedSiteId || null}
+      />
     </main>
   );
 }
