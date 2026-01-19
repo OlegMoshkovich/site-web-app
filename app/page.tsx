@@ -2073,7 +2073,7 @@ export default function Home() {
 
         return (
           <div
-            className="fixed pointer-events-none z-50"
+            className="fixed pointer-events-none z-[5]"
             style={{
               left: `${left}px`,
               top: `${top}px`,
