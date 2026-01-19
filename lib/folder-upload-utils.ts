@@ -233,9 +233,10 @@ export async function createObservations(
     fileName: string;
   }>,
   userId: string,
-  siteId: string | null
+  siteId: string | null,
+  labels: string[] | null = null
 ): Promise<void> {
-  console.log('createObservations called', { uploadsCount: uploads.length, userId, siteId });
+  console.log('createObservations called', { uploadsCount: uploads.length, userId, siteId, labels });
 
   const supabase = createClient();
 
@@ -243,7 +244,8 @@ export async function createObservations(
   const observations = uploads.map(upload => ({
     user_id: userId,
     photo_url: upload.path,
-    ...(siteId && { site_id: siteId }) // Only include site_id if it's provided
+    ...(siteId && { site_id: siteId }), // Only include site_id if it's provided
+    ...(labels && labels.length > 0 && { labels }) // Only include labels if provided
   }));
 
   console.log('Inserting observations:', observations);
