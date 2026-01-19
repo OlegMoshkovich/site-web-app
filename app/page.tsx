@@ -578,10 +578,21 @@ export default function Home() {
     async (observationId: string, event: React.MouseEvent) => {
       event.stopPropagation(); // Prevent card selection
 
-      // Show confirmation dialog
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this observation? This action cannot be undone.",
-      );
+      // Determine which observations to delete
+      // If the clicked observation is part of the selected set, delete all selected
+      // Otherwise, just delete the single clicked observation
+      const idsToDelete = selectedObservations.has(observationId) && selectedObservations.size > 1
+        ? Array.from(selectedObservations)
+        : [observationId];
+
+      const deleteCount = idsToDelete.length;
+
+      // Show confirmation dialog with appropriate message
+      const confirmMessage = deleteCount > 1
+        ? `Are you sure you want to delete ${deleteCount} selected observations? This action cannot be undone.`
+        : "Are you sure you want to delete this observation? This action cannot be undone.";
+
+      const confirmed = window.confirm(confirmMessage);
       if (!confirmed) return;
 
       try {
@@ -592,45 +603,51 @@ export default function Home() {
           return;
         }
 
-        // Get the observation to check ownership
-        const observationToDelete = observations.find(obs => obs.id === observationId);
-        if (observationToDelete && 'user_id' in observationToDelete && observationToDelete.user_id !== user.id) {
-          alert("You can only delete your own observations. This observation was created by another user.");
+        // Check ownership of all observations to delete
+        const observationsToDelete = observations.filter(obs => idsToDelete.includes(obs.id));
+        const notOwnedObservations = observationsToDelete.filter(
+          obs => 'user_id' in obs && obs.user_id !== user.id
+        );
+
+        if (notOwnedObservations.length > 0) {
+          alert("You can only delete your own observations. Some selected observations were created by other users.");
           return;
         }
 
+        // Batch delete all observations
         const { error, count } = await supabase
           .from("observations")
           .delete({ count: 'exact' })
-          .eq("id", observationId);
+          .in("id", idsToDelete);
 
         if (error) {
-          console.error("Error deleting observation:", error);
-          alert("Error deleting observation. Please try again.");
+          console.error("Error deleting observations:", error);
+          alert("Error deleting observations. Please try again.");
           return;
         }
 
         if (count === 0) {
-          alert("You can only delete your own observations. This observation belongs to another user.");
+          alert("You can only delete your own observations. These observations belong to another user.");
           return;
         }
 
         // Remove from store
-        const updatedObservations = observations.filter((obs) => obs.id !== observationId);
+        const updatedObservations = observations.filter((obs) => !idsToDelete.includes(obs.id));
         setObservations(updatedObservations);
 
-        // Remove from selected observations if it was selected
-        setSelectedObservations((prev) => {
-          const newSelected = new Set(prev);
-          newSelected.delete(observationId);
-          return newSelected;
-        });
+        // Clear selected observations
+        setSelectedObservations(new Set());
+
+        // Show success message for batch delete
+        if (deleteCount > 1) {
+          alert(`Successfully deleted ${count} observation${count > 1 ? 's' : ''}.`);
+        }
       } catch (error) {
-        console.error("Error deleting observation:", error);
-        alert("Error deleting observation. Please try again.");
+        console.error("Error deleting observations:", error);
+        alert("Error deleting observations. Please try again.");
       }
     },
-    [supabase, observations, setObservations],
+    [supabase, observations, setObservations, selectedObservations],
   );
 
 
