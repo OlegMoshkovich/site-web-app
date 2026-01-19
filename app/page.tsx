@@ -109,6 +109,9 @@ export default function Home() {
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(
     new Set(),
   );
+  // Drag-to-select state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartSelection, setDragStartSelection] = useState<Set<string>>(new Set());
   // Date range selection for filtering observations
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -653,6 +656,54 @@ export default function Home() {
     }
   }, [user, fetchInitialObservations]);
 
+  // Drag-to-select handlers
+  const handleDragSelectStart = useCallback((observationId: string, event: React.MouseEvent) => {
+    // Only start drag on left mouse button, not on buttons or checkboxes
+    if (event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="checkbox"]')) return;
+
+    event.preventDefault();
+    setIsDragging(true);
+    setDragStartSelection(new Set(selectedObservations));
+
+    // Toggle the clicked observation
+    const newSelected = new Set(selectedObservations);
+    if (newSelected.has(observationId)) {
+      newSelected.delete(observationId);
+    } else {
+      newSelected.add(observationId);
+    }
+    setSelectedObservations(newSelected);
+  }, [selectedObservations]);
+
+  const handleDragSelectOver = useCallback((observationId: string) => {
+    if (!isDragging) return;
+
+    // Add to selection while dragging
+    setSelectedObservations(prev => {
+      const newSelected = new Set(prev);
+      newSelected.add(observationId);
+      return newSelected;
+    });
+  }, [isDragging]);
+
+  const handleDragSelectEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add document-level mouseup handler to stop dragging
+  useEffect(() => {
+    const handleDocumentMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+      }
+    };
+
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+    return () => document.removeEventListener('mouseup', handleDocumentMouseUp);
+  }, [isDragging]);
+
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
     let filteredObservations = observations;
@@ -923,7 +974,10 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center relative">
+    <main
+      className={`min-h-screen flex flex-col items-center relative ${isDragging ? 'select-none' : ''}`}
+      style={isDragging ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
+    >
       {!user && (
         <div className="fixed inset-0 -z-10 bg-black">
           <video
@@ -1502,20 +1556,16 @@ export default function Home() {
                           return hasPhoto ? (
                             <div key={observation.id} className="w-full">
                               <div
-                                className={`relative aspect-square w-full overflow-hidden cursor-pointer group ${
+                                data-observation-id={observation.id}
+                                className={`relative aspect-square w-full overflow-hidden group select-none ${
+                                  isDragging ? 'cursor-crosshair' : 'cursor-pointer'
+                                } ${
                                   selectedObservations.has(observation.id)
                                     ? "ring-2 ring-blue-500 ring-offset-1"
                                     : ""
                                 }`}
-                                onClick={() => {
-                                  const newSelected = new Set(selectedObservations);
-                                  if (newSelected.has(observation.id)) {
-                                    newSelected.delete(observation.id);
-                                  } else {
-                                    newSelected.add(observation.id);
-                                  }
-                                  setSelectedObservations(newSelected);
-                                }}
+                                onMouseDown={(e) => handleDragSelectStart(observation.id, e)}
+                                onMouseEnter={() => handleDragSelectOver(observation.id)}
                             >
                               {/* Enhanced skeleton loading background */}
                               <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
@@ -1525,7 +1575,8 @@ export default function Home() {
                                 src={observation.signedUrl as string}
                                 alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
                                 fill
-                                className="object-cover hover:scale-105 transition-transform duration-200"
+                                draggable={false}
+                                className="object-cover hover:scale-105 transition-transform duration-200 pointer-events-none"
                                 sizes="(max-width: 480px) 50vw, (max-width: 640px) 25vw, (max-width: 768px) 20vw, (max-width: 1024px) 17vw, 16vw"
                                 priority={index < 6} // Prioritize first 6 images per day in tile view
                                 onLoad={(e) => {
