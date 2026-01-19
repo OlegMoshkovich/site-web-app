@@ -1037,6 +1037,7 @@ export default function Home() {
     <main
       className={`min-h-screen flex flex-col items-center relative ${selectionBox ? 'select-none' : ''}`}
       style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
+      onMouseDown={handleSelectionStart}
     >
       {!user && (
         <div
@@ -1588,7 +1589,6 @@ export default function Home() {
                             <AccordionContent className="p-0 border-none">
                               <div
                                 className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3"
-                                onMouseDown={handleSelectionStart}
                               >
                         {observationsForDate.map((observation, index) => {
                           const hasPhoto = Boolean(observation.signedUrl);
