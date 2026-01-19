@@ -55,11 +55,16 @@ export default function ReportsPage() {
     const fetchReports = async () => {
       try {
         setLoading(true);
-        
-        // Fetch reports
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch only reports created by the current user
         const { data: reportsData, error } = await supabase
           .from('reports')
           .select('*, report_date')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) {
