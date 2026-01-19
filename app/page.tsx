@@ -596,25 +596,15 @@ export default function Home() {
       if (!confirmed) return;
 
       try {
-        // First check ownership
+        // Check if user is logged in
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           alert("You must be logged in to delete observations.");
           return;
         }
 
-        // Check ownership of all observations to delete
-        const observationsToDelete = observations.filter(obs => idsToDelete.includes(obs.id));
-        const notOwnedObservations = observationsToDelete.filter(
-          obs => 'user_id' in obs && obs.user_id !== user.id
-        );
-
-        if (notOwnedObservations.length > 0) {
-          alert("You can only delete your own observations. Some selected observations were created by other users.");
-          return;
-        }
-
         // Batch delete all observations
+        // RLS policies in the database will handle permission checking
         const { error, count } = await supabase
           .from("observations")
           .delete({ count: 'exact' })
@@ -627,7 +617,7 @@ export default function Home() {
         }
 
         if (count === 0) {
-          alert("You can only delete your own observations. These observations belong to another user.");
+          alert("You don't have permission to delete these observations.");
           return;
         }
 
