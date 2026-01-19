@@ -43,7 +43,7 @@ export const LAYOUT_CONSTANTS = {
 export const getNavbarClasses = () => {
   const { navbar } = LAYOUT_CONSTANTS;
   return {
-    container: `sticky top-0 z-20 w-full flex justify-center ${navbar.height} ${navbar.background} ${navbar.border}`,
+    container: `sticky top-0 z-50 w-full flex justify-center ${navbar.height} ${navbar.background} ${navbar.border}`,
     content: `w-full ${navbar.maxWidth} flex justify-between items-center ${navbar.padding} text-sm`
   };
 };

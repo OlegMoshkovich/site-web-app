@@ -1246,7 +1246,7 @@ export default function Home() {
               <div className="space-y-8">
                 {/* Date Range Selection - Conditionally rendered */}
                 {showDateSelector && (
-                  <div className="sticky top-16 z-10 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+                  <div className="sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
                       <div className="flex flex-col gap-1">
                         <label
@@ -1433,7 +1433,7 @@ export default function Home() {
                 {/* Search Input - Conditionally rendered */}
                 {showSearchSelector && (
                   <div
-                    className="sticky z-10 flex flex-col gap-2 w-full p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+                    className="sticky z-40 flex flex-col gap-2 w-full p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
                     style={{ top: showDateSelector ? '140px' : '64px' }}
                   >
                     <label className="text-sm font-medium text-muted-foreground">
@@ -1464,7 +1464,7 @@ export default function Home() {
                 {/* Label Filter - Conditionally rendered */}
                 {showLabelSelector && (
                   <div
-                    className="sticky z-10 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+                    className="sticky z-40 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
                     style={{
                       top: showDateSelector && showSearchSelector ? '240px' :
                            showDateSelector ? '140px' :
