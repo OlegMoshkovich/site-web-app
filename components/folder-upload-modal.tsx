@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -33,6 +34,7 @@ import type {
   UploadSummary
 } from '@/types/upload';
 import { COMPRESSION_PRESETS } from '@/types/upload';
+import { getLabelsForSite, type Label } from '@/lib/labels';
 
 interface FolderUploadModalProps {
   isOpen: boolean;
@@ -58,6 +60,9 @@ export function FolderUploadModal({
   const [selectedSiteId, setSelectedSiteId] = useState<string>(initialSiteId || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadSummary, setUploadSummary] = useState<UploadSummary | null>(null);
+  const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [isLoadingLabels, setIsLoadingLabels] = useState(false);
 
   // Initialize files with progress tracking
   useEffect(() => {
@@ -80,8 +85,35 @@ export function FolderUploadModal({
       setIsProcessing(false);
       setCompressionQuality('medium');
       setSelectedSiteId(initialSiteId || '');
+      setAvailableLabels([]);
+      setSelectedLabels([]);
     }
   }, [isOpen, initialSiteId]);
+
+  // Fetch labels when site is selected
+  useEffect(() => {
+    const fetchLabels = async () => {
+      if (!selectedSiteId || !userId) {
+        setAvailableLabels([]);
+        setSelectedLabels([]);
+        return;
+      }
+
+      setIsLoadingLabels(true);
+      try {
+        const labels = await getLabelsForSite(selectedSiteId, userId);
+        setAvailableLabels(labels);
+        setSelectedLabels([]);
+      } catch (error) {
+        console.error('Error fetching labels:', error);
+        setAvailableLabels([]);
+      } finally {
+        setIsLoadingLabels(false);
+      }
+    };
+
+    fetchLabels();
+  }, [selectedSiteId, userId]);
 
   const updateFileProgress = useCallback(
     (id: string, updates: Partial<FileWithProgress>) => {
@@ -194,7 +226,12 @@ export function FolderUploadModal({
       if (successfulUploads.length > 0) {
         try {
           console.log(`Creating ${successfulUploads.length} observations...`);
-          await createObservations(successfulUploads, userId, selectedSiteId || null);
+          await createObservations(
+            successfulUploads,
+            userId,
+            selectedSiteId || null,
+            selectedLabels.length > 0 ? selectedLabels : null
+          );
           console.log('Observations created successfully');
         } catch (error) {
           console.error('Error creating observations:', error);
@@ -299,6 +336,54 @@ export function FolderUploadModal({
             <p className="text-xs text-gray-500 mt-1">
               Associate these images with a project. You can change this later.
             </p>
+          </div>
+        )}
+
+        {/* Label Selector - shown when site is selected and has labels */}
+        {!uploadSummary && selectedSiteId && availableLabels.length > 0 && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Labels (Optional):
+            </label>
+            {isLoadingLabels ? (
+              <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading labels...
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[60px]">
+                  {availableLabels.map(label => {
+                    const isSelected = selectedLabels.includes(label.name);
+                    return (
+                      <Badge
+                        key={label.id}
+                        variant={isSelected ? 'default' : 'outline'}
+                        className={`cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                            : 'hover:bg-gray-100'
+                        } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => {
+                          if (isProcessing) return;
+                          setSelectedLabels(prev =>
+                            isSelected
+                              ? prev.filter(l => l !== label.name)
+                              : [...prev, label.name]
+                          );
+                        }}
+                      >
+                        {label.name}
+                      </Badge>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click labels to attach them to all uploaded images.
+                  {selectedLabels.length > 0 && ` (${selectedLabels.length} selected)`}
+                </p>
+              </>
+            )}
           </div>
         )}
 
