@@ -11,7 +11,9 @@
       "Bash(npm view:*)",
       "Bash(npx next lint:*)",
       "Bash(npm install:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git -C /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app log --oneline)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

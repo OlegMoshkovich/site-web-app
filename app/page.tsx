@@ -40,6 +40,9 @@ import { PhotoModal } from "@/components/photo-modal";
 import { ClaudeChat } from "@/components/claude-chat";
 // User manual carousel component
 import { UserManualCarousel } from "@/components/user-manual-carousel";
+// Folder upload components
+import { FolderUploadDropZone } from "@/components/folder-upload-drop-zone";
+import { FolderUploadModal } from "@/components/folder-upload-modal";
 // Next.js router for navigation
 import { useRouter } from "next/navigation";
 // Next.js Image component for optimized images
@@ -131,6 +134,9 @@ export default function Home() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
+  // Folder upload state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   // Campaign modal state
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [campaignImageLoading, setCampaignImageLoading] = useState(true);
@@ -626,6 +632,26 @@ export default function Home() {
     setSelectedUserId("");
     setSelectedSiteId("");
   }, []);
+
+  // Folder upload handlers
+  const handleFolderDrop = useCallback((files: File[]) => {
+    console.log('handleFolderDrop called with files:', files.length, 'User:', user?.id);
+    if (!user?.id) {
+      alert('Please log in before uploading files.');
+      return;
+    }
+    setDroppedFiles(files);
+    setShowUploadModal(true);
+  }, [user]);
+
+  const handleUploadComplete = useCallback(() => {
+    setShowUploadModal(false);
+    setDroppedFiles([]);
+    // Refresh observations
+    if (user?.id) {
+      fetchInitialObservations(user.id);
+    }
+  }, [user, fetchInitialObservations]);
 
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
@@ -1916,6 +1942,20 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Folder Upload Components */}
+      {user && (
+        <FolderUploadDropZone onFilesDropped={handleFolderDrop} />
+      )}
+
+      <FolderUploadModal
+        isOpen={showUploadModal}
+        files={droppedFiles}
+        onClose={() => setShowUploadModal(false)}
+        onUploadComplete={handleUploadComplete}
+        userId={user?.id || ''}
+        siteId={selectedSiteId || null}
+      />
     </main>
   );
 }
