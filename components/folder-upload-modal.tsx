@@ -280,15 +280,15 @@ export function FolderUploadModal({
               Project (Optional):
             </label>
             <Select
-              value={selectedSiteId}
-              onValueChange={setSelectedSiteId}
+              value={selectedSiteId || 'none'}
+              onValueChange={(value) => setSelectedSiteId(value === 'none' ? '' : value)}
               disabled={isProcessing}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="No project selected" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No project</SelectItem>
+                <SelectItem value="none">No project</SelectItem>
                 {availableSites.map(site => (
                   <SelectItem key={site.id} value={site.id}>
                     {site.name}
