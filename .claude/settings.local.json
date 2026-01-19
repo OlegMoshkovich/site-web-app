@@ -13,7 +13,10 @@
       "Bash(npm install:*)",
       "Bash(find:*)",
       "Bash(git -C /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app log --oneline)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

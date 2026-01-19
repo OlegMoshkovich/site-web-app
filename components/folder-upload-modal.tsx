@@ -5,6 +5,13 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   CheckCircle2,
   XCircle,
   Loader2,
@@ -33,7 +40,8 @@ interface FolderUploadModalProps {
   onClose: () => void;
   onUploadComplete: () => void;
   userId: string;
-  siteId?: string | null;
+  availableSites: { id: string; name: string }[];
+  initialSiteId?: string | null;
 }
 
 export function FolderUploadModal({
@@ -42,10 +50,12 @@ export function FolderUploadModal({
   onClose,
   onUploadComplete,
   userId,
-  siteId
+  availableSites,
+  initialSiteId
 }: FolderUploadModalProps) {
   const [filesWithProgress, setFilesWithProgress] = useState<FileWithProgress[]>([]);
   const [compressionQuality, setCompressionQuality] = useState<CompressionQuality>('medium');
+  const [selectedSiteId, setSelectedSiteId] = useState<string>(initialSiteId || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadSummary, setUploadSummary] = useState<UploadSummary | null>(null);
 
@@ -69,8 +79,9 @@ export function FolderUploadModal({
       setUploadSummary(null);
       setIsProcessing(false);
       setCompressionQuality('medium');
+      setSelectedSiteId(initialSiteId || '');
     }
-  }, [isOpen]);
+  }, [isOpen, initialSiteId]);
 
   const updateFileProgress = useCallback(
     (id: string, updates: Partial<FileWithProgress>) => {
@@ -183,7 +194,7 @@ export function FolderUploadModal({
       if (successfulUploads.length > 0) {
         try {
           console.log(`Creating ${successfulUploads.length} observations...`);
-          await createObservations(successfulUploads, userId, siteId || null);
+          await createObservations(successfulUploads, userId, selectedSiteId || null);
           console.log('Observations created successfully');
         } catch (error) {
           console.error('Error creating observations:', error);
@@ -261,6 +272,35 @@ export function FolderUploadModal({
             ))}
           </div>
         </div>
+
+        {/* Site/Project Selector */}
+        {!uploadSummary && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Project (Optional):
+            </label>
+            <Select
+              value={selectedSiteId}
+              onValueChange={setSelectedSiteId}
+              disabled={isProcessing}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="No project selected" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No project</SelectItem>
+                {availableSites.map(site => (
+                  <SelectItem key={site.id} value={site.id}>
+                    {site.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">
+              Associate these images with a project. You can change this later.
+            </p>
+          </div>
+        )}
 
         {/* Compression Quality Selector */}
         {!uploadSummary && (

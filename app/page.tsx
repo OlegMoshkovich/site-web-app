@@ -1954,7 +1954,8 @@ export default function Home() {
         onClose={() => setShowUploadModal(false)}
         onUploadComplete={handleUploadComplete}
         userId={user?.id || ''}
-        siteId={selectedSiteId || null}
+        availableSites={availableSites}
+        initialSiteId={selectedSiteId || null}
       />
     </main>
   );
