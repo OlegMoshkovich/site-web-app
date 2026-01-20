@@ -72,7 +72,7 @@ function ReportPageContent() {
   const [reportBaustelle, setReportBaustelle] = useState('');
   const [reportDate, setReportDate] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  
+
   const searchParams = useSearchParams();
   
   // Helper function to get translated text
@@ -111,6 +111,45 @@ function ReportPageContent() {
 
   const normalizePath = (v?: string | null) =>
     (v ?? "").trim().replace(/^\/+/, "") || null;
+
+  // Function to get today's date in datetime-local format
+  const getTodayDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Function to open save dialog with auto-populated fields
+  const handleOpenSaveDialog = useCallback(async () => {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Auto-populate user email if available
+      if (user?.email) {
+        setReportErsteller(user.email);
+      }
+
+      // Auto-populate site from first observation if available
+      if (observations.length > 0 && observations[0].sites?.name) {
+        setReportBaustelle(observations[0].sites.name);
+      }
+
+      // Always set date to today's date when opening
+      setReportDate(getTodayDateTime());
+
+      // Open the dialog after setting all values
+      setShowSaveDialog(true);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      // Still open dialog even if auto-population fails
+      setShowSaveDialog(true);
+    }
+  }, [supabase, observations]);
 
   // Handle note editing
   const handleEditNote = useCallback((observationId: string, currentNote: string) => {
@@ -1357,7 +1396,7 @@ function ReportPageContent() {
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">
               <Button
-                onClick={() => setShowSaveDialog(true)}
+                onClick={handleOpenSaveDialog}
                 className="transition-all"
                 variant="outline"
               >
@@ -1647,7 +1686,14 @@ function ReportPageContent() {
       
       {/* Save Report Dialog */}
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSaveDialog(false);
+            }
+          }}
+        >
           <div className="bg-white rounded-none p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Save Report</h3>
             <div className="space-y-4">
@@ -1710,9 +1756,9 @@ function ReportPageContent() {
                   id="report-description"
                   value={localDescription}
                   onChange={handleDescriptionChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y bg-white"
                   placeholder="Enter report description (optional)"
-                  rows={3}
+                  rows={4}
                   maxLength={290}
                 />
               </div>
@@ -1723,6 +1769,7 @@ function ReportPageContent() {
                   setShowSaveDialog(false);
                   setReportTitle('');
                   setReportDescription('');
+                  setLocalDescription('');
                   setReportErsteller('');
                   setReportBaustelle('');
                   setReportDate('');
