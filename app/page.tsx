@@ -169,6 +169,28 @@ export default function Home() {
     [language],
   );
 
+  // Cookie utility functions for filter persistence
+  const setCookie = useCallback((name: string, value: string, days: number = 30) => {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+  }, []);
+
+  const getCookie = useCallback((name: string): string => {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === " ") c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return "";
+  }, []);
+
+  const deleteCookie = useCallback((name: string) => {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+  }, []);
+
   // Note: normalizePath function moved to API layer
 
   // ===== PHOTO MANAGEMENT =====
@@ -458,6 +480,9 @@ export default function Home() {
     return filteredObservations;
   }, [observations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
+  // Check if any filters are active
+  const hasActiveFilters = startDate || endDate || selectedUserId || selectedSiteId;
+
   // ===== PHOTO MODAL FUNCTIONALITY =====
   const handleOpenPhotoModal = useCallback((observation: ObservationWithUrl, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent card selection
@@ -646,7 +671,12 @@ export default function Home() {
     setEndDate("");
     setSelectedUserId("");
     setSelectedSiteId("");
-  }, []);
+    // Clear cookies
+    deleteCookie('filter_startDate');
+    deleteCookie('filter_endDate');
+    deleteCookie('filter_userId');
+    deleteCookie('filter_siteId');
+  }, [deleteCookie]);
 
   // Folder upload handlers
   const handleFolderDrop = useCallback((files: File[]) => {
@@ -1013,6 +1043,52 @@ export default function Home() {
     fetchAllSites();
   }, [user, supabase]);
 
+  // Load filter values from cookies on mount
+  useEffect(() => {
+    const savedStartDate = getCookie('filter_startDate');
+    const savedEndDate = getCookie('filter_endDate');
+    const savedUserId = getCookie('filter_userId');
+    const savedSiteId = getCookie('filter_siteId');
+
+    if (savedStartDate) setStartDate(savedStartDate);
+    if (savedEndDate) setEndDate(savedEndDate);
+    if (savedUserId) setSelectedUserId(savedUserId);
+    if (savedSiteId) setSelectedSiteId(savedSiteId);
+  }, [getCookie]);
+
+  // Save filter values to cookies when they change
+  useEffect(() => {
+    if (startDate) {
+      setCookie('filter_startDate', startDate);
+    } else {
+      deleteCookie('filter_startDate');
+    }
+  }, [startDate, setCookie, deleteCookie]);
+
+  useEffect(() => {
+    if (endDate) {
+      setCookie('filter_endDate', endDate);
+    } else {
+      deleteCookie('filter_endDate');
+    }
+  }, [endDate, setCookie, deleteCookie]);
+
+  useEffect(() => {
+    if (selectedUserId) {
+      setCookie('filter_userId', selectedUserId);
+    } else {
+      deleteCookie('filter_userId');
+    }
+  }, [selectedUserId, setCookie, deleteCookie]);
+
+  useEffect(() => {
+    if (selectedSiteId) {
+      setCookie('filter_siteId', selectedSiteId);
+    } else {
+      deleteCookie('filter_siteId');
+    }
+  }, [selectedSiteId, setCookie, deleteCookie]);
+
   // Extract users from observations when they change
   useEffect(() => {
     if (observations.length === 0) return;
@@ -1094,17 +1170,22 @@ export default function Home() {
                     <Tag className="h-4 w-4" />
                   </Button>
 
-                  <Button
-                    onClick={() => setShowDateSelector(!showDateSelector)}
-                    variant="outline"
-                    size="sm"
-                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
-                      showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
-                    }`}
-                    title={t("toggleDateFilter")}
-                  >
-                    <Filter className="h-4 w-4" />
-                  </Button>
+                  <div className="relative">
+                    <Button
+                      onClick={() => setShowDateSelector(!showDateSelector)}
+                      variant="outline"
+                      size="sm"
+                      className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${
+                        showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"
+                      }`}
+                      title={t("toggleDateFilter")}
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                    {hasActiveFilters && (
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
+                    )}
+                  </div>
 
                 </>
               )}
