@@ -29,6 +29,7 @@ import {
   ZoomIn,
   FileText,
   Info,
+  Eye,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -488,9 +489,10 @@ export default function Home() {
     event.stopPropagation(); // Prevent card selection
 
     // Find the index of the clicked observation in the filtered list
+    // Include all observations (both photos and text-only notes)
     const filteredObservations = getFilteredObservations();
-    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
-    const index = photoObservations.findIndex(obs => obs.id === observation.id);
+    const allObservations = filteredObservations.filter(obs => obs.signedUrl || obs.note);
+    const index = allObservations.findIndex(obs => obs.id === observation.id);
 
     setCurrentPhotoIndex(index);
     setSelectedPhotoObservation(observation);
@@ -505,21 +507,21 @@ export default function Home() {
 
   const handlePreviousPhoto = useCallback(() => {
     const filteredObservations = getFilteredObservations();
-    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+    const allObservations = filteredObservations.filter(obs => obs.signedUrl || obs.note);
     if (currentPhotoIndex > 0) {
       const newIndex = currentPhotoIndex - 1;
       setCurrentPhotoIndex(newIndex);
-      setSelectedPhotoObservation(photoObservations[newIndex]);
+      setSelectedPhotoObservation(allObservations[newIndex]);
     }
   }, [getFilteredObservations, currentPhotoIndex]);
 
   const handleNextPhoto = useCallback(() => {
     const filteredObservations = getFilteredObservations();
-    const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
-    if (currentPhotoIndex < photoObservations.length - 1) {
+    const allObservations = filteredObservations.filter(obs => obs.signedUrl || obs.note);
+    if (currentPhotoIndex < allObservations.length - 1) {
       const newIndex = currentPhotoIndex + 1;
       setCurrentPhotoIndex(newIndex);
-      setSelectedPhotoObservation(photoObservations[newIndex]);
+      setSelectedPhotoObservation(allObservations[newIndex]);
     }
   }, [getFilteredObservations, currentPhotoIndex]);
 
@@ -1813,7 +1815,117 @@ export default function Home() {
                                 </div>
                               )}
                             </div>
-                          ) : null;
+                          ) : (
+                            // Text-only observation (note without photo)
+                            observation.note ? (
+                              <div key={observation.id} className="w-full">
+                                <div
+                                  data-observation-id={observation.id}
+                                  className={`relative aspect-square w-full overflow-hidden group select-none cursor-pointer bg-gradient-to-br from-gray-100 to-gray-200 border-2 ${
+                                    selectedObservations.has(observation.id)
+                                      ? "ring-2 ring-blue-500 ring-offset-1 border-blue-400"
+                                      : "border-gray-300"
+                                  }`}
+                                >
+                                  {/* Timestamp at top */}
+                                  <div className="absolute top-0 left-0 right-0 bg-gray-800 text-white p-1.5 text-xs">
+                                    <p className="text-center leading-tight">
+                                      {new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB')} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </p>
+                                  </div>
+
+                                  {/* Note text in center */}
+                                  <div className="absolute inset-0 flex items-center justify-center p-3 pt-10 pb-10">
+                                    <p className="text-xs text-gray-700 line-clamp-6 text-center leading-tight">
+                                      {observation.note}
+                                    </p>
+                                  </div>
+
+                                  {/* Note icon indicator */}
+                                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
+                                    <FileText className="h-12 w-12 text-gray-400" />
+                                  </div>
+
+                                  {/* View button - appears on hover */}
+                                  <button
+                                    onClick={(e) => handleOpenPhotoModal(observation, e)}
+                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 flex items-center justify-center"
+                                    title="View full note"
+                                  >
+                                    <Eye className="h-6 w-6 text-white drop-shadow-lg" />
+                                  </button>
+
+                                  {/* Delete button */}
+                                  <button
+                                    onClick={(e) => handleDeleteObservation(observation.id, e)}
+                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1 rounded-full shadow-lg z-10"
+                                    title="Delete observation"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+
+                                  {/* Checkbox */}
+                                  <div
+                                    className={`absolute bottom-1 right-2 z-20 transition-opacity w-5 h-5 flex items-center justify-center ${
+                                      selectedObservations.has(observation.id)
+                                        ? "opacity-100"
+                                        : "opacity-0 group-hover:opacity-100"
+                                    }`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newSelected = new Set(selectedObservations);
+                                      if (newSelected.has(observation.id)) {
+                                        newSelected.delete(observation.id);
+                                      } else {
+                                        newSelected.add(observation.id);
+                                      }
+                                      setSelectedObservations(newSelected);
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedObservations.has(observation.id)}
+                                      onCheckedChange={(checked) => {
+                                        const newSelected = new Set(selectedObservations);
+                                        if (checked) {
+                                          newSelected.add(observation.id);
+                                        } else {
+                                          newSelected.delete(observation.id);
+                                        }
+                                        setSelectedObservations(newSelected);
+                                      }}
+                                      className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 shadow-md w-5 h-5"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Tags under note card */}
+                                {labels && labels.length > 0 && (
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {labels.slice(0, 3).map((label, idx) => {
+                                      const processedLabel = processLabel(label);
+                                      return (
+                                        <Badge
+                                          key={`${observation.id}-note-label-${idx}`}
+                                          variant="outline"
+                                          className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-20"
+                                        >
+                                          {processedLabel}
+                                        </Badge>
+                                      );
+                                    })}
+                                    {labels.length > 3 && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-500"
+                                      >
+                                        +{labels.length - 3}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : null
+                          );
                         })}
                               </div>
                             </AccordionContent>
@@ -1964,11 +2076,11 @@ export default function Home() {
       )}
 
       {/* Photo Modal */}
-      {selectedPhotoObservation && selectedPhotoObservation.signedUrl && (() => {
+      {selectedPhotoObservation && (selectedPhotoObservation.signedUrl || selectedPhotoObservation.note) && (() => {
         const filteredObservations = getFilteredObservations();
-        const photoObservations = filteredObservations.filter(obs => obs.signedUrl);
+        const allObservations = filteredObservations.filter(obs => obs.signedUrl || obs.note);
         const hasPrevious = currentPhotoIndex > 0;
-        const hasNext = currentPhotoIndex < photoObservations.length - 1;
+        const hasNext = currentPhotoIndex < allObservations.length - 1;
 
         // Get site labels for the current observation
         const currentSiteLabels = selectedPhotoObservation.site_id

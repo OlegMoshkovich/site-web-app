@@ -22,7 +22,7 @@ interface ObservationWithUrl extends Observation {
 interface PhotoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  imageUrl: string;
+  imageUrl: string | null;
   observation: ObservationWithUrl;
   onPrevious?: () => void;
   onNext?: () => void;
@@ -66,7 +66,8 @@ export function PhotoModal({
   useEffect(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
-    setImageLoading(true);
+    // Only show loading state if there's an image to load
+    setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
 
   // Zoom and pan handlers
@@ -355,41 +356,56 @@ export function PhotoModal({
             </div>
           )}
 
-          {/* Zoom controls */}
-          <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
-            <button
-              onClick={handleShare}
-              className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
-              aria-label="Share photo"
-            >
-              <Share className="h-4 w-4" />
-            </button>
-            <button
-              onClick={zoomIn}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
-              aria-label="Zoom in"
-              disabled={scale >= 3}
-            >
-              <ZoomIn className="h-4 w-4" />
-            </button>
-            <button
-              onClick={zoomOut}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
-              aria-label="Zoom out"
-              disabled={scale <= 0.5}
-            >
-              <ZoomOut className="h-4 w-4" />
-            </button>
-            {scale !== 1 && (
+          {/* Zoom controls - only show for images */}
+          {imageUrl && (
+            <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
               <button
-                onClick={resetZoom}
-                className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
-                aria-label="Reset zoom"
+                onClick={handleShare}
+                className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
+                aria-label="Share photo"
               >
-                1:1
+                <Share className="h-4 w-4" />
               </button>
-            )}
-          </div>
+              <button
+                onClick={zoomIn}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                aria-label="Zoom in"
+                disabled={scale >= 3}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </button>
+              <button
+                onClick={zoomOut}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                aria-label="Zoom out"
+                disabled={scale <= 0.5}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              {scale !== 1 && (
+                <button
+                  onClick={resetZoom}
+                  className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
+                  aria-label="Reset zoom"
+                >
+                  1:1
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Share button for text-only notes */}
+          {!imageUrl && (
+            <div className="absolute top-4 right-4 z-30">
+              <button
+                onClick={handleShare}
+                className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
+                aria-label="Share note"
+              >
+                <Share className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           
           {/* Zoom indicator */}
           {scale !== 1 && (
@@ -443,35 +459,46 @@ export function PhotoModal({
             </button>
           )}
           
-          {/* Zoomable/Pannable Image Container */}
-          <div
-            className="absolute inset-0 transition-transform duration-200 ease-out"
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-              transformOrigin: 'center center'
-            }}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
-          >
-            <Image
-              key={observation.id} // Force re-render when observation changes
-              src={imageUrl}
-              alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
-              fill
-              className="object-contain select-none"
-              sizes="(max-width: 768px) 100vw, 90vw"
-              priority
-              draggable={false}
-              onLoad={() => {
-                console.log('Image loaded for observation:', observation.id);
-                setImageLoading(false);
+          {/* Zoomable/Pannable Image Container or Text Display */}
+          {imageUrl ? (
+            <div
+              className="absolute inset-0 transition-transform duration-200 ease-out"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                transformOrigin: 'center center'
               }}
-              onError={() => {
-                console.log('Image error for observation:', observation.id);
-                setImageLoading(false);
-              }}
-            />
-          </div>
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
+            >
+              <Image
+                key={observation.id} // Force re-render when observation changes
+                src={imageUrl}
+                alt={`Photo for ${observation.sites?.name || (observation.site_id ? `site ${observation.site_id.slice(0, 8)}` : "observation")}`}
+                fill
+                className="object-contain select-none"
+                sizes="(max-width: 768px) 100vw, 90vw"
+                priority
+                draggable={false}
+                onLoad={() => {
+                  console.log('Image loaded for observation:', observation.id);
+                  setImageLoading(false);
+                }}
+                onError={() => {
+                  console.log('Image error for observation:', observation.id);
+                  setImageLoading(false);
+                }}
+              />
+            </div>
+          ) : (
+            /* Text-only observation display */
+            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+              <div className="max-w-3xl text-center">
+                <p className="text-lg md:text-xl text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {observation.note || 'No note provided'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Info panel */}
