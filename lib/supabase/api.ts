@@ -430,7 +430,7 @@ export async function fetchCollaborativeObservationsByTimeRange(
   const now = new Date();
   const startDate = new Date(now);
   const endDate = new Date(now);
-  
+
   switch (timeRange.type) {
     case 'days':
       startDate.setDate(now.getDate() - (timeRange.count + timeRange.offset));
@@ -445,8 +445,16 @@ export async function fetchCollaborativeObservationsByTimeRange(
       endDate.setMonth(now.getMonth() - timeRange.offset);
       break;
   }
-  
-  
+
+
+  // Get all sites owned by the user
+  const { data: ownedSites, error: ownedError } = await supabase
+    .from('sites')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (ownedError) throw ownedError;
+
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
     .from('site_collaborators')
@@ -463,26 +471,31 @@ export async function fetchCollaborativeObservationsByTimeRange(
     sites(name, logo_url)
   `, { count: 'exact' });
 
-  if (!userSites || userSites.length === 0) {
-    // User has no collaborative access, return only their own observations
+  // Collect all site IDs where user should see ALL observations
+  const ownedSiteIds = (ownedSites || []).map((site: { id: string }) => site.id);
+
+  // Get admin site IDs from collaborators
+  const adminSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  const collaboratorSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  // Combine owned sites and admin sites (these show ALL observations)
+  const allAdminSiteIds = [...new Set([...ownedSiteIds, ...adminSiteIds])];
+
+  if (allAdminSiteIds.length === 0 && collaboratorSiteIds.length === 0) {
+    // User has no site access at all, return only their own observations
     query = query.eq('user_id', userId);
   } else {
-    // Build query based on user's roles
-    const adminSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-    
-    const collaboratorSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-
-    
     // Build query to include ALL user's own observations PLUS collaborative observations
     const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
 
-    // Add admin site access (all observations in admin sites)
-    if (adminSiteIds.length > 0) {
-      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    // Add access for owned sites and admin sites (all observations)
+    if (allAdminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${allAdminSiteIds.join(',')})`);
     }
 
     // Add collaborator site access (only user's observations in collaborator sites)
@@ -503,22 +516,14 @@ export async function fetchCollaborativeObservationsByTimeRange(
   
   // Check if there are more observations available by looking for observations older than our date range
   let hasMoreQuery = supabase.from('observations').select('id', { count: 'exact', head: true });
-  
-  if (!userSites || userSites.length === 0) {
+
+  if (allAdminSiteIds.length === 0 && collaboratorSiteIds.length === 0) {
     hasMoreQuery = hasMoreQuery.eq('user_id', userId);
   } else {
-    const adminSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-    
-    const collaboratorSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-
     const orConditions = [`user_id.eq.${userId}`];
 
-    if (adminSiteIds.length > 0) {
-      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    if (allAdminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${allAdminSiteIds.join(',')})`);
     }
 
     if (collaboratorSiteIds.length > 0) {
@@ -527,7 +532,7 @@ export async function fetchCollaborativeObservationsByTimeRange(
 
     hasMoreQuery = hasMoreQuery.or(orConditions.join(','));
   }
-  
+
   const { count: olderCount } = await hasMoreQuery.lt('created_at', startDate.toISOString());
   const hasMore = (olderCount || 0) > 0;
   
@@ -566,13 +571,21 @@ export async function fetchCollaborativeObservationsByWeek(
  * - Collaborators see only their own observations for sites they have access to
  */
 export async function fetchCollaborativeObservationsPaginated(
-  userId: string, 
+  userId: string,
   limit: number = 50,
   offset: number = 0
 ): Promise<{ observations: Observation[], hasMore: boolean, totalCount: number }> {
   const supabase = createClient();
-  
-  
+
+
+  // Get all sites owned by the user
+  const { data: ownedSites, error: ownedError } = await supabase
+    .from('sites')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (ownedError) throw ownedError;
+
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
     .from('site_collaborators')
@@ -589,26 +602,31 @@ export async function fetchCollaborativeObservationsPaginated(
     sites(name, logo_url)
   `, { count: 'exact' });
 
-  if (!userSites || userSites.length === 0) {
-    // User has no collaborative access, return only their own observations
+  // Collect all site IDs where user should see ALL observations
+  const ownedSiteIds = (ownedSites || []).map((site: { id: string }) => site.id);
+
+  // Get admin site IDs from collaborators
+  const adminSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  const collaboratorSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  // Combine owned sites and admin sites (these show ALL observations)
+  const allAdminSiteIds = [...new Set([...ownedSiteIds, ...adminSiteIds])];
+
+  if (allAdminSiteIds.length === 0 && collaboratorSiteIds.length === 0) {
+    // User has no site access at all, return only their own observations
     query = query.eq('user_id', userId);
   } else {
-    // Build query based on user's roles
-    const adminSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-    
-    const collaboratorSiteIds = userSites
-      .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
-      .map((site: { site_id: string; role: string }) => site.site_id);
-
-    
     // Build query to include ALL user's own observations PLUS collaborative observations
     const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
 
-    // Add admin site access (all observations in admin sites)
-    if (adminSiteIds.length > 0) {
-      orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+    // Add access for owned sites and admin sites (all observations)
+    if (allAdminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${allAdminSiteIds.join(',')})`);
     }
 
     // Add collaborator site access (only user's observations in collaborator sites)
@@ -646,8 +664,16 @@ export async function fetchCollaborativeObservationsPaginated(
  */
 export async function fetchCollaborativeObservations(userId: string): Promise<Observation[]> {
   const supabase = createClient();
-  
-  
+
+
+  // Get all sites owned by the user
+  const { data: ownedSites, error: ownedError } = await supabase
+    .from('sites')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (ownedError) throw ownedError;
+
   // Get all sites where user is a collaborator
   const { data: userSites, error: sitesError } = await supabase
     .from('site_collaborators')
@@ -658,21 +684,26 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
 
   if (sitesError) throw sitesError;
 
-  if (!userSites || userSites.length === 0) {
-    // User has no collaborative access, return only their own observations with user data
+  // Collect all site IDs where user should see ALL observations
+  const ownedSiteIds = (ownedSites || []).map((site: { id: string }) => site.id);
+
+  // Get admin site IDs from collaborators
+  const adminSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  const collaboratorSiteIds = (userSites || [])
+    .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
+    .map((site: { site_id: string; role: string }) => site.site_id);
+
+  // Combine owned sites and admin sites (these show ALL observations)
+  const allAdminSiteIds = [...new Set([...ownedSiteIds, ...adminSiteIds])];
+
+  if (allAdminSiteIds.length === 0 && collaboratorSiteIds.length === 0) {
+    // User has no site access at all, return only their own observations with user data
     const observations = await fetchUserObservations(userId);
     return await enrichObservationsWithUserData(observations);
   }
-
-  
-  // Build query based on user's roles
-  const adminSiteIds = userSites
-    .filter((site: { site_id: string; role: string }) => site.role === 'owner' || site.role === 'admin')
-    .map((site: { site_id: string; role: string }) => site.site_id);
-  
-  const collaboratorSiteIds = userSites
-    .filter((site: { site_id: string; role: string }) => site.role === 'collaborator')
-    .map((site: { site_id: string; role: string }) => site.site_id);
 
 
   let query = supabase
@@ -685,9 +716,9 @@ export async function fetchCollaborativeObservations(userId: string): Promise<Ob
   // Build query to include ALL user's own observations PLUS collaborative observations
   const orConditions = [`user_id.eq.${userId}`]; // Always include all user's own observations
 
-  // Add admin site access (all observations in admin sites)
-  if (adminSiteIds.length > 0) {
-    orConditions.push(`site_id.in.(${adminSiteIds.join(',')})`);
+  // Add access for owned sites and admin sites (all observations)
+  if (allAdminSiteIds.length > 0) {
+    orConditions.push(`site_id.in.(${allAdminSiteIds.join(',')})`);
   }
 
   // Add collaborator site access (only user's observations in collaborator sites)
