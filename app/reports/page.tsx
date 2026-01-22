@@ -160,8 +160,8 @@ export default function ReportsPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-0 items-center">
+    <main className="min-h-screen flex flex-col items-center overflow-x-hidden">
+      <div className="flex-1 w-full flex flex-col gap-0 items-center overflow-x-hidden">
         {/* Header */}
         <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="w-full max-w-5xl flex justify-start items-center px-3 sm:px-5 text-sm">
@@ -188,7 +188,7 @@ export default function ReportsPage() {
         </nav>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full">
+        <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full overflow-x-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-gray-500">Loading reports...</div>
@@ -205,18 +205,18 @@ export default function ReportsPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4 w-full">
               {reports.map((report) => (
-                <Card 
-                  key={report.id} 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
+                <Card
+                  key={report.id}
+                  className="hover:shadow-md transition-shadow cursor-pointer w-full overflow-hidden"
                   onClick={() => handleViewReport(report.id)}
                 >
                   <CardHeader>
                     {/* Title and buttons on same line */}
-                    <div className="flex items-start justify-between pb-3">
-                      <CardTitle className="text-lg flex-1 line-clamp-2 sm:line-clamp-none">{report.title}</CardTitle>
-                      <div className="flex items-center gap-2 pl-4">
+                    <div className="flex items-start justify-between pb-3 gap-2 w-full">
+                      <CardTitle className="text-lg flex-1 line-clamp-2 sm:line-clamp-none break-words min-w-0">{report.title}</CardTitle>
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -257,24 +257,24 @@ export default function ReportsPage() {
                     </div>
                     {/* Description in separate container below */}
                     {report.description && (
-                      <div className="mt-3">
-                        <CardDescription>{report.description}</CardDescription>
+                      <div className="mt-3 w-full overflow-hidden">
+                        <CardDescription className="break-words">{report.description}</CardDescription>
                       </div>
                     )}
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <FileText className="h-4 w-4" />
-                          <span>{report.observation_count} observations</span>
+                    <div className="flex items-center justify-between text-sm text-gray-500 w-full overflow-hidden">
+                      <div className="flex items-center gap-2 sm:gap-4 flex-wrap min-w-0">
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <FileText className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{report.observation_count} observations</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate(report.report_date || report.created_at)}</span>
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{formatDate(report.report_date || report.created_at)}</span>
                         </div>
                       </div>
-                      <Badge variant="secondary">Report</Badge>
+                      <Badge variant="secondary" className="flex-shrink-0 ml-2">Report</Badge>
                     </div>
                   </CardContent>
                 </Card>
