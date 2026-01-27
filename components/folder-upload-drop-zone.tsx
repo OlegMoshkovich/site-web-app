@@ -41,31 +41,66 @@ export function FolderUploadDropZone({ onFilesDropped }: FolderUploadDropZonePro
   }, []);
 
   const handleDrop = useCallback(async (e: DragEvent) => {
+    console.log('\n\n========================================');
+    console.log('=== DROP EVENT STARTED ===');
+    console.log('========================================\n');
     e.preventDefault();
     e.stopPropagation();
 
     setIsDragOver(false);
     setDragCounter(0);
 
-    if (!e.dataTransfer) return;
+    if (!e.dataTransfer) {
+      console.warn('No dataTransfer object in drop event');
+      return;
+    }
+
+    console.log('DataTransfer details:', {
+      itemsCount: e.dataTransfer.items?.length || 0,
+      filesCount: e.dataTransfer.files?.length || 0,
+      items: Array.from(e.dataTransfer.items || []).map((item, i) => ({
+        index: i,
+        kind: item.kind,
+        type: item.type
+      })),
+      files: Array.from(e.dataTransfer.files || []).map((file, i) => ({
+        index: i,
+        name: file.name,
+        type: file.type,
+        size: file.size
+      }))
+    });
 
     try {
       // Extract all files from the dropped items (including folders)
+      console.log('\nCalling extractFilesFromFolder with dataTransfer containing', e.dataTransfer.items?.length || 0, 'items...');
       const files = await extractFilesFromFolder(e.dataTransfer);
+      console.log(`\nextractFilesFromFolder returned ${files.length} files`);
+      console.log('Returned file names:', files.map((f, i) => `${i}: ${f.name}`));
 
       // Filter for valid image files
+      console.log('\nFiltering for valid image files...');
       const imageFiles = files.filter(validateImageFile);
+      console.log(`After validation: ${imageFiles.length} valid image files (out of ${files.length} total)`);
+      console.log('Valid image file names:', imageFiles.map((f, i) => `${i}: ${f.name}`));
 
       if (imageFiles.length > 0) {
+        console.log(`\nCalling onFilesDropped callback with ${imageFiles.length} files...`);
+        console.log('Files being passed to callback:', imageFiles.map(f => f.name));
         onFilesDropped(imageFiles);
+        console.log('onFilesDropped callback completed');
       } else {
         // Show alert if no valid images found
+        console.warn('No valid image files found after filtering');
         alert('No valid image files found. Please drop folders or files containing PNG, JPG, JPEG, or WebP images.');
       }
     } catch (error) {
       console.error('Error processing dropped files:', error);
       alert('Error processing dropped files. Please try again.');
     }
+    console.log('\n========================================');
+    console.log('=== DROP EVENT COMPLETED ===');
+    console.log('========================================\n\n');
   }, [onFilesDropped]);
 
   useEffect(() => {

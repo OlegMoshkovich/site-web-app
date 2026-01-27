@@ -12,12 +12,20 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   FileText,
   Calendar,
   Eye,
   Trash2,
   Share,
   ArrowLeft,
+  Filter,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -32,12 +40,31 @@ interface Report {
   updated_at: string;
   settings: Record<string, unknown>;
   observation_count?: number;
+  user_id: string;
+  user_email?: string;
+  site_ids?: string[];
+}
+
+interface Site {
+  id: string;
+  name: string;
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
 }
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [allReports, setAllReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [availableSites, setAvailableSites] = useState<Site[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
+  const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('all');
+  const [selectedUserFilter, setSelectedUserFilter] = useState<string>('all');
   const supabase = createClient();
   const router = useRouter();
 
@@ -60,34 +87,136 @@ export default function ReportsPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch only reports created by the current user
-        const { data: reportsData, error } = await supabase
-          .from('reports')
-          .select('*, report_date')
+        // Check if user is admin of any site
+        const { data: ownedSites } = await supabase
+          .from('sites')
+          .select('id, name')
+          .eq('user_id', user.id);
+
+        const { data: collaboratorSites } = await supabase
+          .from('site_collaborators')
+          .select('site_id, role, sites(id, name)')
           .eq('user_id', user.id)
+          .eq('status', 'accepted')
+          .in('role', ['admin', 'owner']);
+
+        // Combine owned sites and admin sites
+        const adminSiteIds = [
+          ...(ownedSites || []).map(s => s.id),
+          ...(collaboratorSites || []).map(s => s.site_id)
+        ];
+
+        const allAdminSites = [
+          ...(ownedSites || []),
+          ...(collaboratorSites || []).map(cs => cs.sites).filter(Boolean)
+        ] as Site[];
+
+        const userIsAdmin = adminSiteIds.length > 0;
+        setIsAdmin(userIsAdmin);
+
+        // Fetch reports based on admin status
+        let reportsQuery = supabase
+          .from('reports')
+          .select('*')
           .order('created_at', { ascending: false });
+
+        // If not admin, only show user's own reports
+        if (!userIsAdmin) {
+          reportsQuery = reportsQuery.eq('user_id', user.id);
+        }
+
+        const { data: reportsData, error } = await reportsQuery;
 
         if (error) {
           console.error('Error fetching reports:', error);
           return;
         }
 
-        // Get observation counts for each report
-        const reportsWithCount = await Promise.all(
+        // Enrich reports with observation counts, user info, and site info
+        const enrichedReports = await Promise.all(
           (reportsData || []).map(async (report: Report) => {
+            // Get observation count
             const { count } = await supabase
               .from('report_observations')
               .select('*', { count: 'exact', head: true })
               .eq('report_id', report.id);
-            
+
+            // Get user profile for this report
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('id', report.user_id)
+              .single();
+
+            // Get site IDs for this report's observations
+            const { data: reportObservations } = await supabase
+              .from('report_observations')
+              .select('observation_id')
+              .eq('report_id', report.id);
+
+            const observationIds = (reportObservations || []).map(ro => ro.observation_id);
+
+            let siteIds: string[] = [];
+            if (observationIds.length > 0) {
+              const { data: observations } = await supabase
+                .from('observations')
+                .select('site_id')
+                .in('id', observationIds);
+
+              siteIds = [...new Set((observations || [])
+                .map(o => o.site_id)
+                .filter(Boolean) as string[])];
+            }
+
             return {
               ...report,
-              observation_count: count || 0
+              observation_count: count || 0,
+              user_email: profile?.email || 'Unknown',
+              site_ids: siteIds
             };
           })
         );
 
-        setReports(reportsWithCount);
+        // Filter reports if user is admin - only show reports they have access to
+        let filteredReports = enrichedReports;
+        if (userIsAdmin) {
+          filteredReports = enrichedReports.filter(report => {
+            // Show if it's their own report
+            if (report.user_id === user.id) return true;
+            // Show if report contains observations from sites they admin
+            return report.site_ids?.some(siteId => adminSiteIds.includes(siteId));
+          });
+        }
+
+        setAllReports(filteredReports);
+        setReports(filteredReports);
+
+        // Extract unique users and sites for filters (only from visible reports)
+        const uniqueUsers = new Map<string, string>();
+        const uniqueSiteIds = new Set<string>();
+
+        filteredReports.forEach(report => {
+          if (report.user_email) {
+            uniqueUsers.set(report.user_id, report.user_email);
+          }
+          report.site_ids?.forEach(siteId => uniqueSiteIds.add(siteId));
+        });
+
+        setAvailableUsers(
+          Array.from(uniqueUsers.entries()).map(([id, email]) => ({ id, email }))
+        );
+
+        // Get site names for the unique site IDs
+        if (uniqueSiteIds.size > 0) {
+          const { data: sitesData } = await supabase
+            .from('sites')
+            .select('id, name')
+            .in('id', Array.from(uniqueSiteIds));
+
+          setAvailableSites(sitesData || []);
+        } else {
+          setAvailableSites([]);
+        }
       } catch (error) {
         console.error('Error fetching reports:', error);
       } finally {
@@ -97,6 +226,25 @@ export default function ReportsPage() {
 
     getUser();
   }, [router, supabase]);
+
+  // Filter reports based on selected filters
+  useEffect(() => {
+    let filtered = [...allReports];
+
+    // Filter by user
+    if (selectedUserFilter !== 'all') {
+      filtered = filtered.filter(report => report.user_id === selectedUserFilter);
+    }
+
+    // Filter by site
+    if (selectedSiteFilter !== 'all') {
+      filtered = filtered.filter(report =>
+        report.site_ids?.includes(selectedSiteFilter)
+      );
+    }
+
+    setReports(filtered);
+  }, [selectedUserFilter, selectedSiteFilter, allReports]);
 
 
   const handleDeleteReport = async (reportId: string) => {
@@ -189,6 +337,50 @@ export default function ReportsPage() {
 
         {/* Main content */}
         <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full overflow-x-hidden">
+          {/* Filter controls - only show for admins */}
+          {isAdmin && !loading && allReports.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Filter className="h-4 w-4" />
+                <span>Filters:</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full sm:w-auto">
+                <div className="flex flex-col gap-1.5 flex-1 sm:min-w-[200px]">
+                  <label className="text-xs font-medium text-gray-600">User</label>
+                  <Select value={selectedUserFilter} onValueChange={setSelectedUserFilter}>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="All users" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All users</SelectItem>
+                      {availableUsers.map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1.5 flex-1 sm:min-w-[200px]">
+                  <label className="text-xs font-medium text-gray-600">Site</label>
+                  <Select value={selectedSiteFilter} onValueChange={setSelectedSiteFilter}>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="All sites" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All sites</SelectItem>
+                      {availableSites.map(site => (
+                        <SelectItem key={site.id} value={site.id}>
+                          {site.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-gray-500">Loading reports...</div>
@@ -273,6 +465,12 @@ export default function ReportsPage() {
                           <Calendar className="h-4 w-4 flex-shrink-0" />
                           <span className="truncate">{formatDate(report.report_date || report.created_at)}</span>
                         </div>
+                        {isAdmin && report.user_email && report.user_id !== user?.id && (
+                          <div className="flex items-center gap-1 whitespace-nowrap">
+                            <span className="text-xs text-gray-400">by</span>
+                            <span className="truncate text-xs font-medium">{report.user_email}</span>
+                          </div>
+                        )}
                       </div>
                       <Badge variant="secondary" className="flex-shrink-0 ml-2">Report</Badge>
                     </div>

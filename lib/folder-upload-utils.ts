@@ -24,26 +24,72 @@ const ACCEPTED_IMAGE_TYPES = [
 export async function extractFilesFromFolder(
   dataTransfer: DataTransfer
 ): Promise<File[]> {
+  console.log('=== extractFilesFromFolder: Starting extraction ===');
   const files: File[] = [];
   const items = Array.from(dataTransfer.items);
 
-  // Process each dropped item
-  for (const item of items) {
-    if (item.kind === 'file') {
-      const entry = item.webkitGetAsEntry?.();
+  console.log(`extractFilesFromFolder: Processing ${items.length} items from dataTransfer`);
+  console.log('extractFilesFromFolder: Item types:', items.map((item, i) => ({
+    index: i,
+    kind: item.kind,
+    type: item.type
+  })));
 
-      if (entry) {
-        await traverseFileTree(entry, files);
-      } else {
-        // Fallback for browsers that don't support webkitGetAsEntry
-        const file = item.getAsFile();
-        if (file && validateImageFile(file)) {
+  // Process each dropped item
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    console.log(`\n--- Processing item ${i + 1}/${items.length} ---`);
+    console.log(`extractFilesFromFolder: Item ${i + 1} details:`, {
+      kind: item.kind,
+      type: item.type
+    });
+
+    // Skip items that are strings (URLs, text) but accept files even with empty kind
+    // Some browsers set kind='' for files in multi-file drops
+    if (item.kind === 'string') {
+      console.log(`extractFilesFromFolder: Item ${i + 1} is a string (not a file), skipping`);
+      continue;
+    }
+
+    // Try to process as a file (kind should be 'file' or '')
+    const entry = item.webkitGetAsEntry?.();
+
+    if (entry) {
+      console.log(`extractFilesFromFolder: Item ${i + 1} has entry:`, {
+        name: entry.name,
+        isFile: entry.isFile,
+        isDirectory: entry.isDirectory,
+        fullPath: entry.fullPath
+      });
+      console.log(`extractFilesFromFolder: About to traverse item ${i + 1}, files array currently has ${files.length} files`);
+      await traverseFileTree(entry, files);
+      console.log(`extractFilesFromFolder: After traversing item ${i + 1}, files array now has ${files.length} files`);
+    } else {
+      // Fallback for browsers that don't support webkitGetAsEntry
+      console.log(`extractFilesFromFolder: Item ${i + 1} does NOT have webkitGetAsEntry, using fallback getAsFile()`);
+      const file = item.getAsFile();
+      if (file) {
+        console.log(`extractFilesFromFolder: Got file via getAsFile():`, {
+          name: file.name,
+          type: file.type,
+          size: file.size
+        });
+        if (validateImageFile(file)) {
+          console.log(`extractFilesFromFolder: File "${file.name}" is valid, adding to array (current count: ${files.length})`);
           files.push(file);
+          console.log(`extractFilesFromFolder: Files array now has ${files.length} files`);
+        } else {
+          console.log(`extractFilesFromFolder: File "${file.name}" is NOT valid (type: ${file.type})`);
         }
+      } else {
+        console.warn(`extractFilesFromFolder: getAsFile() returned null for item ${i + 1}`);
       }
     }
   }
 
+  console.log(`\n=== extractFilesFromFolder: Extraction complete ===`);
+  console.log(`extractFilesFromFolder: Total files extracted: ${files.length}`);
+  console.log(`extractFilesFromFolder: File names:`, files.map(f => f.name));
   return files;
 }
 
@@ -54,21 +100,42 @@ async function traverseFileTree(
   entry: FileSystemEntry,
   files: File[]
 ): Promise<void> {
+  console.log(`traverseFileTree: Processing entry "${entry.name}"`, {
+    isFile: entry.isFile,
+    isDirectory: entry.isDirectory,
+    fullPath: entry.fullPath
+  });
+
   if (entry.isFile) {
     const fileEntry = entry as FileSystemFileEntry;
+    console.log(`traverseFileTree: Getting file from entry "${entry.name}"`);
     const file = await getFileFromEntry(fileEntry);
+    console.log(`traverseFileTree: Got file "${file.name}"`, {
+      type: file.type,
+      size: file.size
+    });
+
     if (file && validateImageFile(file)) {
+      console.log(`traverseFileTree: File "${file.name}" is valid, adding to array (current count: ${files.length})`);
       files.push(file);
+      console.log(`traverseFileTree: Files array now has ${files.length} files`);
+    } else {
+      console.log(`traverseFileTree: File "${file.name}" is NOT valid (type: ${file.type})`);
     }
   } else if (entry.isDirectory) {
+    console.log(`traverseFileTree: Entry "${entry.name}" is a directory, reading entries...`);
     const dirEntry = entry as FileSystemDirectoryEntry;
     const reader = dirEntry.createReader();
     const entries = await readAllEntries(reader);
+    console.log(`traverseFileTree: Directory "${entry.name}" has ${entries.length} entries`);
 
     // Recursively process each entry in the directory
-    for (const childEntry of entries) {
+    for (let i = 0; i < entries.length; i++) {
+      const childEntry = entries[i];
+      console.log(`traverseFileTree: Processing child ${i + 1}/${entries.length} in directory "${entry.name}"`);
       await traverseFileTree(childEntry, files);
     }
+    console.log(`traverseFileTree: Finished processing directory "${entry.name}", files array has ${files.length} files`);
   }
 }
 

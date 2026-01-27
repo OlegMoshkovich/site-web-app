@@ -66,20 +66,47 @@ export function FolderUploadModal({
 
   // Initialize files with progress tracking
   useEffect(() => {
+    console.log('\n=== FolderUploadModal: Files initialization useEffect triggered ===');
+    console.log('FolderUploadModal: Current state:', {
+      filesPropsLength: files.length,
+      filesWithProgressLength: filesWithProgress.length,
+      filesPropsNames: files.map(f => f.name),
+      filesWithProgressNames: filesWithProgress.map(f => f.file.name)
+    });
+
     if (files.length > 0 && filesWithProgress.length === 0) {
-      const initialized = files.map(file => ({
-        file,
-        id: generateFileId(),
-        originalSize: file.size,
-        status: 'pending' as const
-      }));
+      console.log('FolderUploadModal: Condition met - will initialize files with progress tracking');
+      console.log('FolderUploadModal: Mapping', files.length, 'files to filesWithProgress');
+      const initialized = files.map((file, index) => {
+        console.log(`FolderUploadModal: Initializing file ${index + 1}/${files.length}:`, file.name);
+        return {
+          file,
+          id: generateFileId(),
+          originalSize: file.size,
+          status: 'pending' as const
+        };
+      });
+      console.log('FolderUploadModal: Initialized array has', initialized.length, 'items');
+      console.log('FolderUploadModal: Initialized file names:', initialized.map(f => f.file.name));
+      console.log('FolderUploadModal: Calling setFilesWithProgress with', initialized.length, 'files');
       setFilesWithProgress(initialized);
+      console.log('FolderUploadModal: setFilesWithProgress called');
+    } else if (files.length > 0 && filesWithProgress.length > 0) {
+      console.warn('FolderUploadModal: Files already initialized, NOT re-initializing', {
+        filesLength: files.length,
+        filesWithProgressLength: filesWithProgress.length
+      });
+    } else if (files.length === 0) {
+      console.log('FolderUploadModal: No files in props, skipping initialization');
     }
+    console.log('=== FolderUploadModal: Files initialization useEffect completed ===\n');
   }, [files, filesWithProgress.length]);
 
   // Reset state when modal closes
   useEffect(() => {
+    console.log('FolderUploadModal: Modal open state changed', { isOpen });
     if (!isOpen) {
+      console.log('FolderUploadModal: Modal closed, resetting state');
       setFilesWithProgress([]);
       setUploadSummary(null);
       setIsProcessing(false);
@@ -87,6 +114,7 @@ export function FolderUploadModal({
       setSelectedSiteId(initialSiteId || '');
       setAvailableLabels([]);
       setSelectedLabels([]);
+      console.log('FolderUploadModal: State reset complete');
     }
   }, [isOpen, initialSiteId]);
 

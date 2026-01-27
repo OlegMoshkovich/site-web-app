@@ -682,16 +682,33 @@ export default function Home() {
 
   // Folder upload handlers
   const handleFolderDrop = useCallback((files: File[]) => {
-    console.log('handleFolderDrop called with files:', files.length, 'User:', user?.id);
+    console.log('\n\n=== handleFolderDrop CALLED ===');
+    console.log('handleFolderDrop: Received', files.length, 'files');
+    console.log('handleFolderDrop: File details:', files.map((f, i) => ({
+      index: i,
+      name: f.name,
+      type: f.type,
+      size: f.size
+    })));
+    console.log('handleFolderDrop: User ID:', user?.id);
+
     if (!user?.id) {
+      console.error('handleFolderDrop: No user ID, aborting');
       alert('Please log in before uploading files.');
       return;
     }
+
+    console.log('handleFolderDrop: Setting droppedFiles state with', files.length, 'files');
+    console.log('handleFolderDrop: Files being set:', files.map(f => f.name));
     setDroppedFiles(files);
+    console.log('handleFolderDrop: droppedFiles state should now be updated');
+    console.log('handleFolderDrop: Opening upload modal');
     setShowUploadModal(true);
+    console.log('=== handleFolderDrop COMPLETED ===\n\n');
   }, [user]);
 
   const handleUploadComplete = useCallback(() => {
+    console.log('handleUploadComplete: Closing modal and clearing files');
     setShowUploadModal(false);
     setDroppedFiles([]);
     // Refresh observations
@@ -699,6 +716,14 @@ export default function Home() {
       fetchInitialObservations(user.id);
     }
   }, [user, fetchInitialObservations]);
+
+  // Debug: Track droppedFiles state changes
+  useEffect(() => {
+    console.log('droppedFiles state changed:', {
+      count: droppedFiles.length,
+      files: droppedFiles.map(f => f.name)
+    });
+  }, [droppedFiles]);
 
   // Selection box handlers
   const handleSelectionStart = useCallback((event: React.MouseEvent) => {
