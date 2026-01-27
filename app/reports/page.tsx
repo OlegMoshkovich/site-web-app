@@ -102,13 +102,13 @@ export default function ReportsPage() {
 
         // Combine owned sites and admin sites
         const adminSiteIds = [
-          ...(ownedSites || []).map(s => s.id),
-          ...(collaboratorSites || []).map(s => s.site_id)
+          ...(ownedSites || []).map((s: Site) => s.id),
+          ...(collaboratorSites || []).map((s: { site_id: string }) => s.site_id)
         ];
 
         const allAdminSites = [
           ...(ownedSites || []),
-          ...(collaboratorSites || []).map(cs => cs.sites).filter(Boolean)
+          ...(collaboratorSites || []).map((cs: { sites: Site }) => cs.sites).filter(Boolean)
         ] as Site[];
 
         const userIsAdmin = adminSiteIds.length > 0;
@@ -154,7 +154,7 @@ export default function ReportsPage() {
               .select('observation_id')
               .eq('report_id', report.id);
 
-            const observationIds = (reportObservations || []).map(ro => ro.observation_id);
+            const observationIds = (reportObservations || []).map((ro: { observation_id: string }) => ro.observation_id);
 
             let siteIds: string[] = [];
             if (observationIds.length > 0) {
@@ -164,7 +164,7 @@ export default function ReportsPage() {
                 .in('id', observationIds);
 
               siteIds = [...new Set((observations || [])
-                .map(o => o.site_id)
+                .map((o: { site_id: string | null }) => o.site_id)
                 .filter(Boolean) as string[])];
             }
 
@@ -184,7 +184,7 @@ export default function ReportsPage() {
             // Show if it's their own report
             if (report.user_id === user.id) return true;
             // Show if report contains observations from sites they admin
-            return report.site_ids?.some(siteId => adminSiteIds.includes(siteId));
+            return report.site_ids?.some((siteId: string) => adminSiteIds.includes(siteId));
           });
         }
 
@@ -199,7 +199,7 @@ export default function ReportsPage() {
           if (report.user_email) {
             uniqueUsers.set(report.user_id, report.user_email);
           }
-          report.site_ids?.forEach(siteId => uniqueSiteIds.add(siteId));
+          report.site_ids?.forEach((siteId: string) => uniqueSiteIds.add(siteId));
         });
 
         setAvailableUsers(
