@@ -305,7 +305,19 @@ export const translations = {
     checkEmailToConfirm: "Please check your email to confirm your account before",
     signInLink: "signing in",
     checkEmailToConfirmAfter: ". Please also check your spam folder, sometimes emails end up there.",
-    ifYouHaveQuestions: "If you have any questions, please contact us at"
+    checkSpamFolderWarning: "⚠️ Please check your spam folder!",
+    checkSpamFolderMessage: "Our confirmation emails sometimes end up in spam folders. We're actively working on fixing this issue.",
+    ifYouHaveQuestions: "If you have any questions, please contact us at",
+
+    // Forgot password
+    checkYourEmail: "Check Your Email",
+    passwordResetInstructionsSent: "Password reset instructions sent",
+    passwordResetEmailSent: "If you registered using your email and password, you will receive a password reset email.",
+    resetYourPassword: "Reset Your Password",
+    typeEmailForReset: "Type in your email and we'll send you a link to reset your password",
+    sendResetEmail: "Send reset email",
+    sending: "Sending...",
+    alreadyHaveAccount: "Already have an account?"
   },
   
   de: {
@@ -612,7 +624,19 @@ export const translations = {
     checkEmailToConfirm: "Bitte überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen, bevor Sie sich",
     signInLink: "anmelden",
     checkEmailToConfirmAfter: ". Bitte überprüfen Sie auch Ihren Spam-Ordner, manchmal landen E-Mails dort.",
-    ifYouHaveQuestions: "Wenn Sie Fragen haben, kontaktieren Sie uns bitte unter"
+    checkSpamFolderWarning: "⚠️ Bitte überprüfen Sie Ihren Spam-Ordner!",
+    checkSpamFolderMessage: "Unsere Bestätigungs-E-Mails landen manchmal im Spam-Ordner. Wir arbeiten aktiv daran, dieses Problem zu beheben.",
+    ifYouHaveQuestions: "Wenn Sie Fragen haben, kontaktieren Sie uns bitte unter",
+
+    // Forgot password
+    checkYourEmail: "Überprüfen Sie Ihre E-Mail",
+    passwordResetInstructionsSent: "Anleitung zum Zurücksetzen des Passworts gesendet",
+    passwordResetEmailSent: "Wenn Sie sich mit Ihrer E-Mail und Ihrem Passwort registriert haben, erhalten Sie eine E-Mail zum Zurücksetzen des Passworts.",
+    resetYourPassword: "Passwort zurücksetzen",
+    typeEmailForReset: "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts",
+    sendResetEmail: "Zurücksetzungs-E-Mail senden",
+    sending: "Wird gesendet...",
+    alreadyHaveAccount: "Bereits ein Konto?"
   }
 };
 

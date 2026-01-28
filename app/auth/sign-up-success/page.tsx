@@ -37,8 +37,19 @@ export default function Page() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 {t("checkEmailToConfirm")} <Link href="/auth/login" className="text-blue-500 underline">{t("signInLink")}</Link>{t("checkEmailToConfirmAfter")}
-                <br />
-                <br />
+              </p>
+
+              {/* Prominent spam folder warning */}
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm font-semibold text-yellow-800 mb-1">
+                  {t("checkSpamFolderWarning")}
+                </p>
+                <p className="text-xs text-yellow-700">
+                  {t("checkSpamFolderMessage")}
+                </p>
+              </div>
+
+              <p className="text-sm text-muted-foreground mt-4">
                 {t("ifYouHaveQuestions")} <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-500">paul.wegerer@cloneit.at</a>.
               </p>
             </CardContent>
