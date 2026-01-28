@@ -207,7 +207,7 @@ export default function Home() {
   }, [selectedObservations]);
 
   // Compress image blob for download with multi-pass approach
-  const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 50): Promise<Blob> => {
+  const compressImageForDownload = useCallback((blob: Blob, targetSizeKB: number = 2000): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       // If it's not an image, return as-is
       if (!blob.type.startsWith('image/')) {
@@ -236,23 +236,23 @@ export default function Home() {
 
             // Multi-pass compression: try different dimension sizes
             const compressionPasses = [
-              { maxDim: 600, quality: 0.3 },  // Very aggressive first pass
-              { maxDim: 500, quality: 0.25 }, // Even more aggressive
-              { maxDim: 400, quality: 0.2 },  // Very small
-              { maxDim: 300, quality: 0.15 }  // Tiny but readable
+              { maxDim: 3000, quality: 0.9 },  // High quality, large dimensions
+              { maxDim: 2500, quality: 0.85 }, // Still high quality
+              { maxDim: 2000, quality: 0.8 },  // Good quality
+              { maxDim: 1500, quality: 0.75 }  // Moderate quality
             ];
 
             let passIndex = 0;
 
             const tryPass = () => {
               if (passIndex >= compressionPasses.length) {
-                // If all passes fail, use the tiniest possible version
-                canvas.width = 200;
-                canvas.height = 200;
-                ctx?.drawImage(img, 0, 0, 200, 200);
+                // If all passes fail, use a moderate compression fallback
+                canvas.width = 1200;
+                canvas.height = 1200;
+                ctx?.drawImage(img, 0, 0, 1200, 1200);
                 canvas.toBlob((finalBlob) => {
                   resolve(finalBlob || blob);
-                }, 'image/jpeg', 0.1);
+                }, 'image/jpeg', 0.7);
                 return;
               }
 
@@ -359,9 +359,9 @@ export default function Home() {
                            blob.type.includes('png') ? '.png' : '.jpg';
 
             try {
-              // Attempt compression for images only (target 30KB for very small files)
+              // Attempt compression for images only (target 2000KB for high quality)
               if (blob.type.startsWith('image/')) {
-                const compressedBlob = await compressImageForDownload(blob, 30);
+                const compressedBlob = await compressImageForDownload(blob, 2000);
                 finalBlob = compressedBlob;
                 extension = '.jpg'; // Compressed images are always JPEG
               }
@@ -378,10 +378,10 @@ export default function Home() {
 
                   await new Promise((resolve, reject) => {
                     img.onload = () => {
-                      // Very small dimensions
-                      canvas.width = 300;
-                      canvas.height = 300;
-                      ctx?.drawImage(img, 0, 0, 300, 300);
+                      // Moderate dimensions for fallback
+                      canvas.width = 1500;
+                      canvas.height = 1500;
+                      ctx?.drawImage(img, 0, 0, 1500, 1500);
 
                       canvas.toBlob((fallbackBlob) => {
                         if (fallbackBlob) {
@@ -389,7 +389,7 @@ export default function Home() {
                           extension = '.jpg';
                         }
                         resolve(fallbackBlob);
-                      }, 'image/jpeg', 0.1);
+                      }, 'image/jpeg', 0.7);
                     };
                     img.onerror = reject;
                     img.src = URL.createObjectURL(blob);
