@@ -6,7 +6,6 @@ import { Modal } from "@/components/ui/modal";
 import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
@@ -638,30 +637,24 @@ export function PhotoModal({
               {editingLabels ? (
                 <div className="space-y-3">
                   {siteLabels.length > 0 ? (
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                    <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 max-h-64 overflow-y-auto">
                       {siteLabels.map((label) => (
-                        <div
+                        <button
                           key={label.id}
-                          className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded"
+                          onClick={() => handleToggleLabel(label.name)}
+                          disabled={isSaving}
+                          className={`
+                            px-3 py-1.5 text-sm rounded-md border transition-all
+                            ${selectedLabelNames.has(label.name)
+                              ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                            }
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                          `}
+                          title={label.description || label.name}
                         >
-                          <Checkbox
-                            checked={selectedLabelNames.has(label.name)}
-                            onCheckedChange={() => handleToggleLabel(label.name)}
-                            disabled={isSaving}
-                            className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                          />
-                          <label
-                            className="flex-1 text-sm cursor-pointer"
-                            onClick={() => handleToggleLabel(label.name)}
-                          >
-                            {label.name}
-                            {label.description && (
-                              <span className="text-xs text-gray-500 ml-2">
-                                - {label.description}
-                              </span>
-                            )}
-                          </label>
-                        </div>
+                          {label.name}
+                        </button>
                       ))}
                     </div>
                   ) : (
