@@ -316,8 +316,7 @@ export const translations = {
     resetYourPassword: "Reset Your Password",
     typeEmailForReset: "Type in your email and we'll send you a link to reset your password",
     sendResetEmail: "Send reset email",
-    sending: "Sending...",
-    alreadyHaveAccount: "Already have an account?"
+    sending: "Sending..."
   },
   
   de: {
@@ -635,8 +634,7 @@ export const translations = {
     resetYourPassword: "Passwort zurücksetzen",
     typeEmailForReset: "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts",
     sendResetEmail: "Zurücksetzungs-E-Mail senden",
-    sending: "Wird gesendet...",
-    alreadyHaveAccount: "Bereits ein Konto?"
+    sending: "Wird gesendet..."
   }
 };
 
