@@ -71,10 +71,12 @@ export function FolderUploadModal({
       filesPropsLength: files.length,
       filesWithProgressLength: filesWithProgress.length,
       filesPropsNames: files.map(f => f.name),
-      filesWithProgressNames: filesWithProgress.map(f => f.file.name)
+      filesWithProgressNames: filesWithProgress.map(f => f.file.name),
+      isOpen
     });
 
-    if (files.length > 0 && filesWithProgress.length === 0) {
+    // Only initialize if modal is open and files are provided
+    if (isOpen && files.length > 0) {
       console.log('FolderUploadModal: Condition met - will initialize files with progress tracking');
       console.log('FolderUploadModal: Mapping', files.length, 'files to filesWithProgress');
       const initialized = files.map((file, index) => {
@@ -91,16 +93,11 @@ export function FolderUploadModal({
       console.log('FolderUploadModal: Calling setFilesWithProgress with', initialized.length, 'files');
       setFilesWithProgress(initialized);
       console.log('FolderUploadModal: setFilesWithProgress called');
-    } else if (files.length > 0 && filesWithProgress.length > 0) {
-      console.warn('FolderUploadModal: Files already initialized, NOT re-initializing', {
-        filesLength: files.length,
-        filesWithProgressLength: filesWithProgress.length
-      });
     } else if (files.length === 0) {
       console.log('FolderUploadModal: No files in props, skipping initialization');
     }
     console.log('=== FolderUploadModal: Files initialization useEffect completed ===\n');
-  }, [files, filesWithProgress.length]);
+  }, [files, isOpen]);
 
   // Reset state when modal closes
   useEffect(() => {

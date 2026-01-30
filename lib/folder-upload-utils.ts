@@ -35,38 +35,55 @@ export async function extractFilesFromFolder(
     type: item.type
   })));
 
-  // Process each dropped item
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    console.log(`\n--- Processing item ${i + 1}/${items.length} ---`);
-    console.log(`extractFilesFromFolder: Item ${i + 1} details:`, {
-      kind: item.kind,
-      type: item.type
-    });
+  // Check if webkitGetAsEntry is supported
+  const supportsFileSystemAPI = items.length > 0 && typeof items[0].webkitGetAsEntry === 'function';
+  console.log(`extractFilesFromFolder: FileSystem API supported: ${supportsFileSystemAPI}`);
 
-    // Skip items that are strings (URLs, text) but accept files even with empty kind
-    // Some browsers set kind='' for files in multi-file drops
-    if (item.kind === 'string') {
-      console.log(`extractFilesFromFolder: Item ${i + 1} is a string (not a file), skipping`);
-      continue;
-    }
-
-    // Try to process as a file (kind should be 'file' or '')
-    const entry = item.webkitGetAsEntry?.();
-
-    if (entry) {
-      console.log(`extractFilesFromFolder: Item ${i + 1} has entry:`, {
-        name: entry.name,
-        isFile: entry.isFile,
-        isDirectory: entry.isDirectory,
-        fullPath: entry.fullPath
+  if (supportsFileSystemAPI) {
+    // Use FileSystem API for better folder traversal
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      console.log(`\n--- Processing item ${i + 1}/${items.length} ---`);
+      console.log(`extractFilesFromFolder: Item ${i + 1} details:`, {
+        kind: item.kind,
+        type: item.type
       });
-      console.log(`extractFilesFromFolder: About to traverse item ${i + 1}, files array currently has ${files.length} files`);
-      await traverseFileTree(entry, files);
-      console.log(`extractFilesFromFolder: After traversing item ${i + 1}, files array now has ${files.length} files`);
-    } else {
-      // Fallback for browsers that don't support webkitGetAsEntry
-      console.log(`extractFilesFromFolder: Item ${i + 1} does NOT have webkitGetAsEntry, using fallback getAsFile()`);
+
+      // Skip items that are strings (URLs, text)
+      if (item.kind === 'string') {
+        console.log(`extractFilesFromFolder: Item ${i + 1} is a string (not a file), skipping`);
+        continue;
+      }
+
+      // Try to process as a file using FileSystem API
+      const entry = item.webkitGetAsEntry?.();
+
+      if (entry) {
+        console.log(`extractFilesFromFolder: Item ${i + 1} has entry:`, {
+          name: entry.name,
+          isFile: entry.isFile,
+          isDirectory: entry.isDirectory,
+          fullPath: entry.fullPath
+        });
+        console.log(`extractFilesFromFolder: About to traverse item ${i + 1}, files array currently has ${files.length} files`);
+        await traverseFileTree(entry, files);
+        console.log(`extractFilesFromFolder: After traversing item ${i + 1}, files array now has ${files.length} files`);
+      } else {
+        console.warn(`extractFilesFromFolder: webkitGetAsEntry() returned null for item ${i + 1}`);
+      }
+    }
+  } else {
+    // Fallback for browsers that don't support FileSystem API
+    console.log('extractFilesFromFolder: Using fallback getAsFile() method for all items');
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      console.log(`\n--- Processing item ${i + 1}/${items.length} with fallback ---`);
+
+      if (item.kind !== 'file') {
+        console.log(`extractFilesFromFolder: Item ${i + 1} kind is not 'file' (kind: ${item.kind}), skipping`);
+        continue;
+      }
+
       const file = item.getAsFile();
       if (file) {
         console.log(`extractFilesFromFolder: Got file via getAsFile():`, {
