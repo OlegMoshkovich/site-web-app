@@ -327,7 +327,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
               <>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center gap-1">
-                  {observation.labels.slice(0, 3).map((label, idx) => (
+                  {[...new Set(observation.labels)].slice(0, 3).map((label, idx) => (
                     <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
                       {label}
                     </span>
@@ -371,17 +371,17 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             {/* Note */}
             {observation.note && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Note</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">{t("noteTitle")}</h3>
                 <p className="text-gray-700">{observation.note}</p>
               </div>
             )}
-            
+
             {/* Labels */}
             {observation.labels && observation.labels.length > 0 && (
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
+                <h4 className="font-medium text-gray-900 mb-2">{t("labelsTitle")}</h4>
                 <div className="flex flex-wrap gap-2">
-                  {observation.labels.map((label, idx) => (
+                  {[...new Set(observation.labels)].map((label, idx) => (
                     <span
                       key={`shared-label-${idx}`}
                       className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"

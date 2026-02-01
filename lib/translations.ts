@@ -77,7 +77,14 @@ export const translations = {
     
     // Labels
     labels: "Labels",
+    labelsTitle: "Labels",
+    bereich: "Area",
     viewPlan: "View Plan",
+
+    // Note
+    noteTitle: "Note",
+    noNote: "No note",
+    createdBy: "Created by",
     
     // Search
     search: "Search",
@@ -395,7 +402,14 @@ export const translations = {
     
     // Labels
     labels: "Labels",
+    labelsTitle: "Bereich",
+    bereich: "Bereich",
     viewPlan: "Plan anzeigen",
+
+    // Note
+    noteTitle: "Notiz",
+    noNote: "Keine Anmerkungen",
+    createdBy: "Erstellt von",
     
     // Search
     search: "Suchen",

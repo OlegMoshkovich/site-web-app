@@ -25,6 +25,7 @@ import { useRouter, useParams } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { generateWordReport, downloadWordDocument } from "@/lib/wordExport";
 import Image from "next/image";
+import { translations, type Language } from "@/lib/translations";
 
 interface Report {
   id: string;
@@ -77,6 +78,7 @@ export default function ReportDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
+  const [language, setLanguage] = useState<Language>("de");
 
   // Photo modal state
   const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
@@ -90,6 +92,20 @@ export default function ReportDetailPage() {
   const router = useRouter();
   const params = useParams();
   const reportId = params.id as string;
+
+  // Translation function
+  const t = (key: keyof typeof translations.en) => {
+    const value = translations[language][key] || translations.en[key];
+    return typeof value === 'string' ? value : '';
+  };
+
+  // Load language from localStorage on mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as Language;
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+      setLanguage(savedLanguage);
+    }
+  }, []);
 
   // Photo modal handlers
   const openPhotoModal = (observation: ObservationWithUrl) => {
@@ -895,7 +911,7 @@ export default function ReportDetailPage() {
                             {observation.labels && observation.labels.length > 0 && (
                               <div className="space-y-1">
                                 <div className="flex flex-wrap gap-1">
-                                  {observation.labels.map((label, idx) => (
+                                  {[...new Set(observation.labels)].map((label, idx) => (
                                     <Badge
                                       key={`${observation.id}-label-${idx}`}
                                       variant="outline"
@@ -1105,9 +1121,9 @@ export default function ReportDetailPage() {
               <div className="space-y-2">
                 {selectedPhoto.labels && selectedPhoto.labels.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">{t("labelsTitle")}</h4>
                     <div className="flex flex-wrap gap-2">
-                      {selectedPhoto.labels.map((label, idx) => (
+                      {[...new Set(selectedPhoto.labels)].map((label, idx) => (
                         <span
                           key={idx}
                           className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"
@@ -1120,7 +1136,7 @@ export default function ReportDetailPage() {
                 )}
                 {selectedPhoto.note && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-1">Note</h4>
+                    <h4 className="font-medium text-gray-900 mb-1">{t("noteTitle")}</h4>
                     <p className="text-sm text-gray-700">{selectedPhoto.note}</p>
                   </div>
                 )}

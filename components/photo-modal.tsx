@@ -426,7 +426,7 @@ export function PhotoModal({
               <>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center gap-1">
-                  {observation.labels.slice(0, 3).map((label, idx) => (
+                  {[...new Set(observation.labels)].slice(0, 3).map((label, idx) => (
                     <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
                       {label}
                     </span>
@@ -687,7 +687,7 @@ export function PhotoModal({
               ) : (
                 <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
                   {observation.labels && observation.labels.length > 0 ? (
-                    observation.labels.map((label, idx) => (
+                    [...new Set(observation.labels)].map((label, idx) => (
                       <Badge
                         key={`modal-label-${idx}`}
                         variant="outline"
