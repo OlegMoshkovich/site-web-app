@@ -151,6 +151,8 @@ export default function Home() {
   const [campaignImageLoading, setCampaignImageLoading] = useState(true);
   // Save report modal state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  // Quality dialog for photo downloads
+  const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   // Accordion state - start with all expanded
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(true);
   const [reportTitle, setReportTitle] = useState('');
@@ -320,10 +322,18 @@ export default function Home() {
   }, []);
 
   // Download photos for selected observations as a ZIP file
-  const handleDownloadPhotos = useCallback(async () => {
+  const handleDownloadPhotos = useCallback(async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     if (selectedObservations.size === 0) return;
 
     try {
+      // Quality settings: target file size in KB
+      const qualityMap = {
+        low: 800,      // ~800KB per image
+        medium: 2000,  // ~2MB per image
+        high: 5000     // ~5MB per image
+      };
+      const targetSizeKB = qualityMap[quality];
+
       // Get selected observations
       const selectedObs = observations.filter(obs =>
         selectedObservations.has(obs.id)
@@ -359,9 +369,9 @@ export default function Home() {
                            blob.type.includes('png') ? '.png' : '.jpg';
 
             try {
-              // Attempt compression for images only (target 2000KB for high quality)
+              // Attempt compression for images only with selected quality
               if (blob.type.startsWith('image/')) {
-                const compressedBlob = await compressImageForDownload(blob, 2000);
+                const compressedBlob = await compressImageForDownload(blob, targetSizeKB);
                 finalBlob = compressedBlob;
                 extension = '.jpg'; // Compressed images are always JPEG
               }
@@ -2079,7 +2089,7 @@ export default function Home() {
             {t("clearSelection")}
           </Button>
           <Button
-            onClick={handleDownloadPhotos}
+            onClick={() => setShowPhotoQualityDialog(true)}
             variant="outline"
             size="lg"
             className="hidden md:flex shadow-lg hover:shadow-xl transition-all"
@@ -2154,6 +2164,83 @@ export default function Home() {
           />
         );
       })()}
+
+      {/* Photo Quality Selection Dialog */}
+      {showPhotoQualityDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">
+              {language === "de" ? "Fotoqualität auswählen" : "Select Photo Quality"}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {language === "de"
+                ? "Wählen Sie die Qualität für Ihre Fotos. Höhere Qualität erzeugt größere Dateien."
+                : "Choose the quality for your photos. Higher quality produces larger files."}
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowPhotoQualityDialog(false);
+                  handleDownloadPhotos('low');
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Niedrige Qualität" : "Low Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? "~800KB pro Bild - Kleinere Dateigröße"
+                    : "~800KB per image - Smaller file size"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowPhotoQualityDialog(false);
+                  handleDownloadPhotos('medium');
+                }}
+                className="w-full p-4 text-left border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <div className="font-semibold flex items-center gap-2">
+                  {language === "de" ? "Mittlere Qualität" : "Medium Quality"}
+                  <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                    {language === "de" ? "Empfohlen" : "Recommended"}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? "~2MB pro Bild - Ausgewogene Qualität"
+                    : "~2MB per image - Balanced quality"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowPhotoQualityDialog(false);
+                  handleDownloadPhotos('high');
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Hohe Qualität" : "High Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? "~5MB pro Bild - Beste Qualität, größere Datei"
+                    : "~5MB per image - Best quality, larger file"}
+                </div>
+              </button>
+            </div>
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={() => setShowPhotoQualityDialog(false)}
+                variant="outline"
+              >
+                {language === "de" ? "Abbrechen" : "Cancel"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Report Dialog */}
       {showSaveDialog && (
