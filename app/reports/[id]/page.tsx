@@ -80,6 +80,10 @@ export default function ReportDetailPage() {
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   const [language, setLanguage] = useState<Language>("de");
 
+  // Quality selector state
+  const [showQualityDialog, setShowQualityDialog] = useState(false);
+  const [downloadType, setDownloadType] = useState<'pdf' | 'word' | null>(null);
+
   // Photo modal state
   const [selectedPhoto, setSelectedPhoto] = useState<ObservationWithUrl | null>(null);
   const [scale, setScale] = useState(1);
@@ -191,9 +195,18 @@ export default function ReportDetailPage() {
 
   // Handler functions for report actions
 
-  const handleExportReport = async () => {
+  const handleExportReport = async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     try {
       setIsGeneratingPDF(true);
+
+      // Quality settings: compression ratio for JPEG
+      const qualityMap = {
+        low: 0.5,
+        medium: 0.7,
+        high: 1.0  // Maximum quality (no compression)
+      };
+      const imageQuality = qualityMap[quality];
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -234,7 +247,7 @@ export default function ReportDetailPage() {
             logoCanvas.height = logoImg.height;
             logoCtx?.drawImage(logoImg, 0, 0);
 
-            const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+            const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
 
             // Position logo in top-right
             const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
@@ -351,7 +364,7 @@ export default function ReportDetailPage() {
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.4);
+            const imgData = canvas.toDataURL('image/jpeg', imageQuality);
 
             // Calculate image dimensions for PDF - increased size for 2 per page
             const imgWidth = 74;
@@ -383,7 +396,7 @@ export default function ReportDetailPage() {
                   logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
                 }
 
-                const logoData = logoCanvas.toDataURL('image/jpeg', 0.4); // Use JPEG instead of PNG for smaller size
+                const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality); // Use JPEG instead of PNG for smaller size
 
                 // Position logo on top-left of photo
                 const photoLogoWidth = 12; // Double the size from 6 to 12
@@ -501,7 +514,7 @@ export default function ReportDetailPage() {
     }
   };
 
-  const handleExportWord = async () => {
+  const handleExportWord = async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     try {
       setIsGeneratingWord(true);
 
@@ -523,8 +536,8 @@ export default function ReportDetailPage() {
         gps: true
       };
 
-      // Generate Word document
-      const blob = await generateWordReport(observations, reportData, displaySettings);
+      // Generate Word document with quality parameter
+      const blob = await generateWordReport(observations, reportData, displaySettings, quality);
 
       // Download the document
       const filename = report?.title
@@ -740,7 +753,10 @@ export default function ReportDetailPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              onClick={handleExportReport}
+              onClick={() => {
+                setDownloadType('pdf');
+                setShowQualityDialog(true);
+              }}
               variant="outline"
               size="sm"
               className="h-8 px-3 transition-all"
@@ -757,7 +773,10 @@ export default function ReportDetailPage() {
               </span>
             </Button>
             <Button
-              onClick={handleExportWord}
+              onClick={() => {
+                setDownloadType('word');
+                setShowQualityDialog(true);
+              }}
               variant="outline"
               size="sm"
               className="h-8 px-3 transition-all hidden sm:inline-flex"
@@ -1141,6 +1160,95 @@ export default function ReportDetailPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quality Selection Dialog */}
+      {showQualityDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">
+              {language === "de" ? "Fotoqualität auswählen" : "Select Photo Quality"}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {language === "de"
+                ? `Wählen Sie die Qualität für Fotos in Ihrem ${downloadType === 'pdf' ? 'PDF' : 'Word'}-Dokument. Höhere Qualität erzeugt größere Dateien.`
+                : `Choose the quality for photos in your ${downloadType === 'pdf' ? 'PDF' : 'Word'} document. Higher quality produces larger files.`}
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleExportReport('low');
+                  } else {
+                    handleExportWord('low');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Niedrige Qualität" : "Low Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "0.5 JPEG-Kompression - Kleinere Dateigröße" : "Kleinere Bilder - Kleinere Dateigröße"
+                    : downloadType === 'pdf' ? "0.5 JPEG compression - Smaller file size" : "Smaller images - Smaller file size"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleExportReport('medium');
+                  } else {
+                    handleExportWord('medium');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <div className="font-semibold flex items-center gap-2">
+                  {language === "de" ? "Mittlere Qualität" : "Medium Quality"}
+                  <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                    {language === "de" ? "Empfohlen" : "Recommended"}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "0.7 JPEG-Kompression - Ausgewogene Qualität" : "Mittlere Bilder - Ausgewogene Qualität"
+                    : downloadType === 'pdf' ? "0.7 JPEG compression - Balanced quality" : "Medium images - Balanced quality"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleExportReport('high');
+                  } else {
+                    handleExportWord('high');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Hohe Qualität" : "High Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "1.0 JPEG (unkomprimiert) - Maximale Qualität, sehr große Datei" : "3200×2400px Bilder - Maximale Qualität, sehr große Datei"
+                    : downloadType === 'pdf' ? "1.0 JPEG (uncompressed) - Maximum quality, very large file" : "3200×2400px images - Maximum quality, very large file"}
+                </div>
+              </button>
+            </div>
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={() => setShowQualityDialog(false)}
+                variant="outline"
+              >
+                {language === "de" ? "Abbrechen" : "Cancel"}
+              </Button>
             </div>
           </div>
         </div>

@@ -72,6 +72,10 @@ function ReportPageContent() {
   const [reportBaustelle, setReportBaustelle] = useState('');
   const [reportDate, setReportDate] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+  // Quality selector state
+  const [showQualityDialog, setShowQualityDialog] = useState(false);
+  const [downloadType, setDownloadType] = useState<'pdf' | 'word' | null>(null);
   
   const searchParams = useSearchParams();
   
@@ -181,9 +185,17 @@ function ReportPageContent() {
     }
   }, [supabase]);
 
-  const handleDownloadPDF = useCallback(async () => {
+  const handleDownloadPDF = useCallback(async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     setIsDownloadingPDF(true);
     try {
+      // Quality settings: compression ratio for JPEG
+      const qualityMap = {
+        low: 0.5,
+        medium: 0.7,
+        high: 1.0  // Maximum quality (no compression)
+      };
+      const imageQuality = qualityMap[quality];
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -221,8 +233,8 @@ function ReportPageContent() {
           logoCanvas.width = logoImg.width;
           logoCanvas.height = logoImg.height;
           logoCtx?.drawImage(logoImg, 0, 0);
-          
-          const logoData = logoCanvas.toDataURL('image/jpeg', 0.8);
+
+          const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
           
           // Position logo in top-right
           const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
@@ -313,8 +325,8 @@ function ReportPageContent() {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx?.drawImage(img, 0, 0);
-            
-            const imgData = canvas.toDataURL('image/jpeg', 0.7);
+
+            const imgData = canvas.toDataURL('image/jpeg', imageQuality);
             
             // Image dimensions and positioning
             const imgWidth = 60;
@@ -354,8 +366,8 @@ function ReportPageContent() {
                 photoLogoCanvas.width = photoLogoImg.width;
                 photoLogoCanvas.height = photoLogoImg.height;
                 photoLogoCtx?.drawImage(photoLogoImg, 0, 0);
-                
-                const photoLogoData = photoLogoCanvas.toDataURL('image/jpeg', 0.8);
+
+                const photoLogoData = photoLogoCanvas.toDataURL('image/jpeg', imageQuality);
                 
                 // Position small logo overlay on top-left of photo
                 const logoSize = 8;
@@ -484,11 +496,18 @@ function ReportPageContent() {
     } finally {
       setIsDownloadingPDF(false);
     }
-  }, [observations, displaySettings, reportData]);
+  }, [observations, displaySettings, reportData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDownloadWord = useCallback(async () => {
+  const handleDownloadWord = useCallback(async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     setIsDownloadingWord(true);
     try {
+      // Quality settings for image compression
+      const qualityMap = {
+        low: { maxWidth: 400, maxHeight: 300 },
+        medium: { maxWidth: 800, maxHeight: 600 },
+        high: { maxWidth: 3200, maxHeight: 2400 }  // Doubled for maximum quality
+      };
+      const imageSettings = qualityMap[quality];
       
       const children = [];
 
@@ -607,9 +626,9 @@ function ReportPageContent() {
             console.log('Image buffer size:', arrayBuffer.byteLength);
             
             if (arrayBuffer.byteLength > 0) {
-              // Calculate dynamic dimensions maintaining aspect ratio (smaller for table layout)
-              const maxWidth = 250; // Smaller max width for table cell
-              const maxHeight = 200; // Smaller max height for table cell
+              // Calculate dynamic dimensions maintaining aspect ratio
+              const maxWidth = imageSettings.maxWidth;
+              const maxHeight = imageSettings.maxHeight;
               
               let targetWidth = img.width;
               let targetHeight = img.height;
@@ -627,12 +646,16 @@ function ReportPageContent() {
               console.log('Calculated dimensions for Word doc:', { width: targetWidth, height: targetHeight });
               
               // Create table with image and text side by side
+              // Adjust column widths based on quality
+              const imageColumnWidth = quality === 'high' ? 4500 : quality === 'medium' ? 3500 : 2500;
+              const textColumnWidth = quality === 'high' ? 5500 : quality === 'medium' ? 6500 : 7500;
+
               const observationTable = new Table({
                 width: {
                   size: 100,
                   type: WidthType.PERCENTAGE,
                 },
-                columnWidths: [3000, 6000], // Fixed widths in twentieths of a point (3000/20 = 150pt, 6000/20 = 300pt)
+                columnWidths: [imageColumnWidth, textColumnWidth], // Dynamic widths based on quality
                 rows: [
                   new TableRow({
                     children: [
@@ -653,7 +676,7 @@ function ReportPageContent() {
                         ],
                         verticalAlign: VerticalAlign.TOP,
                         width: {
-                          size: 3000,
+                          size: imageColumnWidth,
                           type: WidthType.DXA,
                         },
                         margins: {
@@ -671,7 +694,7 @@ function ReportPageContent() {
                         ],
                         verticalAlign: VerticalAlign.TOP,
                         width: {
-                          size: 6000,
+                          size: textColumnWidth,
                           type: WidthType.DXA,
                         },
                         margins: {
@@ -730,7 +753,7 @@ function ReportPageContent() {
     } finally {
       setIsDownloadingWord(false);
     }
-  }, [observations, t, language, displaySettings, reportData?.report_date]);
+  }, [observations, t, language, displaySettings, reportData?.report_date]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounce timer ref
   const descriptionTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1394,7 +1417,11 @@ function ReportPageContent() {
                 Save
               </Button>
               <Button
-                onClick={handleDownloadPDF}
+                onClick={() => {
+                  console.log('PDF button clicked, opening quality dialog');
+                  setDownloadType('pdf');
+                  setShowQualityDialog(true);
+                }}
                 className="transition-all"
                 variant="outline"
                 disabled={isDownloadingPDF}
@@ -1412,7 +1439,11 @@ function ReportPageContent() {
                 )}
               </Button>
               <Button
-                onClick={handleDownloadWord}
+                onClick={() => {
+                  console.log('Word button clicked, opening quality dialog');
+                  setDownloadType('word');
+                  setShowQualityDialog(true);
+                }}
                 className="transition-all"
                 variant="outline"
                 disabled={isDownloadingWord}
@@ -1674,6 +1705,98 @@ function ReportPageContent() {
       </div>
       </main>
       
+      {/* Quality Selection Dialog */}
+      {showQualityDialog && (() => {
+        console.log('Rendering quality dialog, downloadType:', downloadType);
+        return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">
+              {language === "de" ? "Fotoqualität auswählen" : "Select Photo Quality"}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {language === "de"
+                ? `Wählen Sie die Qualität für Fotos in Ihrem ${downloadType === 'pdf' ? 'PDF' : 'Word'}-Dokument. Höhere Qualität erzeugt größere Dateien.`
+                : `Choose the quality for photos in your ${downloadType === 'pdf' ? 'PDF' : 'Word'} document. Higher quality produces larger files.`}
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleDownloadPDF('low');
+                  } else {
+                    handleDownloadWord('low');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Niedrige Qualität" : "Low Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "0.5 JPEG-Kompression - Kleinere Dateigröße" : "400×300px Bilder - Kleinere Dateigröße"
+                    : downloadType === 'pdf' ? "0.5 JPEG compression - Smaller file size" : "400×300px images - Smaller file size"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleDownloadPDF('medium');
+                  } else {
+                    handleDownloadWord('medium');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <div className="font-semibold flex items-center gap-2">
+                  {language === "de" ? "Mittlere Qualität" : "Medium Quality"}
+                  <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                    {language === "de" ? "Empfohlen" : "Recommended"}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "0.7 JPEG-Kompression - Ausgewogene Qualität" : "800×600px Bilder - Ausgewogene Qualität"
+                    : downloadType === 'pdf' ? "0.7 JPEG compression - Balanced quality" : "800×600px images - Balanced quality"}
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setShowQualityDialog(false);
+                  if (downloadType === 'pdf') {
+                    handleDownloadPDF('high');
+                  } else {
+                    handleDownloadWord('high');
+                  }
+                }}
+                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold">
+                  {language === "de" ? "Hohe Qualität" : "High Quality"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {language === "de"
+                    ? downloadType === 'pdf' ? "1.0 JPEG (unkomprimiert) - Maximale Qualität, sehr große Datei" : "3200×2400px Bilder - Maximale Qualität, sehr große Datei"
+                    : downloadType === 'pdf' ? "1.0 JPEG (uncompressed) - Maximum quality, very large file" : "3200×2400px images - Maximum quality, very large file"}
+                </div>
+              </button>
+            </div>
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={() => setShowQualityDialog(false)}
+                variant="outline"
+              >
+                {language === "de" ? "Abbrechen" : "Cancel"}
+              </Button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
       {/* Save Report Dialog */}
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

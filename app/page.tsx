@@ -330,7 +330,7 @@ export default function Home() {
       const qualityMap = {
         low: 800,      // ~800KB per image
         medium: 2000,  // ~2MB per image
-        high: 5000     // ~5MB per image
+        high: 10000    // ~10MB per image (doubled for maximum quality)
       };
       const targetSizeKB = qualityMap[quality];
 
@@ -2225,8 +2225,8 @@ export default function Home() {
                 </div>
                 <div className="text-sm text-gray-600">
                   {language === "de"
-                    ? "~5MB pro Bild - Beste Qualität, größere Datei"
-                    : "~5MB per image - Best quality, larger file"}
+                    ? "~10MB pro Bild - Maximale Qualität, sehr große Datei"
+                    : "~10MB per image - Maximum quality, very large file"}
                 </div>
               </button>
             </div>

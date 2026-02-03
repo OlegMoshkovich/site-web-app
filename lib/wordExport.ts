@@ -31,8 +31,16 @@ interface DisplaySettings {
 export async function generateWordReport(
   observations: ObservationForExport[],
   reportData: ReportData | null,
-  displaySettings: DisplaySettings
+  displaySettings: DisplaySettings,
+  quality: 'low' | 'medium' | 'high' = 'medium'
 ): Promise<Blob> {
+  // Quality settings for image dimensions
+  const qualityMap = {
+    low: { maxWidth: 400, maxHeight: 300 },
+    medium: { maxWidth: 800, maxHeight: 600 },
+    high: { maxWidth: 3200, maxHeight: 2400 }  // Doubled for maximum quality
+  };
+  const imageSettings = qualityMap[quality];
   const children = [];
   
   // Add title
@@ -174,8 +182,8 @@ export async function generateWordReport(
               new ImageRun({
                 data: uint8Array,
                 transformation: {
-                  width: 400,
-                  height: 300,
+                  width: imageSettings.maxWidth,
+                  height: imageSettings.maxHeight,
                 },
                 type: 'jpg'
               }),
