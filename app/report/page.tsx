@@ -895,57 +895,60 @@ function ReportPageContent() {
 
   const fetchFromSavedReport = useCallback(async (reportId: string) => {
     try {
-      // First, get the report details
-      const { data: reportDetails, error: reportError } = await supabase
-        .from('reports')
-        .select('title, description, ersteller, baustelle, report_date, settings')
-        .eq('id', reportId)
-        .single();
+      console.time('fetchReport');
 
-      if (reportError) {
-        console.error('Error fetching report details:', reportError);
-        setError(`Error loading report: ${reportError.message}`);
+      // Fetch report details and observation IDs in parallel
+      const [reportDetailsResult, reportObsResult] = await Promise.all([
+        supabase
+          .from('reports')
+          .select('title, description, ersteller, baustelle, report_date, settings')
+          .eq('id', reportId)
+          .single(),
+        supabase
+          .from('report_observations')
+          .select('observation_id')
+          .eq('report_id', reportId)
+      ]);
+
+      console.timeEnd('fetchReport');
+
+      if (reportDetailsResult.error) {
+        console.error('Error fetching report details:', reportDetailsResult.error);
+        setError(`Error loading report: ${reportDetailsResult.error.message}`);
+        return [];
+      }
+
+      if (reportObsResult.error) {
+        console.error('Error fetching report observations:', reportObsResult.error);
+        setError(`Error loading report: ${reportObsResult.error.message}`);
         return [];
       }
 
       // Set report data for PDF generation
       setReportData({
-        title: reportDetails.title || 'INSPECTION REPORT',
-        description: reportDetails.description || 'Baustelleninspektion Dokumentation',
-        ersteller: reportDetails.ersteller || null,
-        baustelle: reportDetails.baustelle || null,
-        report_date: reportDetails.report_date || null
+        title: reportDetailsResult.data.title || 'INSPECTION REPORT',
+        description: reportDetailsResult.data.description || 'Baustelleninspektion Dokumentation',
+        ersteller: reportDetailsResult.data.ersteller || null,
+        baustelle: reportDetailsResult.data.baustelle || null,
+        report_date: reportDetailsResult.data.report_date || null
       });
 
-      // Then, get the observation IDs for this report
-      const { data: reportObsData, error: reportObsError } = await supabase
-        .from('report_observations')
-        .select('observation_id')
-        .eq('report_id', reportId);
+      const observationIds = (reportObsResult.data || []).map((item: { observation_id: string }) => item.observation_id);
 
-      if (reportObsError) {
-        console.error('Error fetching report observations:', reportObsError);
-        setError(`Error loading report: ${reportObsError.message}`);
-        return [];
-      }
-
-      if (!reportObsData || reportObsData.length === 0) {
+      if (observationIds.length === 0) {
         setError("No observations found in this report.");
         return [];
       }
 
-      // Extract observation IDs
-      const observationIds = reportObsData.map((item: { observation_id: string }) => item.observation_id);
-
-      // Fetch the actual observations
+      console.time('fetchObservations');
+      // Fetch all observations at once (Supabase can handle large IN queries)
+      // Note: Removed sites join for performance - fetch sites separately if needed
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
-        .select(`
-          *,
-          sites(name, logo_url)
-        `)
-        .in("id", observationIds)
-        .order("created_at", { ascending: false });
+        .select("*")
+        .in("id", observationIds);
+
+      console.timeEnd('fetchObservations');
 
       if (obsError) {
         console.error("Error fetching observations:", obsError);
@@ -953,7 +956,9 @@ function ReportPageContent() {
         return [];
       }
 
-      return (obsData ?? []) as Observation[];
+      const allObservations = (obsData ?? []) as Observation[];
+
+      return allObservations;
     } catch (e) {
       console.error("Error in fetchFromSavedReport:", e);
       setError("An unexpected error occurred while loading the report.");
@@ -968,13 +973,10 @@ function ReportPageContent() {
     if (reportId) {
       baseObservations = await fetchFromSavedReport(reportId);
     } else if (memoizedSelectedIds && memoizedSelectedIds.length > 0) {
-      // Fetch the selected observations directly
+      // Fetch the selected observations directly (without sites join for performance)
       const { data: obsData, error: obsError } = await supabase
         .from("observations")
-        .select(`
-          *,
-          sites(name, logo_url)
-        `)
+        .select("*")
         .in("id", memoizedSelectedIds)
         .order("created_at", { ascending: false });
 
@@ -1006,30 +1008,57 @@ function ReportPageContent() {
       }
       setError(null);
 
-      // Create signed URLs for each photo
-      const withUrls: ObservationWithUrl[] = await Promise.all(
-        baseObservations.map(async (o) => {
-          const signedUrl = o.photo_url
-            ? await (async (filenameOrPath: string, expiresIn = 3600): Promise<string | null> => {
-                const key = normalizePath(filenameOrPath);
-                if (!key) return null;
-                const { data, error } = await supabase.storage
-                  .from(BUCKET)
-                  .createSignedUrl(key, expiresIn);
-                if (error) {
-                  console.error("createSignedUrl error", { key, error });
-                  return null;
-                }
-                return data.signedUrl;
-              })(o.photo_url, 3600)
-            : null;
-          return { ...o, signedUrl };
-        })
-      );
+      console.log('Setting observations immediately, count:', baseObservations.length);
+      console.time('initialRender');
 
-      setObservations(withUrls);
+      // Optimized: Show observations immediately without waiting for signed URLs
+      const withPlaceholders: ObservationWithUrl[] = baseObservations.map(o => ({
+        ...o,
+        signedUrl: null
+      }));
+
+      setObservations(withPlaceholders);
       setIsLoading(false);
       setIsInitialized(true);
+      console.timeEnd('initialRender');
+
+      // Generate signed URLs in the background and update progressively
+      // Batch process in chunks of 20 for better performance
+      console.time('signedURLGeneration');
+      const BATCH_SIZE = 20;
+      const photoObservations = baseObservations.filter(o => o.photo_url);
+      console.log('Generating signed URLs for', photoObservations.length, 'photos');
+
+      for (let i = 0; i < photoObservations.length; i += BATCH_SIZE) {
+        const batch = photoObservations.slice(i, i + BATCH_SIZE);
+        const batchStart = performance.now();
+
+        const batchResults = await Promise.all(
+          batch.map(async (o) => {
+            const key = normalizePath(o.photo_url);
+            if (!key) return { id: o.id, signedUrl: null };
+
+            const { data, error } = await supabase.storage
+              .from(BUCKET)
+              .createSignedUrl(key, 3600);
+
+            if (error) {
+              console.error("createSignedUrl error", { key, error });
+              return { id: o.id, signedUrl: null };
+            }
+            return { id: o.id, signedUrl: data.signedUrl };
+          })
+        );
+
+        console.log(`Batch ${i / BATCH_SIZE + 1} took ${(performance.now() - batchStart).toFixed(0)}ms`);
+
+        // Update observations with signed URLs from this batch
+        setObservations(prev => prev.map(obs => {
+          const result = batchResults.find(r => r.id === obs.id);
+          return result ? { ...obs, signedUrl: result.signedUrl } : obs;
+        }));
+      }
+      console.timeEnd('signedURLGeneration');
     } catch (e) {
       console.error("Error in fetchSelectedObservations:", e);
       setError("An unexpected error occurred.");
