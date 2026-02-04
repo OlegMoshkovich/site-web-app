@@ -1,41 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-
 export default function ModelPage() {
-  const supabase = createClient();
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: authData, error } = await supabase.auth.getUser();
-      if (error || !authData.user) {
-        router.push('/auth/login');
-        return;
-      }
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, [router, supabase.auth]);
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
     <div className="h-screen w-screen overflow-hidden">
       {/* Model Viewer Section - Full screen on mobile */}
