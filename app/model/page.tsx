@@ -32,7 +32,7 @@ export default function ModelPage() {
 
       {/* Model Viewer Section - Aligns with navbar content edges */}
       <div className="flex-1 w-full flex justify-center">
-        <div className="w-full max-w-6xl h-full">
+        <div className="w-full max-w-6xl h-full relative">
           <iframe
             title="Speckle"
             src="https://app.speckle.systems/projects/788f7f5aab/models/6442f853fd?embedToken=a9b27a5668f2032119bd5d938d953d4a2268832aba#embed=%7B%22isEnabled%22%3Atrue%7D"
@@ -42,6 +42,8 @@ export default function ModelPage() {
             className="w-full h-full"
             allow="fullscreen"
           />
+          {/* White overlay to cover bottom branding */}
+          <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-white pointer-events-none" />
         </div>
       </div>
     </div>

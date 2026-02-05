@@ -32,13 +32,15 @@ export default function ModelsPage() {
 
       {/* Model viewer iframe - Aligns with navbar content edges */}
       <div className="flex-1 w-full flex justify-center">
-        <div className="w-full max-w-6xl h-full">
+        <div className="w-full max-w-6xl h-full relative">
           <iframe
             src="https://bldrs.ai/share/v/gh/OlegMoshkovich/SimpleSiteModels/main/Kranfundament%20Test.ifc"
             className="w-full h-full border-0"
             title="3D Model Viewer"
             allow="fullscreen"
           />
+          {/* White overlay to cover bottom branding */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-white pointer-events-none" />
         </div>
       </div>
     </div>
