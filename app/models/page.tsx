@@ -30,14 +30,16 @@ export default function ModelsPage() {
         </div>
       </nav>
 
-      {/* Model viewer iframe */}
-      <div className="flex-1 w-full">
-        <iframe
-          src="https://bldrs.ai/share/v/gh/OlegMoshkovich/SimpleSiteModels/main/Kranfundament%20Test.ifc"
-          className="w-full h-full border-0"
-          title="3D Model Viewer"
-          allow="fullscreen"
-        />
+      {/* Model viewer iframe - Aligns with navbar content edges */}
+      <div className="flex-1 w-full flex justify-center">
+        <div className="w-full max-w-6xl h-full">
+          <iframe
+            src="https://bldrs.ai/share/v/gh/OlegMoshkovich/SimpleSiteModels/main/Kranfundament%20Test.ifc"
+            className="w-full h-full border-0"
+            title="3D Model Viewer"
+            allow="fullscreen"
+          />
+        </div>
       </div>
     </div>
   );
