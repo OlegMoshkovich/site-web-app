@@ -203,6 +203,74 @@ export function validateImageFile(file: File): boolean {
 }
 
 /**
+ * Extract date from filename patterns (fallback when EXIF unavailable)
+ * Supports: WhatsApp, Screenshots, Camera files
+ */
+function parseDateFromFilename(filename: string): Date | null {
+  console.log(`  → parseDateFromFilename: Checking filename: "${filename}"`);
+
+  // Pattern 1: WhatsApp Image 2025-01-01 at 20.39.25
+  const whatsappPattern = /(\d{4})-(\d{2})-(\d{2})\s+at\s+(\d{1,2})\.(\d{2})\.(\d{2})/;
+  const whatsappMatch = filename.match(whatsappPattern);
+  if (whatsappMatch) {
+    const [, year, month, day, hour, minute, second] = whatsappMatch;
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second)
+    );
+    console.log(`  → parseDateFromFilename: ✓ Matched WhatsApp pattern: ${date.toISOString()}`);
+    return date;
+  }
+
+  // Pattern 2: Screenshot 2025-01-01 at 14.23.45
+  const screenshotPattern = /Screenshot\s+(\d{4})-(\d{2})-(\d{2})\s+at\s+(\d{1,2})\.(\d{2})\.(\d{2})/;
+  const screenshotMatch = filename.match(screenshotPattern);
+  if (screenshotMatch) {
+    const [, year, month, day, hour, minute, second] = screenshotMatch;
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second)
+    );
+    console.log(`  → parseDateFromFilename: ✓ Matched Screenshot pattern: ${date.toISOString()}`);
+    return date;
+  }
+
+  // Pattern 3: IMG_20250101_143045.jpg or DSC_20250101_143045.jpg
+  const cameraPattern = /(\d{8})_(\d{6})/;
+  const cameraMatch = filename.match(cameraPattern);
+  if (cameraMatch) {
+    const [, dateStr, timeStr] = cameraMatch;
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    const hour = timeStr.substring(0, 2);
+    const minute = timeStr.substring(2, 4);
+    const second = timeStr.substring(4, 6);
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second)
+    );
+    console.log(`  → parseDateFromFilename: ✓ Matched camera pattern: ${date.toISOString()}`);
+    return date;
+  }
+
+  console.log(`  → parseDateFromFilename: ✗ No pattern matched`);
+  return null;
+}
+
+/**
  * Compress a single image file
  */
 export async function compressImage(
