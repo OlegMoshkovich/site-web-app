@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         // Fetch observations from database
         const { data: observations, error } = await supabase
           .from('observations')
-          .select('note, labels, taken_at, created_at')
+          .select('note, labels, taken_at, photo_date, created_at')
           .in('id', observationIds)
           .eq('user_id', user.id);
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         // Fetch observations from database
         const { data: observations, error } = await supabase
           .from('observations')
-          .select('note, labels, taken_at, created_at')
+          .select('note, labels, taken_at, photo_date, created_at')
           .in('id', observationIds)
           .eq('user_id', user.id);
 

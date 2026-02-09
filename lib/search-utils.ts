@@ -1,4 +1,5 @@
 import type { Observation } from "@/types/supabase";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 
 // Extended observation with signed URL for secure photo access
 interface ObservationWithUrl extends Observation {
@@ -80,8 +81,8 @@ export function normalizePath(path?: string | null): string | null {
  */
 export function groupObservationsByDate(observations: ObservationWithUrl[]) {
   const groups = observations.reduce((acc, observation) => {
-    const date = observation.taken_at || observation.created_at;
-    const dateKey = new Date(date).toDateString();
+    const date = resolveObservationDateTime(observation);
+    const dateKey = date.toDateString();
     
     if (!acc[dateKey]) {
       acc[dateKey] = [];
@@ -116,10 +117,8 @@ export function filterObservationsByDateRange(
   const end = new Date(endDate + "T23:59:59.999");
 
   return observations.filter((observation) => {
-    // Use taken_at if available, otherwise fall back to created_at
-    const observationDate = new Date(
-      observation.taken_at || observation.created_at,
-    );
+    // Use taken_at if available, otherwise fall back to photo_date then created_at
+    const observationDate = resolveObservationDateTime(observation);
     return observationDate >= start && observationDate <= end;
   });
 }

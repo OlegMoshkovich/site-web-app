@@ -1,5 +1,6 @@
 // Utility functions for folder upload feature
 import imageCompression from 'browser-image-compression';
+import exifr from 'exifr';
 import { createClient } from '@/lib/supabase/client';
 import type {
   FileWithProgress,
@@ -271,6 +272,39 @@ function parseDateFromFilename(filename: string): Date | null {
 }
 
 /**
+ * Extract taken date from EXIF metadata, then filename, then fallback to upload time
+ */
+export async function extractTakenAtWithFallback(
+  file: File,
+  uploadTime: Date = new Date()
+): Promise<string> {
+  try {
+    const exif = await exifr.parse(file, {
+      pick: ['DateTimeOriginal', 'CreateDate', 'ModifyDate', 'DateTime']
+    });
+
+    const exifDate =
+      exif?.DateTimeOriginal ||
+      exif?.CreateDate ||
+      exif?.ModifyDate ||
+      exif?.DateTime;
+
+    if (exifDate instanceof Date && !Number.isNaN(exifDate.getTime())) {
+      return exifDate.toISOString();
+    }
+  } catch (error) {
+    console.warn('Failed to read EXIF data:', error);
+  }
+
+  const filenameDate = parseDateFromFilename(file.name);
+  if (filenameDate && !Number.isNaN(filenameDate.getTime())) {
+    return filenameDate.toISOString();
+  }
+
+  return uploadTime.toISOString();
+}
+
+/**
  * Compress a single image file
  */
 export async function compressImage(
@@ -383,6 +417,7 @@ export async function createObservations(
     signedUrl: string;
     path: string;
     fileName: string;
+    takenAt?: string | null;
   }>,
   userId: string,
   siteId: string | null,
@@ -397,7 +432,8 @@ export async function createObservations(
     user_id: userId,
     photo_url: upload.path,
     ...(siteId && { site_id: siteId }), // Only include site_id if it's provided
-    ...(labels && labels.length > 0 && { labels }) // Only include labels if provided
+    ...(labels && labels.length > 0 && { labels }), // Only include labels if provided
+    ...(upload.takenAt && { taken_at: upload.takenAt })
   }));
 
   console.log('Inserting observations:', observations);

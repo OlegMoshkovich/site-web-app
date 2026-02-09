@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ZoomIn, ZoomOut, Info, X, Download } from "lucide-react";
 import { Footer } from "@/components/footer";
 import { translations, type Language } from "@/lib/translations";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 import type { Observation } from "@/types/supabase";
 import { createClient } from "@/lib/supabase/client";
 
@@ -67,7 +68,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
       
       const link = document.createElement('a');
       link.href = url;
-      const filename = `observation_${observation.id}_${new Date(observation.taken_at || observation.created_at).toISOString().split('T')[0]}.jpg`;
+      const filename = `observation_${observation.id}_${resolveObservationDateTime(observation).toISOString().split('T')[0]}.jpg`;
       link.download = filename;
       
       document.body.appendChild(link);
@@ -78,7 +79,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
     } catch (error) {
       console.error('Error downloading photo:', error);
     }
-  }, [imageUrl, observation.id, observation.taken_at, observation.created_at]);
+  }, [imageUrl, observation.id, observation.taken_at, observation.photo_date, observation.created_at]);
 
   // Zoom and pan handlers
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -316,7 +317,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
           
           {/* Timestamp and elevation tags overlay - centered at bottom */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
-            <span>{new Date(observation.taken_at || observation.created_at).toLocaleString('en-GB')}</span>
+            <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
                 <span className="text-gray-300">•</span>

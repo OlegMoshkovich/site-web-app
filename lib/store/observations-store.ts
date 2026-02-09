@@ -15,6 +15,7 @@ export interface Observation {
   labels: string[] | null;
   latitude: number | null;
   longitude: number | null;
+  photo_date: string | null;
   taken_at: string | null;
 }
 

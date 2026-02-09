@@ -12,6 +12,7 @@ export interface Observation {
   plan_url: string | null;       // URL to view the associated plan
   plan_anchor: Record<string, unknown> | null; // Position coordinates on the plan
   photo_date: string | null;     // When the photo was taken
+  taken_at: string | null;       // Full timestamp when available
   created_at: string;            // When the observation was created in the system
   user_email?: string;           // User email from profiles table (enriched data)
   user_name?: string | null;     // User full name from profiles table (enriched data)

@@ -23,6 +23,7 @@ export interface Database {
           labels: string[] | null
           latitude: number | null
           longitude: number | null
+          photo_date: string | null
           taken_at: string | null
         }
         Insert: {
@@ -38,6 +39,7 @@ export interface Database {
           labels?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          photo_date?: string | null
           taken_at?: string | null
         }
         Update: {
@@ -53,6 +55,7 @@ export interface Database {
           labels?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          photo_date?: string | null
           taken_at?: string | null
         }
       }

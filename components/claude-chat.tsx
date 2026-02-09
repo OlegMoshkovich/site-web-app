@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, X, Loader2, User } from 'lucide-react';
 import { translations, useLanguage } from '@/lib/translations';
+import { resolveObservationDateTime } from '@/lib/observation-dates';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,7 +18,8 @@ interface ClaudeChatProps {
     id: string;
     note?: string | null;
     labels?: string[] | null;
-    taken_at: string;
+    photo_date?: string | null;
+    taken_at?: string | null;
     created_at: string;
     sites?: { name: string } | null;
   }>;
@@ -66,7 +68,7 @@ export function ClaudeChat({ selectedObservations, allObservations, onLoadMoreDa
     }
 
     const relevantObservations = allObservations?.filter(obs => {
-      const obsDate = new Date(obs.taken_at || obs.created_at);
+      const obsDate = resolveObservationDateTime(obs);
       return obsDate >= startDate;
     }) || [];
 
@@ -82,7 +84,7 @@ export function ClaudeChat({ selectedObservations, allObservations, onLoadMoreDa
 
 Observations to summarize (${relevantObservations.length} total):
 ${relevantObservations.map((obs, index) => `
-${index + 1}. Date: ${new Date(obs.taken_at || obs.created_at).toLocaleDateString('en-GB')} at ${new Date(obs.taken_at || obs.created_at).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
+${index + 1}. Date: ${resolveObservationDateTime(obs).toLocaleDateString('en-GB')} at ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
    Site: ${obs.sites?.name || 'Unknown site'}
    Note: ${obs.note || 'No note provided'}
    Labels: ${obs.labels?.join(', ') || 'No labels'}`).join('')}
@@ -136,19 +138,19 @@ Keep the summary concise but informative.`;
       if (allObservations && allObservations.length > 0) {
         // Sort all observations by date (newest first)
         const sortedObservations = allObservations
-          .sort((a, b) => new Date(b.taken_at || b.created_at).getTime() - new Date(a.taken_at || a.created_at).getTime());
+          .sort((a, b) => resolveObservationDateTime(b).getTime() - resolveObservationDateTime(a).getTime());
 
         console.log('Total observations available:', allObservations.length);
         console.log('All observations being sent to Claude:', sortedObservations.length);
         console.log('Date range:', 
           sortedObservations.length > 0 ? 
-          `${new Date(sortedObservations[sortedObservations.length - 1].taken_at || sortedObservations[sortedObservations.length - 1].created_at).toLocaleDateString()} to ${new Date(sortedObservations[0].taken_at || sortedObservations[0].created_at).toLocaleDateString()}` : 
+          `${resolveObservationDateTime(sortedObservations[sortedObservations.length - 1]).toLocaleDateString()} to ${resolveObservationDateTime(sortedObservations[0]).toLocaleDateString()}` : 
           'No observations'
         );
 
         // Group observations by date for better organization
         const observationsByDate = sortedObservations.reduce((acc, obs) => {
-          const date = new Date(obs.taken_at || obs.created_at).toLocaleDateString('en-GB');
+          const date = resolveObservationDateTime(obs).toLocaleDateString('en-GB');
           if (!acc[date]) {
             acc[date] = [];
           }
@@ -160,7 +162,7 @@ Keep the summary concise but informative.`;
           .map(([date, dayObs]) => {
             return `\n--- ${date} (${dayObs.length} observations) ---\n${
               dayObs.map((obs, index) => `
-${index + 1}. Time: ${new Date(obs.taken_at || obs.created_at).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
+${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
    Site: ${obs.sites?.name || 'Unknown site'}
    Note: ${obs.note || 'No note provided'}
    Labels: ${obs.labels?.join(', ') || 'No labels'}`).join('')
