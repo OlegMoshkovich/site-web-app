@@ -30,6 +30,7 @@ import {
   FileText,
   Info,
   Eye,
+  Pencil,
 } from "lucide-react";
 // Authentication component
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -37,6 +38,8 @@ import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
 // Photo modal component
 import { PhotoModal } from "@/components/photo-modal";
+// Multi-label edit dialog
+import { MultiLabelEditDialog } from "@/components/multi-label-edit-dialog";
 // Claude chat component
 import { ClaudeChat } from "@/components/claude-chat";
 // User manual carousel component
@@ -154,6 +157,8 @@ export default function Home() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   // Quality dialog for photo downloads
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
+  // Multi-label edit dialog for bulk label editing
+  const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   // Accordion state - start with all expanded
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(true);
   const [reportTitle, setReportTitle] = useState('');
@@ -678,6 +683,35 @@ export default function Home() {
     [supabase, observations, setObservations, selectedObservations],
   );
 
+
+  // Bulk label update for selected observations
+  const handleBulkSaveLabels = useCallback(async (labelsToAdd: string[], labelsToRemove: string[]) => {
+    const ids = Array.from(selectedObservations);
+    if (ids.length === 0) return;
+
+    // Build updated observations optimistically
+    const updatedObservations = observations.map((obs) => {
+      if (!selectedObservations.has(obs.id)) return obs;
+      const current = new Set(obs.labels || []);
+      labelsToAdd.forEach(l => current.add(l));
+      labelsToRemove.forEach(l => current.delete(l));
+      const next = Array.from(current);
+      return { ...obs, labels: next.length > 0 ? next : null };
+    });
+    setObservations(updatedObservations);
+
+    // Persist each updated observation
+    await Promise.all(
+      ids.map(async (id) => {
+        const obs = updatedObservations.find(o => o.id === id);
+        const labels = obs?.labels ?? null;
+        await supabase
+          .from("observations")
+          .update({ labels: labels && labels.length > 0 ? labels : null })
+          .eq("id", id);
+      })
+    );
+  }, [selectedObservations, observations, setObservations, supabase]);
 
   const handleClearDateRange = useCallback(() => {
     setStartDate("");
@@ -2090,6 +2124,15 @@ export default function Home() {
             {t("clearSelection")}
           </Button>
           <Button
+            onClick={() => setShowMultiLabelEdit(true)}
+            variant="outline"
+            size="lg"
+            className="shadow-lg hover:shadow-xl transition-all"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
+          </Button>
+          <Button
             onClick={() => setShowPhotoQualityDialog(true)}
             variant="outline"
             size="lg"
@@ -2110,6 +2153,35 @@ export default function Home() {
           </Button>
         </div>
       )}
+
+      {/* Multi-label edit dialog */}
+      {showMultiLabelEdit && (() => {
+        const selectedObs = observations.filter(o => selectedObservations.has(o.id));
+        // Get site labels: use the first selected observation's site, or fall back to availableLabels
+        const firstSiteId = selectedObs[0]?.site_id;
+        const currentSiteLabels = firstSiteId ? (siteLabels.get(firstSiteId) || []) : [];
+        if (firstSiteId && user && currentSiteLabels.length === 0) {
+          fetchSiteLabels(firstSiteId, user.id);
+        }
+        // Compute label sets across all selected observations
+        const allLabelSets = selectedObs.map(o => new Set(o.labels || []));
+        const allLabelNames = Array.from(new Set(allLabelSets.flatMap(s => Array.from(s))));
+        const commonLabels = allLabelNames.filter(l => allLabelSets.every(s => s.has(l)));
+        const partialLabels = allLabelNames.filter(l => !commonLabels.includes(l));
+
+        return (
+          <MultiLabelEditDialog
+            isOpen={showMultiLabelEdit}
+            onClose={() => setShowMultiLabelEdit(false)}
+            selectedCount={selectedObservations.size}
+            siteLabels={currentSiteLabels}
+            commonLabels={commonLabels}
+            partialLabels={partialLabels}
+            onSave={handleBulkSaveLabels}
+            language={language}
+          />
+        );
+      })()}
 
       {/* Photo Modal */}
       {selectedPhotoObservation && (selectedPhotoObservation.signedUrl || selectedPhotoObservation.note) && (() => {
