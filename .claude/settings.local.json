@@ -19,7 +19,9 @@
       "Bash(git checkout:*)",
       "Bash(git cherry-pick:*)",
       "Bash(grep:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
