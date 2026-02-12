@@ -49,6 +49,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/privacy-policy") &&
     !request.nextUrl.pathname.startsWith("/model") &&
     !request.nextUrl.pathname.startsWith("/models") &&
+    !request.nextUrl.pathname.startsWith("/model") &&
     !request.nextUrl.pathname.startsWith("/air")
   ) {
     const url = request.nextUrl.clone();

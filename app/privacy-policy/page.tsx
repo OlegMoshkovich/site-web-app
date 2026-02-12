@@ -70,9 +70,10 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-1">UID-Nr.: ATU79501148</p>
                 <p className="mb-4">Mitglied: Wirtschaftskammer Steiermark (WKO)</p>
 
-                <p className="mb-4"><strong>Datenschutzbeauftragter:</strong><br />Ein Datenschutzbeauftragter ist nicht bestellt, da hierfür gemäß Art. 37 DSGVO keine gesetzliche Verpflichtung besteht.</p>
+                <p className="mb-2"><strong>Datenschutzbeauftragter:</strong></p>
+                <p className="mb-4">Ein Datenschutzbeauftragter ist nicht bestellt, da hierfür gemäß Art. 37 DSGVO keine gesetzliche Verpflichtung besteht.</p>
 
-                <p>Diese Datenschutzerklärung gilt für unsere mobile App und unsere Website (zusammen der „Dienst").</p>
+                <p className="mb-2">Diese Datenschutzerklärung gilt für unsere mobile App und unsere Website (zusammen der „Dienst").</p>
                 <p>Wir verarbeiten personenbezogene Daten ausschließlich im Einklang mit der Datenschutz-Grundverordnung (DSGVO) und den geltenden EU-Datenschutzgesetzen.</p>
               </section>
 
@@ -81,7 +82,7 @@ export default function PrivacyPolicyPage() {
                 <ul className="list-disc pl-6 space-y-2">
                   <li>Wir erheben so wenig Daten wie möglich</li>
                   <li>Wir betreiben kein nutzer- oder marketingbezogenes Tracking</li>
-                  <li>Wir verwenden keine Analyse-SDKs</li>
+                  <li>Wir verwenden keine Analyse- oder Werbe-SDKs</li>
                   <li>Wir verkaufen oder teilen keine personenbezogenen Daten</li>
                   <li>Wir erstellen keine Nutzerprofile</li>
                   <li>Wir nutzen Daten nicht für Marketing oder Werbung</li>
@@ -105,7 +106,7 @@ export default function PrivacyPolicyPage() {
                   <li>E-Mail-Adresse oder Nachrichteninhalt bei Kontaktaufnahme</li>
                   <li>Inhalte, die Sie innerhalb des Dienstes freiwillig eingeben</li>
                 </ul>
-                <p className="mb-1">Die Bereitstellung dieser Daten ist optional.</p>
+                <p className="mb-2">Die Bereitstellung dieser Daten ist optional.</p>
                 <p>Ohne bestimmte Angaben (z. B. Kontakt-E-Mail) kann es jedoch sein, dass Anfragen nicht bearbeitet werden können.</p>
 
                 <h3 className="text-xl font-semibold mb-3 mt-6">3.3 Technisch notwendige Daten</h3>
@@ -162,6 +163,7 @@ export default function PrivacyPolicyPage() {
                   <li>Sicherheit und Missbrauchsprävention</li>
                   <li>Erfüllung gesetzlicher Verpflichtungen</li>
                 </ul>
+
                 <p className="mb-2">Die Verarbeitung erfolgt auf Basis folgender Rechtsgrundlagen:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
                   <li>Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw. vorvertragliche Maßnahmen)</li>
@@ -179,13 +181,14 @@ export default function PrivacyPolicyPage() {
                   <li>an technisch notwendige Auftragsverarbeiter (z. B. Hosting-, Server- und E-Mail-Dienstleister)</li>
                   <li>zum Schutz unserer Rechte oder zur Missbrauchsverhinderung</li>
                 </ul>
-                <p className="mb-1">Alle Auftragsverarbeiter sind vertraglich gemäß Art. 28 DSGVO verpflichtet.</p>
+                <p className="mb-2">Alle Auftragsverarbeiter sind vertraglich gemäß Art. 28 DSGVO verpflichtet.</p>
                 <p>Eine Weitergabe zu kommerziellen Zwecken erfolgt nicht.</p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">8. Speicherung & Datenübermittlung</h2>
-                <p className="mb-2">Daten werden ausschließlich innerhalb der Europäischen Union gespeichert. Es findet keine Übermittlung in Drittländer statt.</p>
+                <p className="mb-2">Daten werden ausschließlich innerhalb der Europäischen Union gespeichert.</p>
+                <p className="mb-4">Es findet keine Übermittlung in Drittländer statt.</p>
                 <p>Sollte künftig eine Drittlandübermittlung erforderlich werden, erfolgt diese ausschließlich unter Einhaltung der Art. 44 ff. DSGVO (z. B. Angemessenheitsbeschluss oder Standardvertragsklauseln).</p>
               </section>
 
@@ -195,7 +198,7 @@ export default function PrivacyPolicyPage() {
                 <ul className="list-disc pl-6 space-y-2 mb-4">
                   <li>Kontaktanfragen: bis zu 12 Monate nach abschließender Bearbeitung</li>
                   <li>Technische Server- und Sicherheitslogs: bis zu 14 Tage</li>
-                  <li>Vertrags- und abrechnungsrelevante Daten gemäß gesetzlichen Aufbewahrungspflichten (in der Regel 7 Jahre)</li>
+                  <li>Vertrags- und abrechnungsrelevante Daten: gemäß gesetzlichen Aufbewahrungspflichten (in der Regel 7 Jahre)</li>
                 </ul>
                 <p>Nach Ablauf der jeweiligen Fristen werden die Daten sicher gelöscht oder anonymisiert.</p>
               </section>
@@ -218,12 +221,14 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">Telefon: +43 676 755 5310</p>
 
                 <p className="mb-2">Sie haben zudem das Recht, Beschwerde bei der zuständigen Aufsichtsbehörde einzulegen:</p>
-                <p className="mb-1"><strong>Österreichische Datenschutzbehörde</strong></p>
-                <p className="mb-1">Barichgasse 40–42</p>
-                <p className="mb-1">1030 Wien</p>
-                <p className="mb-1">Telefon: +43 1 52 152-0</p>
-                <p className="mb-1">E-Mail: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
-                <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="mb-1"><strong>Österreichische Datenschutzbehörde</strong></p>
+                  <p className="mb-1">Barichgasse 40–42</p>
+                  <p className="mb-1">1030 Wien</p>
+                  <p className="mb-1">Telefon: +43 1 52 152-0</p>
+                  <p className="mb-1">E-Mail: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
+                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                </div>
               </section>
 
               <section className="mb-8">
@@ -233,7 +238,7 @@ export default function PrivacyPolicyPage() {
                 <ul className="list-disc pl-6 space-y-2 mb-4">
                   <li>Kein Nutzer-Tracking</li>
                   <li>Keine Verknüpfung von Daten zu Werbezwecken</li>
-                  <li>Keine Drittanbieter-SDKs</li>
+                  <li>Keine Drittanbieter-Tracking-SDKs</li>
                   <li>App-Store-Datenschutzangaben: „Kein Tracking"</li>
                 </ul>
 
@@ -248,12 +253,14 @@ export default function PrivacyPolicyPage() {
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">12. Datenschutz von Kindern</h2>
-                <p>Der Dienst richtet sich nicht an Kinder unter 16 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern.</p>
+                <p className="mb-2">Der Dienst richtet sich nicht an Kinder unter 16 Jahren.</p>
+                <p>Wir erheben wissentlich keine personenbezogenen Daten von Kindern.</p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">13. Änderungen dieser Datenschutzerklärung</h2>
-                <p>Wir behalten uns vor, diese Datenschutzerklärung anzupassen. Die jeweils aktuelle Version ist jederzeit auf unserer Website abrufbar.</p>
+                <p className="mb-2">Wir behalten uns vor, diese Datenschutzerklärung anzupassen.</p>
+                <p>Die jeweils aktuelle Version ist jederzeit auf unserer Website abrufbar.</p>
               </section>
 
               <section className="mb-8">
@@ -295,9 +302,10 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-1">VAT ID: ATU79501148</p>
                 <p className="mb-4">Member: Wirtschaftskammer Steiermark (WKO)</p>
 
-                <p className="mb-4"><strong>Data Protection Officer:</strong><br />No data protection officer has been appointed, as there is no legal obligation to do so pursuant to Art. 37 GDPR.</p>
+                <p className="mb-2"><strong>Data Protection Officer:</strong></p>
+                <p className="mb-4">A Data Protection Officer has not been appointed as there is no legal obligation to do so pursuant to Art. 37 GDPR.</p>
 
-                <p>This privacy policy applies to our mobile app and website (together, the "Service").</p>
+                <p className="mb-2">This privacy policy applies to our mobile app and website (together, the "Service").</p>
                 <p>We process personal data exclusively in accordance with the General Data Protection Regulation (GDPR) and applicable EU data protection laws.</p>
               </section>
 
@@ -305,8 +313,8 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-2xl font-semibold mb-4">2. Our Privacy Principles</h2>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>We collect as little data as possible</li>
-                  <li>We do not engage in user- or marketing-related tracking</li>
-                  <li>We do not use analytics SDKs</li>
+                  <li>We do not engage in user or marketing-related tracking</li>
+                  <li>We do not use analytics or advertising SDKs</li>
                   <li>We do not sell or share personal data</li>
                   <li>We do not create user profiles</li>
                   <li>We do not use data for marketing or advertising</li>
@@ -317,11 +325,11 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-2xl font-semibold mb-4">3. What Data We Process</h2>
 
                 <h3 className="text-xl font-semibold mb-3 mt-6">3.1 Categories of Personal Data</h3>
-                <p className="mb-2">Depending on how you use our Service, we process the following categories of personal data in particular:</p>
+                <p className="mb-2">Depending on your use of our Service, we process the following categories of personal data:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
                   <li>Contact and communication data (e.g., email address, message content when contacting us)</li>
                   <li>Usage-related content data that you voluntarily enter within the Service</li>
-                  <li>Technical access data (see section 3.3)</li>
+                  <li>Technical access data (see Section 3.3)</li>
                 </ul>
 
                 <h3 className="text-xl font-semibold mb-3 mt-6">3.2 Data You Voluntarily Provide</h3>
@@ -330,8 +338,8 @@ export default function PrivacyPolicyPage() {
                   <li>Email address or message content when contacting us</li>
                   <li>Content you voluntarily enter within the Service</li>
                 </ul>
-                <p className="mb-1">Providing this data is optional.</p>
-                <p>However, without certain information (e.g., contact email), it may not be possible to process your request.</p>
+                <p className="mb-2">Providing this data is optional.</p>
+                <p>However, without certain information (e.g., contact email), it may not be possible to process your inquiries.</p>
 
                 <h3 className="text-xl font-semibold mb-3 mt-6">3.3 Technically Necessary Data</h3>
                 <p className="mb-2">When operating the Service, the following data may be processed temporarily for technical reasons:</p>
@@ -344,7 +352,7 @@ export default function PrivacyPolicyPage() {
 
                 <p className="mb-2">This data:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
-                  <li>serves exclusively to ensure secure and stable operation of the Service</li>
+                  <li>serves exclusively to ensure secure provision and stability of the Service</li>
                   <li>is not used to identify individual users</li>
                   <li>is not combined with other data</li>
                   <li>is automatically deleted after a maximum of 14 days</li>
@@ -379,18 +387,19 @@ export default function PrivacyPolicyPage() {
               </section>
 
               <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">6. Purpose and Legal Bases of Data Processing</h2>
+                <h2 className="text-2xl font-semibold mb-4">6. Purpose and Legal Basis for Data Processing</h2>
                 <p className="mb-2">Personal data is processed exclusively for the following purposes:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
-                  <li>Providing and operating the Service</li>
+                  <li>Provision and operation of the Service</li>
                   <li>Responding to inquiries</li>
                   <li>Security and abuse prevention</li>
-                  <li>Fulfilling legal obligations</li>
+                  <li>Compliance with legal obligations</li>
                 </ul>
-                <p className="mb-2">Processing is based on the following legal bases:</p>
+
+                <p className="mb-2">Processing is based on the following legal grounds:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
-                  <li>Art. 6(1)(b) GDPR (performance of a contract or pre-contractual measures)</li>
-                  <li>Art. 6(1)(c) GDPR (legal obligations, e.g., statutory retention requirements under tax and corporate law)</li>
+                  <li>Art. 6(1)(b) GDPR (contract performance or pre-contractual measures)</li>
+                  <li>Art. 6(1)(c) GDPR (legal obligations, e.g., tax and corporate law retention requirements)</li>
                   <li>Art. 6(1)(f) GDPR (legitimate interest in secure, stable, and abuse-free operation)</li>
                 </ul>
                 <p>We do not use data for advertising, analytics, or profiling purposes.</p>
@@ -404,13 +413,14 @@ export default function PrivacyPolicyPage() {
                   <li>with technically necessary processors (e.g., hosting, server, and email service providers)</li>
                   <li>to protect our rights or prevent abuse</li>
                 </ul>
-                <p className="mb-1">All processors are contractually bound pursuant to Art. 28 GDPR.</p>
+                <p className="mb-2">All processors are contractually bound pursuant to Art. 28 GDPR.</p>
                 <p>We do not share data for commercial purposes.</p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">8. Storage & Data Transfer</h2>
-                <p className="mb-2">Data is stored exclusively within the European Union. No transfer to third countries takes place.</p>
+                <p className="mb-2">Data is stored exclusively within the European Union.</p>
+                <p className="mb-4">No transfer to third countries takes place.</p>
                 <p>Should a third-country transfer become necessary in the future, it will only occur in compliance with Art. 44 et seq. GDPR (e.g., adequacy decision or standard contractual clauses).</p>
               </section>
 
@@ -418,11 +428,11 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-2xl font-semibold mb-4">9. Retention Period</h2>
                 <p className="mb-2">We store personal data only for as long as necessary for the respective purposes:</p>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
-                  <li>Contact requests: up to 12 months after final processing</li>
+                  <li>Contact inquiries: up to 12 months after final processing</li>
                   <li>Technical server and security logs: up to 14 days</li>
-                  <li>Contract and billing-related data in accordance with statutory retention obligations (generally 7 years)</li>
+                  <li>Contract and billing-related data: according to statutory retention requirements (typically 7 years)</li>
                 </ul>
-                <p>After the respective periods expire, the data is securely deleted or anonymized.</p>
+                <p>After the respective periods expire, data is securely deleted or anonymized.</p>
               </section>
 
               <section className="mb-8">
@@ -443,12 +453,14 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">Phone: +43 676 755 5310</p>
 
                 <p className="mb-2">You also have the right to lodge a complaint with the competent supervisory authority:</p>
-                <p className="mb-1"><strong>Austrian Data Protection Authority</strong></p>
-                <p className="mb-1">Barichgasse 40–42</p>
-                <p className="mb-1">1030 Vienna, Austria</p>
-                <p className="mb-1">Phone: +43 1 52 152-0</p>
-                <p className="mb-1">Email: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
-                <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="mb-1"><strong>Austrian Data Protection Authority</strong></p>
+                  <p className="mb-1">Barichgasse 40–42</p>
+                  <p className="mb-1">1030 Vienna</p>
+                  <p className="mb-1">Phone: +43 1 52 152-0</p>
+                  <p className="mb-1">Email: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
+                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                </div>
               </section>
 
               <section className="mb-8">
@@ -457,8 +469,8 @@ export default function PrivacyPolicyPage() {
                 <h3 className="text-xl font-semibold mb-3 mt-4">Apple App Store</h3>
                 <ul className="list-disc pl-6 space-y-2 mb-4">
                   <li>No user tracking</li>
-                  <li>No linking of data for advertising purposes</li>
-                  <li>No third-party SDKs</li>
+                  <li>No data linking for advertising purposes</li>
+                  <li>No third-party tracking SDKs</li>
                   <li>App Store privacy label: "No Tracking"</li>
                 </ul>
 
@@ -473,12 +485,14 @@ export default function PrivacyPolicyPage() {
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">12. Children's Privacy</h2>
-                <p>The Service is not directed at children under 16 years of age. We do not knowingly collect personal data from children.</p>
+                <p className="mb-2">The Service is not directed at children under 16 years of age.</p>
+                <p>We do not knowingly collect personal data from children.</p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">13. Changes to This Privacy Policy</h2>
-                <p>We reserve the right to update this privacy policy. The current version is always available on our website.</p>
+                <p className="mb-2">We reserve the right to update this privacy policy.</p>
+                <p>The current version is always available on our website.</p>
               </section>
 
               <section className="mb-8">
