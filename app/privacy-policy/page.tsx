@@ -214,7 +214,6 @@ export default function PrivacyPolicyPage() {
                   <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
                   <li>Widerspruch (Art. 21 DSGVO)</li>
                 </ul>
-
                 <p className="mb-4">Insbesondere können Sie der Verarbeitung Ihrer Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO jederzeit widersprechen.</p>
 
                 <p className="mb-2"><strong>Zur Ausübung Ihrer Rechte kontaktieren Sie uns unter:</strong></p>
@@ -447,7 +446,6 @@ export default function PrivacyPolicyPage() {
                   <li>Data portability (Art. 20 GDPR)</li>
                   <li>Object (Art. 21 GDPR)</li>
                 </ul>
-
                 <p className="mb-4">In particular, you may object at any time to the processing of your data based on Art. 6(1)(f) GDPR.</p>
 
                 <p className="mb-2"><strong>To exercise your rights, contact us at:</strong></p>

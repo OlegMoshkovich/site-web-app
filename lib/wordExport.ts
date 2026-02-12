@@ -1,11 +1,12 @@
 import { Document, Paragraph, ImageRun, TextRun, Packer, AlignmentType } from 'docx';
+import { resolveObservationDateTime } from '@/lib/observation-dates';
 
 interface ObservationForExport {
   id: string;
   note: string | null;
   labels: string[] | null;
-  photo_date: string | null;
   created_at: string;
+  photo_date: string | null;
   taken_at: string | null;
   gps_lat: number | null;
   gps_lng: number | null;
@@ -155,8 +156,8 @@ export async function generateWordReport(
     }
     
     // Add timestamp
-    const timestamp = new Date(observation.taken_at || observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + 
-                     ' ' + new Date(observation.taken_at || observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+    const timestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE') + 
+                     ' ' + resolveObservationDateTime(observation).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
     children.push(
       new Paragraph({
         children: [

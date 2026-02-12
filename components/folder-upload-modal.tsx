@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import {
   compressImage,
+  extractTakenAtWithFallback,
   uploadFileToStorage,
   createObservations,
   formatFileSize,
@@ -174,11 +175,14 @@ export function FolderUploadModal({
       skipped: 0
     };
 
+    const uploadStartedAt = new Date();
+
     // Track successful uploads outside the state
     const successfulUploads: Array<{
       signedUrl: string;
       path: string;
       fileName: string;
+      takenAt?: string | null;
     }> = [];
 
     try {
@@ -226,10 +230,15 @@ export function FolderUploadModal({
               });
 
               // Track successful upload
+              const takenAt = await extractTakenAtWithFallback(
+                fileWithProgress.file,
+                uploadStartedAt
+              );
               successfulUploads.push({
                 signedUrl,
                 path,
-                fileName: fileWithProgress.file.name
+                fileName: fileWithProgress.file.name,
+                takenAt
               });
 
               summary.success++;

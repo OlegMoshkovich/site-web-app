@@ -7,6 +7,7 @@ import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Ed
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
 
@@ -415,7 +416,7 @@ export function PhotoModal({
           
           {/* Timestamp and elevation tags overlay - centered at bottom */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
-            <span>{new Date(observation.taken_at || observation.created_at).toLocaleString('en-GB')}</span>
+            <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
                 <span className="text-gray-300">•</span>
@@ -577,7 +578,7 @@ export function PhotoModal({
                 <div className="flex items-center gap-2 text-gray-600">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {new Date(observation.taken_at || observation.created_at).toLocaleDateString()}
+                    {resolveObservationDateTime(observation).toLocaleDateString()}
                   </span>
                 </div>
                 

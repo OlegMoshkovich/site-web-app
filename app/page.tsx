@@ -66,6 +66,7 @@ import {
   groupObservationsByDate,
   processLabel,
 } from "@/lib/search-utils";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 // Types
 import type { Observation } from "@/types/supabase";
 
@@ -412,7 +413,7 @@ export default function Home() {
             }
 
             // Create a filename based on observation data
-            const date = obs.taken_at || obs.created_at;
+            const date = resolveObservationDateTime(obs).toISOString();
             const dateStr = new Date(date).toISOString().split('T')[0];
             const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
 
@@ -886,7 +887,7 @@ export default function Home() {
 
     // Extract all dates from observations (photo_date or created_at)
     const dates = observations.map(
-      (obs) => new Date(obs.taken_at || obs.created_at),
+      (obs) => resolveObservationDateTime(obs),
     );
     // Find the earliest and latest dates
     const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
@@ -1757,7 +1758,7 @@ export default function Home() {
                               {/* Timestamp overlay - top of thumbnail */}
                               <div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-1.5 text-xs">
                                 <p className="text-center leading-tight">
-                                  {new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB')} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  {resolveObservationDateTime(observation).toLocaleDateString('en-GB')} {resolveObservationDateTime(observation).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 </p>
                               </div>
 
@@ -1865,7 +1866,7 @@ export default function Home() {
                                   {/* Timestamp at top */}
                                   <div className="absolute top-0 left-0 right-0 bg-gray-800 text-white p-1.5 text-xs">
                                     <p className="text-center leading-tight">
-                                      {new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB')} {new Date(observation.taken_at || observation.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                      {resolveObservationDateTime(observation).toLocaleDateString('en-GB')} {resolveObservationDateTime(observation).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                     </p>
                                   </div>
 
@@ -2345,9 +2346,9 @@ export default function Home() {
       {user && (
         <ClaudeChat
           selectedObservations={selectedObservations}
-          allObservations={observations.filter(obs => obs.taken_at !== null).map(obs => ({
+          allObservations={observations.filter(obs => obs.taken_at !== null || obs.photo_date !== null).map(obs => ({
             ...obs,
-            taken_at: obs.taken_at!
+            taken_at: obs.taken_at || obs.photo_date || obs.created_at
           }))}
           onLoadMoreData={async (period: 'week' | 'month') => {
             await loadMoreObservations(user.id, period);

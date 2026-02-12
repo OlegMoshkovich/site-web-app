@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { resolveObservationDateTime } from '@/lib/observation-dates';
 
 // Initialize Claude client
 const anthropic = new Anthropic({
@@ -57,13 +58,15 @@ export async function sendToClaude(
 export async function analyzeObservations(observations: Array<{
   note?: string | null;
   labels?: string[] | null;
-  taken_at: string;
+  photo_date: string | null;
+  taken_at: string | null;
+  created_at: string;
 }>) {
   const systemPrompt = `You are an expert construction site analyst. Analyze the provided observations and provide insights about patterns, potential issues, and recommendations. Focus on safety, quality control, and project management insights.`;
 
   const observationSummary = observations.map((obs, index) => `
 Observation ${index + 1}:
-- Date: ${obs.taken_at}
+- Date: ${resolveObservationDateTime(obs).toISOString()}
 - Note: ${obs.note || 'No note provided'}
 - Labels: ${obs.labels?.join(', ') || 'No labels'}
   `).join('\n');
@@ -86,7 +89,9 @@ export async function generateReportSummary(
   observations: Array<{
     note?: string | null;
     labels?: string[] | null;
-    taken_at: string;
+    photo_date: string | null;
+    taken_at: string | null;
+    created_at: string;
   }>,
   reportTitle: string,
   customPrompt?: string
@@ -95,7 +100,7 @@ export async function generateReportSummary(
 
   const observationSummary = observations.map((obs, index) => `
 Observation ${index + 1}:
-- Date: ${obs.taken_at}
+- Date: ${resolveObservationDateTime(obs).toISOString()}
 - Note: ${obs.note || 'No note provided'}
 - Labels: ${obs.labels?.join(', ') || 'No labels'}
   `).join('\n');

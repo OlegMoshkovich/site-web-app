@@ -5,6 +5,7 @@ import { AuthButtonClient } from "@/components/auth-button-client";
 import { getNavbarClasses } from "@/lib/layout-constants";
 
 export default function ModelPage() {
+
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       {/* Top navigation bar matching non-signed-in state from index page */}
@@ -46,6 +47,7 @@ export default function ModelPage() {
           <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-white pointer-events-none" />
         </div>
       </div>
+      <div className="absolute bottom-0 left-0 h-[43px] w-full bg-white" />
     </div>
   );
 }

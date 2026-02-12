@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { fetchSharedObservation, getSignedPhotoUrl } from '@/lib/supabase/api';
 import { SharedPhotoViewer } from '@/components/shared-photo-viewer';
+import { resolveObservationDateTime } from '@/lib/observation-dates';
 
 interface SharedPhotoPageProps {
   params: Promise<{
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: SharedPhotoPageProps) {
     };
   }
 
-  const date = new Date(observation.taken_at || observation.created_at).toLocaleDateString('en-GB');
+  const date = resolveObservationDateTime(observation).toLocaleDateString('en-GB');
   
   return {
     title: `Shared Photo - ${date}`,

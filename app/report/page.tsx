@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { translations, type Language, useLanguage } from "@/lib/translations";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 import jsPDF from 'jspdf';
 
 // Type definition for jsPDF internal - using unknown for flexibility
@@ -30,6 +31,7 @@ interface Observation {
   anchor_x: number | null;
   anchor_y: number | null;
   photo_date: string | null;
+  taken_at: string | null;
   created_at: string;
   site_id: string | null;
   sites?: { name: string; logo_url?: string | null } | null;
@@ -399,8 +401,8 @@ function ReportPageContent() {
             // Add timestamp
             pdf.setFontSize(9);
             pdf.setFont('helvetica', 'normal');
-            const timestamp = new Date(observation.photo_date || observation.created_at).toLocaleDateString('de-DE') + ' ' + 
-                             new Date(observation.photo_date || observation.created_at).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+            const timestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE') + ' ' + 
+                             resolveObservationDateTime(observation).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
             pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
             textY += 10;
             

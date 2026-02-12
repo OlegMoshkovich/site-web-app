@@ -26,6 +26,7 @@ import { formatDate } from "@/lib/utils";
 import { generateWordReport, downloadWordDocument } from "@/lib/wordExport";
 import Image from "next/image";
 import { translations, type Language } from "@/lib/translations";
+import { resolveObservationDateTime } from "@/lib/observation-dates";
 
 interface Report {
   id: string;
@@ -53,8 +54,8 @@ interface Observation {
   anchor_x: number | null;
   anchor_y: number | null;
   photo_date: string | null;
-  created_at: string;
   taken_at: string | null;
+  created_at: string;
   latitude: number | null;
   longitude: number | null;
   site_id: string | null;
@@ -427,7 +428,7 @@ export default function ReportDetailPage() {
             pdf.setFont('helvetica', 'bold');
             pdf.text('Aufgenommen am: ', textStartX, textY);
             pdf.setFont('helvetica', 'normal');
-            const timestamp = new Date(observation.taken_at || observation.created_at).toLocaleDateString('de-DE', {
+            const timestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
@@ -945,7 +946,7 @@ export default function ReportDetailPage() {
 
                             {/* Date */}
                             <div className="text-xs text-gray-500 mt-auto">
-                              {formatDate(observation.taken_at || observation.created_at)}
+                              {formatDate(resolveObservationDateTime(observation).toISOString())}
                             </div>
                           </div>
                         </CardContent>
@@ -1048,7 +1049,7 @@ export default function ReportDetailPage() {
                   {selectedPhoto.note || `Fotodokumentation ${observations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {new Date(selectedPhoto.taken_at || selectedPhoto.created_at).toLocaleDateString('de-DE', {
+                  {resolveObservationDateTime(selectedPhoto).toLocaleDateString('de-DE', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
