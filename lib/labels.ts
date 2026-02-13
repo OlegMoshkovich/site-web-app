@@ -16,16 +16,15 @@ export interface LabelHierarchy {
 }
 
 /**
- * Get all labels for a specific site and user
+ * Get all labels for a specific site (all collaborators' labels)
  */
-export async function getLabelsForSite(siteId: string, userId: string): Promise<Label[]> {
+export async function getLabelsForSite(siteId: string, userId?: string): Promise<Label[]> {
   const supabase = createClient();
-  
+
   const { data: labels, error } = await supabase
     .from('labels')
     .select('id, name, description, category, parent_id, order_index')
     .eq('site_id', siteId)
-    .eq('user_id', userId)
     .eq('is_active', true)
     .order('category')
     .order('order_index')
