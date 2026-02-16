@@ -166,6 +166,13 @@ export default function SettingsPage() {
   const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
+  // Delete site modal state
+  const [deletingSite, setDeletingSite] = useState<{id: string; name: string} | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [siteStats, setSiteStats] = useState<{labels: number; plans: number; observations: number} | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isDeletingSite, setIsDeletingSite] = useState(false);
+
   // Edit site modal state
   const [editingSite, setEditingSite] = useState<{id: string; name: string; description?: string | null; logo_url?: string | null} | null>(null);
   const [editSiteName, setEditSiteName] = useState("");
@@ -729,30 +736,74 @@ export default function SettingsPage() {
 
 
   const handleDeleteSite = async (siteId: string, siteName: string) => {
-    const confirmed = window.confirm(`Are you sure you want to delete "${siteName}"? This action cannot be undone.`);
-    if (!confirmed) return;
-    
+    setDeletingSite({ id: siteId, name: siteName });
+    setDeleteConfirmName("");
+    setSiteStats(null);
+    setIsLoadingStats(true);
+
     try {
+      const [labelsResult, plansResult, observationsResult] = await Promise.all([
+        supabase
+          .from('labels')
+          .select('id', { count: 'exact', head: true })
+          .eq('site_id', siteId)
+          .eq('is_active', true),
+        supabase
+          .from('site_plans')
+          .select('id', { count: 'exact', head: true })
+          .eq('site_id', siteId),
+        supabase
+          .from('observations')
+          .select('id', { count: 'exact', head: true })
+          .eq('site_id', siteId),
+      ]);
+
+      setSiteStats({
+        labels: labelsResult.count ?? 0,
+        plans: plansResult.count ?? 0,
+        observations: observationsResult.count ?? 0,
+      });
+    } catch (error) {
+      console.error('Error fetching site stats:', error);
+      setSiteStats({ labels: 0, plans: 0, observations: 0 });
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  const handleConfirmDeleteSite = async () => {
+    if (!deletingSite || !user) return;
+
+    try {
+      setIsDeletingSite(true);
       const { error } = await supabase
         .from('sites')
         .delete()
-        .eq('id', siteId)
-        .eq('user_id', user?.id); // Extra safety check
-      
+        .eq('id', deletingSite.id)
+        .eq('user_id', user.id);
+
       if (error) {
         console.error('Error deleting site:', error);
         alert('Failed to delete site. Please try again.');
         return;
       }
-      
-      // Remove from local state
-      setSites(prev => prev.filter(site => site.id !== siteId));
-      
-      alert(`Site "${siteName}" deleted successfully.`);
+
+      setSites(prev => prev.filter(site => site.id !== deletingSite.id));
+      setDeletingSite(null);
+      setDeleteConfirmName("");
+      setSiteStats(null);
     } catch (error) {
       console.error('Error deleting site:', error);
       alert('Failed to delete site. Please try again.');
+    } finally {
+      setIsDeletingSite(false);
     }
+  };
+
+  const handleCloseDeletModal = () => {
+    setDeletingSite(null);
+    setDeleteConfirmName("");
+    setSiteStats(null);
   };
 
   const handleDeleteLabel = async (labelId: string, labelName: string) => {
@@ -2118,6 +2169,113 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Site Confirmation Modal */}
+      {deletingSite && (
+        <Modal
+          isOpen={!!deletingSite}
+          onClose={handleCloseDeletModal}
+        >
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Delete Site</h2>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+
+            <p className="text-gray-700 mb-4">
+              You are about to permanently delete <span className="font-semibold">"{deletingSite.name}"</span> and all of its associated data.
+            </p>
+
+            {/* Site stats */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-5">
+              <p className="text-sm font-medium text-gray-700 mb-3">The following data will be deleted:</p>
+              {isLoadingStats ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                  Loading site data...
+                </div>
+              ) : siteStats ? (
+                <ul className="space-y-2">
+                  <li className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2 text-gray-600">
+                      <Tags className="h-4 w-4 text-gray-400" />
+                      Labels
+                    </span>
+                    <span className={`font-semibold ${siteStats.labels > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                      {siteStats.labels}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2 text-gray-600">
+                      <FileImage className="h-4 w-4 text-gray-400" />
+                      Plans
+                    </span>
+                    <span className={`font-semibold ${siteStats.plans > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                      {siteStats.plans}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      Observations
+                    </span>
+                    <span className={`font-semibold ${siteStats.observations > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                      {siteStats.observations}
+                    </span>
+                  </li>
+                </ul>
+              ) : null}
+            </div>
+
+            {/* Name confirmation */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="deleteConfirmName">
+                Type <span className="font-semibold text-gray-900">{deletingSite.name}</span> to confirm deletion
+              </Label>
+              <Input
+                id="deleteConfirmName"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder={deletingSite.name}
+                disabled={isDeletingSite}
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCloseDeletModal}
+                disabled={isDeletingSite}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmDeleteSite}
+                disabled={deleteConfirmName !== deletingSite.name || isDeletingSite}
+                className="bg-red-600 hover:bg-red-700 text-white disabled:bg-red-300"
+              >
+                {isDeletingSite ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Site
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Edit Site Modal */}
       {editingSite && (
