@@ -421,9 +421,11 @@ export async function createObservations(
   }>,
   userId: string,
   siteId: string | null,
-  labels: string[] | null = null
+  labels: string[] | null = null,
+  anchor: { x: number; y: number } | null = null,
+  planId: string | null = null
 ): Promise<void> {
-  console.log('createObservations called', { uploadsCount: uploads.length, userId, siteId, labels });
+  console.log('createObservations called', { uploadsCount: uploads.length, userId, siteId, labels, anchor, planId });
 
   const supabase = createClient();
 
@@ -431,9 +433,11 @@ export async function createObservations(
   const observations = uploads.map(upload => ({
     user_id: userId,
     photo_url: upload.path,
-    ...(siteId && { site_id: siteId }), // Only include site_id if it's provided
-    ...(labels && labels.length > 0 && { labels }), // Only include labels if provided
-    ...(upload.takenAt && { taken_at: upload.takenAt })
+    ...(siteId && { site_id: siteId }),
+    ...(labels && labels.length > 0 && { labels }),
+    ...(upload.takenAt && { taken_at: upload.takenAt }),
+    ...(anchor && { plan_anchor: { x: anchor.x, y: anchor.y } }),
+    ...(planId && { plan: planId }),
   }));
 
   console.log('Inserting observations:', observations);

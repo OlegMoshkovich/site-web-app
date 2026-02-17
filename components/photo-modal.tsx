@@ -67,12 +67,9 @@ export function PhotoModal({
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
   const [planImageLoading, setPlanImageLoading] = useState(false);
 
-  // Resolve anchor coordinates — support both plan_anchor object and flat anchor_x/anchor_y
-  const obs = observation as any;
-  const anchorX: number | null =
-    obs.plan_anchor?.x != null ? Number(obs.plan_anchor.x) : observation.anchor_x ?? null;
-  const anchorY: number | null =
-    obs.plan_anchor?.y != null ? Number(obs.plan_anchor.y) : observation.anchor_y ?? null;
+  // Resolve anchor coordinates from plan_anchor (jsonb)
+  const anchorX: number | null = observation.plan_anchor?.x ?? null;
+  const anchorY: number | null = observation.plan_anchor?.y ?? null;
   const hasPlanAnchor =
     anchorX != null && anchorY != null && !(anchorX === 0 && anchorY === 0);
 
@@ -98,7 +95,7 @@ export function PhotoModal({
         if (cancelled || error || !data || data.length === 0) return;
 
         // Prefer the plan the observation was recorded on, fall back to the first plan
-        const planId: string | null = obs.plan ?? null;
+        const planId: string | null = observation.plan ?? null;
         const match = data.find((p: any) => p.id === planId) ?? data[0];
 
         const fileName = match.plan_url.split('/').pop()?.split('?')[0];
@@ -657,11 +654,11 @@ export function PhotoModal({
               </div>
               
               <div className="space-y-2">
-                {observation.latitude != null && observation.longitude != null && (
+                {observation.gps_lat != null && observation.gps_lng != null && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="h-4 w-4" />
                     <span>
-                      GPS: {observation.latitude.toFixed(6)}, {observation.longitude.toFixed(6)}
+                      GPS: {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
                     </span>
                   </div>
                 )}

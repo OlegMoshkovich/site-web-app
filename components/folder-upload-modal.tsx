@@ -36,6 +36,7 @@ import type {
 } from '@/types/upload';
 import { COMPRESSION_PRESETS } from '@/types/upload';
 import { getLabelsForSite, type Label } from '@/lib/labels';
+import WebPlanWidget from '@/src/features/WebPlanWidget';
 
 interface FolderUploadModalProps {
   isOpen: boolean;
@@ -64,6 +65,8 @@ export function FolderUploadModal({
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [isLoadingLabels, setIsLoadingLabels] = useState(false);
+  const [pendingAnchor, setPendingAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
 
   // Initialize files with progress tracking
   useEffect(() => {
@@ -112,6 +115,8 @@ export function FolderUploadModal({
       setSelectedSiteId(initialSiteId || '');
       setAvailableLabels([]);
       setSelectedLabels([]);
+      setPendingAnchor(null);
+      setPendingPlanId(null);
       console.log('FolderUploadModal: State reset complete');
     }
   }, [isOpen, initialSiteId]);
@@ -130,6 +135,8 @@ export function FolderUploadModal({
         const labels = await getLabelsForSite(selectedSiteId, userId);
         setAvailableLabels(labels);
         setSelectedLabels([]);
+        setPendingAnchor(null);
+        setPendingPlanId(null);
       } catch (error) {
         console.error('Error fetching labels:', error);
         setAvailableLabels([]);
@@ -264,7 +271,9 @@ export function FolderUploadModal({
             successfulUploads,
             userId,
             selectedSiteId || null,
-            selectedLabels.length > 0 ? selectedLabels : null
+            selectedLabels.length > 0 ? selectedLabels : null,
+            pendingAnchor,
+            pendingPlanId
           );
           console.log('Observations created successfully');
         } catch (error) {
@@ -419,6 +428,39 @@ export function FolderUploadModal({
                   {selectedLabels.length > 0 && ` (${selectedLabels.length} selected)`}
                 </p>
               </>
+            )}
+          </div>
+        )}
+
+        {/* Plan Position */}
+        {!uploadSummary && selectedSiteId && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              Plan Position (Optional):
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Select a plan and click to place an anchor. Applied to all uploaded images.
+            </p>
+            <WebPlanWidget
+              siteId={selectedSiteId}
+              userId={userId}
+              onAnchorDrop={isProcessing ? undefined : (anchor, planId) => {
+                setPendingAnchor(anchor);
+                setPendingPlanId(planId);
+              }}
+              pendingAnchor={pendingAnchor}
+            />
+            {pendingAnchor && (
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-green-600">Anchor placed.</p>
+                <button
+                  onClick={() => { setPendingAnchor(null); setPendingPlanId(null); }}
+                  disabled={isProcessing}
+                  className="text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                >
+                  Clear
+                </button>
+              </div>
             )}
           </div>
         )}

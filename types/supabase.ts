@@ -14,49 +14,52 @@ export interface Database {
           id: string
           user_id: string
           site_id: string | null
+          site_name: string | null
           created_at: string
-          updated_at: string
           photo_url: string | null
           note: string | null
-          anchor_x: number | null
-          anchor_y: number | null
-          labels: string[] | null
-          latitude: number | null
-          longitude: number | null
+          plan: string | null
+          plan_url: string | null
+          plan_anchor: { x: number; y: number } | null
           photo_date: string | null
           taken_at: string | null
+          labels: string[] | null
+          gps_lat: number | null
+          gps_lng: number | null
         }
         Insert: {
           id?: string
           user_id: string
           site_id?: string | null
+          site_name?: string | null
           created_at?: string
-          updated_at?: string
           photo_url?: string | null
           note?: string | null
-          anchor_x?: number | null
-          anchor_y?: number | null
-          labels?: string[] | null
-          latitude?: number | null
-          longitude?: number | null
+          plan?: string | null
+          plan_url?: string | null
+          plan_anchor?: { x: number; y: number } | null
           photo_date?: string | null
           taken_at?: string | null
+          labels?: string[] | null
+          gps_lat?: number | null
+          gps_lng?: number | null
         }
         Update: {
           id?: string
           user_id?: string
           site_id?: string | null
+          site_name?: string | null
           created_at?: string
-          updated_at?: string
           photo_url?: string | null
           note?: string | null
-          anchor_x?: number | null
-          anchor_y?: number | null
-          labels?: string[] | null
-          latitude?: number | null
-          longitude?: number | null
+          plan?: string | null
+          plan_url?: string | null
+          plan_anchor?: { x: number; y: number } | null
           photo_date?: string | null
           taken_at?: string | null
+          labels?: string[] | null
+          gps_lat?: number | null
+          gps_lng?: number | null
         }
       }
       profiles: {
