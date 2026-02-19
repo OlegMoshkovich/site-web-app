@@ -401,25 +401,21 @@ export function PhotoModal({
       : '';
 
     // ── Plan block ────────────────────────────────────────────────────────────
-    // Anchor dot is absolutely positioned using the saved normalised coordinates.
-    // The plan-wrap is kept at exactly 320 × 240 px so the numbers stay correct.
-    // We never call toDataURL(), avoiding tainted-canvas CORS errors entirely.
-    const dotL = (anchorX ?? 0) * 320 - 6;
-    const dotT = (anchorY ?? 0) * 240 - 6;   // scaled from 280 → 240
+    // Use percentage-based positioning so the dot stays correct at any width.
+    const dotL = `${((anchorX ?? 0) * 100).toFixed(2)}%`;
+    const dotT = `${((anchorY ?? 0) * 100).toFixed(2)}%`;
 
     let planBlock = '';
     if (hasPlanAnchor && planImageData) {
-      const dot     = `<div class="dot" style="left:${dotL}px;top:${dotT}px;"></div>`;
+      const dot = `<div class="dot" style="left:${dotL};top:${dotT};transform:translate(-50%,-50%);"></div>`;
       const namebar = `<div class="plan-name">${planImageData.name}</div>`;
 
       if (planImageData.isPdf) {
-        // Re-render the PDF inside the print window via an inline ES-module script.
-        // Rendering to a <canvas> for display (not export) is allowed on tainted origins.
         planBlock = `
-<div class="plan-col">
+<div>
   <div class="col-head">Plan Position</div>
   <div class="plan-wrap">
-    <canvas id="pc" width="320" height="240" style="display:block;width:320px;height:240px;"></canvas>
+    <canvas id="pc" width="320" height="240" style="display:block;width:100%;height:auto;"></canvas>
     ${dot}${namebar}
   </div>
 </div>
@@ -443,10 +439,10 @@ export function PhotoModal({
 <\/script>`;
       } else {
         planBlock = `
-<div class="plan-col">
+<div>
   <div class="col-head">Plan Position</div>
   <div class="plan-wrap">
-    <img src="${planImageData.url}" style="width:320px;height:240px;object-fit:contain;display:block;" />
+    <img src="${planImageData.url}" style="width:100%;max-height:300px;object-fit:contain;display:block;" />
     ${dot}${namebar}
   </div>
 </div>`;
@@ -469,15 +465,15 @@ export function PhotoModal({
   .logo{width:34px;height:34px;object-fit:contain;border-radius:3px;flex-shrink:0}
   .site{font-size:14px;font-weight:700;line-height:1.2}
   .date{font-size:10px;color:#555}
-  /* Two-column visual row */
-  .visual-row{display:grid;grid-template-columns:1fr 330px;gap:12px;margin-bottom:10px;align-items:start}
-  .visual-row.no-plan{grid-template-columns:1fr}
+  /* Visual section: column layout (photo then plan stacked) */
+  .visual-col{display:flex;flex-direction:column;gap:12px;margin-bottom:10px}
   .col-head{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:4px}
   /* Photo */
   .photo-wrap{border:1px solid #e5e7eb;overflow:hidden}
-  .photo-wrap img{width:100%;max-height:260px;object-fit:contain;display:block}
+  .photo-wrap img{width:100%;max-height:340px;object-fit:contain;display:block}
+  .no-plan .photo-wrap img{max-height:440px}
   /* Plan */
-  .plan-wrap{position:relative;display:inline-block;border:1px solid #e5e7eb;overflow:hidden;width:320px}
+  .plan-wrap{position:relative;display:block;border:1px solid #e5e7eb;overflow:hidden;width:100%}
   .dot{position:absolute;width:12px;height:12px;border-radius:50%;background:red;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);pointer-events:none}
   .plan-name{font-size:10px;color:#6b7280;padding:2px 5px;background:#f9fafb;border-top:1px solid #e5e7eb}
   /* Info */
@@ -489,7 +485,7 @@ export function PhotoModal({
   .note{font-size:11px;line-height:1.55;color:#374151;white-space:pre-wrap}
   .tags{display:flex;flex-wrap:wrap;gap:3px}
   .tag{font-size:10px;border:1px solid #d1d5db;border-radius:3px;padding:1px 5px;color:#374151}
-  @media print{body{padding:0}@page{margin:10mm;size:A4}.visual-row{break-inside:avoid}}
+  @media print{body{padding:0}@page{margin:10mm;size:A4}.visual-col>div{break-inside:avoid}}
 </style>
 </head><body>
 
@@ -501,8 +497,8 @@ export function PhotoModal({
   </div>
 </div>
 
-<div class="visual-row${planBlock ? '' : ' no-plan'}">
-  ${imageUrl ? `<div><div class="col-head">Photo</div><div class="photo-wrap"><img src="${imageUrl}" alt="photo"/></div></div>` : '<div></div>'}
+<div class="visual-col${planBlock ? '' : ' no-plan'}">
+  ${imageUrl ? `<div><div class="col-head">Photo</div><div class="photo-wrap"><img src="${imageUrl}" alt="photo"/></div></div>` : ''}
   ${planBlock}
 </div>
 
