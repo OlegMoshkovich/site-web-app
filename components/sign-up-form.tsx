@@ -49,16 +49,22 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: invitationToken 
+          emailRedirectTo: invitationToken
             ? `${window.location.origin}/invitations/${invitationToken}`
             : `${window.location.origin}/onboarding`,
         },
       });
       if (error) throw error;
+      // When email confirmations are on, Supabase returns an empty identities
+      // array for an already-registered address instead of raising an error.
+      if (data.user?.identities?.length === 0) {
+        setError(t('accountAlreadyExists'));
+        return;
+      }
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

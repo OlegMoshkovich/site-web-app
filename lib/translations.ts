@@ -23,6 +23,7 @@ export const translations = {
     passwordsDoNotMatch: "Passwords do not match",
     creatingAccount: "Creating an account",
     alreadyHaveAccount: "Already have an account?",
+    accountAlreadyExists: "An account with this email already exists. Please log in instead.",
     
     // Date selection
     start: "Start:",
@@ -348,6 +349,7 @@ export const translations = {
     passwordsDoNotMatch: "Passwörter stimmen nicht überein",
     creatingAccount: "Konto wird erstellt",
     alreadyHaveAccount: "Bereits ein Konto?",
+    accountAlreadyExists: "Ein Konto mit dieser E-Mail-Adresse existiert bereits. Bitte melden Sie sich an.",
     
     // Date selection
     start: "Start:",
