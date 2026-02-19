@@ -67,6 +67,10 @@ export function PhotoModal({
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
   const [planImageLoading, setPlanImageLoading] = useState(false);
 
+  // Plan anchor editing state
+  const [editingPlanAnchor, setEditingPlanAnchor] = useState(false);
+  const [pendingAnchor, setPendingAnchor] = useState<{ x: number; y: number } | null>(null);
+
   // Resolve anchor coordinates from plan_anchor (jsonb)
   const anchorX: number | null = observation.plan_anchor?.x ?? null;
   const anchorY: number | null = observation.plan_anchor?.y ?? null;
@@ -277,6 +281,8 @@ export function PhotoModal({
     setEditingLabels(false);
     setEditNoteValue("");
     setSelectedLabelNames(new Set(observation.labels || []));
+    setEditingPlanAnchor(false);
+    setPendingAnchor(null);
   }, [observation.id, observation.labels]);
 
   const handleShare = useCallback(async () => {
@@ -383,6 +389,44 @@ export function PhotoModal({
       setIsSaving(false);
     }
   }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
+
+  const handlePlanImageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!editingPlanAnchor) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    setPendingAnchor({ x, y });
+  }, [editingPlanAnchor]);
+
+  const handleSavePlanAnchor = useCallback(async () => {
+    if (!pendingAnchor) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("observations")
+        .update({ plan_anchor: pendingAnchor })
+        .eq("id", observation.id);
+
+      if (error) {
+        console.error("Error updating plan anchor:", error);
+        alert("Error updating plan position. Please try again.");
+        return;
+      }
+
+      const updatedObservation = { ...observation, plan_anchor: pendingAnchor };
+      if (onObservationUpdate) {
+        onObservationUpdate(updatedObservation);
+      }
+
+      setEditingPlanAnchor(false);
+      setPendingAnchor(null);
+    } catch (error) {
+      console.error("Error updating plan anchor:", error);
+      alert("Error updating plan position. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [supabase, observation, pendingAnchor, onObservationUpdate]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
@@ -669,7 +713,41 @@ export function PhotoModal({
             {/* Plan preview */}
             {hasPlanAnchor && (
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Plan Position</h4>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900">Plan Position</h4>
+                  {!editingPlanAnchor ? (
+                    <button
+                      onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
+                      className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                      title="Edit plan position"
+                      disabled={isSaving}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={handleSavePlanAnchor}
+                        className="text-green-600 hover:text-green-700 transition-colors p-1"
+                        title="Save"
+                        disabled={isSaving || !pendingAnchor}
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => { setEditingPlanAnchor(false); setPendingAnchor(null); }}
+                        className="text-gray-500 hover:text-red-600 transition-colors p-1"
+                        title="Cancel"
+                        disabled={isSaving}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {editingPlanAnchor && (
+                  <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                )}
                 {planImageLoading ? (
                   <div
                     className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50"
@@ -680,7 +758,8 @@ export function PhotoModal({
                 ) : planImageData ? (
                   <div
                     className="relative border border-gray-200 rounded-lg overflow-hidden"
-                    style={{ width: 320, height: 280 }}
+                    style={{ width: 320, height: 280, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
+                    onClick={handlePlanImageClick}
                   >
                     {planImageData.isPdf ? (
                       <PdfPlanCanvas url={planImageData.url} width={320} height={280} />
@@ -692,20 +771,26 @@ export function PhotoModal({
                         style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
                       />
                     )}
-                    {/* Anchor dot — sits above both img and iframe via DOM layering */}
-                    <div
-                      className="absolute pointer-events-none"
-                      style={{
-                        left: anchorX! * 320 - 7,
-                        top: anchorY! * 280 - 7,
-                        width: 14,
-                        height: 14,
-                        borderRadius: 7,
-                        backgroundColor: 'red',
-                        border: '2px solid white',
-                        zIndex: 10,
-                      }}
-                    />
+                    {/* Anchor dot — shows pending position while editing, otherwise saved position */}
+                    {(() => {
+                      const displayX = pendingAnchor ? pendingAnchor.x : anchorX!;
+                      const displayY = pendingAnchor ? pendingAnchor.y : anchorY!;
+                      return (
+                        <div
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: displayX * 320 - 7,
+                            top: displayY * 280 - 7,
+                            width: 14,
+                            height: 14,
+                            borderRadius: 7,
+                            backgroundColor: pendingAnchor ? 'blue' : 'red',
+                            border: '2px solid white',
+                            zIndex: 10,
+                          }}
+                        />
+                      );
+                    })()}
                     <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
                       {planImageData.name}
                     </div>
