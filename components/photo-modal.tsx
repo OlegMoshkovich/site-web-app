@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -390,6 +390,142 @@ export function PhotoModal({
     }
   }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
 
+  const handlePrint = useCallback(() => {
+    const dateStr = resolveObservationDateTime(observation).toLocaleString('en-GB');
+    const siteName = observation.sites?.name || '';
+    const labels  = observation.labels ? [...new Set(observation.labels)] : [];
+    const note     = observation.note || '';
+    const createdBy = observation.user_email || `User ${observation.user_id.slice(0, 8)}...`;
+    const logoHtml  = observation.sites?.logo_url
+      ? `<img src="${observation.sites.logo_url}" class="logo" />`
+      : '';
+
+    // ── Plan block ────────────────────────────────────────────────────────────
+    // Anchor dot is absolutely positioned using the saved normalised coordinates.
+    // The plan-wrap is kept at exactly 320 × 240 px so the numbers stay correct.
+    // We never call toDataURL(), avoiding tainted-canvas CORS errors entirely.
+    const dotL = (anchorX ?? 0) * 320 - 6;
+    const dotT = (anchorY ?? 0) * 240 - 6;   // scaled from 280 → 240
+
+    let planBlock = '';
+    if (hasPlanAnchor && planImageData) {
+      const dot     = `<div class="dot" style="left:${dotL}px;top:${dotT}px;"></div>`;
+      const namebar = `<div class="plan-name">${planImageData.name}</div>`;
+
+      if (planImageData.isPdf) {
+        // Re-render the PDF inside the print window via an inline ES-module script.
+        // Rendering to a <canvas> for display (not export) is allowed on tainted origins.
+        planBlock = `
+<div class="plan-col">
+  <div class="col-head">Plan Position</div>
+  <div class="plan-wrap">
+    <canvas id="pc" width="320" height="240" style="display:block;width:320px;height:240px;"></canvas>
+    ${dot}${namebar}
+  </div>
+</div>
+<script type="module">
+  import * as pdfjs from 'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.mjs';
+  pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+  const W=320,H=240;
+  const pdf  = await pdfjs.getDocument({url:'${planImageData.url}'}).promise;
+  const page = await pdf.getPage(1);
+  const vp0  = page.getViewport({scale:1});
+  const sc   = Math.min(W/vp0.width, H/vp0.height);
+  const vp   = page.getViewport({scale:sc});
+  const cv   = document.getElementById('pc');
+  const ctx  = cv.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  const ox=Math.floor((W-vp.width)/2), oy=Math.floor((H-vp.height)/2);
+  const tmp=document.createElement('canvas');
+  tmp.width=Math.ceil(vp.width); tmp.height=Math.ceil(vp.height);
+  await page.render({canvas:tmp,viewport:vp}).promise;
+  ctx.drawImage(tmp,ox,oy); pdf.destroy();
+<\/script>`;
+      } else {
+        planBlock = `
+<div class="plan-col">
+  <div class="col-head">Plan Position</div>
+  <div class="plan-wrap">
+    <img src="${planImageData.url}" style="width:320px;height:240px;object-fit:contain;display:block;" />
+    ${dot}${namebar}
+  </div>
+</div>`;
+      }
+    }
+
+    // ── HTML ──────────────────────────────────────────────────────────────────
+    const safeNote = note.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const isPdf    = planImageData?.isPdf ?? false;
+
+    const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<title>Observation – ${dateStr}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;color:#111;background:#fff;padding:18px;max-width:740px;margin:0 auto}
+  /* Header */
+  .hdr{display:flex;align-items:center;gap:10px;padding-bottom:8px;margin-bottom:10px;border-bottom:2px solid #111}
+  .logo{width:34px;height:34px;object-fit:contain;border-radius:3px;flex-shrink:0}
+  .site{font-size:14px;font-weight:700;line-height:1.2}
+  .date{font-size:10px;color:#555}
+  /* Two-column visual row */
+  .visual-row{display:grid;grid-template-columns:1fr 330px;gap:12px;margin-bottom:10px;align-items:start}
+  .visual-row.no-plan{grid-template-columns:1fr}
+  .col-head{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:4px}
+  /* Photo */
+  .photo-wrap{border:1px solid #e5e7eb;overflow:hidden}
+  .photo-wrap img{width:100%;max-height:260px;object-fit:contain;display:block}
+  /* Plan */
+  .plan-wrap{position:relative;display:inline-block;border:1px solid #e5e7eb;overflow:hidden;width:320px}
+  .dot{position:absolute;width:12px;height:12px;border-radius:50%;background:red;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);pointer-events:none}
+  .plan-name{font-size:10px;color:#6b7280;padding:2px 5px;background:#f9fafb;border-top:1px solid #e5e7eb}
+  /* Info */
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;margin-bottom:7px}
+  .row{font-size:11px;color:#374151}
+  .row b{font-weight:600}
+  .section{margin-bottom:7px}
+  .lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:3px}
+  .note{font-size:11px;line-height:1.55;color:#374151;white-space:pre-wrap}
+  .tags{display:flex;flex-wrap:wrap;gap:3px}
+  .tag{font-size:10px;border:1px solid #d1d5db;border-radius:3px;padding:1px 5px;color:#374151}
+  @media print{body{padding:0}@page{margin:10mm;size:A4}.visual-row{break-inside:avoid}}
+</style>
+</head><body>
+
+<div class="hdr">
+  ${logoHtml}
+  <div>
+    ${siteName ? `<div class="site">${siteName}</div>` : ''}
+    <div class="date">${dateStr}</div>
+  </div>
+</div>
+
+<div class="visual-row${planBlock ? '' : ' no-plan'}">
+  ${imageUrl ? `<div><div class="col-head">Photo</div><div class="photo-wrap"><img src="${imageUrl}" alt="photo"/></div></div>` : '<div></div>'}
+  ${planBlock}
+</div>
+
+${note ? `<div class="section"><div class="lbl">Description</div><p class="note">${safeNote}</p></div>` : ''}
+
+<div class="info">
+  <div class="row"><b>Created by:</b> ${createdBy}</div>
+  ${observation.gps_lat != null && observation.gps_lng != null ? `<div class="row"><b>GPS:</b> ${observation.gps_lat.toFixed(6)}, ${observation.gps_lng.toFixed(6)}</div>` : ''}
+</div>
+
+${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div class="tags">${labels.map(l=>`<span class="tag">${l}</span>`).join('')}</div></div>` : ''}
+
+<script>
+  window.onload = function(){ setTimeout(function(){ window.print(); }, ${isPdf ? 2500 : 700}); };
+<\/script>
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+  }, [observation, imageUrl, hasPlanAnchor, planImageData, anchorX, anchorY]);
+
   const handlePlanImageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!editingPlanAnchor) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -467,6 +603,13 @@ export function PhotoModal({
                 <Share className="h-4 w-4" />
               </button>
               <button
+                onClick={handlePrint}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                aria-label="Print"
+              >
+                <Printer className="h-4 w-4" />
+              </button>
+              <button
                 onClick={zoomIn}
                 className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
                 aria-label="Zoom in"
@@ -494,15 +637,22 @@ export function PhotoModal({
             </div>
           )}
 
-          {/* Share button for text-only notes */}
+          {/* Share + print for text-only notes */}
           {!imageUrl && (
-            <div className="absolute top-4 right-4 z-30">
+            <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
               <button
                 onClick={handleShare}
                 className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
                 aria-label="Share note"
               >
                 <Share className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handlePrint}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                aria-label="Print"
+              >
+                <Printer className="h-4 w-4" />
               </button>
             </div>
           )}
