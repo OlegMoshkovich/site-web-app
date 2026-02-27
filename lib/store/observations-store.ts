@@ -44,7 +44,9 @@ interface ObservationsState {
   availableLabels: string[];
   siteLabels: Map<string, Label[]>; // Map of site_id -> Label[]
   currentUserId: string | null;
-  
+  searchResults: ObservationWithUrl[];
+  isSearching: boolean;
+
   // Actions
   setObservations: (observations: ObservationWithUrl[]) => void;
   addObservations: (observations: ObservationWithUrl[]) => void;
@@ -58,15 +60,17 @@ interface ObservationsState {
   setAvailableLabels: (labels: string[]) => void;
   setSiteLabels: (siteId: string, labels: Label[]) => void;
   fetchSiteLabels: (siteId: string, userId: string) => Promise<void>;
-  
+
   // Async actions
   fetchInitialObservations: (userId: string) => Promise<void>;
   loadMoreObservations: (userId: string, type: 'day' | 'week' | 'month') => Promise<void>;
   fetchDates: (userId: string) => Promise<void>;
   processPhotos: () => Promise<void>;
-  
+  performSearch: (userId: string, query: string) => Promise<void>;
+
   // Utility actions
   clearStore: () => void;
+  clearSearch: () => void;
 }
 
 export const useObservationsStore = create<ObservationsState>((set, get) => ({
@@ -82,6 +86,8 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   availableLabels: [],
   siteLabels: new Map(),
   currentUserId: null,
+  searchResults: [],
+  isSearching: false,
   
   // Basic setters
   setObservations: (observations) => set({ observations }),
@@ -372,7 +378,31 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     }
   },
   
+  performSearch: async (userId: string, query: string) => {
+    if (!query.trim()) {
+      set({ searchResults: [], isSearching: false });
+      return;
+    }
+    set({ isSearching: true });
+    try {
+      const { searchObservationsInDB, getSignedPhotoUrl } = await import('@/lib/supabase/api');
+      const results = await searchObservationsInDB(userId, query);
+      const withUrls: ObservationWithUrl[] = await Promise.all(
+        results.map(async (o) => ({
+          ...o,
+          signedUrl: o.photo_url ? await getSignedPhotoUrl(o.photo_url, 3600) : null,
+        }))
+      );
+      set({ searchResults: withUrls, isSearching: false });
+    } catch (error) {
+      console.error('Search error:', error);
+      set({ isSearching: false });
+    }
+  },
+
   // Utility actions
+  clearSearch: () => set({ searchResults: [], isSearching: false }),
+
   clearStore: () => set({
     observations: [],
     observationsWithPhotos: [],
@@ -385,5 +415,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     availableLabels: [],
     siteLabels: new Map(),
     currentUserId: null,
+    searchResults: [],
+    isSearching: false,
   }),
 }));
