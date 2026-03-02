@@ -53,6 +53,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 // Translation system
 import { translations, useLanguage } from "@/lib/translations";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
@@ -1416,50 +1417,14 @@ export default function Home() {
                 {showDateSelector && (
                   <div className="sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="startDate"
-                          className="text-sm font-medium text-muted-foreground"
-                        >
-                          {t("start")}
-                        </label>
-                        <input
-                          type="date"
-                          id="startDate"
-                          value={startDate}
-                          onChange={(e) => {
-                            const newStartDate = e.target.value;
-                            setStartDate(newStartDate);
-
-                            // No longer auto-selecting - just filtering the display
-                          }}
-                          min={getAvailableDateRange().min}
-                          max={endDate || getAvailableDateRange().max}
-                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="endDate"
-                          className="text-sm font-medium text-muted-foreground"
-                        >
-                          {t("end")}
-                        </label>
-                        <input
-                          type="date"
-                          id="endDate"
-                          value={endDate}
-                          onChange={(e) => {
-                            const newEndDate = e.target.value;
-                            setEndDate(newEndDate);
-
-                            // No longer auto-selecting - just filtering the display
-                          }}
-                          min={startDate || getAvailableDateRange().min}
-                          max={getAvailableDateRange().max}
-                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
-                        />
-                      </div>
+                      <DateRangePicker
+                        startDate={startDate}
+                        endDate={endDate}
+                        onStartDateChange={setStartDate}
+                        onEndDateChange={setEndDate}
+                        startLabel={t("start")}
+                        endLabel={t("end")}
+                      />
 
                       <div className="flex flex-col gap-1">
                         <label

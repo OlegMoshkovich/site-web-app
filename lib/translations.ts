@@ -32,7 +32,7 @@ export const translations = {
     clear: "Clear",
     selectAll: "Select All",
     unselectAll: "Unselect All",
-    filteringNote: "*Only loaded observations can be filtered. If date options are disabled, please load more observations.",
+    filteringNote: "*Only loaded observations can be filtered.",
     
     // Selection status
     clickToSelect: "Click on observations to select them.",
@@ -358,7 +358,7 @@ export const translations = {
     clear: "Löschen",
     selectAll: "Alle auswählen",
     unselectAll: "Alle abwählen",
-    filteringNote: "*Nur geladene Beobachtungen können gefiltert werden. Wenn Datumsoptionen deaktiviert sind, laden Sie bitte mehr Beobachtungen.",
+    filteringNote: "*Nur geladene Beobachtungen können gefiltert werden.",
     
     // Selection status
     clickToSelect: "Klicken Sie auf Beobachtungen, um sie auszuwählen.",
