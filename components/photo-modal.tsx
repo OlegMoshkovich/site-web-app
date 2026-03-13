@@ -660,8 +660,8 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
           )}
           
-          {/* Timestamp and elevation tags overlay - centered at bottom */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
+          {/* Timestamp and elevation tags overlay - full width bottom */}
+          <div className="absolute bottom-0 left-0 right-0 z-30 bg-black/70 text-white px-3 py-2 text-xs flex items-center gap-2 flex-wrap">
             <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
