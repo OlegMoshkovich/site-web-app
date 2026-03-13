@@ -977,28 +977,64 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                {/* Label grid — scrollable */}
+                {/* Label hierarchy — scrollable */}
                 <div className="flex-1 overflow-y-auto px-6 py-4">
                   {siteLabels.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {[...siteLabels].sort((a, b) => a.order_index - b.order_index).map((label) => (
-                        <button
-                          key={label.id}
-                          onClick={() => handleToggleLabel(label.name)}
-                          disabled={isSaving}
-                          className={`
-                            px-3 py-1.5 text-sm rounded-md border transition-all
-                            ${selectedLabelNames.has(label.name)
-                              ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                            }
-                            disabled:opacity-50 disabled:cursor-not-allowed
-                          `}
-                          title={label.description || label.name}
-                        >
-                          {label.name}
-                        </button>
-                      ))}
+                    <div className="space-y-5">
+                      {(['location', 'gewerk', 'type'] as const).map(category => {
+                        const sorted = [...siteLabels]
+                          .filter(l => l.category === category)
+                          .sort((a, b) => a.order_index - b.order_index);
+                        if (sorted.length === 0) return null;
+                        const parents = sorted.filter(l => !l.parent_id);
+                        const childrenMap = sorted.reduce<Record<string, typeof sorted>>((acc, l) => {
+                          if (l.parent_id) {
+                            (acc[l.parent_id] ??= []).push(l);
+                          }
+                          return acc;
+                        }, {});
+                        // labels with no parent in this list (orphans treated as top-level)
+                        const labelBtn = (label: typeof sorted[0]) => (
+                          <button
+                            key={label.id}
+                            onClick={() => handleToggleLabel(label.name)}
+                            disabled={isSaving}
+                            className={`px-3 py-1.5 text-sm border transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                              ${selectedLabelNames.has(label.name)
+                                ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
+                                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                              }`}
+                            title={label.description || label.name}
+                          >
+                            {label.name}
+                          </button>
+                        );
+                        return (
+                          <div key={category}>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                              {category}
+                            </p>
+                            <div className="space-y-1.5">
+                              {parents.map(parent => (
+                                <div key={parent.id}>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {labelBtn(parent)}
+                                  </div>
+                                  {childrenMap[parent.id] && (
+                                    <div className="flex flex-wrap gap-1.5 mt-1.5 ml-4 pl-2 border-l-2 border-gray-100">
+                                      {childrenMap[parent.id].map(child => labelBtn(child))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {/* children whose parent isn't in this list */}
+                              {sorted.filter(l => l.parent_id && !parents.find(p => p.id === l.parent_id)).map(l => (
+                                <div key={l.id} className="flex flex-wrap gap-1.5">{labelBtn(l)}</div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-sm text-gray-500 p-3 border border-gray-200 rounded-md">
