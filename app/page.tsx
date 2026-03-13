@@ -1011,36 +1011,11 @@ export default function Home() {
 
   // Save filter values to cookies when they change
   useEffect(() => {
-    if (startDate) {
-      setCookie('filter_startDate', startDate);
-    } else {
-      deleteCookie('filter_startDate');
-    }
-  }, [startDate, setCookie, deleteCookie]);
-
-  useEffect(() => {
-    if (endDate) {
-      setCookie('filter_endDate', endDate);
-    } else {
-      deleteCookie('filter_endDate');
-    }
-  }, [endDate, setCookie, deleteCookie]);
-
-  useEffect(() => {
-    if (selectedUserId) {
-      setCookie('filter_userId', selectedUserId);
-    } else {
-      deleteCookie('filter_userId');
-    }
-  }, [selectedUserId, setCookie, deleteCookie]);
-
-  useEffect(() => {
-    if (selectedSiteId) {
-      setCookie('filter_siteId', selectedSiteId);
-    } else {
-      deleteCookie('filter_siteId');
-    }
-  }, [selectedSiteId, setCookie, deleteCookie]);
+    startDate ? setCookie('filter_startDate', startDate) : deleteCookie('filter_startDate');
+    endDate ? setCookie('filter_endDate', endDate) : deleteCookie('filter_endDate');
+    selectedUserId ? setCookie('filter_userId', selectedUserId) : deleteCookie('filter_userId');
+    selectedSiteId ? setCookie('filter_siteId', selectedSiteId) : deleteCookie('filter_siteId');
+  }, [startDate, endDate, selectedUserId, selectedSiteId, setCookie, deleteCookie]);
 
   // Extract users from observations when they change
   useEffect(() => {
