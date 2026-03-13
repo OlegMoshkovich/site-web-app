@@ -27,6 +27,7 @@ import { generateWordReport, downloadWordDocument } from "@/lib/wordExport";
 import Image from "next/image";
 import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
+import { getLabelsForSite, type Label } from "@/lib/labels";
 
 interface Report {
   id: string;
@@ -262,11 +263,52 @@ export default function ReportDetailPage() {
     if (error) console.error('Error updating report:', error);
   }, [report, supabase, reportId]);
 
-  const handleUpdateObservationNote = useCallback(async (observationId: string, note: string) => {
+  // Pending observation changes — accumulated locally, committed on button press
+  const [pendingChanges, setPendingChanges] = useState<Record<string, { note?: string | null; labels?: string[] | null }>>({});
+  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleUpdateObservationNote = useCallback((observationId: string, note: string) => {
     setObservations(prev => prev.map(o => o.id === observationId ? { ...o, note: note || null } : o));
-    const { error } = await supabase.from('observations').update({ note: note || null }).eq('id', observationId);
-    if (error) console.error('Error updating observation note:', error);
-  }, [supabase]);
+    setPendingChanges(prev => ({ ...prev, [observationId]: { ...prev[observationId], note: note || null } }));
+  }, []);
+
+  const handleUpdateObservationLabels = useCallback((observationId: string, labels: string[]) => {
+    const next = labels.length > 0 ? labels : null;
+    setObservations(prev => prev.map(o => o.id === observationId ? { ...o, labels: next } : o));
+    setPendingChanges(prev => ({ ...prev, [observationId]: { ...prev[observationId], labels: next } }));
+  }, []);
+
+  const handleCommitChanges = useCallback(async () => {
+    const entries = Object.entries(pendingChanges);
+    if (entries.length === 0) return;
+    setIsSavingAll(true);
+    try {
+      const results = await Promise.all(
+        entries.map(([observationId, changes]) =>
+          supabase.from('observations').update(changes).eq('id', observationId).select('id')
+        )
+      );
+      const failed = results.filter(r => r.error || !r.data || r.data.length === 0);
+      if (failed.length > 0) {
+        alert(`${failed.length} change(s) could not be saved. You may not have permission to edit these observations.`);
+      } else {
+        setPendingChanges({});
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2000);
+      }
+    } catch (error) {
+      console.error('Error committing changes:', error);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setIsSavingAll(false);
+    }
+  }, [pendingChanges, supabase]);
+
+  // Available site labels + dropdown state
+  const [siteLabels, setSiteLabels] = useState<Label[]>([]);
+  const [addingLabelFor, setAddingLabelFor] = useState<string | null>(null);
+  const [labelFilter, setLabelFilter] = useState('');
 
   // Mouse and touch event listeners for modal
   useEffect(() => {
@@ -742,6 +784,33 @@ export default function ReportDetailPage() {
       setObservations(withPlaceholders);
       setLoading(false);
 
+      // Build label list from two sources and merge:
+      // 1. Labels extracted from observation.labels[] arrays (always available)
+      const obsLabelNames = [...new Set(
+        sortedObservationsData.flatMap((o: Observation) => o.labels || []).filter(Boolean)
+      )] as string[];
+
+      // 2. Labels from the labels table per site (may be empty if table isn't used)
+      const uniqueSiteIds = [...new Set(sortedObservationsData.map((o: Observation) => o.site_id).filter(Boolean))] as string[];
+      let dbLabels: Label[] = [];
+      if (uniqueSiteIds.length > 0) {
+        try {
+          const allLabelArrays = await Promise.all(uniqueSiteIds.map(id => getLabelsForSite(id)));
+          const seen = new Set<string>();
+          dbLabels = allLabelArrays.flat().filter(l => { if (seen.has(l.name)) return false; seen.add(l.name); return true; });
+        } catch (e) {
+          console.error('Error fetching site labels:', e);
+        }
+      }
+
+      // Merge: db labels first, then observation labels not already covered
+      const dbLabelNames = new Set(dbLabels.map(l => l.name));
+      const extraLabels: Label[] = obsLabelNames
+        .filter(name => !dbLabelNames.has(name))
+        .map(name => ({ id: `obs-${name}`, name, category: 'type' as const, order_index: 999 }));
+
+      setSiteLabels([...dbLabels, ...extraLabels]);
+
       // Generate signed URLs in batches of 20, progressively updating the UI
       const BATCH_SIZE = 20;
       const photoObs = sortedObservationsData.filter(obs => obs.photo_url);
@@ -901,6 +970,23 @@ export default function ReportDetailPage() {
                 {isGeneratingWord ? 'Generating...' : 'Word'}
               </span>
             </Button>
+            {isAuthenticated && Object.keys(pendingChanges).length > 0 && (
+              <Button
+                onClick={handleCommitChanges}
+                disabled={isSavingAll}
+                size="sm"
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white transition-all"
+                title="Save pending changes to database"
+              >
+                {isSavingAll ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</>
+                ) : saveSuccess ? (
+                  <>✓ Saved</>
+                ) : (
+                  <>Save ({Object.keys(pendingChanges).length})</>
+                )}
+              </Button>
+            )}
             <Button
               onClick={() => setShowInfoModal(true)}
               variant="outline"
@@ -1051,25 +1137,105 @@ export default function ReportDetailPage() {
                         <CardContent className="pt-0 print:pt-0">
                           <div className="space-y-3 print:space-y-2">
                             {/* Labels */}
-                            {observation.labels && observation.labels.length > 0 && (
-                              <div className="space-y-1">
-                                <div className="flex flex-wrap gap-1">
-                                  {[...new Set(observation.labels)].map((label, idx) => (
-                                    <Badge
-                                      key={`${observation.id}-label-${idx}`}
-                                      variant="outline"
-                                      className="text-xs px-1.5 py-0.5"
+                            <div className="flex flex-wrap gap-1 items-center">
+                              {[...new Set(observation.labels || [])].map((label) => (
+                                <Badge
+                                  key={`${observation.id}-${label}`}
+                                  variant="outline"
+                                  className="text-xs px-1.5 py-0.5 flex items-center gap-1"
+                                >
+                                  {processLabel(label)}
+                                  {isAuthenticated && (
+                                    <button
+                                      onClick={() => handleUpdateObservationLabels(
+                                        observation.id,
+                                        (observation.labels || []).filter(l => l !== label)
+                                      )}
+                                      className="ml-0.5 hover:text-red-500 transition-colors leading-none"
+                                      title="Remove label"
                                     >
-                                      {processLabel(label)}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                                      ×
+                                    </button>
+                                  )}
+                                </Badge>
+                              ))}
 
-                            {/* Date */}
-                            <div className="text-xs text-gray-500 mt-auto">
-                              {formatDate(resolveObservationDateTime(observation).toISOString())}
+                              {/* Add label */}
+                              {isAuthenticated && (
+                                addingLabelFor === observation.id ? (
+                                  <div className="relative">
+                                    {/* Backdrop to close on outside click */}
+                                    <div
+                                      className="fixed inset-0 z-40"
+                                      onClick={() => { setAddingLabelFor(null); setLabelFilter(''); }}
+                                    />
+                                    <div className="absolute left-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-52">
+                                      {/* Filter input */}
+                                      <div className="p-2 border-b border-gray-100">
+                                        <input
+                                          autoFocus
+                                          type="text"
+                                          value={labelFilter}
+                                          onChange={(e) => setLabelFilter(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Escape') { setAddingLabelFor(null); setLabelFilter(''); }
+                                          }}
+                                          className="w-full text-xs border border-gray-300 rounded px-2 py-1 outline-none focus:border-blue-400"
+                                          placeholder="Search labels..."
+                                        />
+                                      </div>
+                                      {/* Label list */}
+                                      <div className="max-h-48 overflow-y-auto py-1">
+                                        {siteLabels
+                                          .filter(l =>
+                                            !(observation.labels || []).includes(l.name) &&
+                                            l.name.toLowerCase().includes(labelFilter.toLowerCase())
+                                          )
+                                          .map(label => (
+                                            <button
+                                              key={label.id}
+                                              onMouseDown={(e) => {
+                                                // Use mousedown so it fires before the backdrop onClick
+                                                e.preventDefault();
+                                                handleUpdateObservationLabels(
+                                                  observation.id,
+                                                  [...(observation.labels || []), label.name]
+                                                );
+                                                setAddingLabelFor(null);
+                                                setLabelFilter('');
+                                              }}
+                                              className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors"
+                                            >
+                                              {label.name}
+                                            </button>
+                                          ))}
+                                        {siteLabels.filter(l =>
+                                          !(observation.labels || []).includes(l.name) &&
+                                          l.name.toLowerCase().includes(labelFilter.toLowerCase())
+                                        ).length === 0 && (
+                                          <div className="px-3 py-2 text-xs text-gray-400 italic">No labels available</div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => { setAddingLabelFor(observation.id); setLabelFilter(''); }}
+                                    className="text-xs border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors px-1.5 py-0.5 rounded"
+                                    title="Add label"
+                                  >
+                                    + label
+                                  </button>
+                                )
+                              )}
+                            </div>
+
+                            {/* Date + pending indicator */}
+                            <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                              <span>{formatDate(resolveObservationDateTime(observation).toISOString())}</span>
+                              {pendingChanges[observation.id] && (
+                                <span className="text-amber-500">unsaved</span>
+                              )}
                             </div>
                           </div>
                         </CardContent>

@@ -22,6 +22,7 @@ export function useSelectionBox(
       target.closest('button') ||
       target.closest('a') ||
       target.closest('input') ||
+      target.closest('textarea') ||
       target.closest('select') ||
       target.closest('[role="checkbox"]') ||
       target.tagName === 'IMG'

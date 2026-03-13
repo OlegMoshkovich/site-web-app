@@ -66,6 +66,7 @@ interface ObservationsState {
   availableLabels: string[];
   siteLabels: Map<string, Label[]>; // Map of site_id -> Label[]
   currentUserId: string | null;
+  lastFetchedAt: number;
   searchResults: ObservationWithUrl[];
   isSearching: boolean;
 
@@ -108,6 +109,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   availableLabels: [],
   siteLabels: new Map(),
   currentUserId: null,
+  lastFetchedAt: 0,
   searchResults: [],
   isSearching: false,
   
@@ -145,8 +147,13 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
   fetchInitialObservations: async (userId: string) => {
     const currentState = get();
     
-    // Don't refetch if we already have observations for the same user
-    if (currentState.observations.length > 0 && currentState.currentUserId === userId) {
+    // Don't refetch if we already have fresh data for the same user (within 30 seconds)
+    const STALE_AFTER_MS = 30_000;
+    if (
+      currentState.observations.length > 0 &&
+      currentState.currentUserId === userId &&
+      Date.now() - currentState.lastFetchedAt < STALE_AFTER_MS
+    ) {
       return;
     }
     
@@ -196,6 +203,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         availableLabels: Array.from(allLabels).sort(),
         siteLabels: siteLabelsMap,
         currentUserId: userId,
+        lastFetchedAt: Date.now(),
         dayOffset: 3,
         isLoading: false,
       });
@@ -410,6 +418,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     availableLabels: [],
     siteLabels: new Map(),
     currentUserId: null,
+    lastFetchedAt: 0,
     searchResults: [],
     isSearching: false,
   }),
