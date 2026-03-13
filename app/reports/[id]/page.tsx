@@ -71,6 +71,86 @@ const BUCKET = "photos";
 const normalizePath = (v?: string | null) =>
   (v ?? "").trim().replace(/^\/+/, "") || null;
 
+// Inline editable text field — click to edit, blur/Enter to save
+function EditableText({
+  value,
+  onSave,
+  multiline = false,
+  className = "",
+  placeholder = "Click to edit...",
+  enabled = true,
+}: {
+  value: string;
+  onSave: (newValue: string) => void;
+  multiline?: boolean;
+  className?: string;
+  placeholder?: string;
+  enabled?: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isEditing) inputRef.current?.focus();
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) setDraft(value);
+  }, [value, isEditing]);
+
+  const commit = () => {
+    setIsEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed !== value) onSave(trimmed);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") { setDraft(value); setIsEditing(false); }
+    if (!multiline && e.key === "Enter") { e.preventDefault(); commit(); }
+    if (multiline && e.key === "Enter" && (e.ctrlKey || e.metaKey)) commit();
+  };
+
+  if (!enabled) {
+    return <span className={className}>{value || <span className="text-gray-400 italic">{placeholder}</span>}</span>;
+  }
+
+  if (isEditing) {
+    const sharedClass = `w-full bg-transparent border-b-2 border-blue-400 outline-none ${className}`;
+    return multiline ? (
+      <textarea
+        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        className={`${sharedClass} resize-none`}
+        rows={3}
+      />
+    ) : (
+      <input
+        ref={inputRef as React.RefObject<HTMLInputElement>}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        className={sharedClass}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setIsEditing(true)}
+      className={`cursor-text hover:bg-blue-50 rounded px-1 -mx-1 transition-colors group relative ${className}`}
+      title="Click to edit"
+    >
+      {value || <span className="text-gray-400 italic">{placeholder}</span>}
+    </span>
+  );
+}
+
 export default function ReportDetailPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [observations, setObservations] = useState<ObservationWithUrl[]>([]);
@@ -170,6 +250,23 @@ export default function ReportDetailPage() {
       setPosition({ x: 0, y: 0 });
     }
   }, [scale]);
+
+  // Inline edit handlers
+  const handleUpdateReport = useCallback(async (
+    field: 'title' | 'description' | 'ersteller' | 'baustelle',
+    value: string
+  ) => {
+    if (!report) return;
+    setReport(prev => prev ? { ...prev, [field]: value || null } : prev);
+    const { error } = await supabase.from('reports').update({ [field]: value || null }).eq('id', reportId);
+    if (error) console.error('Error updating report:', error);
+  }, [report, supabase, reportId]);
+
+  const handleUpdateObservationNote = useCallback(async (observationId: string, note: string) => {
+    setObservations(prev => prev.map(o => o.id === observationId ? { ...o, note: note || null } : o));
+    const { error } = await supabase.from('observations').update({ note: note || null }).eq('id', observationId);
+    if (error) console.error('Error updating observation note:', error);
+  }, [supabase]);
 
   // Mouse and touch event listeners for modal
   useEffect(() => {
@@ -826,7 +923,14 @@ export default function ReportDetailPage() {
             <CardHeader>
               {/* Title and Logo on same line */}
               <div className="flex justify-between items-center mb-4">
-                <CardTitle className="flex-1">{report.title}</CardTitle>
+                <CardTitle className="flex-1">
+                  <EditableText
+                    value={report.title}
+                    onSave={(v) => handleUpdateReport('title', v)}
+                    enabled={isAuthenticated}
+                    className="text-xl font-semibold"
+                  />
+                </CardTitle>
                 {/* Site Logo */}
                 {observations.length > 0 && observations[0].sites?.logo_url && (
                   <div className="flex-shrink-0">
@@ -840,12 +944,18 @@ export default function ReportDetailPage() {
                   </div>
                 )}
               </div>
-              {/* Description in separate container below, full width */}
-              {report.description && (
-                <div className="mt-3">
-                  <CardDescription className="text-black text-sm pb-3" style={{ fontSize: '14px' }}>{report.description}</CardDescription>
-                </div>
-              )}
+              {/* Description */}
+              <div className="mt-3">
+                <CardDescription className="text-black text-sm pb-3" style={{ fontSize: '14px' }}>
+                  <EditableText
+                    value={report.description || ''}
+                    onSave={(v) => handleUpdateReport('description', v)}
+                    multiline
+                    enabled={isAuthenticated}
+                    placeholder="Add description..."
+                  />
+                </CardDescription>
+              </div>
               <div className="flex justify-start">
                         <div className="text-sm text-gray-500 flex items-center gap-1">
                           {/* <Calendar className="h-4 w-4" /> */}
@@ -925,13 +1035,15 @@ export default function ReportDetailPage() {
                         <CardHeader className="pb-3 print:pb-2">
                           <div className="flex items-start justify-between">
                             <div className="space-y-1 w-full">
-                              {observation.note ? (
-                                <CardTitle className="text-lg print:text-base">{observation.note}</CardTitle>
-                              ) : (
-                                <CardTitle className="text-lg print:text-base text-gray-600">
-                                  Fotodokumentation {index + 1}
-                                </CardTitle>
-                              )}
+                              <CardTitle className={`text-lg print:text-base ${!observation.note ? 'text-gray-600' : ''}`}>
+                                <EditableText
+                                  value={observation.note || ''}
+                                  onSave={(v) => handleUpdateObservationNote(observation.id, v)}
+                                  multiline
+                                  enabled={isAuthenticated}
+                                  placeholder={`Fotodokumentation ${index + 1}`}
+                                />
+                              </CardTitle>
                             </div>
                           </div>
                         </CardHeader>
