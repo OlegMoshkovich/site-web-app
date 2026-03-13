@@ -2,6 +2,28 @@ import { create } from 'zustand';
 import { fetchObservationDates, downloadPhoto, fetchCollaborativeObservationsByTimeRange } from '@/lib/supabase/api';
 import { getLabelsForSite, type Label } from '@/lib/labels';
 
+const BATCH_SIZE = 20;
+
+// Generates signed URLs in batches, calling onBatch after each one completes.
+// Fire-and-forget: callers don't need to await this.
+async function fillSignedUrls(
+  items: Array<{ id: string; photo_url: string | null }>,
+  onBatch: (updates: Array<{ id: string; signedUrl: string | null }>) => void
+): Promise<void> {
+  const { getSignedPhotoUrl } = await import('@/lib/supabase/api');
+  const photoItems = items.filter(o => o.photo_url);
+  for (let i = 0; i < photoItems.length; i += BATCH_SIZE) {
+    const batch = photoItems.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (o) => ({
+        id: o.id,
+        signedUrl: await getSignedPhotoUrl(o.photo_url!, 3600).catch(() => null),
+      }))
+    );
+    onBatch(results);
+  }
+}
+
 export interface Observation {
   id: string;
   user_id: string;
@@ -143,73 +165,55 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     
     try {
       set({ isLoading: true, error: null, dayOffset: 0 });
-      
-      // Fetch initial 3 days of observations
+
       const result = await fetchCollaborativeObservationsByTimeRange(userId, {
         type: 'days',
         count: 3,
         offset: 0
       });
       const { observations: baseObservations, hasMore } = result;
-      
-      // Generate signed URLs
-      const { getSignedPhotoUrl } = await import('@/lib/supabase/api');
-      const withUrls: ObservationWithUrl[] = await Promise.all(
-        baseObservations.map(async (o) => {
-          const signedUrl = o.photo_url
-            ? await getSignedPhotoUrl(o.photo_url, 3600)
-            : null;
-          return { ...o, signedUrl };
-        })
-      );
-      
-      // Extract labels from observations
+
+      // Extract labels
       const allLabels = new Set<string>();
-      withUrls.forEach(obs => {
-        if (obs.labels) {
-          obs.labels.forEach(label => {
-            if (label && label.trim()) {
-              allLabels.add(label.trim());
-            }
-          });
-        }
+      baseObservations.forEach(obs => {
+        obs.labels?.forEach(label => { if (label?.trim()) allLabels.add(label.trim()); });
       });
-      
+
       // Fetch site labels for all unique sites
-      const uniqueSiteIds = new Set<string>();
-      withUrls.forEach(obs => {
-        if (obs.site_id) {
-          uniqueSiteIds.add(obs.site_id);
-        }
-      });
-      
-      // Fetch labels for each site
+      const uniqueSiteIds = new Set<string>(baseObservations.map(o => o.site_id).filter(Boolean) as string[]);
       const siteLabelsMap = new Map<string, Label[]>();
       await Promise.all(
         Array.from(uniqueSiteIds).map(async (siteId) => {
-          try {
-            const labels = await getLabelsForSite(siteId, userId);
-            siteLabelsMap.set(siteId, labels);
-          } catch (error) {
-            console.error(`Error fetching labels for site ${siteId}:`, error);
-          }
+          try { siteLabelsMap.set(siteId, await getLabelsForSite(siteId, userId)); }
+          catch (error) { console.error(`Error fetching labels for site ${siteId}:`, error); }
         })
       );
-      
-      set({ 
-        observations: withUrls, 
+
+      // Show observations immediately — don't block on URL generation
+      set({
+        observations: baseObservations.map(o => ({ ...o, signedUrl: null })),
         hasMore,
         availableLabels: Array.from(allLabels).sort(),
         siteLabels: siteLabelsMap,
         currentUserId: userId,
         dayOffset: 3,
-        isLoading: false 
+        isLoading: false,
+      });
+
+      // Fill signed URLs in the background
+      fillSignedUrls(baseObservations, (updates) => {
+        set((state) => ({
+          observations: state.observations.map(obs => {
+            const r = updates.find(u => u.id === obs.id);
+            return r ? { ...obs, signedUrl: r.signedUrl } : obs;
+          }),
+        }));
       });
     } catch (error) {
       console.error('Error in fetchInitialObservations:', error);
-      set({ 
+      set({
         error: error instanceof Error ? error.message : 'Failed to fetch observations',
-        isLoading: false 
+        isLoading: false,
       });
     }
   },
@@ -244,61 +248,46 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
       
       const result = await fetchCollaborativeObservationsByTimeRange(userId, timeRange);
       const { observations: newObservations, hasMore: hasMoreData } = result;
-      
-      // Generate signed URLs for new observations
-      const { getSignedPhotoUrl } = await import('@/lib/supabase/api');
-      const withUrls: ObservationWithUrl[] = await Promise.all(
-        newObservations.map(async (o) => {
-          const signedUrl = o.photo_url
-            ? await getSignedPhotoUrl(o.photo_url, 3600)
-            : null;
-          return { ...o, signedUrl };
-        })
-      );
-      
-      // Update labels from observations
+
+      // Update labels from new observations
       const currentLabels = new Set(get().availableLabels);
-      withUrls.forEach(obs => {
-        if (obs.labels) {
-          obs.labels.forEach(label => {
-            if (label && label.trim()) {
-              currentLabels.add(label.trim());
-            }
-          });
-        }
+      newObservations.forEach(obs => {
+        obs.labels?.forEach(label => { if (label?.trim()) currentLabels.add(label.trim()); });
       });
-      
-      // Fetch site labels for new sites
+
+      // Fetch site labels for any new sites
       const currentState = get();
       const existingSiteIds = new Set(currentState.siteLabels.keys());
-      const newSiteIds = new Set<string>();
-      withUrls.forEach(obs => {
-        if (obs.site_id && !existingSiteIds.has(obs.site_id)) {
-          newSiteIds.add(obs.site_id);
-        }
-      });
-      
-      // Fetch labels for new sites
+      const newSiteIds = new Set<string>(
+        newObservations.map(o => o.site_id).filter(id => id && !existingSiteIds.has(id)) as string[]
+      );
       const newSiteLabelsMap = new Map(currentState.siteLabels);
       await Promise.all(
         Array.from(newSiteIds).map(async (siteId) => {
-          try {
-            const labels = await getLabelsForSite(siteId, userId);
-            newSiteLabelsMap.set(siteId, labels);
-          } catch (error) {
-            console.error(`Error fetching labels for site ${siteId}:`, error);
-          }
+          try { newSiteLabelsMap.set(siteId, await getLabelsForSite(siteId, userId)); }
+          catch (error) { console.error(`Error fetching labels for site ${siteId}:`, error); }
         })
       );
-      
-      set((state) => ({ 
-        observations: [...state.observations, ...withUrls],
+
+      // Append observations immediately — don't block on URL generation
+      set((state) => ({
+        observations: [...state.observations, ...newObservations.map(o => ({ ...o, signedUrl: null }))],
         hasMore: hasMoreData,
         dayOffset: newOffset,
         availableLabels: Array.from(currentLabels).sort(),
         siteLabels: newSiteLabelsMap,
-        isLoadingMore: false 
+        isLoadingMore: false,
       }));
+
+      // Fill signed URLs in the background
+      fillSignedUrls(newObservations, (updates) => {
+        set((state) => ({
+          observations: state.observations.map(obs => {
+            const r = updates.find(u => u.id === obs.id);
+            return r ? { ...obs, signedUrl: r.signedUrl } : obs;
+          }),
+        }));
+      });
     } catch (error) {
       console.error('loadMoreObservations error:', error);
       set({ 
@@ -385,15 +374,21 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     }
     set({ isSearching: true });
     try {
-      const { searchObservationsInDB, getSignedPhotoUrl } = await import('@/lib/supabase/api');
+      const { searchObservationsInDB } = await import('@/lib/supabase/api');
       const results = await searchObservationsInDB(userId, query);
-      const withUrls: ObservationWithUrl[] = await Promise.all(
-        results.map(async (o) => ({
-          ...o,
-          signedUrl: o.photo_url ? await getSignedPhotoUrl(o.photo_url, 3600) : null,
-        }))
-      );
-      set({ searchResults: withUrls, isSearching: false });
+
+      // Show results immediately — don't block on URL generation
+      set({ searchResults: results.map(o => ({ ...o, signedUrl: null })), isSearching: false });
+
+      // Fill signed URLs in the background
+      fillSignedUrls(results, (updates) => {
+        set((state) => ({
+          searchResults: state.searchResults.map(obs => {
+            const r = updates.find(u => u.id === obs.id);
+            return r ? { ...obs, signedUrl: r.signedUrl } : obs;
+          }),
+        }));
+      });
     } catch (error) {
       console.error('Search error:', error);
       set({ isSearching: false });
