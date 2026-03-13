@@ -1838,7 +1838,7 @@ export default function Home() {
                                       <Badge
                                         key={`${observation.id}-grid-label-${idx}`}
                                         variant="outline"
-                                        className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-20"
+                                        className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-[50ch]"
                                       >
                                         {processedLabel}
                                       </Badge>
@@ -1947,7 +1947,7 @@ export default function Home() {
                                         <Badge
                                           key={`${observation.id}-note-label-${idx}`}
                                           variant="outline"
-                                          className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-20"
+                                          className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-[50ch]"
                                         >
                                           {processedLabel}
                                         </Badge>
