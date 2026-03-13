@@ -748,7 +748,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="p-6 border-t bg-white overflow-y-auto h-[400px] max-h-[400px] md:h-auto md:max-h-none md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
+        <div className="relative p-6 border-t bg-white overflow-y-auto h-[400px] max-h-[400px] md:h-auto md:max-h-none md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
             <div>
@@ -945,25 +945,24 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               </div>
             )}
 
-            {/* Labels */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">Bereich</h4>
-                {!editingLabels && (
+            {/* Labels — full-panel overlay when editing */}
+            {editingLabels && (
+              <div className="absolute inset-0 bg-white flex flex-col z-10">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
+                  <h4 className="font-semibold text-gray-900">Bereich</h4>
                   <button
-                    onClick={handleStartEditLabels}
-                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
-                    title="Edit labels"
-                    disabled={isSaving}
+                    onClick={handleCancelEditLabels}
+                    className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    title="Cancel"
                   >
-                    <Edit3 className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </button>
-                )}
-              </div>
-              {editingLabels ? (
-                <div className="space-y-3">
+                </div>
+                {/* Label grid — scrollable */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
                   {siteLabels.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 max-h-64 overflow-y-auto">
+                    <div className="flex flex-wrap gap-2">
                       {[...siteLabels].sort((a, b) => a.order_index - b.order_index).map((label) => (
                         <button
                           key={label.id}
@@ -988,51 +987,66 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                       No labels available for this site. Create labels in Settings.
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={handleSaveLabels}
-                      size="sm"
-                      disabled={isSaving}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <Check className="h-3 w-3 mr-1" />
-                      Save
-                    </Button>
-                    <Button
-                      onClick={handleCancelEditLabels}
-                      size="sm"
+                </div>
+                {/* Footer actions */}
+                <div className="flex items-center gap-2 px-6 py-4 border-t flex-shrink-0">
+                  <Button
+                    onClick={handleSaveLabels}
+                    size="sm"
+                    disabled={isSaving}
+                    className="h-8 px-3 text-xs"
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    onClick={handleCancelEditLabels}
+                    size="sm"
+                    variant="outline"
+                    disabled={isSaving}
+                    className="h-8 px-3 text-xs"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Labels display */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium text-gray-900">Bereich</h4>
+                <button
+                  onClick={handleStartEditLabels}
+                  className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                  title="Edit labels"
+                  disabled={isSaving}
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
+                {observation.labels && observation.labels.length > 0 ? (
+                  [...new Set(observation.labels)]
+                    .sort((a, b) => {
+                      const aIdx = siteLabels.find(l => l.name === a)?.order_index ?? 999;
+                      const bIdx = siteLabels.find(l => l.name === b)?.order_index ?? 999;
+                      return aIdx - bIdx;
+                    })
+                    .map((label, idx) => (
+                    <Badge
+                      key={`modal-label-${idx}`}
                       variant="outline"
-                      disabled={isSaving}
-                      className="h-7 px-2 text-xs"
+                      className="text-xs px-2 py-1 border border-gray-300 bg-white"
                     >
-                      <X className="h-3 w-3 mr-1" />
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
-                  {observation.labels && observation.labels.length > 0 ? (
-                    [...new Set(observation.labels)]
-                      .sort((a, b) => {
-                        const aIdx = siteLabels.find(l => l.name === a)?.order_index ?? 999;
-                        const bIdx = siteLabels.find(l => l.name === b)?.order_index ?? 999;
-                        return aIdx - bIdx;
-                      })
-                      .map((label, idx) => (
-                      <Badge
-                        key={`modal-label-${idx}`}
-                        variant="outline"
-                        className="text-xs px-2 py-1 border border-gray-300 bg-white"
-                      >
-                        {processLabel(label)}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-gray-400 italic text-sm">Keine Labels</span>
-                  )}
-                </div>
-              )}
+                      {processLabel(label)}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-gray-400 italic text-sm">Keine Labels</span>
+                )}
+              </div>
             </div>
 
         </div>
