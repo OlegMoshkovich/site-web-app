@@ -192,7 +192,7 @@ export default function ReportsPage() {
         // Filter reports if user is admin - only show reports they have access to
         let filteredReports = enrichedReports;
         if (userIsAdmin) {
-          filteredReports = enrichedReports.filter(report => {
+          filteredReports = enrichedReports.filter((report: Report) => {
             // Show if it's their own report
             if (report.user_id === user.id) return true;
             // Show if report contains observations from sites they admin
