@@ -964,7 +964,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 <div className="space-y-3">
                   {siteLabels.length > 0 ? (
                     <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 max-h-64 overflow-y-auto">
-                      {siteLabels.map((label) => (
+                      {[...siteLabels].sort((a, b) => a.order_index - b.order_index).map((label) => (
                         <button
                           key={label.id}
                           onClick={() => handleToggleLabel(label.name)}
@@ -1013,7 +1013,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               ) : (
                 <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
                   {observation.labels && observation.labels.length > 0 ? (
-                    [...new Set(observation.labels)].map((label, idx) => (
+                    [...new Set(observation.labels)]
+                      .sort((a, b) => {
+                        const aIdx = siteLabels.find(l => l.name === a)?.order_index ?? 999;
+                        const bIdx = siteLabels.find(l => l.name === b)?.order_index ?? 999;
+                        return aIdx - bIdx;
+                      })
+                      .map((label, idx) => (
                       <Badge
                         key={`modal-label-${idx}`}
                         variant="outline"
