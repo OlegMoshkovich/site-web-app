@@ -562,11 +562,11 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col max-h-[90vh]">
+      <div className="flex flex-col md:flex-row max-h-[90vh]">
         {/* Image container */}
-        <div 
+        <div
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-96 md:h-[400px] flex-shrink-0 overflow-hidden"
+          className="relative bg-gray-100 h-96 flex-shrink-0 md:flex-1 md:h-auto overflow-hidden"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -748,7 +748,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="p-6 border-t bg-white h-[400px] overflow-y-auto max-h-[400px]">
+        <div className="p-6 border-t bg-white overflow-y-auto h-[400px] max-h-[400px] md:h-auto md:max-h-none md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
             <div>
