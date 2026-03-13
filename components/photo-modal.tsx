@@ -573,11 +573,11 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col md:flex-row max-h-[90vh]">
+      <div className="flex flex-col md:flex-row max-h-[90vh] md:h-[90vh] overflow-y-auto md:overflow-y-hidden">
         {/* Image container */}
         <div
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-96 flex-shrink-0 md:flex-1 md:h-auto overflow-hidden"
+          className="relative bg-gray-100 h-[70vh] flex-shrink-0 md:flex-1 md:h-auto overflow-hidden"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -666,7 +666,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           
           {/* Zoom indicator */}
           {scale !== 1 && (
-            <div className="absolute bottom-4 right-4 z-30 bg-black/70 text-white px-2 py-1 text-xs rounded">
+            <div className="absolute bottom-14 right-4 z-30 bg-black/70 text-white px-2 py-1 text-xs rounded">
               {Math.round(scale * 100)}%
             </div>
           )}
