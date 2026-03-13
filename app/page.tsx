@@ -106,7 +106,7 @@ export default function Home() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
-  const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(true);
+  const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
 
   const t = useCallback(
     (key: keyof typeof translations.en) => {
@@ -549,7 +549,7 @@ export default function Home() {
 
                 {(() => {
                   const { groups, sortedDates } = groupObservationsByDate(getFilteredObservations());
-                  return sortedDates.map((dateKey) => {
+                  return sortedDates.map((dateKey, dateIndex) => {
                     const obs = groups[dateKey];
                     const formattedDate = new Date(dateKey)
                       .toLocaleDateString(language === "de" ? "de-DE" : "en-US", {
@@ -561,7 +561,7 @@ export default function Home() {
                         <Accordion
                           key={`${dateKey}-${areAccordionsExpanded}`}
                           type="single" collapsible
-                          defaultValue={areAccordionsExpanded ? "observations" : ""}
+                          defaultValue={areAccordionsExpanded ? "observations" : dateIndex === 0 ? "observations" : ""}
                           className="mt-1"
                         >
                           <AccordionItem value="observations">
