@@ -122,10 +122,14 @@ export function PhotoModal({
     return () => { cancelled = true; };
   }, [observation.id, observation.site_id, hasPlanAnchor]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Portrait detection state
+  const [isPortrait, setIsPortrait] = useState(false);
+
   // Reset zoom and pan when image changes
   useEffect(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
+    setIsPortrait(false);
     // Only show loading state if there's an image to load
     setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
@@ -573,11 +577,11 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col md:flex-row max-h-[90vh] md:h-[90vh] overflow-y-auto md:overflow-y-hidden">
+      <div className="flex flex-col md:flex-row h-[60vh] md:h-[90vh] overflow-hidden">
         {/* Image container */}
         <div
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-[70vh] flex-shrink-0 md:flex-1 md:h-auto overflow-hidden"
+          className="relative bg-gray-100 flex-1 min-h-0 md:flex-1 md:h-auto overflow-hidden"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -766,7 +770,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="relative p-6 border-t bg-white overflow-y-auto h-[400px] max-h-[400px] md:h-auto md:max-h-none md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
+        <div className="relative p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[35%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
             <div>
