@@ -390,6 +390,17 @@ export function PhotoModal({
     }
   }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
 
+  const handleRemoveLabel = useCallback(async (labelName: string) => {
+    const newLabels = (observation.labels || []).filter(l => l !== labelName);
+    const next = newLabels.length > 0 ? newLabels : null;
+    const { error } = await supabase
+      .from("observations")
+      .update({ labels: next })
+      .eq("id", observation.id);
+    if (error) { console.error("Error removing label:", error); return; }
+    if (onObservationUpdate) onObservationUpdate({ ...observation, labels: next });
+  }, [supabase, observation, onObservationUpdate]);
+
   const handlePrint = useCallback(() => {
     const dateStr = resolveObservationDateTime(observation).toLocaleString('en-GB');
     const siteName = observation.sites?.name || '';
@@ -672,10 +683,17 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {observation.labels && observation.labels.length > 0 && (
               <>
                 <span className="text-gray-300">•</span>
-                <div className="flex items-center gap-1">
-                  {[...new Set(observation.labels)].slice(0, 3).map((label, idx) => (
-                    <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                <div className="flex items-center gap-1 flex-wrap">
+                  {[...new Set(observation.labels)].map((label, idx) => (
+                    <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
                       {label}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRemoveLabel(label); }}
+                        className="hover:text-red-300 transition-colors leading-none"
+                        title="Remove label"
+                      >
+                        ×
+                      </button>
                     </span>
                   ))}
                 </div>
