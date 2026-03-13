@@ -207,7 +207,7 @@ export default function ReportsPage() {
         const uniqueUsers = new Map<string, string>();
         const uniqueSiteIds = new Set<string>();
 
-        filteredReports.forEach(report => {
+        filteredReports.forEach((report: Report) => {
           if (report.user_email) {
             uniqueUsers.set(report.user_id, report.user_email);
           }
