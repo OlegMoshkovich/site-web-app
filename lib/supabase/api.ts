@@ -861,6 +861,72 @@ export async function getPendingInvitationsForUser(userEmail: string): Promise<(
 }
 
 /**
+ * Search observations across the entire database using server-side filtering.
+ * Applies the same collaboration permission logic as other fetch functions.
+ * Searches note and site_name fields using case-insensitive substring matching.
+ */
+export async function searchObservationsInDB(
+  userId: string,
+  searchQuery: string
+): Promise<Observation[]> {
+  const supabase = createClient();
+
+  if (!searchQuery.trim()) return [];
+
+  // Get all sites owned by the user
+  const { data: ownedSites, error: ownedError } = await supabase
+    .from('sites')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (ownedError) throw ownedError;
+
+  // Get all sites where user is a collaborator
+  const { data: userSites, error: sitesError } = await supabase
+    .from('site_collaborators')
+    .select('site_id, role')
+    .eq('user_id', userId)
+    .eq('status', 'accepted');
+
+  if (sitesError) throw sitesError;
+
+  const ownedSiteIds = (ownedSites || []).map((s: { id: string }) => s.id);
+  const adminSiteIds = (userSites || [])
+    .filter((s: { site_id: string; role: string }) => s.role === 'owner' || s.role === 'admin')
+    .map((s: { site_id: string; role: string }) => s.site_id);
+  const collaboratorSiteIds = (userSites || [])
+    .filter((s: { site_id: string; role: string }) => s.role === 'collaborator')
+    .map((s: { site_id: string; role: string }) => s.site_id);
+  const allAdminSiteIds = [...new Set([...ownedSiteIds, ...adminSiteIds])];
+
+  let query = supabase.from('observations').select('*, sites(name, logo_url)');
+
+  // Apply collaboration permissions
+  if (allAdminSiteIds.length === 0 && collaboratorSiteIds.length === 0) {
+    query = query.eq('user_id', userId);
+  } else {
+    const orConditions = [`user_id.eq.${userId}`];
+    if (allAdminSiteIds.length > 0) {
+      orConditions.push(`site_id.in.(${allAdminSiteIds.join(',')})`);
+    }
+    if (collaboratorSiteIds.length > 0) {
+      orConditions.push(`and(site_id.in.(${collaboratorSiteIds.join(',')}),user_id.eq.${userId})`);
+    }
+    query = query.or(orConditions.join(','));
+  }
+
+  // Apply text search on note and site_name
+  const term = `%${searchQuery.trim()}%`;
+  query = query.or(`note.ilike.${term},site_name.ilike.${term}`);
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return await enrichObservationsWithUserData(data ?? []);
+}
+
+/**
  * Fetch a single observation for public sharing (no authentication required)
  * This returns only public information suitable for sharing
  */

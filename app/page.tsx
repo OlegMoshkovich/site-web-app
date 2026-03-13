@@ -53,6 +53,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 // Translation system
 import { translations, useLanguage } from "@/lib/translations";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 // Layout constants
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
@@ -61,7 +62,6 @@ import { useObservationsStore } from "@/lib/store/observations-store";
 import { getSignedPhotoUrl } from "@/lib/supabase/api";
 // Utility functions
 import {
-  filterObservationsBySearch,
   filterObservationsByDateRange,
   filterObservationsByLabels,
   filterObservationsByUserId,
@@ -108,7 +108,11 @@ export default function Home() {
     setObservations,
     setAvailableLabels,
     fetchSiteLabels,
-    clearStore
+    clearStore,
+    searchResults,
+    isSearching,
+    performSearch,
+    clearSearch,
   } = useObservationsStore();
   // Set of selected observation IDs for bulk operations
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(
@@ -201,6 +205,23 @@ export default function Home() {
   }, []);
 
   // Note: normalizePath function moved to API layer
+
+  // ===== SERVER-SIDE SEARCH =====
+  // Debounce search query and trigger DB search when active
+  useEffect(() => {
+    if (!user || !showSearchSelector) {
+      clearSearch();
+      return;
+    }
+    if (!searchQuery.trim()) {
+      clearSearch();
+      return;
+    }
+    const timer = setTimeout(() => {
+      performSearch(user.id, searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery, showSearchSelector, user, performSearch, clearSearch]);
 
   // ===== PHOTO MANAGEMENT =====
   // Note: getSignedPhotoUrl is now handled in the Zustand store via the API
@@ -463,7 +484,10 @@ export default function Home() {
 
   // ===== UTILITY FUNCTIONS =====
   const getFilteredObservations = useCallback(() => {
-    let filteredObservations = observations;
+    // Use DB search results as base when search is active, otherwise use paginated observations
+    let filteredObservations = (showSearchSelector && searchQuery.trim())
+      ? searchResults
+      : observations;
 
     // Apply date range filter if both dates are set
     if (showDateSelector && startDate && endDate) {
@@ -484,18 +508,13 @@ export default function Home() {
       filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
     }
 
-    // Then apply search filter if active
-    if (showSearchSelector && searchQuery.trim()) {
-      filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
-    }
-
     // Then apply label filter if active
     if (showLabelSelector && selectedLabels.length > 0) {
       filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
     }
 
     return filteredObservations;
-  }, [observations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+  }, [observations, searchResults, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // Check if any filters are active
   const hasActiveFilters = startDate || endDate || selectedUserId || selectedSiteId;
@@ -868,7 +887,9 @@ export default function Home() {
 
   const handleSelectAll = useCallback(() => {
     // Get currently visible (filtered) observations
-    let filteredObservations = observations;
+    let filteredObservations = (showSearchSelector && searchQuery.trim())
+      ? searchResults
+      : observations;
 
     // Apply date range filter if both dates are set
     if (showDateSelector && startDate && endDate) {
@@ -889,11 +910,6 @@ export default function Home() {
       filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
     }
 
-    // Then apply search filter if active
-    if (showSearchSelector && searchQuery.trim()) {
-      filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
-    }
-
     // Then apply label filter if active
     if (showLabelSelector && selectedLabels.length > 0) {
       filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
@@ -912,7 +928,7 @@ export default function Home() {
       visibleIds.forEach(id => newSelected.add(id));
       setSelectedObservations(newSelected);
     }
-  }, [observations, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+  }, [observations, searchResults, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
   // Calculate the minimum and maximum dates available in the observations
   // This is used to set the min/max values for date input fields
@@ -1401,50 +1417,14 @@ export default function Home() {
                 {showDateSelector && (
                   <div className="sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="startDate"
-                          className="text-sm font-medium text-muted-foreground"
-                        >
-                          {t("start")}
-                        </label>
-                        <input
-                          type="date"
-                          id="startDate"
-                          value={startDate}
-                          onChange={(e) => {
-                            const newStartDate = e.target.value;
-                            setStartDate(newStartDate);
-
-                            // No longer auto-selecting - just filtering the display
-                          }}
-                          min={getAvailableDateRange().min}
-                          max={endDate || getAvailableDateRange().max}
-                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="endDate"
-                          className="text-sm font-medium text-muted-foreground"
-                        >
-                          {t("end")}
-                        </label>
-                        <input
-                          type="date"
-                          id="endDate"
-                          value={endDate}
-                          onChange={(e) => {
-                            const newEndDate = e.target.value;
-                            setEndDate(newEndDate);
-
-                            // No longer auto-selecting - just filtering the display
-                          }}
-                          min={startDate || getAvailableDateRange().min}
-                          max={getAvailableDateRange().max}
-                          className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
-                        />
-                      </div>
+                      <DateRangePicker
+                        startDate={startDate}
+                        endDate={endDate}
+                        onStartDateChange={setStartDate}
+                        onEndDateChange={setEndDate}
+                        startLabel={t("start")}
+                        endLabel={t("end")}
+                      />
 
                       <div className="flex flex-col gap-1">
                         <label
@@ -1506,7 +1486,9 @@ export default function Home() {
                         >
                           {(() => {
                             // Get currently visible (filtered) observations count for button text
-                            let filteredObservations = observations;
+                            let filteredObservations = (showSearchSelector && searchQuery.trim())
+                              ? searchResults
+                              : observations;
 
                             // Apply date range filter if both dates are set
                             if (showDateSelector && startDate && endDate) {
@@ -1525,11 +1507,6 @@ export default function Home() {
                             // Then apply site filter if active
                             if (selectedSiteId) {
                               filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
-                            }
-
-                            // Then apply search filter if active
-                            if (showSearchSelector && searchQuery.trim()) {
-                              filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
                             }
 
                             // Then apply label filter if active
@@ -1602,13 +1579,9 @@ export default function Home() {
                     />
                     {searchQuery && (
                       <div className="text-xs text-muted-foreground">
-                        {(() => {
-                          const filteredCount = filterObservationsBySearch(
-                            observations,
-                            searchQuery,
-                          ).length;
-                          return `${filteredCount} result${filteredCount !== 1 ? "s" : ""} found`;
-                        })()}
+                        {isSearching
+                          ? "Searching..."
+                          : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""} found`}
                       </div>
                     )}
                   </div>
@@ -1675,8 +1648,10 @@ export default function Home() {
                 )}
 
                 {(() => {
-                  // Start with all observations
-                  let filteredObservations = observations;
+                  // Use DB search results as base when search is active
+                  let filteredObservations = (showSearchSelector && searchQuery.trim())
+                    ? searchResults
+                    : observations;
 
                   // Apply date range filter if both dates are set
                   if (showDateSelector && startDate && endDate) {
@@ -1695,11 +1670,6 @@ export default function Home() {
                   // Then apply site filter if active
                   if (selectedSiteId) {
                     filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
-                  }
-
-                  // Then apply search filter if active
-                  if (showSearchSelector && searchQuery.trim()) {
-                    filteredObservations = filterObservationsBySearch(filteredObservations, searchQuery);
                   }
 
                   // Then apply label filter if active
