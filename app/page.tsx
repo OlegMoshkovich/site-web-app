@@ -28,7 +28,6 @@ import {
   Tag,
   ZoomIn,
   FileText,
-  Info,
   Eye,
   Pencil,
 } from "lucide-react";
@@ -58,8 +57,6 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
 // Zustand store for observations
 import { useObservationsStore } from "@/lib/store/observations-store";
-// API functions
-import { getSignedPhotoUrl } from "@/lib/supabase/api";
 // Utility functions
 import {
   filterObservationsByDateRange,
@@ -746,33 +743,15 @@ export default function Home() {
 
   // Folder upload handlers
   const handleFolderDrop = useCallback((files: File[]) => {
-    console.log('\n\n=== handleFolderDrop CALLED ===');
-    console.log('handleFolderDrop: Received', files.length, 'files');
-    console.log('handleFolderDrop: File details:', files.map((f, i) => ({
-      index: i,
-      name: f.name,
-      type: f.type,
-      size: f.size
-    })));
-    console.log('handleFolderDrop: User ID:', user?.id);
-
     if (!user?.id) {
-      console.error('handleFolderDrop: No user ID, aborting');
       alert('Please log in before uploading files.');
       return;
     }
-
-    console.log('handleFolderDrop: Setting droppedFiles state with', files.length, 'files');
-    console.log('handleFolderDrop: Files being set:', files.map(f => f.name));
     setDroppedFiles(files);
-    console.log('handleFolderDrop: droppedFiles state should now be updated');
-    console.log('handleFolderDrop: Opening upload modal');
     setShowUploadModal(true);
-    console.log('=== handleFolderDrop COMPLETED ===\n\n');
   }, [user]);
 
   const handleUploadComplete = useCallback(() => {
-    console.log('handleUploadComplete: Closing modal and clearing files');
     setShowUploadModal(false);
     setDroppedFiles([]);
     // Refresh observations
@@ -780,14 +759,6 @@ export default function Home() {
       fetchInitialObservations(user.id);
     }
   }, [user, fetchInitialObservations]);
-
-  // Debug: Track droppedFiles state changes
-  useEffect(() => {
-    console.log('droppedFiles state changed:', {
-      count: droppedFiles.length,
-      files: droppedFiles.map(f => f.name)
-    });
-  }, [droppedFiles]);
 
   // Selection box handlers
   const handleSelectionStart = useCallback((event: React.MouseEvent) => {
@@ -930,81 +901,11 @@ export default function Home() {
     }
   }, [observations, searchResults, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
 
-  // Calculate the minimum and maximum dates available in the observations
-  // This is used to set the min/max values for date input fields
-  const getAvailableDateRange = useCallback(() => {
-    if (observations.length === 0) return { min: "", max: "" };
-
-    // Extract all dates from observations (photo_date or created_at)
-    const dates = observations.map(
-      (obs) => resolveObservationDateTime(obs),
-    );
-    // Find the earliest and latest dates
-    const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
-    const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
-
-    // Return dates in YYYY-MM-DD format for HTML date inputs
-    return {
-      min: minDate.toISOString().split("T")[0], // Earliest available date
-      max: maxDate.toISOString().split("T")[0], // Latest available date
-    };
-  }, [observations]);
-
-
   // ===== LOAD MORE FUNCTIONALITY =====
   const handleLoadMore = useCallback(async (type: 'week' | 'month') => {
     if (!user) return;
     await loadMoreObservations(user.id, type);
   }, [user, loadMoreObservations]);
-
-  // ===== REFRESH SIGNED URLS =====
-  const refreshSignedUrls = useCallback(async () => {
-    if (!observations.length) return;
-
-    try {
-      const updatedObservations = await Promise.all(
-        observations.map(async (obs) => {
-          if (obs.photo_url && obs.photo_url.trim()) {
-            try {
-              const freshSignedUrl = await getSignedPhotoUrl(obs.photo_url, 3600);
-              // Only update if we got a valid signed URL, otherwise keep the existing one
-              return { ...obs, signedUrl: freshSignedUrl || obs.signedUrl };
-            } catch (err) {
-              console.warn(`Failed to refresh signed URL for observation ${obs.id}:`, err);
-              // Keep the existing signed URL if refresh fails
-              return obs;
-            }
-          }
-          return obs;
-        })
-      );
-
-      // Only update if we have meaningful changes to prevent unnecessary re-renders
-      const hasChanges = updatedObservations.some((obs, index) =>
-        obs.signedUrl !== observations[index].signedUrl
-      );
-
-      if (hasChanges) {
-        setObservations(updatedObservations);
-      }
-    } catch (error) {
-      console.error('Error refreshing signed URLs:', error);
-    }
-  }, [observations, setObservations]);
-
-  // Refresh signed URLs when observations change
-  useEffect(() => {
-    if (observations.length > 0) {
-      // Only refresh if we have observations with photos but no signed URLs
-      const needsRefresh = observations.some(obs =>
-        obs.photo_url && obs.photo_url.trim() && !obs.signedUrl
-      );
-
-      if (needsRefresh) {
-        refreshSignedUrls();
-      }
-    }
-  }, [observations, refreshSignedUrls]);
 
 
   // ===== DATA FETCHING =====
@@ -1038,7 +939,6 @@ export default function Home() {
           if (!profile || (profile && !profile.onboarding_completed)) {
             router.push("/onboarding");
             return;
-          } else {
           }
         } catch (error) {
           console.warn('Error checking onboarding status, continuing to main app:', error);
@@ -1122,7 +1022,6 @@ export default function Home() {
         uniqueSites.sort((a, b) => a.name.localeCompare(b.name));
 
         setAvailableSites(uniqueSites);
-        console.log('All user sites loaded:', uniqueSites.length);
       } catch (error) {
         console.error('Error fetching sites:', error);
       }
