@@ -857,49 +857,15 @@ export default function Home() {
   }, [selectionBox, handleSelectionMove, handleSelectionEnd]);
 
   const handleSelectAll = useCallback(() => {
-    // Get currently visible (filtered) observations
-    let filteredObservations = (showSearchSelector && searchQuery.trim())
-      ? searchResults
-      : observations;
-
-    // Apply date range filter if both dates are set
-    if (showDateSelector && startDate && endDate) {
-      filteredObservations = filterObservationsByDateRange(
-        filteredObservations,
-        startDate,
-        endDate
-      );
-    }
-
-    // Then apply user filter if active
-    if (selectedUserId) {
-      filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
-    }
-
-    // Then apply site filter if active
-    if (selectedSiteId) {
-      filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
-    }
-
-    // Then apply label filter if active
-    if (showLabelSelector && selectedLabels.length > 0) {
-      filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
-    }
-
-    const visibleIds = filteredObservations.map((obs) => obs.id);
-
-    // If all visible observations are already selected, unselect all
-    if (visibleIds.every(id => selectedObservations.has(id))) {
-      const newSelected = new Set(selectedObservations);
+    const visibleIds = getFilteredObservations().map((obs) => obs.id);
+    const newSelected = new Set(selectedObservations);
+    if (visibleIds.every(id => newSelected.has(id))) {
       visibleIds.forEach(id => newSelected.delete(id));
-      setSelectedObservations(newSelected);
     } else {
-      // Otherwise, select all visible observations
-      const newSelected = new Set(selectedObservations);
       visibleIds.forEach(id => newSelected.add(id));
-      setSelectedObservations(newSelected);
     }
-  }, [observations, searchResults, selectedObservations, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+    setSelectedObservations(newSelected);
+  }, [getFilteredObservations, selectedObservations]);
 
   // ===== LOAD MORE FUNCTIONALITY =====
   const handleLoadMore = useCallback(async (type: 'week' | 'month') => {
@@ -1384,39 +1350,10 @@ export default function Home() {
                           className="flex-1 sm:w-auto text-xs px-2"
                         >
                           {(() => {
-                            // Get currently visible (filtered) observations count for button text
-                            let filteredObservations = (showSearchSelector && searchQuery.trim())
-                              ? searchResults
-                              : observations;
-
-                            // Apply date range filter if both dates are set
-                            if (showDateSelector && startDate && endDate) {
-                              filteredObservations = filterObservationsByDateRange(
-                                filteredObservations,
-                                startDate,
-                                endDate
-                              );
-                            }
-
-                            // Then apply user filter if active
-                            if (selectedUserId) {
-                              filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
-                            }
-
-                            // Then apply site filter if active
-                            if (selectedSiteId) {
-                              filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
-                            }
-
-                            // Then apply label filter if active
-                            if (showLabelSelector && selectedLabels.length > 0) {
-                              filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false);
-                            }
-
-                            const visibleIds = filteredObservations.map((obs) => obs.id);
-                            const allVisibleSelected = visibleIds.every(id => selectedObservations.has(id));
-
-                            return allVisibleSelected ? t("unselectAll") : t("selectAll");
+                            const visibleIds = getFilteredObservations().map((obs) => obs.id);
+                            return visibleIds.every(id => selectedObservations.has(id))
+                              ? t("unselectAll")
+                              : t("selectAll");
                           })()}
                         </Button>
                         <Button
@@ -1547,38 +1484,8 @@ export default function Home() {
                 )}
 
                 {(() => {
-                  // Use DB search results as base when search is active
-                  let filteredObservations = (showSearchSelector && searchQuery.trim())
-                    ? searchResults
-                    : observations;
-
-                  // Apply date range filter if both dates are set
-                  if (showDateSelector && startDate && endDate) {
-                    filteredObservations = filterObservationsByDateRange(
-                      filteredObservations,
-                      startDate,
-                      endDate
-                    );
-                  }
-
-                  // Then apply user filter if active
-                  if (selectedUserId) {
-                    filteredObservations = filterObservationsByUserId(filteredObservations, selectedUserId);
-                  }
-
-                  // Then apply site filter if active
-                  if (selectedSiteId) {
-                    filteredObservations = filterObservationsBySiteId(filteredObservations, selectedSiteId);
-                  }
-
-                  // Then apply label filter if active
-                  if (showLabelSelector && selectedLabels.length > 0) {
-                    filteredObservations = filterObservationsByLabels(filteredObservations, selectedLabels, false); // OR logic - match any selected label
-                  }
-
-                  // Group filtered observations by date
                   const { groups: groupedObservations, sortedDates } =
-                    groupObservationsByDate(filteredObservations);
+                    groupObservationsByDate(getFilteredObservations());
 
                   return sortedDates.map((dateKey) => {
                     const observationsForDate = groupedObservations[dateKey];
