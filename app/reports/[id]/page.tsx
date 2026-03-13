@@ -633,38 +633,49 @@ export default function ReportDetailPage() {
       }
 
       // Sort observations to match the report order
-      const sortedObservationsData = observationIds.map((id: string) => 
+      const sortedObservationsData = observationIds.map((id: string) =>
         observationsData.find((obs: Observation) => obs.id === id)
-      ).filter(Boolean);
+      ).filter(Boolean) as Observation[];
 
-      const observationsWithUrls: ObservationWithUrl[] = await Promise.all(
-        sortedObservationsData.map(async (obs: Observation) => {
-          let signedUrl = null;
-          if (obs.photo_url) {
+      // Show observations immediately with null URLs — don't block render
+      const withPlaceholders: ObservationWithUrl[] = sortedObservationsData.map(obs => ({
+        ...obs,
+        signedUrl: null,
+      }));
+      setObservations(withPlaceholders);
+      setLoading(false);
+
+      // Generate signed URLs in batches of 20, progressively updating the UI
+      const BATCH_SIZE = 20;
+      const photoObs = sortedObservationsData.filter(obs => obs.photo_url);
+
+      for (let i = 0; i < photoObs.length; i += BATCH_SIZE) {
+        const batch = photoObs.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map(async (obs: Observation) => {
+            const normalizedPath = normalizePath(obs.photo_url);
+            if (!normalizedPath) return { id: obs.id, signedUrl: null };
             try {
-              const normalizedPath = normalizePath(obs.photo_url);
-              if (normalizedPath) {
-                const { data: urlData } = await supabase.storage
-                  .from(BUCKET)
-                  .createSignedUrl(normalizedPath, 3600);
-                signedUrl = urlData?.signedUrl || null;
-              }
+              const { data: urlData } = await supabase.storage
+                .from(BUCKET)
+                .createSignedUrl(normalizedPath, 3600);
+              return { id: obs.id, signedUrl: urlData?.signedUrl || null };
             } catch (error) {
               console.error(`Error getting signed URL for ${obs.photo_url}:`, error);
+              return { id: obs.id, signedUrl: null };
             }
-          }
+          })
+        );
 
-          return {
-            ...obs,
-            signedUrl
-          };
-        })
-      );
-
-      setObservations(observationsWithUrls);
+        setObservations(prev =>
+          prev.map(obs => {
+            const result = batchResults.find(r => r.id === obs.id);
+            return result ? { ...obs, signedUrl: result.signedUrl } : obs;
+          })
+        );
+      }
     } catch (error) {
       console.error('Error fetching report and observations:', error);
-    } finally {
       setLoading(false);
     }
     };

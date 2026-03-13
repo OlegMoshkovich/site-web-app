@@ -87,18 +87,16 @@ export default function ReportsPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Check if user is admin of any site
-        const { data: ownedSites } = await supabase
-          .from('sites')
-          .select('id, name')
-          .eq('user_id', user.id);
-
-        const { data: collaboratorSites } = await supabase
-          .from('site_collaborators')
-          .select('site_id, role, sites(id, name)')
-          .eq('user_id', user.id)
-          .eq('status', 'accepted')
-          .in('role', ['admin', 'owner']);
+        // Check if user is admin of any site (parallel)
+        const [{ data: ownedSites }, { data: collaboratorSites }] = await Promise.all([
+          supabase.from('sites').select('id, name').eq('user_id', user.id),
+          supabase
+            .from('site_collaborators')
+            .select('site_id, role, sites(id, name)')
+            .eq('user_id', user.id)
+            .eq('status', 'accepted')
+            .in('role', ['admin', 'owner']),
+        ]);
 
         // Combine owned sites and admin sites
         const adminSiteIds = [
@@ -132,50 +130,64 @@ export default function ReportsPage() {
           return;
         }
 
-        // Enrich reports with observation counts, user info, and site info
-        const enrichedReports = await Promise.all(
-          (reportsData || []).map(async (report: Report) => {
-            // Get observation count
-            const { count } = await supabase
-              .from('report_observations')
-              .select('*', { count: 'exact', head: true })
-              .eq('report_id', report.id);
+        if (!reportsData?.length) {
+          setAllReports([]);
+          setReports([]);
+          return;
+        }
 
-            // Get user profile for this report
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('email')
-              .eq('id', report.user_id)
-              .single();
+        const reportIds = reportsData.map((r: Report) => r.id);
+        const uniqueUserIds = [...new Set(reportsData.map((r: Report) => r.user_id))];
 
-            // Get site IDs for this report's observations
-            const { data: reportObservations } = await supabase
-              .from('report_observations')
-              .select('observation_id')
-              .eq('report_id', report.id);
+        // Batch: fetch ALL report_observations + ALL profiles in parallel (2 queries instead of N*3)
+        const [{ data: allReportObs }, { data: allProfiles }] = await Promise.all([
+          supabase
+            .from('report_observations')
+            .select('report_id, observation_id')
+            .in('report_id', reportIds),
+          supabase
+            .from('profiles')
+            .select('id, email')
+            .in('id', uniqueUserIds),
+        ]);
 
-            const observationIds = (reportObservations || []).map((ro: { observation_id: string }) => ro.observation_id);
-
-            let siteIds: string[] = [];
-            if (observationIds.length > 0) {
-              const { data: observations } = await supabase
-                .from('observations')
-                .select('site_id')
-                .in('id', observationIds);
-
-              siteIds = [...new Set((observations || [])
-                .map((o: { site_id: string | null }) => o.site_id)
-                .filter(Boolean) as string[])];
-            }
-
-            return {
-              ...report,
-              observation_count: count || 0,
-              user_email: profile?.email || 'Unknown',
-              site_ids: siteIds
-            };
-          })
+        // Build profile lookup map
+        const profileMap = new Map(
+          (allProfiles || []).map((p: { id: string; email: string }) => [p.id, p.email])
         );
+
+        // Group observation IDs by report
+        const obsByReport = new Map<string, string[]>();
+        (allReportObs || []).forEach((ro: { report_id: string; observation_id: string }) => {
+          if (!obsByReport.has(ro.report_id)) obsByReport.set(ro.report_id, []);
+          obsByReport.get(ro.report_id)!.push(ro.observation_id);
+        });
+
+        // Batch: fetch site_ids for ALL observations across all reports (1 query)
+        const allObsIds = [...new Set((allReportObs || []).map((ro: { observation_id: string }) => ro.observation_id))];
+        const obsSiteMap = new Map<string, string>();
+        if (allObsIds.length > 0) {
+          const { data: allObservations } = await supabase
+            .from('observations')
+            .select('id, site_id')
+            .in('id', allObsIds);
+
+          (allObservations || []).forEach((o: { id: string; site_id: string | null }) => {
+            if (o.site_id) obsSiteMap.set(o.id, o.site_id);
+          });
+        }
+
+        // Assemble enriched reports from maps — no more per-report queries
+        const enrichedReports = reportsData.map((report: Report) => {
+          const obsIds = obsByReport.get(report.id) || [];
+          const siteIds = [...new Set(obsIds.map(id => obsSiteMap.get(id)).filter(Boolean) as string[])];
+          return {
+            ...report,
+            observation_count: obsIds.length,
+            user_email: profileMap.get(report.user_id) || 'Unknown',
+            site_ids: siteIds,
+          };
+        });
 
         // Filter reports if user is admin - only show reports they have access to
         let filteredReports = enrichedReports;
