@@ -1015,7 +1015,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   <Edit3 className="h-4 w-4" />
                 </button>
               </div>
-              <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+              <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
                 {observation.labels && observation.labels.length > 0 ? (
                   [...new Set(observation.labels)]
                     .sort((a, b) => {
@@ -1027,7 +1027,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <Badge
                       key={`modal-label-${idx}`}
                       variant="outline"
-                      className="text-xs px-2 py-1 border border-gray-300 bg-white flex-shrink-0 whitespace-nowrap"
+                      className="text-[10px] leading-tight px-1.5 py-0.5 border border-gray-300 bg-white whitespace-nowrap"
                     >
                       {processLabel(label)}
                     </Badge>
