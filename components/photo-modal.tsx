@@ -604,7 +604,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col md:flex-row h-[60vh] md:h-[90vh] overflow-hidden">
+      <div className="flex flex-col md:flex-row h-[69vh] md:h-[90vh] overflow-hidden">
         {/* Image container */}
         <div
           ref={imageContainerRef}
