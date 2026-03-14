@@ -428,7 +428,7 @@ export function PhotoModal({
       if (planImageData.isPdf) {
         planBlock = `
 <div>
-  <div class="col-head">Plan Position</div>
+  <div class="col-head">Planposition</div>
   <div class="plan-wrap">
     <canvas id="pc" width="320" height="240" style="display:block;width:100%;height:auto;"></canvas>
     ${dot}${namebar}
@@ -455,7 +455,7 @@ export function PhotoModal({
       } else {
         planBlock = `
 <div>
-  <div class="col-head">Plan Position</div>
+  <div class="col-head">Planposition</div>
   <div class="plan-wrap">
     <img src="${planImageData.url}" style="width:100%;max-height:300px;object-fit:contain;display:block;" />
     ${dot}${namebar}
@@ -847,17 +847,22 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 <span>{resolveObservationDateTime(observation).toLocaleDateString()}</span>
               </div>
 
-              {(observation.sites?.name || observation.site_id) && (
+              {(observation.sites?.name || observation.site_id || (observation.gps_lat != null && observation.gps_lng != null)) && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-3 w-3 flex-shrink-0" />
-                  <span>{observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}</span>
-                </div>
-              )}
-
-              {observation.gps_lat != null && observation.gps_lng != null && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3 flex-shrink-0" />
-                  <span>{observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}</span>
+                  <span>
+                    {observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}
+                    {observation.gps_lat != null && observation.gps_lng != null && (
+                      <a
+                        href={`https://www.google.com/maps?q=${observation.gps_lat},${observation.gps_lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 text-gray-400 underline hover:text-blue-500 transition-colors"
+                      >
+                        {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
+                      </a>
+                    )}
+                  </span>
                 </div>
               )}
 
@@ -973,7 +978,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {/* Labels display */}
             <div className="mt-5">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">Bereich</h4>
+                <h4 className="font-semibold text-gray-900">Bereich</h4>
                 <button
                   onClick={handleStartEditLabels}
                   className="text-gray-500 hover:text-blue-600 transition-colors p-1"
@@ -1010,7 +1015,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {hasPlanAnchor && (
               <div className="mt-5">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900">Plan Position</h4>
+                  <h4 className="font-semibold text-gray-900">Planposition</h4>
                   {!editingPlanAnchor ? (
                     <button
                       onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
