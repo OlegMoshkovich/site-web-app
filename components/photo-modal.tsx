@@ -857,7 +857,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         href={`https://www.google.com/maps?q=${observation.gps_lat},${observation.gps_lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-2 text-gray-400 underline hover:text-blue-500 transition-colors"
+                        className="ml-2 text-gray-400 hover:text-blue-500 transition-colors"
                       >
                         {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
                       </a>
@@ -1047,7 +1047,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   )}
                 </div>
                 {editingPlanAnchor && (
-                  <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                  <p className="text-xs text-gray-500 mb-1">Klicken Sie auf den Plan, um eine neue Position festzulegen</p>
                 )}
                 {planImageLoading ? (
                   <div
