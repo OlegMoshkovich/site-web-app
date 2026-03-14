@@ -797,10 +797,10 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="relative p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[35%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
+        <div className="relative p-4 pt-2 md:p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[35%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
-            <div className="mb-5">
+            <div className="mb-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900">Beschreibung</h3>
                 {!editingNote && (
@@ -868,7 +868,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
             
             {/* Metadata */}
-            <div className="space-y-1 text-xs text-gray-500">
+            <div className="space-y-1 text-xs text-gray-500 hidden md:block">
               <div className="flex items-center gap-2">
                 <Calendar className="h-3 w-3 flex-shrink-0" />
                 <span>{resolveObservationDateTime(observation).toLocaleDateString()}</span>
@@ -1003,7 +1003,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             )}
 
             {/* Labels display */}
-            <div className="mt-5">
+            <div className="mt-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-gray-900">Bereich</h4>
                 <button
@@ -1040,7 +1040,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
             {/* Plan preview */}
             {!hasPlanAnchor && !addingPlanAnchor && observation.site_id && (
-              <div className="mt-5">
+              <div className="mt-0 md:mt-5">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-gray-900">Planposition</h4>
                 </div>
@@ -1054,7 +1054,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               </div>
             )}
             {(hasPlanAnchor || addingPlanAnchor) && (
-              <div className="mt-5">
+              <div className="mt-0 md:mt-5">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-gray-900">Planposition</h4>
                   {!editingPlanAnchor ? (
