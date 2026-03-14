@@ -642,7 +642,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               </button>
               <button
                 onClick={handlePrint}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className="hidden md:block bg-black hover:bg-gray-800 text-white p-2 transition-colors"
                 aria-label="Print"
               >
                 <Printer className="h-4 w-4" />
@@ -687,7 +687,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               </button>
               <button
                 onClick={handlePrint}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className="hidden md:block bg-black hover:bg-gray-800 text-white p-2 transition-colors"
                 aria-label="Print"
               >
                 <Printer className="h-4 w-4" />
