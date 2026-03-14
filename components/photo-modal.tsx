@@ -608,7 +608,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         {/* Image container */}
         <div
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-[55%] flex-shrink-0 md:flex-1 md:h-auto overflow-hidden"
+          className={`relative bg-gray-100 overflow-hidden md:flex-1 md:h-auto ${hasPlanAnchor || addingPlanAnchor ? 'h-[55%] flex-shrink-0' : 'flex-1 min-h-0'}`}
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -797,7 +797,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="relative p-4 pt-2 md:p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[45%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
+        <div className={`relative p-4 pt-2 md:p-6 border-t bg-white overflow-y-auto flex-shrink-0 md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l ${hasPlanAnchor || addingPlanAnchor ? 'h-[45%]' : ''}`}>
          
             {/* Note */}
             <div className="mb-5 hidden md:block">
