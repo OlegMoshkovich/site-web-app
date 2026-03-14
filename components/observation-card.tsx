@@ -38,13 +38,13 @@ export function ObservationCard({
         <Badge
           key={`${observation.id}-label-${idx}`}
           variant="outline"
-          className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-[50ch]"
+          className="text-[10px] leading-tight px-1 py-0 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-[50ch]"
         >
           {processLabel(label)}
         </Badge>
       ))}
       {labels.length > 3 && (
-        <Badge variant="outline" className="text-xs px-1.5 py-0.5 border border-gray-300 bg-gray-50 text-gray-500">
+        <Badge variant="outline" className="text-[10px] leading-tight px-1 py-0 border border-gray-300 bg-gray-50 text-gray-500">
           +{labels.length - 3}
         </Badge>
       )}
