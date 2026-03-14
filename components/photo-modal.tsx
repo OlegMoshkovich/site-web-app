@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -773,7 +773,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         <div className="relative p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[35%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
-            <div>
+            <div className="mb-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900">Beschreibung</h3>
                 {!editingNote && (
@@ -834,139 +834,38 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-700 min-h-[1.5rem]">
-                  {observation.note || <span className="text-gray-400 italic">Keine Anmerkungen</span>}
+                <p className="text-gray-600 text-sm min-h-[1.5rem]">
+                  {observation.note || <span className="text-gray-400">Keine Anmerkungen</span>}
                 </p>
               )}
             </div>
             
             {/* Metadata */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    {resolveObservationDateTime(observation).toLocaleDateString()}
-                  </span>
-                </div>
-                
-                {(observation.sites?.name || observation.site_id) && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      Site: {observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="text-gray-600">
-                  <span className="font-medium">Erstellt von:</span>{" "}
-                  {observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}
-                </div>
+            <div className="space-y-1 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-3 w-3 flex-shrink-0" />
+                <span>{resolveObservationDateTime(observation).toLocaleDateString()}</span>
               </div>
-              
-              <div className="space-y-2">
-                {observation.gps_lat != null && observation.gps_lng != null && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      GPS: {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
-                    </span>
-                  </div>
-                )}
-                
+
+              {(observation.sites?.name || observation.site_id) && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  <span>{observation.sites?.name || `${observation.site_id?.slice(0, 8)}...`}</span>
+                </div>
+              )}
+
+              {observation.gps_lat != null && observation.gps_lng != null && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  <span>{observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <User className="h-3 w-3 flex-shrink-0" />
+                <span>{observation.user_email || `User ${observation.user_id.slice(0, 8)}...`}</span>
               </div>
             </div>
-            
-            {/* Plan preview */}
-            {hasPlanAnchor && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900">Plan Position</h4>
-                  {!editingPlanAnchor ? (
-                    <button
-                      onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
-                      className="text-gray-500 hover:text-blue-600 transition-colors p-1"
-                      title="Edit plan position"
-                      disabled={isSaving}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={handleSavePlanAnchor}
-                        className="text-green-600 hover:text-green-700 transition-colors p-1"
-                        title="Save"
-                        disabled={isSaving || !pendingAnchor}
-                      >
-                        <Check className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => { setEditingPlanAnchor(false); setPendingAnchor(null); }}
-                        className="text-gray-500 hover:text-red-600 transition-colors p-1"
-                        title="Cancel"
-                        disabled={isSaving}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {editingPlanAnchor && (
-                  <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
-                )}
-                {planImageLoading ? (
-                  <div
-                    className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50"
-                    style={{ width: 320, height: 280 }}
-                  >
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
-                  </div>
-                ) : planImageData ? (
-                  <div
-                    className="relative border border-gray-200 rounded-lg overflow-hidden"
-                    style={{ width: 320, height: 280, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
-                    onClick={handlePlanImageClick}
-                  >
-                    {planImageData.isPdf ? (
-                      <PdfPlanCanvas url={planImageData.url} width={320} height={280} />
-                    ) : (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={planImageData.url}
-                        alt={planImageData.name}
-                        style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
-                      />
-                    )}
-                    {/* Anchor dot — shows pending position while editing, otherwise saved position */}
-                    {(() => {
-                      const displayX = pendingAnchor ? pendingAnchor.x : anchorX!;
-                      const displayY = pendingAnchor ? pendingAnchor.y : anchorY!;
-                      return (
-                        <div
-                          className="absolute pointer-events-none"
-                          style={{
-                            left: displayX * 320 - 7,
-                            top: displayY * 280 - 7,
-                            width: 14,
-                            height: 14,
-                            borderRadius: 7,
-                            backgroundColor: pendingAnchor ? 'blue' : 'red',
-                            border: '2px solid white',
-                            zIndex: 10,
-                          }}
-                        />
-                      );
-                    })()}
-                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
-                      {planImageData.name}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
-
             {/* Labels — full-panel overlay when editing */}
             {editingLabels && (
               <div className="absolute inset-0 bg-white flex flex-col z-10">
@@ -1072,7 +971,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             )}
 
             {/* Labels display */}
-            <div>
+            <div className="mt-5">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium text-gray-900">Bereich</h4>
                 <button
@@ -1084,7 +983,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   <Edit3 className="h-4 w-4" />
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
+              <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
                 {observation.labels && observation.labels.length > 0 ? (
                   [...new Set(observation.labels)]
                     .sort((a, b) => {
@@ -1096,7 +995,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <Badge
                       key={`modal-label-${idx}`}
                       variant="outline"
-                      className="text-xs px-2 py-1 border border-gray-300 bg-white"
+                      className="text-xs px-2 py-1 border border-gray-300 bg-white flex-shrink-0 whitespace-nowrap"
                     >
                       {processLabel(label)}
                     </Badge>
@@ -1106,6 +1005,95 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 )}
               </div>
             </div>
+
+            {/* Plan preview */}
+            {hasPlanAnchor && (
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900">Plan Position</h4>
+                  {!editingPlanAnchor ? (
+                    <button
+                      onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
+                      className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                      title="Edit plan position"
+                      disabled={isSaving}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={handleSavePlanAnchor}
+                        className="text-green-600 hover:text-green-700 transition-colors p-1"
+                        title="Save"
+                        disabled={isSaving || !pendingAnchor}
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => { setEditingPlanAnchor(false); setPendingAnchor(null); }}
+                        className="text-gray-500 hover:text-red-600 transition-colors p-1"
+                        title="Cancel"
+                        disabled={isSaving}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {editingPlanAnchor && (
+                  <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                )}
+                {planImageLoading ? (
+                  <div
+                    className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50"
+                    style={{ width: 320, height: 280 }}
+                  >
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
+                  </div>
+                ) : planImageData ? (
+                  <div
+                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                    style={{ width: 320, height: 280, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
+                    onClick={handlePlanImageClick}
+                  >
+                    {planImageData.isPdf ? (
+                      <PdfPlanCanvas url={planImageData.url} width={320} height={280} />
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={planImageData.url}
+                        alt={planImageData.name}
+                        style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
+                      />
+                    )}
+                    {/* Anchor dot — shows pending position while editing, otherwise saved position */}
+                    {(() => {
+                      const displayX = pendingAnchor ? pendingAnchor.x : anchorX!;
+                      const displayY = pendingAnchor ? pendingAnchor.y : anchorY!;
+                      return (
+                        <div
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: displayX * 320 - 7,
+                            top: displayY * 280 - 7,
+                            width: 14,
+                            height: 14,
+                            borderRadius: 7,
+                            backgroundColor: pendingAnchor ? 'blue' : 'red',
+                            border: '2px solid white',
+                            zIndex: 10,
+                          }}
+                        />
+                      );
+                    })()}
+                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                      {planImageData.name}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
 
         </div>
       </div>
