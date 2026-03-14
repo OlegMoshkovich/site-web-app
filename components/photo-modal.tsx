@@ -66,9 +66,12 @@ export function PhotoModal({
   // Plan preview state
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
   const [planImageLoading, setPlanImageLoading] = useState(false);
+  const [availablePlans, setAvailablePlans] = useState<{ id: string; plan_name: string; plan_url: string; site_id: string }[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   // Plan anchor editing state
   const [editingPlanAnchor, setEditingPlanAnchor] = useState(false);
+  const [addingPlanAnchor, setAddingPlanAnchor] = useState(false);
   const [pendingAnchor, setPendingAnchor] = useState<{ x: number; y: number } | null>(null);
 
   // Resolve anchor coordinates from plan_anchor (jsonb)
@@ -77,18 +80,17 @@ export function PhotoModal({
   const hasPlanAnchor =
     anchorX != null && anchorY != null && !(anchorX === 0 && anchorY === 0);
 
-  // Load the plan image whenever the observation with a plan anchor changes
+  // Load all available plans for the site
   useEffect(() => {
-    if (!hasPlanAnchor || !observation.site_id) {
+    if ((!hasPlanAnchor && !addingPlanAnchor) || !observation.site_id) {
+      setAvailablePlans([]);
       setPlanImageData(null);
       return;
     }
 
     let cancelled = false;
 
-    const loadPlan = async () => {
-      setPlanImageLoading(true);
-      setPlanImageData(null);
+    const loadPlans = async () => {
       try {
         const { data, error } = await supabase
           .from('site_plans')
@@ -98,29 +100,50 @@ export function PhotoModal({
 
         if (cancelled || error || !data || data.length === 0) return;
 
-        // Prefer the plan the observation was recorded on, fall back to the first plan
-        const planId: string | null = observation.plan ?? null;
-        const match = data.find((p: any) => p.id === planId) ?? data[0];
+        setAvailablePlans(data);
 
-        const fileName = match.plan_url.split('/').pop()?.split('?')[0];
-        const filePath = `${match.site_id}/${fileName}`;
+        // Default to the plan the observation was recorded on, or first plan
+        const planId: string | null = observation.plan ?? null;
+        const defaultPlan = data.find((p: any) => p.id === planId) ?? data[0];
+        setSelectedPlanId(prev => prev ?? defaultPlan.id);
+      } catch {}
+    };
+
+    loadPlans();
+    return () => { cancelled = true; };
+  }, [observation.id, observation.site_id, hasPlanAnchor, addingPlanAnchor]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load signed URL whenever selected plan changes
+  useEffect(() => {
+    if (!selectedPlanId || availablePlans.length === 0) return;
+
+    const plan = availablePlans.find(p => p.id === selectedPlanId);
+    if (!plan) return;
+
+    let cancelled = false;
+
+    const loadPlanUrl = async () => {
+      setPlanImageLoading(true);
+      setPlanImageData(null);
+      try {
+        const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
+        const filePath = `${plan.site_id}/${fileName}`;
         const { data: urlData } = await supabase.storage
           .from('plans')
           .createSignedUrl(filePath, 604800);
 
         if (!cancelled && urlData) {
-          const originalFileName = (match.plan_url.split('/').pop()?.split('?')[0] ?? '').toLowerCase();
-          const isPdf = originalFileName.endsWith('.pdf');
-          setPlanImageData({ url: urlData.signedUrl, name: match.plan_name, isPdf });
+          const isPdf = (fileName ?? '').toLowerCase().endsWith('.pdf');
+          setPlanImageData({ url: urlData.signedUrl, name: plan.plan_name, isPdf });
         }
       } finally {
         if (!cancelled) setPlanImageLoading(false);
       }
     };
 
-    loadPlan();
+    loadPlanUrl();
     return () => { cancelled = true; };
-  }, [observation.id, observation.site_id, hasPlanAnchor]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedPlanId, availablePlans]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Portrait detection state
   const [isPortrait, setIsPortrait] = useState(false);
@@ -286,7 +309,10 @@ export function PhotoModal({
     setEditNoteValue("");
     setSelectedLabelNames(new Set(observation.labels || []));
     setEditingPlanAnchor(false);
+    setAddingPlanAnchor(false);
     setPendingAnchor(null);
+    setSelectedPlanId(null);
+    setAvailablePlans([]);
   }, [observation.id, observation.labels]);
 
   const handleShare = useCallback(async () => {
@@ -566,6 +592,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
       }
 
       setEditingPlanAnchor(false);
+      setAddingPlanAnchor(false);
       setPendingAnchor(null);
     } catch (error) {
       console.error("Error updating plan anchor:", error);
@@ -1012,7 +1039,21 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
 
             {/* Plan preview */}
-            {hasPlanAnchor && (
+            {!hasPlanAnchor && !addingPlanAnchor && observation.site_id && (
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-gray-900">Planposition</h4>
+                </div>
+                <button
+                  onClick={() => { setAddingPlanAnchor(true); setEditingPlanAnchor(true); setPendingAnchor(null); }}
+                  className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
+                  disabled={isSaving}
+                >
+                  + Planposition hinzufügen
+                </button>
+              </div>
+            )}
+            {(hasPlanAnchor || addingPlanAnchor) && (
               <div className="mt-5">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-gray-900">Planposition</h4>
@@ -1036,7 +1077,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         <Check className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => { setEditingPlanAnchor(false); setPendingAnchor(null); }}
+                        onClick={() => { setEditingPlanAnchor(false); setAddingPlanAnchor(false); setPendingAnchor(null); }}
                         className="text-gray-500 hover:text-red-600 transition-colors p-1"
                         title="Cancel"
                         disabled={isSaving}
@@ -1046,6 +1087,17 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     </div>
                   )}
                 </div>
+                {editingPlanAnchor && availablePlans.length > 1 && (
+                  <select
+                    value={selectedPlanId ?? ''}
+                    onChange={e => { setSelectedPlanId(e.target.value); setPendingAnchor(null); }}
+                    className="w-full mb-2 text-xs border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  >
+                    {availablePlans.map(p => (
+                      <option key={p.id} value={p.id}>{p.plan_name}</option>
+                    ))}
+                  </select>
+                )}
                 {editingPlanAnchor && (
                   <p className="text-xs text-gray-500 mb-1">Klicken Sie auf den Plan, um eine neue Position festzulegen</p>
                 )}
