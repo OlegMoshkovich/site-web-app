@@ -604,11 +604,11 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
-      <div className="flex flex-col md:flex-row max-h-[95vh] md:h-[90vh] overflow-y-auto md:overflow-hidden">
+      <div className="flex flex-col md:flex-row h-[69vh] md:h-[90vh] overflow-hidden">
         {/* Image container */}
         <div
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-[50vh] md:flex-1 md:h-auto overflow-hidden"
+          className="relative bg-gray-100 flex-1 min-h-0 md:flex-1 md:h-auto overflow-hidden"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -702,13 +702,6 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
           )}
           
-          {/* Note overlay - mobile only, above bottom bar */}
-          {observation.note && (
-            <div className="absolute bottom-10 left-0 right-0 z-30 md:hidden bg-black/60 text-white px-3 py-1.5 text-xs">
-              {observation.note}
-            </div>
-          )}
-
           {/* Timestamp and elevation tags overlay - full width bottom */}
           <div className="absolute bottom-0 left-0 right-0 z-30 bg-black/70 text-white px-3 py-2 text-xs flex items-center gap-2 flex-wrap">
             <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
@@ -804,10 +797,10 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className="relative p-4 md:p-6 border-t bg-white overflow-y-auto flex-shrink-0 md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
+        <div className="relative p-6 border-t bg-white overflow-y-auto flex-shrink-0 max-h-[35%] md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l">
          
             {/* Note */}
-            <div className="mb-5 hidden md:block">
+            <div className="mb-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900">Beschreibung</h3>
                 {!editingNote && (
@@ -875,7 +868,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
             
             {/* Metadata */}
-            <div className="space-y-1 text-xs text-gray-500 hidden md:block">
+            <div className="space-y-1 text-xs text-gray-500">
               <div className="flex items-center gap-2">
                 <Calendar className="h-3 w-3 flex-shrink-0" />
                 <span>{resolveObservationDateTime(observation).toLocaleDateString()}</span>
@@ -1010,7 +1003,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             )}
 
             {/* Labels display */}
-            <div className="mt-5 hidden md:block">
+            <div className="mt-5">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-gray-900">Bereich</h4>
                 <button
@@ -1110,25 +1103,25 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 )}
                 {planImageLoading ? (
                   <div
-                    className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50 w-full"
-                    style={{ height: 240 }}
+                    className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50"
+                    style={{ width: 320, height: 280 }}
                   >
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
                   </div>
                 ) : planImageData ? (
                   <div
-                    className="relative border border-gray-200 rounded-lg overflow-hidden w-full"
-                    style={{ height: 240, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
+                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                    style={{ width: 320, height: 280, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
                     onClick={handlePlanImageClick}
                   >
                     {planImageData.isPdf ? (
-                      <PdfPlanCanvas url={planImageData.url} width={320} height={240} />
+                      <PdfPlanCanvas url={planImageData.url} width={320} height={280} />
                     ) : (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={planImageData.url}
                         alt={planImageData.name}
-                        style={{ width: '100%', height: 240, objectFit: 'contain', display: 'block' }}
+                        style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
                       />
                     )}
                     {/* Anchor dot — shows pending position while editing, otherwise saved position */}
@@ -1139,8 +1132,8 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         <div
                           className="absolute pointer-events-none"
                           style={{
-                            left: `calc(${displayX * 100}% - 7px)`,
-                            top: `calc(${displayY * 100}% - 7px)`,
+                            left: displayX * 320 - 7,
+                            top: displayY * 280 - 7,
                             width: 14,
                             height: 14,
                             borderRadius: 7,
