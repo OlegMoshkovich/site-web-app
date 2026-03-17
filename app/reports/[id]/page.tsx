@@ -653,11 +653,14 @@ export default function ReportDetailPage() {
               const planInfo = planDataMap[observation.plan]!;
               const anchor = getAnchorPoint(observation);
               try {
-                // Canvas dimensions matching the text column (~3.78px per mm)
                 const planPdfWidth = textWidth;
                 const planPdfHeight = 50; // fixed height in mm for consistent layout
-                const cw = Math.round(planPdfWidth * 3.78);
-                const ch = Math.round(planPdfHeight * 3.78);
+                // Render at 300 DPI (11.81 px/mm) for sharp plan output in the PDF
+                const PX_PER_MM = 11.81;
+                const cw = Math.round(planPdfWidth * PX_PER_MM);
+                const ch = Math.round(planPdfHeight * PX_PER_MM);
+                // Anchor dot radius scaled to match canvas resolution
+                const dotRadius = Math.round(7 * PX_PER_MM / 3.78);
 
                 let planCanvas: HTMLCanvasElement;
 
@@ -698,11 +701,11 @@ export default function ReportDetailPage() {
                     const dotX = anchor.x * cw;
                     const dotY = anchor.y * ch;
                     planCtx.beginPath();
-                    planCtx.arc(dotX, dotY, 7, 0, Math.PI * 2);
+                    planCtx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2);
                     planCtx.fillStyle = 'red';
                     planCtx.fill();
                     planCtx.strokeStyle = 'white';
-                    planCtx.lineWidth = 2.5;
+                    planCtx.lineWidth = dotRadius * 0.4;
                     planCtx.stroke();
                   }
                 }

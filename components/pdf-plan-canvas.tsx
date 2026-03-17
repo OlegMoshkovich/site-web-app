@@ -9,10 +9,13 @@ interface PdfPlanCanvasProps {
 }
 
 /**
- * Renders the first page of a PDF to a <canvas> at exactly width×height pixels.
+ * Renders the first page of a PDF to a <canvas> at exactly width×height CSS pixels.
+ * The canvas backing store is scaled by devicePixelRatio (minimum 2×) so the output
+ * is crisp on retina / HiDPI displays.
+ *
  * The page is scaled with objectFit:contain (letterboxed, white background) so
  * that anchor coordinates (anchorX * width, anchorY * height) map directly to
- * canvas pixel positions regardless of the PDF page's natural aspect ratio.
+ * CSS pixel positions regardless of the PDF page's natural aspect ratio.
  */
 export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,16 +43,20 @@ export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
         const page = await pdf.getPage(1);
         if (cancelled) { pdf.destroy(); return; }
 
-        // Scale to contain within width×height (letterbox, white fill)
+        // Use at least 2× for quality; respect device pixel ratio on HiDPI screens
+        const dpr = Math.max(typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1, 2);
+        const physW = Math.round(width  * dpr);
+        const physH = Math.round(height * dpr);
+
+        // Scale the PDF page to fill physW×physH (objectFit:contain)
         const viewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(width / viewport.width, height / viewport.height);
+        const scale = Math.min(physW / viewport.width, physH / viewport.height);
         const scaledViewport = page.getViewport({ scale });
 
-        const offsetX = Math.floor((width  - scaledViewport.width)  / 2);
-        const offsetY = Math.floor((height - scaledViewport.height) / 2);
+        const offsetX = Math.floor((physW - scaledViewport.width)  / 2);
+        const offsetY = Math.floor((physH - scaledViewport.height) / 2);
 
-        // Render the page to an offscreen canvas at its natural scaled size,
-        // then composite it centred onto the fixed-size output canvas.
+        // Render page to an offscreen canvas at the high-res scaled size
         const offscreen = document.createElement('canvas');
         offscreen.width  = Math.ceil(scaledViewport.width);
         offscreen.height = Math.ceil(scaledViewport.height);
@@ -60,14 +67,17 @@ export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
         const canvas = canvasRef.current;
         if (!canvas) { pdf.destroy(); return; }
 
-        canvas.width  = width;
-        canvas.height = height;
+        // Set physical pixel dimensions and CSS display dimensions separately
+        canvas.width  = physW;
+        canvas.height = physH;
+        canvas.style.width  = `${width}px`;
+        canvas.style.height = `${height}px`;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) { pdf.destroy(); return; }
 
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, physW, physH);
         ctx.drawImage(offscreen, offsetX, offsetY);
 
         pdf.destroy();
