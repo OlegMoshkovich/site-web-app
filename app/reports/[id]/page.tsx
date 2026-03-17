@@ -28,6 +28,7 @@ import Image from "next/image";
 import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
 import { getLabelsForSite, type Label } from "@/lib/labels";
+import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 
 interface Report {
   id: string;
@@ -305,6 +306,21 @@ export default function ReportDetailPage() {
     }
   }, [pendingChanges, supabase]);
 
+  // Plan data map: plan UUID → { url, name, isPdf }
+  const [planDataMap, setPlanDataMap] = useState<Record<string, { url: string; name: string; isPdf: boolean } | null>>({});
+
+  // Resolve anchor coordinates from plan_anchor JSONB or legacy anchor_x/anchor_y
+  const getAnchorPoint = (obs: Observation): { x: number; y: number } | null => {
+    const anchor = obs.plan_anchor;
+    if (anchor && typeof anchor === 'object' && anchor.x != null && anchor.y != null && !(anchor.x === 0 && anchor.y === 0)) {
+      return { x: Number(anchor.x), y: Number(anchor.y) };
+    }
+    if (obs.anchor_x != null && obs.anchor_y != null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
+      return { x: obs.anchor_x, y: obs.anchor_y };
+    }
+    return null;
+  };
+
   // Available site labels + dropdown state
   const [siteLabels, setSiteLabels] = useState<Label[]>([]);
   const [addingLabelFor, setAddingLabelFor] = useState<string | null>(null);
@@ -385,7 +401,11 @@ export default function ReportDetailPage() {
             const logoCtx = logoCanvas.getContext('2d');
             logoCanvas.width = logoImg.width;
             logoCanvas.height = logoImg.height;
-            logoCtx?.drawImage(logoImg, 0, 0);
+            if (logoCtx) {
+              logoCtx.fillStyle = 'white';
+              logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
+              logoCtx.drawImage(logoImg, 0, 0);
+            }
 
             const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
 
@@ -532,6 +552,8 @@ export default function ReportDetailPage() {
                 logoCanvas.width = Math.round(logoImg.width * logoScale);
                 logoCanvas.height = Math.round(logoImg.height * logoScale);
                 if (logoCtx) {
+                  logoCtx.fillStyle = 'white';
+                  logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
                   logoCtx.globalAlpha = 0.5; // Set 50% transparency
                   logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
                 }
@@ -810,6 +832,42 @@ export default function ReportDetailPage() {
         .map(name => ({ id: `obs-${name}`, name, category: 'type' as const, order_index: 999 }));
 
       setSiteLabels([...dbLabels, ...extraLabels]);
+
+      // Fetch plan signed URLs for observations that have a plan
+      const uniquePlanIds = [...new Set(
+        sortedObservationsData.filter((o: Observation) => o.plan).map((o: Observation) => o.plan as string)
+      )];
+      if (uniquePlanIds.length > 0) {
+        try {
+          const { data: planRows } = await supabase
+            .from('site_plans')
+            .select('id, plan_name, plan_url, site_id')
+            .in('id', uniquePlanIds);
+          if (planRows) {
+            const planMap: Record<string, { url: string; name: string; isPdf: boolean } | null> = {};
+            await Promise.all(planRows.map(async (plan: { id: string; plan_name: string; plan_url: string; site_id: string }) => {
+              try {
+                const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
+                const filePath = `${plan.site_id}/${fileName}`;
+                const { data: urlData } = await supabase.storage
+                  .from('plans')
+                  .createSignedUrl(filePath, 604800);
+                if (urlData) {
+                  const isPdf = (fileName ?? '').toLowerCase().endsWith('.pdf');
+                  planMap[plan.id] = { url: urlData.signedUrl, name: plan.plan_name, isPdf };
+                } else {
+                  planMap[plan.id] = null;
+                }
+              } catch {
+                planMap[plan.id] = null;
+              }
+            }));
+            setPlanDataMap(planMap);
+          }
+        } catch (e) {
+          console.error('Error fetching plan data:', e);
+        }
+      }
 
       // Generate signed URLs in batches of 20, progressively updating the UI
       const BATCH_SIZE = 20;
@@ -1229,6 +1287,50 @@ export default function ReportDetailPage() {
                                 )
                               )}
                             </div>
+
+                            {/* Plan widget */}
+                            {observation.plan && planDataMap[observation.plan] && (() => {
+                              const planData = planDataMap[observation.plan!]!;
+                              const anchor = getAnchorPoint(observation);
+                              return (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-2">Planposition</h4>
+                                  <div
+                                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                                    style={{ width: 320, height: 280 }}
+                                  >
+                                    {planData.isPdf ? (
+                                      <PdfPlanCanvas url={planData.url} width={320} height={280} />
+                                    ) : (
+                                      /* eslint-disable-next-line @next/next/no-img-element */
+                                      <img
+                                        src={planData.url}
+                                        alt={planData.name}
+                                        style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
+                                      />
+                                    )}
+                                    {anchor && (
+                                      <div
+                                        className="absolute pointer-events-none"
+                                        style={{
+                                          left: anchor.x * 320 - 7,
+                                          top: anchor.y * 280 - 7,
+                                          width: 14,
+                                          height: 14,
+                                          borderRadius: 7,
+                                          backgroundColor: 'red',
+                                          border: '2px solid white',
+                                          zIndex: 10,
+                                        }}
+                                      />
+                                    )}
+                                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                                      {planData.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
 
                             {/* Date + pending indicator */}
                             <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
