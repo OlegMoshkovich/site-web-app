@@ -351,6 +351,34 @@ export default function ReportDetailPage() {
 
   // Handler functions for report actions
 
+  // Renders first page of a PDF plan URL onto an offscreen canvas (objectFit:contain, white bg)
+  const renderPdfPlanToCanvas = async (url: string, cw: number, ch: number): Promise<HTMLCanvasElement> => {
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+    const pdfDoc = await pdfjsLib.getDocument({ url }).promise;
+    const page = await pdfDoc.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(cw / viewport.width, ch / viewport.height);
+    const scaledVp = page.getViewport({ scale });
+
+    const offscreen = document.createElement('canvas');
+    offscreen.width = Math.ceil(scaledVp.width);
+    offscreen.height = Math.ceil(scaledVp.height);
+    await page.render({ canvas: offscreen, viewport: scaledVp }).promise;
+
+    const out = document.createElement('canvas');
+    out.width = cw;
+    out.height = ch;
+    const ctx = out.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(offscreen, Math.floor((cw - scaledVp.width) / 2), Math.floor((ch - scaledVp.height) / 2));
+    pdfDoc.destroy();
+    return out;
+  };
+
   const handleExportReport = async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     try {
       setIsGeneratingPDF(true);
@@ -620,6 +648,88 @@ export default function ReportDetailPage() {
               textY += noteLines.length * 5 + 2;
             }
 
+            // Add plan if available (both image and PDF plans)
+            if (observation.plan && planDataMap[observation.plan]) {
+              const planInfo = planDataMap[observation.plan]!;
+              const anchor = getAnchorPoint(observation);
+              try {
+                // Canvas dimensions matching the text column (~3.78px per mm)
+                const planPdfWidth = textWidth;
+                const planPdfHeight = 50; // fixed height in mm for consistent layout
+                const cw = Math.round(planPdfWidth * 3.78);
+                const ch = Math.round(planPdfHeight * 3.78);
+
+                let planCanvas: HTMLCanvasElement;
+
+                if (planInfo.isPdf) {
+                  planCanvas = await renderPdfPlanToCanvas(planInfo.url, cw, ch);
+                } else {
+                  const planImg = new window.Image();
+                  planImg.crossOrigin = 'anonymous';
+                  await new Promise((resolve, reject) => {
+                    planImg.onload = resolve;
+                    planImg.onerror = reject;
+                    planImg.src = planInfo.url;
+                  });
+
+                  planCanvas = document.createElement('canvas');
+                  planCanvas.width = cw;
+                  planCanvas.height = ch;
+                  const planCtx = planCanvas.getContext('2d');
+                  if (planCtx) {
+                    const imgAspect = planImg.width / planImg.height;
+                    const containerAspect = cw / ch;
+                    let dw: number, dh: number, dx: number, dy: number;
+                    if (imgAspect > containerAspect) {
+                      dw = cw; dh = cw / imgAspect; dx = 0; dy = (ch - dh) / 2;
+                    } else {
+                      dh = ch; dw = ch * imgAspect; dy = 0; dx = (cw - dw) / 2;
+                    }
+                    planCtx.fillStyle = 'white';
+                    planCtx.fillRect(0, 0, cw, ch);
+                    planCtx.drawImage(planImg, dx, dy, dw, dh);
+                  }
+                }
+
+                // Draw red anchor dot on top of whichever canvas was rendered
+                if (anchor) {
+                  const planCtx = planCanvas.getContext('2d');
+                  if (planCtx) {
+                    const dotX = anchor.x * cw;
+                    const dotY = anchor.y * ch;
+                    planCtx.beginPath();
+                    planCtx.arc(dotX, dotY, 7, 0, Math.PI * 2);
+                    planCtx.fillStyle = 'red';
+                    planCtx.fill();
+                    planCtx.strokeStyle = 'white';
+                    planCtx.lineWidth = 2.5;
+                    planCtx.stroke();
+                  }
+                }
+
+                // Label
+                textY += 3;
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Planposition:', textStartX, textY);
+                textY += 4;
+
+                const planImgData = planCanvas.toDataURL('image/jpeg', imageQuality);
+                pdf.addImage(planImgData, 'JPEG', textStartX, textY, planPdfWidth, planPdfHeight);
+
+                // Plan name below image
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(100, 100, 100);
+                const planNameLines = pdf.splitTextToSize(planInfo.name, planPdfWidth);
+                pdf.text(planNameLines, textStartX + 1, textY + planPdfHeight + 3);
+                pdf.setTextColor(0, 0, 0);
+
+                textY += planPdfHeight + planNameLines.length * 3 + 5;
+              } catch (err) {
+                console.error('Error adding plan to PDF:', err);
+              }
+            }
 
             //spacing
             yPosition += Math.max(imgHeight, textY - yPosition) + 10;
