@@ -1074,6 +1074,7 @@ export default function ReportDetailPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top navigation bar */}
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
@@ -1773,5 +1774,6 @@ export default function ReportDetailPage() {
       }}
       onCancel={() => setLabelRemoveConfirm(null)}
     />
+    </>
   );
 }
