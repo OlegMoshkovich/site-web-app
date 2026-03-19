@@ -552,7 +552,7 @@ export default function Home() {
 
         {/* Mobile upload button — below navbar, full content width, hidden on sm+ */}
         {user && (
-          <div className="sm:hidden w-full max-w-6xl mx-auto px-3 pt-2 pb-1">
+          <div className="sm:hidden w-full max-w-6xl mx-auto px-3 pt-0 pb-2">
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
