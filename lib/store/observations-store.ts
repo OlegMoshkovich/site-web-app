@@ -173,9 +173,13 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
     try {
       set({ isLoading: true, error: null, dayOffset: 0 });
 
+      // Fetch only the days elapsed so far this week (Mon–today)
+      const jsDay = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+      const daysThisWeek = jsDay === 0 ? 7 : jsDay; // Sun treated as end of week
+
       const result = await fetchCollaborativeObservationsByTimeRange(userId, {
         type: 'days',
-        count: 3,
+        count: daysThisWeek,
         offset: 0
       });
       const { observations: baseObservations, hasMore } = result;
@@ -204,7 +208,7 @@ export const useObservationsStore = create<ObservationsState>((set, get) => ({
         siteLabels: siteLabelsMap,
         currentUserId: userId,
         lastFetchedAt: Date.now(),
-        dayOffset: 3,
+        dayOffset: daysThisWeek,
         isLoading: false,
       });
 
