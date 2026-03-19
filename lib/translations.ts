@@ -372,7 +372,7 @@ export const translations = {
     
     // Buttons
     generateReport: "Bericht generieren",
-    clearSelection: "Auswahl löschen",
+    clearSelection: "Auswahl abwählen",
     generateReportSelected: "Bericht generieren ({count} ausgewählt)",
     loadMore: "Mehr laden",
     loadMoreLabel: "Mehr laden:",
