@@ -715,7 +715,7 @@ export default function Home() {
               </div>
             )}
 
-            {!isLoading && <Footer user={user} textColor="text-white" />}
+            {!isLoading && <Footer user={user} textColor="text-black" />}
           </div>
         </div>
       </div>
