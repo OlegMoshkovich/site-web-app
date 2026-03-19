@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,9 @@ export function PhotoModal({
   const [planImageLoading, setPlanImageLoading] = useState(false);
   const [availablePlans, setAvailablePlans] = useState<{ id: string; plan_name: string; plan_url: string; site_id: string }[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+  // Label removal confirmation state
+  const [labelToRemove, setLabelToRemove] = useState<string | null>(null);
 
   // Plan anchor editing state
   const [editingPlanAnchor, setEditingPlanAnchor] = useState(false);
@@ -603,6 +607,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
   }, [supabase, observation, pendingAnchor, onObservationUpdate]);
 
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
       <div className="flex flex-col md:flex-row h-[76vh] md:h-[90vh] overflow-hidden">
         {/* Image container */}
@@ -719,7 +724,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
                       {label}
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleRemoveLabel(label); }}
+                        onClick={(e) => { e.stopPropagation(); setLabelToRemove(label); }}
                         className="hover:text-red-300 transition-colors leading-none"
                         title="Remove label"
                       >
@@ -902,8 +907,8 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {editingLabels && (
               <div className="absolute inset-0 bg-white flex flex-col z-10">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
-                  <h4 className="font-semibold text-gray-900">Bereich</h4>
+                <div className="flex items-center justify-between px-4 py-2.5 border-b flex-shrink-0">
+                  <h4 className="font-semibold text-gray-900">Labels</h4>
                   <button
                     onClick={handleCancelEditLabels}
                     className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -913,9 +918,9 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   </button>
                 </div>
                 {/* Label hierarchy — scrollable */}
-                <div className="flex-1 overflow-y-auto px-6 py-4">
+                <div className="flex-1 overflow-y-auto px-4 py-3">
                   {siteLabels.length > 0 ? (
-                    <div className="space-y-5">
+                    <div className="space-y-3">
                       {(['location', 'gewerk', 'type'] as const).map(category => {
                         const sorted = [...siteLabels]
                           .filter(l => l.category === category)
@@ -934,7 +939,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                             key={label.id}
                             onClick={() => handleToggleLabel(label.name)}
                             disabled={isSaving}
-                            className={`px-3 py-1.5 text-sm border transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                            className={`px-2 py-0.5 text-xs border transition-all disabled:opacity-50 disabled:cursor-not-allowed
                               ${selectedLabelNames.has(label.name)
                                 ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
                                 : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
@@ -946,25 +951,30 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         );
                         return (
                           <div key={category}>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
                               {category}
                             </p>
-                            <div className="space-y-1.5">
-                              {parents.map(parent => (
+                            <div className="space-y-1">
+                              {/* Labels without children — all in one wrapped row */}
+                              {parents.filter(p => !childrenMap[p.id]).length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {parents.filter(p => !childrenMap[p.id]).map(parent => labelBtn(parent))}
+                                </div>
+                              )}
+                              {/* Labels with children — parent on own row, children indented below */}
+                              {parents.filter(p => childrenMap[p.id]).map(parent => (
                                 <div key={parent.id}>
-                                  <div className="flex flex-wrap gap-1.5">
+                                  <div className="flex flex-wrap gap-1">
                                     {labelBtn(parent)}
                                   </div>
-                                  {childrenMap[parent.id] && (
-                                    <div className="flex flex-wrap gap-1.5 mt-1.5 ml-4 pl-2 border-l-2 border-gray-100">
-                                      {childrenMap[parent.id].map(child => labelBtn(child))}
-                                    </div>
-                                  )}
+                                  <div className="flex flex-wrap gap-1 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                    {childrenMap[parent.id].map(child => labelBtn(child))}
+                                  </div>
                                 </div>
                               ))}
-                              {/* children whose parent isn't in this list */}
+                              {/* orphan children whose parent isn't in this list */}
                               {sorted.filter(l => l.parent_id && !parents.find(p => p.id === l.parent_id)).map(l => (
-                                <div key={l.id} className="flex flex-wrap gap-1.5">{labelBtn(l)}</div>
+                                <div key={l.id} className="flex flex-wrap gap-1">{labelBtn(l)}</div>
                               ))}
                             </div>
                           </div>
@@ -1005,7 +1015,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {/* Labels display */}
             <div className="mt-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">Bereich</h4>
+                <h4 className="font-semibold text-gray-900">Labels</h4>
                 <button
                   onClick={handleStartEditLabels}
                   className="text-gray-500 hover:text-blue-600 transition-colors p-1"
@@ -1139,7 +1149,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                             borderRadius: 7,
                             backgroundColor: pendingAnchor ? 'blue' : 'red',
                             border: '2px solid white',
-                            zIndex: 10,
+                            zIndex: 1,
                           }}
                         />
                       );
@@ -1155,5 +1165,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
       </div>
     </Modal>
+
+    <ConfirmDialog
+      isOpen={labelToRemove !== null}
+      message={`Remove label "${labelToRemove}"?`}
+      onConfirm={() => { if (labelToRemove) handleRemoveLabel(labelToRemove); setLabelToRemove(null); }}
+      onCancel={() => setLabelToRemove(null)}
+    />
+    </>
   );
 }

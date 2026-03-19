@@ -54,10 +54,11 @@ interface SortableLabelProps {
   }>;
   onEdit: (label: any) => void;
   onDelete: (id: string, name: string) => void;
+  onAddChild: (parentId: string, parentCategory: string, name: string) => Promise<void>;
   t: ReturnType<typeof useTranslations>;
 }
 
-function SortableLabel({ label, subLabels, onEdit, onDelete, t }: SortableLabelProps) {
+function SortableLabel({ label, subLabels, onEdit, onDelete, onAddChild, t }: SortableLabelProps) {
   const {
     attributes,
     listeners,
@@ -67,10 +68,23 @@ function SortableLabel({ label, subLabels, onEdit, onDelete, t }: SortableLabelP
     isDragging,
   } = useSortable({ id: label.id });
 
+  const [addingChild, setAddingChild] = useState(false);
+  const [childName, setChildName] = useState("");
+  const [savingChild, setSavingChild] = useState(false);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleSubmitChild = async () => {
+    if (!childName.trim()) return;
+    setSavingChild(true);
+    await onAddChild(label.id, label.category, childName.trim());
+    setChildName("");
+    setAddingChild(false);
+    setSavingChild(false);
   };
 
   return (
@@ -99,6 +113,14 @@ function SortableLabel({ label, subLabels, onEdit, onDelete, t }: SortableLabelP
           <Button
             variant="outline"
             size="sm"
+            onClick={() => { setAddingChild(v => !v); setChildName(""); }}
+            title="Add child label"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => onEdit(label)}
             title="Edit label"
           >
@@ -114,39 +136,58 @@ function SortableLabel({ label, subLabels, onEdit, onDelete, t }: SortableLabelP
           </Button>
         </div>
       </div>
-      {subLabels.length > 0 && (
-        <div className="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
-          <p className="text-sm font-medium text-gray-500 mb-2">{t('subLabels')}:</p>
-          {subLabels.map((subLabel) => (
-            <div key={subLabel.id} className="flex items-center justify-between py-1">
-              <div>
-                <span className="text-sm">{subLabel.name}</span>
-                {subLabel.description && (
-                  <p className="text-xs text-gray-500">{subLabel.description}</p>
-                )}
+      <div className="mt-2 ml-4 border-l-2 border-gray-200 pl-4">
+        {subLabels.length > 0 && (
+          <>
+            {subLabels.map((subLabel) => (
+              <div key={subLabel.id} className="flex items-center justify-between py-1">
+                <div>
+                  <span className="text-sm">{subLabel.name}</span>
+                  {subLabel.description && (
+                    <p className="text-xs text-gray-500">{subLabel.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(subLabel)}
+                    title="Edit label"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(subLabel.id, subLabel.name)}
+                    title="Delete label"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(subLabel)}
-                  title="Edit label"
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDelete(subLabel.id, subLabel.name)}
-                  title="Delete label"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </>
+        )}
+        {addingChild && (
+          <div className="flex items-center gap-2 py-1">
+            <Input
+              autoFocus
+              value={childName}
+              onChange={e => setChildName(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleSubmitChild(); if (e.key === "Escape") { setAddingChild(false); setChildName(""); } }}
+              placeholder="Child label name"
+              className="h-7 text-sm"
+            />
+            <Button size="sm" onClick={handleSubmitChild} disabled={savingChild || !childName.trim()}>
+              {savingChild ? "…" : "Add"}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setAddingChild(false); setChildName(""); }}>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -259,7 +300,6 @@ export default function SettingsPage() {
           .from('labels')
           .update({ order_index: index })
           .eq('id', label.id)
-          .eq('user_id', user?.id)
       );
 
       await Promise.all(updates);
@@ -336,7 +376,6 @@ export default function SettingsPage() {
       const query = supabase
         .from('labels')
         .select('id, name, description, category, parent_id, order_index')
-        .eq('user_id', user.id)
         .eq('is_active', true)
         .order('category')
         .order('order_index');
@@ -712,6 +751,40 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error creating label:', error);
       alert('Failed to create label. Please try again.');
+    }
+  };
+
+  const handleAddChildLabel = async (parentId: string, parentCategory: string, name: string) => {
+    if (!user || !selectedSiteForLabels) return;
+    try {
+      const siblings = labels.filter(l => l.parent_id === parentId);
+      const maxOrderIndex = siblings.reduce((max, l) => Math.max(max, l.order_index || 0), -1);
+      const { data: newLabel, error } = await supabase
+        .from('labels')
+        .insert({
+          user_id: user.id,
+          site_id: selectedSiteForLabels,
+          name,
+          description: null,
+          category: parentCategory,
+          parent_id: parentId,
+          order_index: maxOrderIndex + 1,
+        })
+        .select('id, name, description, category, parent_id, order_index')
+        .single();
+      if (error) { console.error('Error creating child label:', error); return; }
+      if (newLabel) {
+        setLabels(prev => [...prev, {
+          name: newLabel.name,
+          id: newLabel.id,
+          description: newLabel.description,
+          category: newLabel.category,
+          parent_id: newLabel.parent_id,
+          order_index: newLabel.order_index,
+        }]);
+      }
+    } catch (error) {
+      console.error('Error creating child label:', error);
     }
   };
 
@@ -1796,6 +1869,7 @@ export default function SettingsPage() {
                                         subLabels={subLabels}
                                         onEdit={handleEditLabel}
                                         onDelete={handleDeleteLabel}
+                                        onAddChild={handleAddChildLabel}
                                         t={t}
                                       />
                                     );

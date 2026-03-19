@@ -506,14 +506,19 @@ export async function fetchCollaborativeObservationsByTimeRange(
     query = query.or(orConditions.join(','));
   }
 
-  // Apply date range filter and ordering
+  // Apply date range filter using taken_at when available, falling back to created_at.
+  // This matches resolveObservationDateTime which prioritises taken_at over created_at.
+  const startIso = startDate.toISOString();
+  const endIso = endDate.toISOString();
   const { data, error, count } = await query
-    .gte('created_at', startDate.toISOString())
-    .lte('created_at', endDate.toISOString())
+    .or(
+      `and(taken_at.gte.${startIso},taken_at.lte.${endIso}),` +
+      `and(taken_at.is.null,created_at.gte.${startIso},created_at.lte.${endIso})`
+    )
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  
+
   // Check if there are more observations available by looking for observations older than our date range
   let hasMoreQuery = supabase.from('observations').select('id', { count: 'exact', head: true });
 
@@ -533,7 +538,10 @@ export async function fetchCollaborativeObservationsByTimeRange(
     hasMoreQuery = hasMoreQuery.or(orConditions.join(','));
   }
 
-  const { count: olderCount } = await hasMoreQuery.lt('created_at', startDate.toISOString());
+  const { count: olderCount } = await hasMoreQuery.or(
+    `and(taken_at.not.is.null,taken_at.lt.${startIso}),` +
+    `and(taken_at.is.null,created_at.lt.${startIso})`
+  );
   const hasMore = (olderCount || 0) > 0;
   
   // Enrich observations with user profile data

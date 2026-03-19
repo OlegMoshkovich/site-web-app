@@ -397,31 +397,74 @@ export function FolderUploadModal({
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[60px] max-h-40 overflow-y-auto">
-                  {availableLabels.map(label => {
-                    const isSelected = selectedLabels.includes(label.name);
+                <div className="p-3 border rounded-lg max-h-52 overflow-y-auto">
+                  {(() => {
+                    const sorted = [...availableLabels].sort((a, b) => a.order_index - b.order_index);
+                    const categories = [...new Set(sorted.map(l => l.category))];
+
+                    const labelBtn = (label: typeof sorted[0]) => {
+                      const isSelected = selectedLabels.includes(label.name);
+                      return (
+                        <button
+                          key={label.id}
+                          disabled={isProcessing}
+                          onClick={() => {
+                            if (isProcessing) return;
+                            setSelectedLabels(prev =>
+                              isSelected ? prev.filter(l => l !== label.name) : [...prev, label.name]
+                            );
+                          }}
+                          className={`px-2 py-0.5 text-xs border transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                            ${isSelected
+                              ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                            }`}
+                        >
+                          {label.name}
+                        </button>
+                      );
+                    };
+
                     return (
-                      <Badge
-                        key={label.id}
-                        variant={isSelected ? 'default' : 'outline'}
-                        className={`cursor-pointer transition-colors ${
-                          isSelected
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'hover:bg-gray-100'
-                        } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => {
-                          if (isProcessing) return;
-                          setSelectedLabels(prev =>
-                            isSelected
-                              ? prev.filter(l => l !== label.name)
-                              : [...prev, label.name]
+                      <div className="space-y-3">
+                        {categories.map(category => {
+                          const catLabels = sorted.filter(l => l.category === category);
+                          const parents = catLabels.filter(l => !l.parent_id);
+                          const childrenMap = catLabels.reduce<Record<string, typeof sorted>>((acc, l) => {
+                            if (l.parent_id) (acc[l.parent_id] ??= []).push(l);
+                            return acc;
+                          }, {});
+
+                          return (
+                            <div key={category}>
+                              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">{category}</p>
+                              <div className="space-y-1">
+                                {/* Parents without children — all in one wrapped row */}
+                                {parents.filter(p => !childrenMap[p.id]).length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {parents.filter(p => !childrenMap[p.id]).map(p => labelBtn(p))}
+                                  </div>
+                                )}
+                                {/* Parents with children */}
+                                {parents.filter(p => childrenMap[p.id]).map(parent => (
+                                  <div key={parent.id}>
+                                    <div className="flex flex-wrap gap-1">{labelBtn(parent)}</div>
+                                    <div className="flex flex-wrap gap-1 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                      {childrenMap[parent.id].map(child => labelBtn(child))}
+                                    </div>
+                                  </div>
+                                ))}
+                                {/* Orphan children */}
+                                {catLabels.filter(l => l.parent_id && !parents.find(p => p.id === l.parent_id)).map(l => (
+                                  <div key={l.id} className="flex flex-wrap gap-1">{labelBtn(l)}</div>
+                                ))}
+                              </div>
+                            </div>
                           );
-                        }}
-                      >
-                        {label.name}
-                      </Badge>
+                        })}
+                      </div>
                     );
-                  })}
+                  })()}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Click labels to attach them to all uploaded images.

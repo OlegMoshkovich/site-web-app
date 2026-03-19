@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,10 +93,23 @@ export default function Home() {
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
   const availableLabels = storeAvailableLabels;
+
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [availableUsers, setAvailableUsers] = useState<{ id: string; displayName: string }[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [availableSites, setAvailableSites] = useState<{ id: string; name: string }[]>([]);
+
+  // Structured labels for the filter panel — scoped to the selected site
+  const filterPanelSiteLabels = useMemo(() => {
+    if (selectedSiteId) return siteLabels.get(selectedSiteId) || [];
+    // No site selected: aggregate from all loaded sites (deduped)
+    const all: import("@/lib/labels").Label[] = [];
+    const seen = new Set<string>();
+    siteLabels.forEach(labels => {
+      labels.forEach(l => { if (!seen.has(l.id)) { seen.add(l.id); all.push(l); } });
+    });
+    return all;
+  }, [siteLabels, selectedSiteId]);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
@@ -158,11 +171,11 @@ export default function Home() {
     }
     if (selectedUserId) filtered = filterObservationsByUserId(filtered, selectedUserId);
     if (selectedSiteId) filtered = filterObservationsBySiteId(filtered, selectedSiteId);
-    if (showLabelSelector && selectedLabels.length > 0) {
+    if (selectedLabels.length > 0) {
       filtered = filterObservationsByLabels(filtered, selectedLabels, false);
     }
     return filtered;
-  }, [observations, searchResults, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, showLabelSelector, selectedLabels]);
+  }, [observations, searchResults, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, selectedLabels]);
 
   const hasActiveFilters = !!(startDate || endDate || selectedUserId || selectedSiteId);
 
@@ -258,6 +271,16 @@ export default function Home() {
     deleteCookie('filter_userId'); deleteCookie('filter_siteId');
   }, [deleteCookie]);
 
+  const handleRemoveLabelFromPhoto = useCallback(async (photoId: string, label: string) => {
+    const obs = observations.find(o => o.id === photoId);
+    if (!obs) return;
+    const newLabels = (obs.labels || []).filter(l => l !== label);
+    const next = newLabels.length > 0 ? newLabels : null;
+    const { error } = await supabase.from('observations').update({ labels: next }).eq('id', photoId);
+    if (error) { console.error('Error removing label:', error); return; }
+    setObservations(observations.map(o => o.id === photoId ? { ...o, labels: next } : o));
+  }, [supabase, observations, setObservations]);
+
   const handleFolderDrop = useCallback((files: File[]) => {
     if (!user?.id) { alert('Please log in before uploading files.'); return; }
     setDroppedFiles(files);
@@ -348,6 +371,19 @@ export default function Home() {
     fetchAllSites();
   }, [user, supabase]);
 
+  // Fetch structured site labels when the label filter is opened (always refresh)
+  useEffect(() => {
+    if (!showLabelSelector || !user) return;
+    if (selectedSiteId) {
+      fetchSiteLabels(selectedSiteId, user.id);
+    } else {
+      const siteIds = [...new Set(observations.map((o: any) => o.site_id).filter(Boolean))];
+      siteIds.forEach((siteId: string) => {
+        fetchSiteLabels(siteId, user.id);
+      });
+    }
+  }, [showLabelSelector, selectedSiteId, user, observations, fetchSiteLabels]);
+
   // Load filter cookies on mount
   useEffect(() => {
     const savedStartDate = getCookie('filter_startDate');
@@ -415,14 +451,19 @@ export default function Home() {
                   >
                     <Search className="h-4 w-4" />
                   </Button>
-                  <Button
-                    onClick={() => setShowLabelSelector(!showLabelSelector)}
-                    variant="outline" size="sm"
-                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showLabelSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
-                    title={t("toggleLabelFilter")}
-                  >
-                    <Tag className="h-4 w-4" />
-                  </Button>
+                  <div className="relative">
+                    <Button
+                      onClick={() => setShowLabelSelector(!showLabelSelector)}
+                      variant="outline" size="sm"
+                      className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showLabelSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
+                      title={t("toggleLabelFilter")}
+                    >
+                      <Tag className="h-4 w-4" />
+                    </Button>
+                    {selectedLabels.length > 0 && (
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
+                    )}
+                  </div>
                   <div className="relative">
                     <Button
                       onClick={() => setShowDateSelector(!showDateSelector)}
@@ -539,6 +580,7 @@ export default function Home() {
                   isSearching={isSearching}
                   searchResultsCount={searchResults.length}
                   availableLabels={availableLabels}
+                  siteLabels={filterPanelSiteLabels}
                   selectedLabels={selectedLabels}
                   onToggleLabel={(label) => setSelectedLabels(prev =>
                     prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
@@ -671,9 +713,11 @@ export default function Home() {
             onClose={() => setShowMultiLabelEdit(false)}
             selectedCount={selectedObservations.size}
             siteLabels={currentSiteLabels}
+            selectedPhotos={selectedObs.map(o => ({ id: o.id, signedUrl: o.signedUrl, note: o.note ?? null, labels: o.labels ?? null }))}
             commonLabels={commonLabels}
             partialLabels={partialLabels}
             onSave={handleBulkSaveLabels}
+            onRemoveLabelFromPhoto={handleRemoveLabelFromPhoto}
             language={language}
           />
         );

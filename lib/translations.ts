@@ -79,7 +79,7 @@ export const translations = {
     // Labels
     labels: "Labels",
     labelsTitle: "Labels",
-    bereich: "Area",
+    bereich: "Labels",
     viewPlan: "View Plan",
 
     // Note
@@ -372,7 +372,7 @@ export const translations = {
     
     // Buttons
     generateReport: "Bericht generieren",
-    clearSelection: "Auswahl löschen",
+    clearSelection: "Auswahl abwählen",
     generateReportSelected: "Bericht generieren ({count} ausgewählt)",
     loadMore: "Mehr laden",
     loadMoreLabel: "Mehr laden:",
@@ -404,8 +404,8 @@ export const translations = {
     
     // Labels
     labels: "Labels",
-    labelsTitle: "Bereich",
-    bereich: "Bereich",
+    labelsTitle: "Labels",
+    bereich: "Labels",
     viewPlan: "Plan anzeigen",
 
     // Note

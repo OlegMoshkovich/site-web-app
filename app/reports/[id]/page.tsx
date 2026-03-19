@@ -19,6 +19,8 @@ import {
   ZoomOut,
   Loader2,
   ArrowLeft,
+  Edit3,
+  Check,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -28,6 +30,8 @@ import Image from "next/image";
 import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
 import { getLabelsForSite, type Label } from "@/lib/labels";
+import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Report {
   id: string;
@@ -161,6 +165,7 @@ export default function ReportDetailPage() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   const [language, setLanguage] = useState<Language>("de");
+  const [labelRemoveConfirm, setLabelRemoveConfirm] = useState<{ observationId: string; label: string } | null>(null);
 
   // Quality selector state
   const [showQualityDialog, setShowQualityDialog] = useState(false);
@@ -305,6 +310,43 @@ export default function ReportDetailPage() {
     }
   }, [pendingChanges, supabase]);
 
+  // Plan data map: plan UUID → { url, name, isPdf }
+  const [planDataMap, setPlanDataMap] = useState<Record<string, { url: string; name: string; isPdf: boolean } | null>>({});
+
+  // Plan anchor editing state
+  const [editingAnchorFor, setEditingAnchorFor] = useState<string | null>(null); // observation id
+  const [pendingAnchorMap, setPendingAnchorMap] = useState<Record<string, { x: number; y: number }>>({});
+
+  const handlePlanClick = useCallback((e: React.MouseEvent<HTMLDivElement>, obsId: string) => {
+    if (editingAnchorFor !== obsId) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    setPendingAnchorMap(prev => ({ ...prev, [obsId]: { x, y } }));
+  }, [editingAnchorFor]);
+
+  const handleSaveAnchor = useCallback(async (obsId: string) => {
+    const anchor = pendingAnchorMap[obsId];
+    if (!anchor) return;
+    const { error } = await supabase.from('observations').update({ plan_anchor: anchor }).eq('id', obsId);
+    if (error) { console.error('Error saving anchor:', error); return; }
+    setObservations(prev => prev.map(o => o.id === obsId ? { ...o, plan_anchor: anchor } : o));
+    setEditingAnchorFor(null);
+    setPendingAnchorMap(prev => { const n = { ...prev }; delete n[obsId]; return n; });
+  }, [supabase, pendingAnchorMap, setObservations]);
+
+  // Resolve anchor coordinates from plan_anchor JSONB or legacy anchor_x/anchor_y
+  const getAnchorPoint = (obs: Observation): { x: number; y: number } | null => {
+    const anchor = obs.plan_anchor;
+    if (anchor && typeof anchor === 'object' && anchor.x != null && anchor.y != null && !(anchor.x === 0 && anchor.y === 0)) {
+      return { x: Number(anchor.x), y: Number(anchor.y) };
+    }
+    if (obs.anchor_x != null && obs.anchor_y != null && !(obs.anchor_x === 0 && obs.anchor_y === 0)) {
+      return { x: obs.anchor_x, y: obs.anchor_y };
+    }
+    return null;
+  };
+
   // Available site labels + dropdown state
   const [siteLabels, setSiteLabels] = useState<Label[]>([]);
   const [addingLabelFor, setAddingLabelFor] = useState<string | null>(null);
@@ -334,6 +376,34 @@ export default function ReportDetailPage() {
   }, [selectedPhoto, handleWheel, isDragging, handleMouseMove, handleMouseUp]);
 
   // Handler functions for report actions
+
+  // Renders first page of a PDF plan URL onto an offscreen canvas (objectFit:contain, white bg)
+  const renderPdfPlanToCanvas = async (url: string, cw: number, ch: number): Promise<HTMLCanvasElement> => {
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+    const pdfDoc = await pdfjsLib.getDocument({ url }).promise;
+    const page = await pdfDoc.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(cw / viewport.width, ch / viewport.height);
+    const scaledVp = page.getViewport({ scale });
+
+    const offscreen = document.createElement('canvas');
+    offscreen.width = Math.ceil(scaledVp.width);
+    offscreen.height = Math.ceil(scaledVp.height);
+    await page.render({ canvas: offscreen, viewport: scaledVp }).promise;
+
+    const out = document.createElement('canvas');
+    out.width = cw;
+    out.height = ch;
+    const ctx = out.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(offscreen, Math.floor((cw - scaledVp.width) / 2), Math.floor((ch - scaledVp.height) / 2));
+    pdfDoc.destroy();
+    return out;
+  };
 
   const handleExportReport = async (quality: 'low' | 'medium' | 'high' = 'medium') => {
     try {
@@ -385,7 +455,11 @@ export default function ReportDetailPage() {
             const logoCtx = logoCanvas.getContext('2d');
             logoCanvas.width = logoImg.width;
             logoCanvas.height = logoImg.height;
-            logoCtx?.drawImage(logoImg, 0, 0);
+            if (logoCtx) {
+              logoCtx.fillStyle = 'white';
+              logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
+              logoCtx.drawImage(logoImg, 0, 0);
+            }
 
             const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
 
@@ -532,6 +606,8 @@ export default function ReportDetailPage() {
                 logoCanvas.width = Math.round(logoImg.width * logoScale);
                 logoCanvas.height = Math.round(logoImg.height * logoScale);
                 if (logoCtx) {
+                  logoCtx.fillStyle = 'white';
+                  logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
                   logoCtx.globalAlpha = 0.5; // Set 50% transparency
                   logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
                 }
@@ -580,9 +656,9 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'bold');
-              pdf.text('Bereich: ', textStartX, textY);
+              pdf.text('Labels:', textStartX, textY);
               pdf.setFont('helvetica', 'normal');
-              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              const bereichWidth = pdf.getTextWidth('Labels:');
               const labelText = observation.labels.join(', ');
               const labelLines = pdf.splitTextToSize(labelText, textWidth - bereichWidth - 2);
               pdf.text(labelLines, textStartX + bereichWidth + 1, textY);
@@ -598,6 +674,91 @@ export default function ReportDetailPage() {
               textY += noteLines.length * 5 + 2;
             }
 
+            // Add plan if available (both image and PDF plans)
+            if (observation.plan && planDataMap[observation.plan]) {
+              const planInfo = planDataMap[observation.plan]!;
+              const anchor = getAnchorPoint(observation);
+              try {
+                const planPdfWidth = textWidth;
+                const planPdfHeight = 50; // fixed height in mm for consistent layout
+                // Render at 300 DPI (11.81 px/mm) for sharp plan output in the PDF
+                const PX_PER_MM = 11.81;
+                const cw = Math.round(planPdfWidth * PX_PER_MM);
+                const ch = Math.round(planPdfHeight * PX_PER_MM);
+                // Anchor dot radius scaled to match canvas resolution
+                const dotRadius = Math.round(7 * PX_PER_MM / 3.78);
+
+                let planCanvas: HTMLCanvasElement;
+
+                if (planInfo.isPdf) {
+                  planCanvas = await renderPdfPlanToCanvas(planInfo.url, cw, ch);
+                } else {
+                  const planImg = new window.Image();
+                  planImg.crossOrigin = 'anonymous';
+                  await new Promise((resolve, reject) => {
+                    planImg.onload = resolve;
+                    planImg.onerror = reject;
+                    planImg.src = planInfo.url;
+                  });
+
+                  planCanvas = document.createElement('canvas');
+                  planCanvas.width = cw;
+                  planCanvas.height = ch;
+                  const planCtx = planCanvas.getContext('2d');
+                  if (planCtx) {
+                    const imgAspect = planImg.width / planImg.height;
+                    const containerAspect = cw / ch;
+                    let dw: number, dh: number, dx: number, dy: number;
+                    if (imgAspect > containerAspect) {
+                      dw = cw; dh = cw / imgAspect; dx = 0; dy = (ch - dh) / 2;
+                    } else {
+                      dh = ch; dw = ch * imgAspect; dy = 0; dx = (cw - dw) / 2;
+                    }
+                    planCtx.fillStyle = 'white';
+                    planCtx.fillRect(0, 0, cw, ch);
+                    planCtx.drawImage(planImg, dx, dy, dw, dh);
+                  }
+                }
+
+                // Draw red anchor dot on top of whichever canvas was rendered
+                if (anchor) {
+                  const planCtx = planCanvas.getContext('2d');
+                  if (planCtx) {
+                    const dotX = anchor.x * cw;
+                    const dotY = anchor.y * ch;
+                    planCtx.beginPath();
+                    planCtx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2);
+                    planCtx.fillStyle = 'red';
+                    planCtx.fill();
+                    planCtx.strokeStyle = 'white';
+                    planCtx.lineWidth = dotRadius * 0.4;
+                    planCtx.stroke();
+                  }
+                }
+
+                // Label
+                textY += 3;
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Planposition:', textStartX, textY);
+                textY += 4;
+
+                const planImgData = planCanvas.toDataURL('image/jpeg', imageQuality);
+                pdf.addImage(planImgData, 'JPEG', textStartX, textY, planPdfWidth, planPdfHeight);
+
+                // Plan name below image
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(100, 100, 100);
+                const planNameLines = pdf.splitTextToSize(planInfo.name, planPdfWidth);
+                pdf.text(planNameLines, textStartX + 1, textY + planPdfHeight + 3);
+                pdf.setTextColor(0, 0, 0);
+
+                textY += planPdfHeight + planNameLines.length * 3 + 5;
+              } catch (err) {
+                console.error('Error adding plan to PDF:', err);
+              }
+            }
 
             //spacing
             yPosition += Math.max(imgHeight, textY - yPosition) + 10;
@@ -615,9 +776,9 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'bold');
-              pdf.text('Bereich: ', margin, yPosition);
+              pdf.text('Labels:', margin, yPosition);
               pdf.setFont('helvetica', 'normal');
-              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              const bereichWidth = pdf.getTextWidth('Labels:');
               pdf.text(observation.labels.join(', '), margin + bereichWidth + 2, yPosition);
               yPosition += 8;
             }
@@ -811,6 +972,42 @@ export default function ReportDetailPage() {
 
       setSiteLabels([...dbLabels, ...extraLabels]);
 
+      // Fetch plan signed URLs for observations that have a plan
+      const uniquePlanIds = [...new Set(
+        sortedObservationsData.filter((o: Observation) => o.plan).map((o: Observation) => o.plan as string)
+      )];
+      if (uniquePlanIds.length > 0) {
+        try {
+          const { data: planRows } = await supabase
+            .from('site_plans')
+            .select('id, plan_name, plan_url, site_id')
+            .in('id', uniquePlanIds);
+          if (planRows) {
+            const planMap: Record<string, { url: string; name: string; isPdf: boolean } | null> = {};
+            await Promise.all(planRows.map(async (plan: { id: string; plan_name: string; plan_url: string; site_id: string }) => {
+              try {
+                const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
+                const filePath = `${plan.site_id}/${fileName}`;
+                const { data: urlData } = await supabase.storage
+                  .from('plans')
+                  .createSignedUrl(filePath, 604800);
+                if (urlData) {
+                  const isPdf = (fileName ?? '').toLowerCase().endsWith('.pdf');
+                  planMap[plan.id] = { url: urlData.signedUrl, name: plan.plan_name, isPdf };
+                } else {
+                  planMap[plan.id] = null;
+                }
+              } catch {
+                planMap[plan.id] = null;
+              }
+            }));
+            setPlanDataMap(planMap);
+          }
+        } catch (e) {
+          console.error('Error fetching plan data:', e);
+        }
+      }
+
       // Generate signed URLs in batches of 20, progressively updating the UI
       const BATCH_SIZE = 20;
       const photoObs = sortedObservationsData.filter(obs => obs.photo_url);
@@ -901,6 +1098,7 @@ export default function ReportDetailPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top navigation bar */}
       <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
@@ -1058,7 +1256,7 @@ export default function ReportDetailPage() {
                 if (uniqueLabels.length > 0) {
                   return (
                     <div className="border-t pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Bereich</h4>
+                      <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
@@ -1147,10 +1345,7 @@ export default function ReportDetailPage() {
                                   {processLabel(label)}
                                   {isAuthenticated && (
                                     <button
-                                      onClick={() => handleUpdateObservationLabels(
-                                        observation.id,
-                                        (observation.labels || []).filter(l => l !== label)
-                                      )}
+                                      onClick={() => setLabelRemoveConfirm({ observationId: observation.id, label })}
                                       className="ml-0.5 hover:text-red-500 transition-colors leading-none"
                                       title="Remove label"
                                     >
@@ -1229,6 +1424,88 @@ export default function ReportDetailPage() {
                                 )
                               )}
                             </div>
+
+                            {/* Plan widget */}
+                            {observation.plan && planDataMap[observation.plan] && (() => {
+                              const planData = planDataMap[observation.plan!]!;
+                              const savedAnchor = getAnchorPoint(observation);
+                              const isEditing = editingAnchorFor === observation.id;
+                              const pending = pendingAnchorMap[observation.id];
+                              const displayAnchor = pending ?? savedAnchor;
+                              return (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-900">Planposition</h4>
+                                    {isAuthenticated && (
+                                      isEditing ? (
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={() => handleSaveAnchor(observation.id)}
+                                            disabled={!pending}
+                                            className="text-green-600 hover:text-green-700 disabled:opacity-40 p-1 transition-colors"
+                                            title="Save position"
+                                          >
+                                            <Check className="h-4 w-4" />
+                                          </button>
+                                          <button
+                                            onClick={() => { setEditingAnchorFor(null); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
+                                            className="text-gray-500 hover:text-red-600 p-1 transition-colors"
+                                            title="Cancel"
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => { setEditingAnchorFor(observation.id); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
+                                          className="text-gray-500 hover:text-blue-600 p-1 transition-colors"
+                                          title="Edit plan position"
+                                        >
+                                          <Edit3 className="h-4 w-4" />
+                                        </button>
+                                      )
+                                    )}
+                                  </div>
+                                  {isEditing && (
+                                    <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                                  )}
+                                  <div
+                                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                                    style={{ width: 320, height: 280, cursor: isEditing ? 'crosshair' : 'default' }}
+                                    onClick={(e) => handlePlanClick(e, observation.id)}
+                                  >
+                                    {planData.isPdf ? (
+                                      <PdfPlanCanvas url={planData.url} width={320} height={280} />
+                                    ) : (
+                                      /* eslint-disable-next-line @next/next/no-img-element */
+                                      <img
+                                        src={planData.url}
+                                        alt={planData.name}
+                                        style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
+                                      />
+                                    )}
+                                    {displayAnchor && (
+                                      <div
+                                        className="absolute pointer-events-none"
+                                        style={{
+                                          left: displayAnchor.x * 320 - 7,
+                                          top: displayAnchor.y * 280 - 7,
+                                          width: 14,
+                                          height: 14,
+                                          borderRadius: 7,
+                                          backgroundColor: pending ? 'blue' : 'red',
+                                          border: '2px solid white',
+                                          zIndex: 1,
+                                        }}
+                                      />
+                                    )}
+                                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                                      {planData.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
 
                             {/* Date + pending indicator */}
                             <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
@@ -1544,5 +1821,21 @@ export default function ReportDetailPage() {
         </div>
       )}
     </div>
+
+    <ConfirmDialog
+      isOpen={labelRemoveConfirm !== null}
+      message={`Remove label "${labelRemoveConfirm?.label}"?`}
+      onConfirm={() => {
+        if (labelRemoveConfirm) {
+          handleUpdateObservationLabels(
+            labelRemoveConfirm.observationId,
+            (observations.find(o => o.id === labelRemoveConfirm.observationId)?.labels || []).filter(l => l !== labelRemoveConfirm.label)
+          );
+        }
+        setLabelRemoveConfirm(null);
+      }}
+      onCancel={() => setLabelRemoveConfirm(null)}
+    />
+    </>
   );
 }

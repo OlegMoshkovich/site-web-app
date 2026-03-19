@@ -147,7 +147,7 @@ export async function generateWordReport(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: 'Bereiche: ', font: 'Arial',  size: 20 }),
+            new TextRun({ text: 'Labels: ', font: 'Arial',  size: 20 }),
             new TextRun({ text: observation.labels.join(', '), font: 'Arial', size: 20 })
           ],
           spacing: { after: 150 }
