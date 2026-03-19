@@ -19,6 +19,8 @@ import {
   ZoomOut,
   Loader2,
   ArrowLeft,
+  Edit3,
+  Check,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -310,6 +312,28 @@ export default function ReportDetailPage() {
 
   // Plan data map: plan UUID → { url, name, isPdf }
   const [planDataMap, setPlanDataMap] = useState<Record<string, { url: string; name: string; isPdf: boolean } | null>>({});
+
+  // Plan anchor editing state
+  const [editingAnchorFor, setEditingAnchorFor] = useState<string | null>(null); // observation id
+  const [pendingAnchorMap, setPendingAnchorMap] = useState<Record<string, { x: number; y: number }>>({});
+
+  const handlePlanClick = useCallback((e: React.MouseEvent<HTMLDivElement>, obsId: string) => {
+    if (editingAnchorFor !== obsId) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    setPendingAnchorMap(prev => ({ ...prev, [obsId]: { x, y } }));
+  }, [editingAnchorFor]);
+
+  const handleSaveAnchor = useCallback(async (obsId: string) => {
+    const anchor = pendingAnchorMap[obsId];
+    if (!anchor) return;
+    const { error } = await supabase.from('observations').update({ plan_anchor: anchor }).eq('id', obsId);
+    if (error) { console.error('Error saving anchor:', error); return; }
+    setObservations(prev => prev.map(o => o.id === obsId ? { ...o, plan_anchor: anchor } : o));
+    setEditingAnchorFor(null);
+    setPendingAnchorMap(prev => { const n = { ...prev }; delete n[obsId]; return n; });
+  }, [supabase, pendingAnchorMap, setObservations]);
 
   // Resolve anchor coordinates from plan_anchor JSONB or legacy anchor_x/anchor_y
   const getAnchorPoint = (obs: Observation): { x: number; y: number } | null => {
@@ -1404,13 +1428,51 @@ export default function ReportDetailPage() {
                             {/* Plan widget */}
                             {observation.plan && planDataMap[observation.plan] && (() => {
                               const planData = planDataMap[observation.plan!]!;
-                              const anchor = getAnchorPoint(observation);
+                              const savedAnchor = getAnchorPoint(observation);
+                              const isEditing = editingAnchorFor === observation.id;
+                              const pending = pendingAnchorMap[observation.id];
+                              const displayAnchor = pending ?? savedAnchor;
                               return (
                                 <div>
-                                  <h4 className="text-sm font-semibold text-gray-900 mb-2">Planposition</h4>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-900">Planposition</h4>
+                                    {isAuthenticated && (
+                                      isEditing ? (
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={() => handleSaveAnchor(observation.id)}
+                                            disabled={!pending}
+                                            className="text-green-600 hover:text-green-700 disabled:opacity-40 p-1 transition-colors"
+                                            title="Save position"
+                                          >
+                                            <Check className="h-4 w-4" />
+                                          </button>
+                                          <button
+                                            onClick={() => { setEditingAnchorFor(null); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
+                                            className="text-gray-500 hover:text-red-600 p-1 transition-colors"
+                                            title="Cancel"
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => { setEditingAnchorFor(observation.id); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
+                                          className="text-gray-500 hover:text-blue-600 p-1 transition-colors"
+                                          title="Edit plan position"
+                                        >
+                                          <Edit3 className="h-4 w-4" />
+                                        </button>
+                                      )
+                                    )}
+                                  </div>
+                                  {isEditing && (
+                                    <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                                  )}
                                   <div
                                     className="relative border border-gray-200 rounded-lg overflow-hidden"
-                                    style={{ width: 320, height: 280 }}
+                                    style={{ width: 320, height: 280, cursor: isEditing ? 'crosshair' : 'default' }}
+                                    onClick={(e) => handlePlanClick(e, observation.id)}
                                   >
                                     {planData.isPdf ? (
                                       <PdfPlanCanvas url={planData.url} width={320} height={280} />
@@ -1422,18 +1484,18 @@ export default function ReportDetailPage() {
                                         style={{ width: 320, height: 280, objectFit: 'contain', display: 'block' }}
                                       />
                                     )}
-                                    {anchor && (
+                                    {displayAnchor && (
                                       <div
                                         className="absolute pointer-events-none"
                                         style={{
-                                          left: anchor.x * 320 - 7,
-                                          top: anchor.y * 280 - 7,
+                                          left: displayAnchor.x * 320 - 7,
+                                          top: displayAnchor.y * 280 - 7,
                                           width: 14,
                                           height: 14,
                                           borderRadius: 7,
-                                          backgroundColor: 'red',
+                                          backgroundColor: pending ? 'blue' : 'red',
                                           border: '2px solid white',
-                                          zIndex: 10,
+                                          zIndex: 1,
                                         }}
                                       />
                                     )}
