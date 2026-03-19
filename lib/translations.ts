@@ -171,6 +171,9 @@ export const translations = {
     editLabel: "Edit Label",
     updateLabel: "Update Label",
     
+    // Upload photos
+    uploadPhotos: "Upload photos",
+
     // Plan upload
     uploadPlans: "Upload Plans",
     uploadSitePlansAndMaps: "Upload site plans and maps for reference",
@@ -497,6 +500,9 @@ export const translations = {
     editLabel: "Label bearbeiten",
     updateLabel: "Label aktualisieren",
     
+    // Upload photos
+    uploadPhotos: "Fotos hochladen",
+
     // Plan upload
     uploadPlans: "Pläne hochladen",
     uploadSitePlansAndMaps: "Standortpläne und Karten als Referenz hochladen",

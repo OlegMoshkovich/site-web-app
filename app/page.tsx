@@ -527,7 +527,7 @@ export default function Home() {
                     onClick={() => fileInputRef.current?.click()}
                     variant="outline" size="sm"
                     className="hidden sm:flex h-8 w-8 px-0 text-sm border-gray-300 items-center justify-center bg-white hover:bg-gray-100"
-                    title="Upload photos"
+                    title={t("uploadPhotos")}
                   >
                     <Upload className="h-4 w-4" />
                   </Button>
@@ -559,7 +559,7 @@ export default function Home() {
               className="w-full h-10 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
             >
               <Upload className="h-4 w-4" />
-              Upload photos
+              {t("uploadPhotos")}
             </Button>
           </div>
         )}
