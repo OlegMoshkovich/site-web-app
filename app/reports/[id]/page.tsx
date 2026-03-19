@@ -656,9 +656,9 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'bold');
-              pdf.text('Bereich: ', textStartX, textY);
+              pdf.text('Labels:', textStartX, textY);
               pdf.setFont('helvetica', 'normal');
-              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              const bereichWidth = pdf.getTextWidth('Labels:');
               const labelText = observation.labels.join(', ');
               const labelLines = pdf.splitTextToSize(labelText, textWidth - bereichWidth - 2);
               pdf.text(labelLines, textStartX + bereichWidth + 1, textY);
@@ -776,9 +776,9 @@ export default function ReportDetailPage() {
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(10);
               pdf.setFont('helvetica', 'bold');
-              pdf.text('Bereich: ', margin, yPosition);
+              pdf.text('Labels:', margin, yPosition);
               pdf.setFont('helvetica', 'normal');
-              const bereichWidth = pdf.getTextWidth('Bereich: ');
+              const bereichWidth = pdf.getTextWidth('Labels:');
               pdf.text(observation.labels.join(', '), margin + bereichWidth + 2, yPosition);
               yPosition += 8;
             }
@@ -1256,7 +1256,7 @@ export default function ReportDetailPage() {
                 if (uniqueLabels.length > 0) {
                   return (
                     <div className="border-t pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Bereich</h4>
+                      <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
                           <Badge key={index} variant="outline" className="text-xs">

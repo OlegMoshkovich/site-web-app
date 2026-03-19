@@ -908,7 +908,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <div className="absolute inset-0 bg-white flex flex-col z-10">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-2.5 border-b flex-shrink-0">
-                  <h4 className="font-semibold text-gray-900">Bereich</h4>
+                  <h4 className="font-semibold text-gray-900">Labels</h4>
                   <button
                     onClick={handleCancelEditLabels}
                     className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -1015,7 +1015,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {/* Labels display */}
             <div className="mt-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">Bereich</h4>
+                <h4 className="font-semibold text-gray-900">Labels</h4>
                 <button
                   onClick={handleStartEditLabels}
                   className="text-gray-500 hover:text-blue-600 transition-colors p-1"
