@@ -92,9 +92,16 @@ export function groupObservationsByDate(observations: ObservationWithUrl[]) {
   }, {} as Record<string, ObservationWithUrl[]>);
 
   // Sort dates in descending order (newest first)
-  const sortedDates = Object.keys(groups).sort((a, b) => 
+  const sortedDates = Object.keys(groups).sort((a, b) =>
     new Date(b).getTime() - new Date(a).getTime()
   );
+
+  // Sort observations within each group by time descending (most recent first)
+  for (const key of sortedDates) {
+    groups[key].sort((a, b) =>
+      resolveObservationDateTime(b).getTime() - resolveObservationDateTime(a).getTime()
+    );
+  }
 
   return { groups, sortedDates };
 }
