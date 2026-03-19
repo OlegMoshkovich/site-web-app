@@ -683,7 +683,7 @@ export default function Home() {
                     <div className="text-sm text-gray-600 mb-2">{t('loadMoreLabel')}</div>
                     <div className="flex flex-wrap justify-center gap-3">
                       {(['week', 'month'] as const).map((type) => (
-                        <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className="shadow-md hover:shadow-lg transition-all">
+                        <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className=" transition-all">
                           {isLoadingMore ? <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>Loading...</> : t(type === 'week' ? 'lastWeek' : 'lastMonth')}
                         </Button>
                       ))}
