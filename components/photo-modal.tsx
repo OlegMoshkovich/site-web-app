@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,9 @@ export function PhotoModal({
   const [planImageLoading, setPlanImageLoading] = useState(false);
   const [availablePlans, setAvailablePlans] = useState<{ id: string; plan_name: string; plan_url: string; site_id: string }[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+  // Label removal confirmation state
+  const [labelToRemove, setLabelToRemove] = useState<string | null>(null);
 
   // Plan anchor editing state
   const [editingPlanAnchor, setEditingPlanAnchor] = useState(false);
@@ -603,6 +607,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
   }, [supabase, observation, pendingAnchor, onObservationUpdate]);
 
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl mx-4">
       <div className="flex flex-col md:flex-row h-[76vh] md:h-[90vh] overflow-hidden">
         {/* Image container */}
@@ -719,7 +724,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
                       {label}
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleRemoveLabel(label); }}
+                        onClick={(e) => { e.stopPropagation(); setLabelToRemove(label); }}
                         className="hover:text-red-300 transition-colors leading-none"
                         title="Remove label"
                       >
@@ -1160,5 +1165,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
       </div>
     </Modal>
+
+    <ConfirmDialog
+      isOpen={labelToRemove !== null}
+      message={`Remove label "${labelToRemove}"?`}
+      onConfirm={() => { if (labelToRemove) handleRemoveLabel(labelToRemove); setLabelToRemove(null); }}
+      onCancel={() => setLabelToRemove(null)}
+    />
+    </>
   );
 }

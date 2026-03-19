@@ -29,6 +29,7 @@ import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
 import { getLabelsForSite, type Label } from "@/lib/labels";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Report {
   id: string;
@@ -162,6 +163,7 @@ export default function ReportDetailPage() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   const [language, setLanguage] = useState<Language>("de");
+  const [labelRemoveConfirm, setLabelRemoveConfirm] = useState<{ observationId: string; label: string } | null>(null);
 
   // Quality selector state
   const [showQualityDialog, setShowQualityDialog] = useState(false);
@@ -1318,10 +1320,7 @@ export default function ReportDetailPage() {
                                   {processLabel(label)}
                                   {isAuthenticated && (
                                     <button
-                                      onClick={() => handleUpdateObservationLabels(
-                                        observation.id,
-                                        (observation.labels || []).filter(l => l !== label)
-                                      )}
+                                      onClick={() => setLabelRemoveConfirm({ observationId: observation.id, label })}
                                       className="ml-0.5 hover:text-red-500 transition-colors leading-none"
                                       title="Remove label"
                                     >
@@ -1759,5 +1758,20 @@ export default function ReportDetailPage() {
         </div>
       )}
     </div>
+
+    <ConfirmDialog
+      isOpen={labelRemoveConfirm !== null}
+      message={`Remove label "${labelRemoveConfirm?.label}"?`}
+      onConfirm={() => {
+        if (labelRemoveConfirm) {
+          handleUpdateObservationLabels(
+            labelRemoveConfirm.observationId,
+            (observations.find(o => o.id === labelRemoveConfirm.observationId)?.labels || []).filter(l => l !== labelRemoveConfirm.label)
+          );
+        }
+        setLabelRemoveConfirm(null);
+      }}
+      onCancel={() => setLabelRemoveConfirm(null)}
+    />
   );
 }
