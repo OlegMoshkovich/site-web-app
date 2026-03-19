@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Trash2,
   Search,
   Filter,
   Download,
@@ -20,6 +19,7 @@ import {
   Tag,
   FileText,
   Pencil,
+  Upload,
 } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
@@ -281,11 +281,20 @@ export default function Home() {
     setObservations(observations.map(o => o.id === photoId ? { ...o, labels: next } : o));
   }, [supabase, observations, setObservations]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleFolderDrop = useCallback((files: File[]) => {
     if (!user?.id) { alert('Please log in before uploading files.'); return; }
     setDroppedFiles(files);
     setShowUploadModal(true);
   }, [user]);
+
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    handleFolderDrop(files);
+    e.target.value = '';
+  }, [handleFolderDrop]);
 
   const handleUploadComplete = useCallback(() => {
     setShowUploadModal(false);
@@ -505,6 +514,26 @@ export default function Home() {
                 </button>
               )}
               {user && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                  />
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    variant="outline" size="sm"
+                    className="hidden sm:flex h-8 w-8 px-0 text-sm border-gray-300 items-center justify-center bg-white hover:bg-gray-100"
+                    title="Upload photos"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              {user && (
                 <Button onClick={() => router.push('/reports')} variant="outline" size="sm"
                   className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100" title={t("reports")}>
                   <FileText className="h-4 w-4" />
@@ -520,6 +549,20 @@ export default function Home() {
             </div>
           </div>
         </nav>
+
+        {/* Mobile upload button — below navbar, full content width, hidden on sm+ */}
+        {user && (
+          <div className="sm:hidden w-full max-w-6xl mx-auto px-3 pt-2 pb-1">
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              className="w-full h-10 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
+            >
+              <Upload className="h-4 w-4" />
+              Upload photos
+            </Button>
+          </div>
+        )}
 
         {/* Main content */}
         <div className={getContentClasses().container}>
