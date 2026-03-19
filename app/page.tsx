@@ -371,18 +371,18 @@ export default function Home() {
     fetchAllSites();
   }, [user, supabase]);
 
-  // Fetch structured site labels when the label filter is opened
+  // Fetch structured site labels when the label filter is opened (always refresh)
   useEffect(() => {
     if (!showLabelSelector || !user) return;
     if (selectedSiteId) {
-      if (!siteLabels.has(selectedSiteId)) fetchSiteLabels(selectedSiteId, user.id);
+      fetchSiteLabels(selectedSiteId, user.id);
     } else {
       const siteIds = [...new Set(observations.map((o: any) => o.site_id).filter(Boolean))];
       siteIds.forEach((siteId: string) => {
-        if (!siteLabels.has(siteId)) fetchSiteLabels(siteId, user.id);
+        fetchSiteLabels(siteId, user.id);
       });
     }
-  }, [showLabelSelector, selectedSiteId, user, observations, siteLabels, fetchSiteLabels]);
+  }, [showLabelSelector, selectedSiteId, user, observations, fetchSiteLabels]);
 
   // Load filter cookies on mount
   useEffect(() => {
