@@ -271,6 +271,16 @@ export default function Home() {
     deleteCookie('filter_userId'); deleteCookie('filter_siteId');
   }, [deleteCookie]);
 
+  const handleRemoveLabelFromPhoto = useCallback(async (photoId: string, label: string) => {
+    const obs = observations.find(o => o.id === photoId);
+    if (!obs) return;
+    const newLabels = (obs.labels || []).filter(l => l !== label);
+    const next = newLabels.length > 0 ? newLabels : null;
+    const { error } = await supabase.from('observations').update({ labels: next }).eq('id', photoId);
+    if (error) { console.error('Error removing label:', error); return; }
+    setObservations(observations.map(o => o.id === photoId ? { ...o, labels: next } : o));
+  }, [supabase, observations, setObservations]);
+
   const handleFolderDrop = useCallback((files: File[]) => {
     if (!user?.id) { alert('Please log in before uploading files.'); return; }
     setDroppedFiles(files);
@@ -703,9 +713,11 @@ export default function Home() {
             onClose={() => setShowMultiLabelEdit(false)}
             selectedCount={selectedObservations.size}
             siteLabels={currentSiteLabels}
+            selectedPhotos={selectedObs.map(o => ({ id: o.id, signedUrl: o.signedUrl, note: o.note ?? null, labels: o.labels ?? null }))}
             commonLabels={commonLabels}
             partialLabels={partialLabels}
             onSave={handleBulkSaveLabels}
+            onRemoveLabelFromPhoto={handleRemoveLabelFromPhoto}
             language={language}
           />
         );
