@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { processLabel } from "@/lib/search-utils";
 import type { translations } from "@/lib/translations";
+import type { Label } from "@/lib/labels";
 
 type TFn = (key: keyof typeof translations.en) => string;
 
@@ -35,6 +36,7 @@ interface FilterPanelProps {
   searchResultsCount: number;
   // Labels
   availableLabels: string[];
+  siteLabels?: Label[];
   selectedLabels: string[];
   onToggleLabel: (label: string) => void;
   onClearLabels: () => void;
@@ -70,11 +72,85 @@ export function FilterPanel({
   isSearching,
   searchResultsCount,
   availableLabels,
+  siteLabels,
   selectedLabels,
   onToggleLabel,
   onClearLabels,
   t,
 }: FilterPanelProps) {
+  // Build a set of label names present in observations for filtering
+  const availableSet = new Set(availableLabels);
+
+  // When siteLabels are provided, build the parent-child hierarchy filtered to availableLabels
+  const labelBtn = (label: Label) => {
+    const isSelected = selectedLabels.includes(label.name);
+    return (
+      <button
+        key={label.id}
+        onClick={() => onToggleLabel(label.name)}
+        className={`px-3 py-1 text-sm border transition-colors ${
+          isSelected
+            ? "bg-black text-white border-black"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+        }`}
+      >
+        {processLabel(label.name)}
+      </button>
+    );
+  };
+
+  const renderHierarchy = () => {
+    // Filter structured labels to only those present in observations, deduplicate by name
+    const filtered = (siteLabels || [])
+      .filter(l => availableSet.has(l.name))
+      .filter((l, i, arr) => arr.findIndex(x => x.name === l.name) === i);
+    if (filtered.length === 0) return null;
+
+    // Group by category
+    const categories = [...new Set(filtered.map(l => l.category))];
+
+    return (
+      <div className="flex flex-col gap-3">
+        {categories.map(category => {
+          const catLabels = filtered
+            .filter(l => l.category === category)
+            .sort((a, b) => a.order_index - b.order_index);
+          const parents = catLabels.filter(l => !l.parent_id);
+          const childrenMap = catLabels.reduce<Record<string, Label[]>>((acc, l) => {
+            if (l.parent_id) (acc[l.parent_id] ??= []).push(l);
+            return acc;
+          }, {});
+
+          return (
+            <div key={category}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">{category}</p>
+              <div className="space-y-1">
+                {/* Parents without children — all in one wrapped row */}
+                {parents.filter(p => !childrenMap[p.id]).length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {parents.filter(p => !childrenMap[p.id]).map(p => labelBtn(p))}
+                  </div>
+                )}
+                {/* Parents with children */}
+                {parents.filter(p => childrenMap[p.id]).map(parent => (
+                  <div key={parent.id}>
+                    <div className="flex flex-wrap gap-2">{labelBtn(parent)}</div>
+                    <div className="flex flex-wrap gap-2 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                      {childrenMap[parent.id].map(child => labelBtn(child))}
+                    </div>
+                  </div>
+                ))}
+                {/* Orphan children whose parent isn't in the filtered set */}
+                {catLabels.filter(l => l.parent_id && !parents.find(p => p.id === l.parent_id)).map(l => (
+                  <div key={l.id} className="flex flex-wrap gap-2">{labelBtn(l)}</div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   return (
     <>
       {showDateSelector && (
@@ -197,24 +273,28 @@ export function FilterPanel({
         >
           <label className="text-sm font-medium text-muted-foreground">{t("filterByLabels")}</label>
           {availableLabels.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {availableLabels.map((label) => {
-                const isSelected = selectedLabels.includes(label);
-                return (
-                  <button
-                    key={label}
-                    onClick={() => onToggleLabel(label)}
-                    className={`px-3 py-1 text-sm border transition-colors ${
-                      isSelected
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {processLabel(label)}
-                  </button>
-                );
-              })}
-            </div>
+            siteLabels && siteLabels.length > 0
+              ? renderHierarchy()
+              : (
+                <div className="flex flex-wrap gap-2">
+                  {availableLabels.map((label) => {
+                    const isSelected = selectedLabels.includes(label);
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => onToggleLabel(label)}
+                        className={`px-3 py-1 text-sm border transition-colors ${
+                          isSelected
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {processLabel(label)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )
           ) : (
             <div className="text-sm text-muted-foreground">{t("noLabelsFound")}</div>
           )}
