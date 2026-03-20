@@ -517,24 +517,14 @@ export default function Home() {
                 </button>
               )}
               {user && (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileInputChange}
-                  />
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline" size="sm"
-                    className="hidden sm:flex h-8 w-8 px-0 text-sm border-gray-300 items-center justify-center bg-white hover:bg-gray-100"
-                    title={t("uploadPhotos")}
-                  >
-                    <FolderUp className="h-4 w-4" />
-                  </Button>
-                </>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileInputChange}
+                />
               )}
               {user && (
                 <Button onClick={() => router.push('/reports')} variant="outline" size="sm"
@@ -553,19 +543,6 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* Mobile upload button — below navbar, full content width, hidden on sm+ */}
-        {user && (
-          <div className="sm:hidden w-full max-w-6xl mx-auto px-3 pt-0 pb-2">
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-              className="w-full h-8 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
-            >
-              <FolderUp className="h-4 w-4" />
-              {/* {t("uploadPhotos")} */}
-            </Button>
-          </div>
-        )}
 
         {/* Main content */}
         <div className={getContentClasses().container}>
@@ -821,6 +798,16 @@ export default function Home() {
       {user && (
         <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
           <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
+            <div className="pointer-events-auto flex items-center gap-2 mr-2">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline" size="sm"
+                className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                title={t("uploadPhotos")}
+              >
+                <FolderUp className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="pointer-events-auto mr-10 relative">
               <Button
                 onClick={() => setShowModelMenu(!showModelMenu)}
@@ -830,7 +817,7 @@ export default function Home() {
                 <Box className="h-4 w-4" />
               </Button>
               {showModelMenu && (
-                <div className="absolute bottom-10 right-30 bg-white border border-gray-200 shadow-lg min-w-[180px] z-50">
+                <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-lg min-w-[180px] z-50">
                   <a href="/model/custom" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 border-b border-gray-100">Custom</a>
                   <a href="/model/test-parameters" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50">Test Parameters</a>
                 </div>
