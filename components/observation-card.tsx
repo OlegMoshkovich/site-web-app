@@ -34,7 +34,7 @@ export function ObservationCard({
 
   const labelBadges = labels.length > 0 && (
     <div className="mt-1 flex flex-wrap gap-1">
-      {labels.slice(0, 3).map((label, idx) => (
+      {labels.map((label, idx) => (
         <Badge
           key={`${observation.id}-label-${idx}`}
           variant="outline"
@@ -43,11 +43,6 @@ export function ObservationCard({
           {processLabel(label)}
         </Badge>
       ))}
-      {labels.length > 3 && (
-        <Badge variant="outline" className="text-[10px] leading-tight px-1 py-0 border border-gray-300 bg-gray-50 text-gray-500">
-          +{labels.length - 3}
-        </Badge>
-      )}
     </div>
   );
 

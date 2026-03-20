@@ -281,7 +281,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
   return (
     <>
       {/* Chat Toggle Button — aligned with accordion right edge */}
-      <div className="fixed bottom-6 left-0 right-0 z-40 pointer-events-none">
+      <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
         <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
           <Button
             onClick={() => setIsOpen(!isOpen)}
