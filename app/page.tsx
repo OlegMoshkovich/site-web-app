@@ -819,9 +819,9 @@ export default function Home() {
       />
 
       {user && (
-        <div className="fixed bottom-2 sm:bottom-6 left-0 right-[60px] z-40 pointer-events-none">
+        <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
           <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
-            <div className="pointer-events-auto mr-2 relative">
+            <div className="pointer-events-auto mr-10 relative">
               <Button
                 onClick={() => setShowModelMenu(!showModelMenu)}
                 variant="outline" size="sm"
