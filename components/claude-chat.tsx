@@ -285,7 +285,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
         <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
           <Button
             onClick={() => setIsOpen(!isOpen)}
-            className={`pointer-events-auto rounded-none h-12 w-12 p-0 shadow-lg ${
+            className={`pointer-events-auto rounded-none h-8 w-8 p-0 shadow-lg ${
               isOpen ? 'bg-gray-800 hover:bg-gray-900' : 'bg-black hover:bg-gray-800'
             }`}
           >
@@ -296,7 +296,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-28 right-0 left-0 z-50 pointer-events-none">
+        <div className="fixed bottom-20 right-0 left-0 z-50 pointer-events-none">
           <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
           <div className="pointer-events-auto w-80 h-96 bg-white border border-gray-300 shadow-xl flex flex-col">
           {/* Header */}
