@@ -11,7 +11,7 @@ export default function ModelPage() {
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       {/* Top navigation bar matching non-signed-in state from index page */}
       <nav className={getNavbarClasses().container}>
-        <div className={getNavbarClasses().content}>
+        <div className="w-full flex justify-between items-center px-2 text-sm h-16">
           <div className="flex items-center gap-2">
             <Link href="/" className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center rounded hover:opacity-80">
               <Image

@@ -20,6 +20,7 @@ import {
   FileText,
   Pencil,
   FolderUp,
+  Box,
 } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
@@ -120,6 +121,7 @@ export default function Home() {
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
+  const [showModelMenu, setShowModelMenu] = useState<boolean>(false);
   const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
 
   const t = useCallback(
@@ -717,7 +719,7 @@ export default function Home() {
               </div>
             )}
 
-            {!isLoading && <Footer user={user} textColor="text-black" />}
+            {!isLoading && <Footer user={user} textColor={user ? "text-black" : "text-white"} />}
           </div>
         </div>
       </div>
@@ -815,6 +817,28 @@ export default function Home() {
         language={language}
         onSuccess={() => setSelectedObservations(new Set())}
       />
+
+      {user && (
+        <div className="fixed bottom-2 sm:bottom-6 left-0 right-[60px] z-40 pointer-events-none">
+          <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
+            <div className="pointer-events-auto mr-2 relative">
+              <Button
+                onClick={() => setShowModelMenu(!showModelMenu)}
+                variant="outline" size="sm"
+                className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showModelMenu ? "bg-gray-200 text-gray-700" : "bg-white"}`}
+              >
+                <Box className="h-4 w-4" />
+              </Button>
+              {showModelMenu && (
+                <div className="absolute bottom-10 right-30 bg-white border border-gray-200 shadow-lg min-w-[180px] z-50">
+                  <a href="/model/custom" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 border-b border-gray-100">Custom</a>
+                  <a href="/model/test-parameters" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50">Test Parameters</a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {user && <ClaudeChat
         selectedObservations={selectedObservations}
