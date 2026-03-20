@@ -120,6 +120,7 @@ export default function Home() {
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
+  const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
 
   const t = useCallback(
     (key: keyof typeof translations.en) => {
@@ -493,7 +494,7 @@ export default function Home() {
             {user && (
               <div className="absolute left-1/2 transform -translate-x-1/2 sm:block">
                 <div
-                  onClick={() => setAreAccordionsExpanded(!areAccordionsExpanded)}
+                  onClick={() => { setAreAccordionsExpanded(!areAccordionsExpanded); setHasToggledAccordions(true); }}
                   className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center cursor-pointer hover:opacity-80 rounded"
                   title={areAccordionsExpanded ? "Collapse all" : "Expand all"}
                 >
@@ -647,7 +648,7 @@ export default function Home() {
                         <Accordion
                           key={`${dateKey}-${areAccordionsExpanded}`}
                           type="single" collapsible
-                          defaultValue={areAccordionsExpanded ? "observations" : dateIndex === 0 ? "observations" : ""}
+                          defaultValue={areAccordionsExpanded ? "observations" : (!hasToggledAccordions && dateIndex === 0) ? "observations" : ""}
                           className="mt-1"
                         >
                           <AccordionItem value="observations">
