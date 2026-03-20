@@ -556,10 +556,10 @@ export default function Home() {
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
-              className="w-full h-10 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
+              className="w-full h-8 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
             >
               <Upload className="h-4 w-4" />
-              {t("uploadPhotos")}
+              {/* {t("uploadPhotos")} */}
             </Button>
           </div>
         )}
