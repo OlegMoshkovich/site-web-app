@@ -680,8 +680,8 @@ export default function Home() {
                 })()}
 
                 {hasMore && (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <div className="text-sm text-gray-600 mb-1">{t('loadMoreLabel')}</div>
+                  <div className="flex flex-col items-center gap-4 pb-8 pt-4">
+                    {/* <div className="text-sm text-gray-600 mb-1">{t('loadMoreLabel')}</div> */}
                     <div className="flex flex-wrap justify-center gap-3">
                       {(['week', 'month'] as const).map((type) => (
                         <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className=" transition-all">
