@@ -14,7 +14,7 @@ export function Footer({ user, textColor }: FooterProps) {
   const resolvedTextColor = textColor ?? (user ? 'text-black' : 'text-white');
   if (user) {
     return (
-      <footer className="fixed bottom-0 left-0 w-full bg-white py-2 z-40 pb-4">
+      <footer className="fixed bottom-0 left-0 w-full bg-white py-2 z-40 pb-6">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8">
           <div className={`text-xs ${resolvedTextColor} flex flex-col gap-y-0.5`}>
             <span className="font-medium">clone:it GmbH</span>
