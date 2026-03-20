@@ -19,7 +19,7 @@ import {
   Tag,
   FileText,
   Pencil,
-  Upload,
+  FolderUp,
 } from "lucide-react";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
@@ -433,7 +433,7 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen flex flex-col items-center relative ${selectionBox ? 'select-none' : ''}`}
+      className={`min-h-screen flex flex-col items-center relative ${user ? 'pb-10' : ''} ${selectionBox ? 'select-none' : ''}`}
       style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
       onMouseDown={handleSelectionStart}
     >
@@ -529,7 +529,7 @@ export default function Home() {
                     className="hidden sm:flex h-8 w-8 px-0 text-sm border-gray-300 items-center justify-center bg-white hover:bg-gray-100"
                     title={t("uploadPhotos")}
                   >
-                    <Upload className="h-4 w-4" />
+                    <FolderUp className="h-4 w-4" />
                   </Button>
                 </>
               )}
@@ -558,7 +558,7 @@ export default function Home() {
               variant="outline"
               className="w-full h-8 border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center gap-2 text-sm"
             >
-              <Upload className="h-4 w-4" />
+              <FolderUp className="h-4 w-4" />
               {/* {t("uploadPhotos")} */}
             </Button>
           </div>
@@ -636,11 +636,12 @@ export default function Home() {
                   const { groups, sortedDates } = groupObservationsByDate(getFilteredObservations());
                   return sortedDates.map((dateKey, dateIndex) => {
                     const obs = groups[dateKey];
-                    const formattedDate = new Date(dateKey)
-                      .toLocaleDateString(language === "de" ? "de-DE" : "en-US", {
-                        weekday: "long", year: "numeric", month: "long", day: "numeric",
-                      })
+                    const dateObj = new Date(dateKey);
+                    const weekdayPart = dateObj
+                      .toLocaleDateString(language === "de" ? "de-DE" : "en-US", { weekday: "long" })
                       .toUpperCase();
+                    const datePart = dateObj
+                      .toLocaleDateString("de-DE", { year: "numeric", month: "2-digit", day: "2-digit" });
                     return (
                       <div key={dateKey} className="space-y-2">
                         <Accordion
@@ -650,7 +651,7 @@ export default function Home() {
                           className="mt-1"
                         >
                           <AccordionItem value="observations">
-                            <AccordionTrigger>{formattedDate} ({obs.length})</AccordionTrigger>
+                            <AccordionTrigger><span>{weekdayPart}<span className="font-normal"> | {datePart} ({obs.length})</span></span></AccordionTrigger>
                             <AccordionContent className="p-0 border-none">
                               <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
                                 {obs.map((observation, index) => (

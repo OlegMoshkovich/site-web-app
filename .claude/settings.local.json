@@ -21,7 +21,11 @@
       "Bash(grep:*)",
       "Bash(tail:*)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(gh pr view:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
