@@ -280,19 +280,25 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
 
   return (
     <>
-      {/* Chat Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 rounded-none h-12 w-12 p-0 shadow-lg z-40 ${
-          isOpen ? 'bg-gray-800 hover:bg-gray-900' : 'bg-black hover:bg-gray-800'
-        }`}
-      >
-        {isOpen ? <X className="h-5 w-5 text-white" /> : <MessageCircle className="h-5 w-5 text-white" />}
-      </Button>
+      {/* Chat Toggle Button — aligned with accordion right edge */}
+      <div className="fixed bottom-6 left-0 right-0 z-40 pointer-events-none">
+        <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`pointer-events-auto rounded-none h-12 w-12 p-0 shadow-lg ${
+              isOpen ? 'bg-gray-800 hover:bg-gray-900' : 'bg-black hover:bg-gray-800'
+            }`}
+          >
+            {isOpen ? <X className="h-5 w-5 text-white" /> : <MessageCircle className="h-5 w-5 text-white" />}
+          </Button>
+        </div>
+      </div>
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 h-96 bg-white border border-gray-300 shadow-xl flex flex-col z-50">
+        <div className="fixed bottom-28 right-0 left-0 z-50 pointer-events-none">
+          <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
+          <div className="pointer-events-auto w-80 h-96 bg-white border border-gray-300 shadow-xl flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-white">
             <div className="flex items-center gap-2">
@@ -425,6 +431,8 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                 <Send className="h-3 w-3" />
               </Button>
             </div>
+          </div>
+          </div>
           </div>
         </div>
       )}
