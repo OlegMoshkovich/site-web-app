@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, X, Loader2, User } from 'lucide-react';
+import { Bot, Send, X, Loader2, User } from 'lucide-react';
 import { translations, useLanguage } from '@/lib/translations';
 import { resolveObservationDateTime } from '@/lib/observation-dates';
 
@@ -289,7 +289,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
               isOpen ? 'bg-gray-800 hover:bg-gray-900' : 'bg-black hover:bg-gray-800'
             }`}
           >
-            {isOpen ? <X className="h-5 w-5 text-white" /> : <MessageCircle className="h-5 w-5 text-white" />}
+            {isOpen ? <X className="h-5 w-5 text-white" /> : <Bot className="h-10 w-10 text-white" />}
           </Button>
         </div>
       </div>
