@@ -144,7 +144,7 @@ export function ObservationsFeed({
           .toLocaleDateString(language === "de" ? "de-DE" : "en-US", { weekday: "long" })
           .toUpperCase();
         const datePart = dateObj
-          .toLocaleDateString("de-DE", { year: "numeric", month: "2-digit", day: "2-digit" });
+          .toLocaleDateString("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit" });
         return (
           <div key={dateKey} className="space-y-2">
             <Accordion
@@ -155,7 +155,10 @@ export function ObservationsFeed({
             >
               <AccordionItem value="observations">
                 <AccordionTrigger>
-                  <span>{weekdayPart}<span className="font-normal"> | {datePart} ({obs.length})</span></span>
+                  <span className="flex flex-1 items-center justify-between mr-3">
+                    <span className="font-normal">{datePart}<span className="font-normal"> - <span className="text-md">{weekdayPart}</span></span></span>
+                    <span className="font-normal text-[10px] bg-[#f0f0f0] rounded-full px-2 py-1 w-5 h-5 flex items-center justify-center">{obs.length}</span>
+                  </span>
                 </AccordionTrigger>
                 <AccordionContent className="p-0 border-none">
                   <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
