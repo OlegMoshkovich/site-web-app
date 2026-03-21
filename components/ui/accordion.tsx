@@ -20,20 +20,24 @@ AccordionItem.displayName = "AccordionItem";
 
 const AccordionTrigger = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & {
+    rightElement?: React.ReactNode;
+  }
+>(({ className, children, rightElement, ...props }, ref) => (
   <AccordionPrimitive.Header className="flex">
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        // On mobile, text-xs (font-size: 0.75rem ~12px), on md+ keep text-4xl.
-        "flex flex-1 items-center justify-between py-2 px-0  transition-all [&[data-state=open]>svg]:rotate-180 bg-white text-black outline-1 border-b border-gray-200 text-lgmd:text-2xl sm:text-lglg:text-2xl font-semibold text-black leading-tight break-words hyphens-auto",
+        "group flex flex-1 items-center justify-between py-2 px-0 transition-all bg-white text-black outline-1 border-b border-gray-200 text-lgmd:text-2xl sm:text-lglg:text-2xl font-semibold text-black leading-tight break-words hyphens-auto",
+        !rightElement && "[&[data-state=open]>svg]:rotate-180",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-6 w-6 shrink-0 text-black transition-transform duration-200" />
+      {rightElement ?? (
+        <ChevronDown className="h-6 w-6 shrink-0 text-black transition-transform duration-200" />
+      )}
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

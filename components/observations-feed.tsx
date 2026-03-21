@@ -181,11 +181,14 @@ export function ObservationsFeed({
               className="mt-1"
             >
               <AccordionItem value="observations">
-                <AccordionTrigger>
-                  <span className="flex flex-1 items-center text-md justify-between mr-3">
-                    <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-sm color-gray-400">{weekdayPart}</span></span></span>
-                    <span className="font-normal text-xs bg-[#f0f0f0]  px-2 py-1 w-6 h-6 flex items-center justify-center">{obs.length}</span>
-                  </span>
+                <AccordionTrigger
+                  rightElement={
+                    <span className="text-xs w-6 h-6 flex items-center justify-center border border-gray-300 font-normal group-data-[state=open]:bg-[#f0f0f0] group-data-[state=closed]:bg-transparent transition-colors">
+                      {obs.length}
+                    </span>
+                  }
+                >
+                  <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-sm">{weekdayPart}</span></span></span>
                 </AccordionTrigger>
                 <AccordionContent className="p-0 border-none">
                   <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
