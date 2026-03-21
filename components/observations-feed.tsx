@@ -144,7 +144,7 @@ export function ObservationsFeed({
           .toLocaleDateString(language === "de" ? "de-DE" : "en-US", { weekday: "long" })
           .toUpperCase();
         const datePart = dateObj
-          .toLocaleDateString("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit" });
+          .toLocaleDateString("de-DE", {month: "2-digit", day: "2-digit" }).replace(/\.$/, '');
 
         // ISO week number
         const getISOWeek = (d: Date) => {
@@ -157,11 +157,21 @@ export function ObservationsFeed({
         const prevWeekNum = dateIndex > 0 ? getISOWeek(new Date(sortedDates[dateIndex - 1])) : null;
         const showWeekHeader = prevWeekNum === null || weekNum !== prevWeekNum;
 
+        // Week Monday–Sunday range
+        const weekMonday = new Date(dateObj);
+        weekMonday.setDate(dateObj.getDate() - ((dateObj.getDay() || 7) - 1));
+        const weekSunday = new Date(weekMonday);
+        weekSunday.setDate(weekMonday.getDate() + 6);
+        const locale = language === "de" ? "de-DE" : "en-US";
+        const fmtDay = (d: Date) => d.toLocaleDateString(locale, { day: "numeric", month: "short" });
+        const weekRange = `${fmtDay(weekMonday)} – ${fmtDay(weekSunday)}`;
+
         return (
           <div key={dateKey} className="space-y-2">
             {showWeekHeader && (
-              <div className={`text-xs font-semibold text-gray-400 uppercase tracking-widest px-0 ${dateIndex > 0 ? 'mt-6 pt-4 ' : ''}`}>
-                {language === "de" ? `KW ${weekNum}` : `Week ${weekNum}`}
+              <div className={`flex items-baseline gap-2 text-xs font-normal text-gray-400 uppercase tracking-widest px-0 ${dateIndex > 0 ? 'mt-6 pt-6 ' : ''}`}>
+                <span>{language === "de" ? `KW ${weekNum}` : `Week ${weekNum}`} |</span>
+                <span className=" text-gray-400">{weekRange}</span>
               </div>
             )}
             <Accordion
@@ -172,8 +182,8 @@ export function ObservationsFeed({
             >
               <AccordionItem value="observations">
                 <AccordionTrigger>
-                  <span className="flex flex-1 items-center justify-between mr-3">
-                    <span className="font-normal">{datePart}<span className="font-normal"> - <span className="text-md">{weekdayPart}</span></span></span>
+                  <span className="flex flex-1 items-center text-md justify-between mr-3">
+                    <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-md">{weekdayPart}</span></span></span>
                     <span className="font-normal text-xs bg-[#f0f0f0]  px-2 py-1 w-6 h-6 flex items-center justify-center">{obs.length}</span>
                   </span>
                 </AccordionTrigger>
