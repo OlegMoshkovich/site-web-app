@@ -183,7 +183,7 @@ export function ObservationsFeed({
               <AccordionItem value="observations">
                 <AccordionTrigger>
                   <span className="flex flex-1 items-center text-md justify-between mr-3">
-                    <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-md">{weekdayPart}</span></span></span>
+                    <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-md color-gray-400">{weekdayPart}</span></span></span>
                     <span className="font-normal text-xs bg-[#f0f0f0]  px-2 py-1 w-6 h-6 flex items-center justify-center">{obs.length}</span>
                   </span>
                 </AccordionTrigger>
