@@ -145,8 +145,25 @@ export function ObservationsFeed({
           .toUpperCase();
         const datePart = dateObj
           .toLocaleDateString("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit" });
+
+        // ISO week number
+        const getISOWeek = (d: Date) => {
+          const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+          date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+          const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+          return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        };
+        const weekNum = getISOWeek(dateObj);
+        const prevWeekNum = dateIndex > 0 ? getISOWeek(new Date(sortedDates[dateIndex - 1])) : null;
+        const showWeekHeader = prevWeekNum === null || weekNum !== prevWeekNum;
+
         return (
           <div key={dateKey} className="space-y-2">
+            {showWeekHeader && (
+              <div className={`text-xs font-semibold text-gray-400 uppercase tracking-widest px-0 ${dateIndex > 0 ? 'mt-6 pt-4 ' : ''}`}>
+                {language === "de" ? `KW ${weekNum}` : `Week ${weekNum}`}
+              </div>
+            )}
             <Accordion
               key={`${dateKey}-${areAccordionsExpanded}`}
               type="single" collapsible
@@ -157,7 +174,7 @@ export function ObservationsFeed({
                 <AccordionTrigger>
                   <span className="flex flex-1 items-center justify-between mr-3">
                     <span className="font-normal">{datePart}<span className="font-normal"> - <span className="text-md">{weekdayPart}</span></span></span>
-                    <span className="font-normal text-[10px] bg-[#f0f0f0] rounded-full px-2 py-1 w-5 h-5 flex items-center justify-center">{obs.length}</span>
+                    <span className="font-normal text-xs bg-[#f0f0f0]  px-2 py-1 w-6 h-6 flex items-center justify-center">{obs.length}</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="p-0 border-none">
