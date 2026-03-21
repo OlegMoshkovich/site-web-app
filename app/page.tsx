@@ -2,30 +2,11 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, useCallback, useMemo, useRef, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Search,
-  Filter,
-  Download,
-  Settings,
-  Tag,
-  FileText,
-  Pencil,
-  FolderUp,
-  Box,
-} from "lucide-react";
-import { AuthButtonClient } from "@/components/auth-button-client";
 import { Footer } from "@/components/footer";
 import { PhotoModal } from "@/components/photo-modal";
-import { MultiLabelEditDialog } from "@/components/multi-label-edit-dialog";
 import { ClaudeChat } from "@/components/claude-chat";
 import { UserManualCarousel } from "@/components/user-manual-carousel";
 import { FolderUploadDropZone } from "@/components/folder-upload-drop-zone";
@@ -33,30 +14,19 @@ import { FolderUploadModal } from "@/components/folder-upload-modal";
 import { SaveReportDialog } from "@/components/save-report-dialog";
 import { PhotoQualityDialog } from "@/components/photo-quality-dialog";
 import { CampaignModal } from "@/components/campaign-modal";
-import { ObservationCard } from "@/components/observation-card";
-import { FilterPanel } from "@/components/filter-panel";
+import { HomeNavbar } from "@/components/home-navbar";
+import { ObservationsFeed } from "@/components/observations-feed";
+import { SelectionActions } from "@/components/selection-actions";
+import { HomeBottomBar } from "@/components/home-bottom-bar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
-import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
+import { getContentClasses } from "@/lib/layout-constants";
 import { useObservationsStore } from "@/lib/store/observations-store";
-import {
-  filterObservationsByDateRange,
-  filterObservationsByLabels,
-  filterObservationsByUserId,
-  filterObservationsBySiteId,
-  groupObservationsByDate,
-} from "@/lib/search-utils";
 import { usePhotoDownload } from "@/lib/hooks/use-photo-download";
 import { useSelectionBox } from "@/lib/hooks/use-selection-box";
-import type { Observation } from "@/types/supabase";
-
-interface ObservationWithUrl extends Observation {
-  signedUrl: string | null;
-  sites?: { name: string } | null;
-  profiles?: { email: string } | null;
-  user_email?: string;
-}
+import { useFilterState } from "@/lib/hooks/use-filter-state";
+import type { ObservationWithUrl } from "@/lib/store/observations-store";
 
 export default function Home() {
   const supabase = createClient();
@@ -85,37 +55,7 @@ export default function Home() {
   } = useObservationsStore();
 
   const [selectedObservations, setSelectedObservations] = useState<Set<string>>(new Set());
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
   const { language, mounted } = useLanguage();
-  const [showDateSelector, setShowDateSelector] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [showSearchSelector, setShowSearchSelector] = useState<boolean>(false);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [showLabelSelector, setShowLabelSelector] = useState<boolean>(false);
-  const availableLabels = storeAvailableLabels;
-
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [availableUsers, setAvailableUsers] = useState<{ id: string; displayName: string }[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
-  const [availableSites, setAvailableSites] = useState<{ id: string; name: string }[]>([]);
-
-  // Structured labels for the filter panel — scoped to the selected site
-  const filterPanelSiteLabels = useMemo(() => {
-    if (selectedSiteId) return siteLabels.get(selectedSiteId) || [];
-    // No site selected: aggregate from all loaded sites (deduped)
-    const all: import("@/lib/labels").Label[] = [];
-    const seen = new Set<string>();
-    siteLabels.forEach(labels => {
-      labels.forEach(l => { if (!seen.has(l.id)) { seen.add(l.id); all.push(l); } });
-    });
-    return all;
-  }, [siteLabels, selectedSiteId]);
-  const [photoModalOpen, setPhotoModalOpen] = useState(false);
-  const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
@@ -123,6 +63,11 @@ export default function Home() {
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
   const [showModelMenu, setShowModelMenu] = useState<boolean>(false);
   const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState<number>(0);
 
   const t = useCallback(
     (key: keyof typeof translations.en) => {
@@ -132,27 +77,13 @@ export default function Home() {
     [language],
   );
 
-  // Cookie helpers
-  const setCookie = useCallback((name: string, value: string, days: number = 30) => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-  }, []);
-
-  const getCookie = useCallback((name: string): string => {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(";");
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === " ") c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return "";
-  }, []);
-
-  const deleteCookie = useCallback((name: string) => {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
-  }, []);
+  const filters = useFilterState({
+    user,
+    observations,
+    searchResults,
+    siteLabels,
+    fetchSiteLabels,
+  });
 
   // Hooks
   const { handleDownloadPhotos } = usePhotoDownload(selectedObservations, observations);
@@ -160,36 +91,20 @@ export default function Home() {
 
   // Debounced DB search
   useEffect(() => {
-    if (!user || !showSearchSelector) { clearSearch(); return; }
-    if (!searchQuery.trim()) { clearSearch(); return; }
-    const timer = setTimeout(() => performSearch(user.id, searchQuery), 400);
+    if (!user || !filters.showSearchSelector) { clearSearch(); return; }
+    if (!filters.searchQuery.trim()) { clearSearch(); return; }
+    const timer = setTimeout(() => performSearch(user.id, filters.searchQuery), 400);
     return () => clearTimeout(timer);
-  }, [searchQuery, showSearchSelector, user, performSearch, clearSearch]);
-
-  // Filtered observations
-  const getFilteredObservations = useCallback(() => {
-    let filtered = (showSearchSelector && searchQuery.trim()) ? searchResults : observations;
-    if (showDateSelector && startDate && endDate) {
-      filtered = filterObservationsByDateRange(filtered, startDate, endDate);
-    }
-    if (selectedUserId) filtered = filterObservationsByUserId(filtered, selectedUserId);
-    if (selectedSiteId) filtered = filterObservationsBySiteId(filtered, selectedSiteId);
-    if (selectedLabels.length > 0) {
-      filtered = filterObservationsByLabels(filtered, selectedLabels, false);
-    }
-    return filtered;
-  }, [observations, searchResults, showDateSelector, startDate, endDate, selectedUserId, selectedSiteId, showSearchSelector, searchQuery, selectedLabels]);
-
-  const hasActiveFilters = !!(startDate || endDate || selectedUserId || selectedSiteId);
+  }, [filters.searchQuery, filters.showSearchSelector, user, performSearch, clearSearch]);
 
   // Photo modal
   const handleOpenPhotoModal = useCallback((observation: ObservationWithUrl, event: React.MouseEvent) => {
     event.stopPropagation();
-    const all = getFilteredObservations().filter(o => o.signedUrl || o.note);
+    const all = filters.getFilteredObservations().filter(o => o.signedUrl || o.note);
     setCurrentPhotoIndex(all.findIndex(o => o.id === observation.id));
     setSelectedPhotoObservation(observation);
     setPhotoModalOpen(true);
-  }, [getFilteredObservations]);
+  }, [filters.getFilteredObservations]);
 
   const handleClosePhotoModal = useCallback(() => {
     setPhotoModalOpen(false);
@@ -198,22 +113,22 @@ export default function Home() {
   }, []);
 
   const handlePreviousPhoto = useCallback(() => {
-    const all = getFilteredObservations().filter(o => o.signedUrl || o.note);
+    const all = filters.getFilteredObservations().filter(o => o.signedUrl || o.note);
     if (currentPhotoIndex > 0) {
       const idx = currentPhotoIndex - 1;
       setCurrentPhotoIndex(idx);
       setSelectedPhotoObservation(all[idx]);
     }
-  }, [getFilteredObservations, currentPhotoIndex]);
+  }, [filters.getFilteredObservations, currentPhotoIndex]);
 
   const handleNextPhoto = useCallback(() => {
-    const all = getFilteredObservations().filter(o => o.signedUrl || o.note);
+    const all = filters.getFilteredObservations().filter(o => o.signedUrl || o.note);
     if (currentPhotoIndex < all.length - 1) {
       const idx = currentPhotoIndex + 1;
       setCurrentPhotoIndex(idx);
       setSelectedPhotoObservation(all[idx]);
     }
-  }, [getFilteredObservations, currentPhotoIndex]);
+  }, [filters.getFilteredObservations, currentPhotoIndex]);
 
   // Delete observation(s)
   const handleDeleteObservation = useCallback(
@@ -268,12 +183,6 @@ export default function Home() {
     }));
   }, [selectedObservations, observations, setObservations, supabase]);
 
-  const handleClearDateRange = useCallback(() => {
-    setStartDate(""); setEndDate(""); setSelectedUserId(""); setSelectedSiteId("");
-    deleteCookie('filter_startDate'); deleteCookie('filter_endDate');
-    deleteCookie('filter_userId'); deleteCookie('filter_siteId');
-  }, [deleteCookie]);
-
   const handleRemoveLabelFromPhoto = useCallback(async (photoId: string, label: string) => {
     const obs = observations.find(o => o.id === photoId);
     if (!obs) return;
@@ -306,7 +215,7 @@ export default function Home() {
   }, [user, fetchInitialObservations]);
 
   const handleSelectAll = useCallback(() => {
-    const visibleIds = getFilteredObservations().map(o => o.id);
+    const visibleIds = filters.getFilteredObservations().map(o => o.id);
     const newSelected = new Set(selectedObservations);
     if (visibleIds.every(id => newSelected.has(id))) {
       visibleIds.forEach(id => newSelected.delete(id));
@@ -314,7 +223,7 @@ export default function Home() {
       visibleIds.forEach(id => newSelected.add(id));
     }
     setSelectedObservations(newSelected);
-  }, [getFilteredObservations, selectedObservations]);
+  }, [filters.getFilteredObservations, selectedObservations]);
 
   const handleLoadMore = useCallback(async (type: 'week' | 'month') => {
     if (!user) return;
@@ -354,85 +263,13 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase, router, fetchInitialObservations, clearStore]);
 
-  // Fetch sites for filter
-  useEffect(() => {
-    if (!user?.id) return;
-    const fetchAllSites = async () => {
-      try {
-        const [
-          { data: ownedSites, error: ownedError },
-          { data: collaborations, error: collabError },
-        ] = await Promise.all([
-          supabase.from('sites').select('id, name').eq('user_id', user.id).order('name', { ascending: true }),
-          supabase.from('site_collaborators').select('site_id, sites(id, name)').eq('user_id', user.id).eq('status', 'accepted'),
-        ]);
-        if (ownedError) { console.error('Error loading owned sites:', ownedError); return; }
-        if (collabError) console.error('Error loading collaborative sites:', collabError);
-        const collaborativeSites = (collaborations || []).map((c: any) => c.sites).filter(Boolean);
-        const all = [...(ownedSites || []), ...collaborativeSites];
-        const unique = all.reduce((acc: any[], site: any) => {
-          if (!acc.find((s: any) => s.id === site.id)) acc.push(site);
-          return acc;
-        }, []);
-        unique.sort((a: any, b: any) => a.name.localeCompare(b.name));
-        setAvailableSites(unique);
-      } catch (error) {
-        console.error('Error fetching sites:', error);
-      }
-    };
-    fetchAllSites();
-  }, [user, supabase]);
-
-  // Fetch structured site labels when the label filter is opened (always refresh)
-  useEffect(() => {
-    if (!showLabelSelector || !user) return;
-    if (selectedSiteId) {
-      fetchSiteLabels(selectedSiteId, user.id);
-    } else {
-      const siteIds = [...new Set(observations.map((o: any) => o.site_id).filter(Boolean))];
-      siteIds.forEach((siteId: string) => {
-        fetchSiteLabels(siteId, user.id);
-      });
-    }
-  }, [showLabelSelector, selectedSiteId, user, observations, fetchSiteLabels]);
-
-  // Load filter cookies on mount
-  useEffect(() => {
-    const savedStartDate = getCookie('filter_startDate');
-    const savedEndDate = getCookie('filter_endDate');
-    const savedUserId = getCookie('filter_userId');
-    const savedSiteId = getCookie('filter_siteId');
-    if (savedStartDate) setStartDate(savedStartDate);
-    if (savedEndDate) setEndDate(savedEndDate);
-    if (savedUserId) setSelectedUserId(savedUserId);
-    if (savedSiteId) setSelectedSiteId(savedSiteId);
-  }, [getCookie]);
-
-  // Persist filter cookies
-  useEffect(() => {
-    startDate ? setCookie('filter_startDate', startDate) : deleteCookie('filter_startDate');
-    endDate ? setCookie('filter_endDate', endDate) : deleteCookie('filter_endDate');
-    selectedUserId ? setCookie('filter_userId', selectedUserId) : deleteCookie('filter_userId');
-    selectedSiteId ? setCookie('filter_siteId', selectedSiteId) : deleteCookie('filter_siteId');
-  }, [startDate, endDate, selectedUserId, selectedSiteId, setCookie, deleteCookie]);
-
-  // Extract unique users from observations
-  useEffect(() => {
-    if (observations.length === 0) return;
-    const allUsers = new Map<string, string>();
-    observations.forEach(obs => {
-      if (obs.user_id) {
-        allUsers.set(obs.user_id, obs.user_email || `User ${obs.user_id.slice(0, 8)}...`);
-      }
-    });
-    setAvailableUsers(
-      Array.from(allUsers.entries())
-        .map(([id, displayName]) => ({ id, displayName }))
-        .sort((a, b) => a.displayName.localeCompare(b.displayName))
-    );
-  }, [observations]);
-
   if (!mounted) return null;
+
+  const filteredObservations = filters.getFilteredObservations();
+  const allSelected = (() => {
+    const visibleIds = filteredObservations.map(o => o.id);
+    return visibleIds.length > 0 && visibleIds.every(id => selectedObservations.has(id));
+  })();
 
   return (
     <main
@@ -444,105 +281,32 @@ export default function Home() {
         <div className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/images/backgound.png)' }} />
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
-        {/* Navbar */}
-        <nav className={`${getNavbarClasses().container} ${user ? 'bg-white' : ''}`}>
-          <div className={getNavbarClasses().content}>
-            <div className="flex items-center gap-2">
-              {!user && (
-                <div className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center rounded">
-                  <Image src="/images/banner_logo.png" alt="Site Banner" width={120} height={32} className="h-4 sm:h-6 w-auto max-w-none" />
-                </div>
-              )}
-              {user && (
-                <>
-                  <Button
-                    onClick={() => setShowSearchSelector(!showSearchSelector)}
-                    variant="outline" size="sm"
-                    className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showSearchSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
-                    title={t("toggleSearch")}
-                  >
-                    <Search className="h-4 w-4" />
-                  </Button>
-                  <div className="relative">
-                    <Button
-                      onClick={() => setShowLabelSelector(!showLabelSelector)}
-                      variant="outline" size="sm"
-                      className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showLabelSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
-                      title={t("toggleLabelFilter")}
-                    >
-                      <Tag className="h-4 w-4" />
-                    </Button>
-                    {selectedLabels.length > 0 && (
-                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
-                    )}
-                  </div>
-                  <div className="relative">
-                    <Button
-                      onClick={() => setShowDateSelector(!showDateSelector)}
-                      variant="outline" size="sm"
-                      className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
-                      title={t("toggleDateFilter")}
-                    >
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                    {hasActiveFilters && (
-                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+        <HomeNavbar
+          user={user}
+          showSearchSelector={filters.showSearchSelector}
+          onToggleSearch={() => filters.setShowSearchSelector(!filters.showSearchSelector)}
+          showLabelSelector={filters.showLabelSelector}
+          onToggleLabelSelector={() => filters.setShowLabelSelector(!filters.showLabelSelector)}
+          selectedLabels={filters.selectedLabels}
+          showDateSelector={filters.showDateSelector}
+          onToggleDateSelector={() => filters.setShowDateSelector(!filters.showDateSelector)}
+          hasActiveFilters={filters.hasActiveFilters}
+          areAccordionsExpanded={areAccordionsExpanded}
+          onToggleAccordions={() => { setAreAccordionsExpanded(!areAccordionsExpanded); setHasToggledAccordions(true); }}
+          onShowCampaignModal={() => setShowCampaignModal(true)}
+          t={t}
+        />
 
-            {user && (
-              <div className="absolute left-1/2 transform -translate-x-1/2 sm:block">
-                <div
-                  onClick={() => { setAreAccordionsExpanded(!areAccordionsExpanded); setHasToggledAccordions(true); }}
-                  className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center cursor-pointer hover:opacity-80 rounded"
-                  title={areAccordionsExpanded ? "Collapse all" : "Expand all"}
-                >
-                  <Image src="/images/banner_logo.png" alt="Site Banner" width={120} height={32} className="h-5 sm:h-6 w-auto max-w-none" />
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              {!user && (
-                <button
-                  onClick={() => setShowCampaignModal(true)}
-                  onTouchEnd={(e) => { e.preventDefault(); setShowCampaignModal(true); }}
-                  className="h-4 w-4 min-h-[28px] min-w-[28px] bg-[#00FF1A] hover:bg-green-600 active:bg-green-700 mr-2 transition-colors cursor-pointer flex items-center justify-center touch-manipulation rounded-full"
-                  title="View Campaign" aria-label="View Campaign"
-                >
-                  <span className="text-black text-base font-bold text-sm">i</span>
-                </button>
-              )}
-              {user && (
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileInputChange}
-                />
-              )}
-              {user && (
-                <Button onClick={() => router.push('/reports')} variant="outline" size="sm"
-                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100" title={t("reports")}>
-                  <FileText className="h-4 w-4" />
-                </Button>
-              )}
-              {user && (
-                <Button onClick={() => router.push('/settings')} variant="outline" size="sm"
-                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100" title={t("settings")}>
-                  <Settings className="h-4 w-4" />
-                </Button>
-              )}
-              <AuthButtonClient />
-            </div>
-          </div>
-        </nav>
-
+        {user && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileInputChange}
+          />
+        )}
 
         {/* Main content */}
         <div className={getContentClasses().container}>
@@ -554,7 +318,7 @@ export default function Home() {
                 </h1>
                 <div className="mt-8">
                   <div className="flex justify-center">
-                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-gray-200 animate-pulse rounded-lg"></div>}>
+                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-gray-200 animate-pulse rounded-lg" />}>
                       <UserManualCarousel width={600} mobileHeight={300} desktopHeight={400} />
                     </Suspense>
                   </div>
@@ -568,116 +332,59 @@ export default function Home() {
             ) : isLoading ? (
               <div className="text-center py-12">
                 <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
                 </div>
               </div>
             ) : error ? (
               <div className="text-red-500">{error}</div>
             ) : observations.length > 0 ? (
-              <div className="space-y-8">
-                <FilterPanel
-                  showDateSelector={showDateSelector}
-                  showSearchSelector={showSearchSelector}
-                  showLabelSelector={showLabelSelector}
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartDateChange={setStartDate}
-                  onEndDateChange={setEndDate}
-                  selectedUserId={selectedUserId}
-                  onUserChange={setSelectedUserId}
-                  availableUsers={availableUsers}
-                  selectedSiteId={selectedSiteId}
-                  onSiteChange={setSelectedSiteId}
-                  availableSites={availableSites}
-                  hasActiveFilters={hasActiveFilters}
-                  onClearFilters={handleClearDateRange}
-                  onSelectAll={handleSelectAll}
-                  allSelected={(() => {
-                    const visibleIds = getFilteredObservations().map(o => o.id);
-                    return visibleIds.length > 0 && visibleIds.every(id => selectedObservations.has(id));
-                  })()}
-                  onLoadMore={handleLoadMore}
-                  isLoadingMore={isLoadingMore}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  isSearching={isSearching}
-                  searchResultsCount={searchResults.length}
-                  availableLabels={availableLabels}
-                  siteLabels={filterPanelSiteLabels}
-                  selectedLabels={selectedLabels}
-                  onToggleLabel={(label) => setSelectedLabels(prev =>
-                    prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
-                  )}
-                  onClearLabels={() => setSelectedLabels([])}
-                  t={t}
-                />
-
-                {(() => {
-                  const { groups, sortedDates } = groupObservationsByDate(getFilteredObservations());
-                  return sortedDates.map((dateKey, dateIndex) => {
-                    const obs = groups[dateKey];
-                    const dateObj = new Date(dateKey);
-                    const weekdayPart = dateObj
-                      .toLocaleDateString(language === "de" ? "de-DE" : "en-US", { weekday: "long" })
-                      .toUpperCase();
-                    const datePart = dateObj
-                      .toLocaleDateString("de-DE", { year: "numeric", month: "2-digit", day: "2-digit" });
-                    return (
-                      <div key={dateKey} className="space-y-2">
-                        <Accordion
-                          key={`${dateKey}-${areAccordionsExpanded}`}
-                          type="single" collapsible
-                          defaultValue={areAccordionsExpanded ? "observations" : (!hasToggledAccordions && dateIndex === 0) ? "observations" : ""}
-                          className="mt-1"
-                        >
-                          <AccordionItem value="observations">
-                            <AccordionTrigger><span>{weekdayPart}<span className="font-normal"> | {datePart} ({obs.length})</span></span></AccordionTrigger>
-                            <AccordionContent className="p-0 border-none">
-                              <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
-                                {obs.map((observation, index) => (
-                                  <ObservationCard
-                                    key={observation.id}
-                                    observation={observation}
-                                    index={index}
-                                    isSelected={selectedObservations.has(observation.id)}
-                                    isDragging={!!selectionBox}
-                                    onToggleSelect={(id) => {
-                                      const next = new Set(selectedObservations);
-                                      if (next.has(id)) next.delete(id); else next.add(id);
-                                      setSelectedObservations(next);
-                                    }}
-                                    onOpenPhoto={handleOpenPhotoModal}
-                                    onDelete={handleDeleteObservation}
-                                  />
-                                ))}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      </div>
-                    );
-                  });
-                })()}
-
-                {hasMore && (
-                  <div className="flex flex-col items-center gap-4 pb-8 pt-4">
-                    {/* <div className="text-sm text-gray-600 mb-1">{t('loadMoreLabel')}</div> */}
-                    <div className="flex flex-wrap justify-center gap-3">
-                      {(['week', 'month'] as const).map((type) => (
-                        <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className=" transition-all">
-                          {isLoadingMore ? <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>Loading...</> : t(type === 'week' ? 'lastWeek' : 'lastMonth')}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+              <ObservationsFeed
+                showDateSelector={filters.showDateSelector}
+                showSearchSelector={filters.showSearchSelector}
+                showLabelSelector={filters.showLabelSelector}
+                startDate={filters.startDate}
+                endDate={filters.endDate}
+                onStartDateChange={filters.setStartDate}
+                onEndDateChange={filters.setEndDate}
+                selectedUserId={filters.selectedUserId}
+                onUserChange={filters.setSelectedUserId}
+                availableUsers={filters.availableUsers}
+                selectedSiteId={filters.selectedSiteId}
+                onSiteChange={filters.setSelectedSiteId}
+                availableSites={filters.availableSites}
+                hasActiveFilters={filters.hasActiveFilters}
+                onClearFilters={filters.handleClearDateRange}
+                onSelectAll={handleSelectAll}
+                allSelected={allSelected}
+                onLoadMore={handleLoadMore}
+                isLoadingMore={isLoadingMore}
+                searchQuery={filters.searchQuery}
+                onSearchChange={filters.setSearchQuery}
+                isSearching={isSearching}
+                searchResultsCount={searchResults.length}
+                availableLabels={storeAvailableLabels}
+                siteLabels={filters.filterPanelSiteLabels}
+                selectedLabels={filters.selectedLabels}
+                onToggleLabel={(label) => filters.setSelectedLabels(prev =>
+                  prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
                 )}
-              </div>
-            ) : user && !error && isLoading ? (
-              <div className="text-center py-12">
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                </div>
-              </div>
+                onClearLabels={() => filters.setSelectedLabels([])}
+                filteredObservations={filteredObservations}
+                selectedObservations={selectedObservations}
+                onToggleSelect={(id) => {
+                  const next = new Set(selectedObservations);
+                  if (next.has(id)) next.delete(id); else next.add(id);
+                  setSelectedObservations(next);
+                }}
+                onOpenPhoto={handleOpenPhotoModal}
+                onDelete={handleDeleteObservation}
+                isDragging={!!selectionBox}
+                areAccordionsExpanded={areAccordionsExpanded}
+                hasToggledAccordions={hasToggledAccordions}
+                hasMore={hasMore}
+                language={language}
+                t={t}
+              />
             ) : (
               <div className="text-center py-12">
                 <div className="space-y-6">
@@ -687,7 +394,7 @@ export default function Home() {
                     <div className="flex flex-wrap justify-center gap-3">
                       {(['week', 'month'] as const).map((type) => (
                         <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className="shadow-md hover:shadow-lg transition-all">
-                          {isLoadingMore ? <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>Loading...</> : t(type === 'week' ? 'loadPastWeek' : 'loadPastMonth')}
+                          {isLoadingMore ? <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2" />Loading...</> : t(type === 'week' ? 'loadPastWeek' : 'loadPastMonth')}
                         </Button>
                       ))}
                     </div>
@@ -701,55 +408,27 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Selection action buttons */}
-      {selectedObservations.size > 0 && (
-        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-          <Button onClick={() => setSelectedObservations(new Set())} variant="secondary" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-            {t("clearSelection")}
-          </Button>
-          <Button onClick={() => setShowMultiLabelEdit(true)} variant="outline" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-            <Pencil className="h-4 w-4 mr-2" />
-            {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
-          </Button>
-          <Button onClick={() => setShowPhotoQualityDialog(true)} variant="outline" size="lg" className="hidden md:flex shadow-lg hover:shadow-xl transition-all">
-            <Download className="h-4 w-4 mr-2" />
-            {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
-          </Button>
-          <Button onClick={() => setShowSaveDialog(true)} size="lg" className="shadow-lg hover:shadow-xl transition-all">
-            {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
-          </Button>
-        </div>
-      )}
-
-      {/* Multi-label edit dialog */}
-      {showMultiLabelEdit && (() => {
-        const selectedObs = observations.filter(o => selectedObservations.has(o.id));
-        const firstSiteId = selectedObs[0]?.site_id;
-        const currentSiteLabels = firstSiteId ? (siteLabels.get(firstSiteId) || []) : [];
-        if (firstSiteId && user && currentSiteLabels.length === 0) fetchSiteLabels(firstSiteId, user.id);
-        const allLabelSets = selectedObs.map(o => new Set(o.labels || []));
-        const allLabelNames = Array.from(new Set(allLabelSets.flatMap(s => Array.from(s))));
-        const commonLabels = allLabelNames.filter(l => allLabelSets.every(s => s.has(l)));
-        const partialLabels = allLabelNames.filter(l => !commonLabels.includes(l));
-        return (
-          <MultiLabelEditDialog
-            isOpen={showMultiLabelEdit}
-            onClose={() => setShowMultiLabelEdit(false)}
-            selectedCount={selectedObservations.size}
-            siteLabels={currentSiteLabels}
-            selectedPhotos={selectedObs.map(o => ({ id: o.id, signedUrl: o.signedUrl, note: o.note ?? null, labels: o.labels ?? null }))}
-            commonLabels={commonLabels}
-            partialLabels={partialLabels}
-            onSave={handleBulkSaveLabels}
-            onRemoveLabelFromPhoto={handleRemoveLabelFromPhoto}
-            language={language}
-          />
-        );
-      })()}
+      <SelectionActions
+        selectedObservations={selectedObservations}
+        onClearSelection={() => setSelectedObservations(new Set())}
+        onOpenPhotoQuality={() => setShowPhotoQualityDialog(true)}
+        onOpenSaveReport={() => setShowSaveDialog(true)}
+        showMultiLabelEdit={showMultiLabelEdit}
+        onOpenMultiLabelEdit={() => setShowMultiLabelEdit(true)}
+        onCloseMultiLabelEdit={() => setShowMultiLabelEdit(false)}
+        observations={observations}
+        siteLabels={siteLabels}
+        onFetchSiteLabels={fetchSiteLabels}
+        user={user}
+        onBulkSaveLabels={handleBulkSaveLabels}
+        onRemoveLabelFromPhoto={handleRemoveLabelFromPhoto}
+        language={language}
+        t={t}
+      />
 
       {/* Photo modal */}
       {selectedPhotoObservation && (selectedPhotoObservation.signedUrl || selectedPhotoObservation.note) && (() => {
-        const all = getFilteredObservations().filter(o => o.signedUrl || o.note);
+        const all = filteredObservations.filter(o => o.signedUrl || o.note);
         const currentSiteLabels = selectedPhotoObservation.site_id
           ? (siteLabels.get(selectedPhotoObservation.site_id) || [])
           : [];
@@ -796,35 +475,12 @@ export default function Home() {
       />
 
       {user && (
-        <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
-          <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
-            <div className="pointer-events-auto flex items-center gap-2 mr-2">
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline" size="sm"
-                className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
-                title={t("uploadPhotos")}
-              >
-                <FolderUp className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="pointer-events-auto mr-10 relative">
-              <Button
-                onClick={() => setShowModelMenu(!showModelMenu)}
-                variant="outline" size="sm"
-                className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showModelMenu ? "bg-gray-200 text-gray-700" : "bg-white"}`}
-              >
-                <Box className="h-4 w-4" />
-              </Button>
-              {showModelMenu && (
-                <div className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-lg min-w-[180px] z-50">
-                  <a href="/model/custom" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 border-b border-gray-100">Custom</a>
-                  <a href="/model/test-parameters" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-50">Test Parameters</a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <HomeBottomBar
+          onUploadClick={() => fileInputRef.current?.click()}
+          showModelMenu={showModelMenu}
+          onToggleModelMenu={() => setShowModelMenu(!showModelMenu)}
+          t={t}
+        />
       )}
 
       {user && <ClaudeChat
@@ -854,8 +510,8 @@ export default function Home() {
         onClose={() => setShowUploadModal(false)}
         onUploadComplete={handleUploadComplete}
         userId={user?.id || ''}
-        availableSites={availableSites}
-        initialSiteId={selectedSiteId || null}
+        availableSites={filters.availableSites}
+        initialSiteId={filters.selectedSiteId || null}
       />
     </main>
   );
