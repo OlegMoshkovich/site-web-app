@@ -33,6 +33,7 @@ export default function Home() {
   const router = useRouter();
 
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const {
     observations,
@@ -250,6 +251,8 @@ export default function Home() {
         await fetchInitialObservations(authData.user.id);
       } catch (e) {
         console.error("Error in fetchData:", e);
+      } finally {
+        setIsInitializing(false);
       }
     };
     fetchData();
@@ -263,7 +266,13 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, [supabase, router, fetchInitialObservations, clearStore]);
 
-  if (!mounted) return null;
+  if (!mounted || isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Image src="/images/banner_logo.png" alt="simple site" width={160} height={42} priority />
+      </div>
+    );
+  }
 
   const filteredObservations = filters.getFilteredObservations();
   const allSelected = (() => {
@@ -327,12 +336,6 @@ export default function Home() {
                       <Image src="/app_screens/available-app-store_1.png" alt="Available on the App Store" width={100} height={30} className="h-10 w-auto object-contain max-w-[300px] rounded-lg" />
                     </a>
                   </div>
-                </div>
-              </div>
-            ) : isLoading ? (
-              <div className="text-center py-12">
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
                 </div>
               </div>
             ) : error ? (
