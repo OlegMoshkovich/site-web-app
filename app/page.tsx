@@ -268,7 +268,7 @@ export default function Home() {
 
   if (!mounted || isInitializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="flex items-center justify-center bg-black" style={{ height: '100dvh' }}>
         <Image src="/images/banner_logo.png" alt="simple site" width={160} height={42} priority />
       </div>
     );
