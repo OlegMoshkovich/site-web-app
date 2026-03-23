@@ -287,7 +287,7 @@ export default function Home() {
       onMouseDown={handleSelectionStart}
     >
       {!user && (
-        <div className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/images/backgound.png)' }} />
+        <div className="fixed inset-0 -z-10 bg-black bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(/images/backgound.png)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} />
       )}
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         <HomeNavbar

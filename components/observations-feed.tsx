@@ -103,19 +103,6 @@ export function ObservationsFeed({
 }: ObservationsFeedProps) {
   const { groups, sortedDates } = groupObservationsByDate(filteredObservations);
 
-  // Determine if the current ISO week has any observations
-  const getISOWeekForDate = (d: Date) => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  };
-  const currentWeekNum = getISOWeekForDate(new Date());
-  const hasCurrentWeekObservations = sortedDates.some(
-    (dateKey) => getISOWeekForDate(new Date(dateKey)) === currentWeekNum
-  );
-  // Only auto-expand the first (most recent) accordion if current week has no observations
-  const shouldAutoExpand = !hasToggledAccordions && !hasCurrentWeekObservations;
 
   return (
     <div className="space-y-8">
@@ -191,7 +178,7 @@ export function ObservationsFeed({
             <Accordion
               key={`${dateKey}-${areAccordionsExpanded}`}
               type="single" collapsible
-              defaultValue={areAccordionsExpanded ? "observations" : (shouldAutoExpand && dateIndex === 0) ? "observations" : ""}
+              defaultValue={areAccordionsExpanded ? "observations" : ""}
               className="mt-1"
             >
               <AccordionItem value="observations">
