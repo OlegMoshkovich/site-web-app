@@ -25,7 +25,11 @@
       "Bash(gh pr view:*)",
       "Bash(git rebase:*)",
       "Bash(git stash:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(gh api:*)",
+      "Bash(python3:*)",
+      "Bash(npx content-collections build:*)"
     ],
     "deny": [],
     "ask": []
