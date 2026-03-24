@@ -9,13 +9,13 @@ const sectionClass =
 const innerClass = "w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 py-24";
 const labelClass = "text-xs text-gray-600 uppercase tracking-widest mb-4";
 const titleClass =
-  "text-3xl sm:text-5xl font-semibold text-white leading-tight mb-6";
+  "text-3xl sm:text-7xl font-semibold text-white leading-tight mb-6";
 const descClass =
-  "text-sm sm:text-base text-gray-400 max-w-xl leading-relaxed mb-10";
+  "text-sm sm:text-2xl text-gray-400 max-w-xl leading-relaxed mb-10";
 const subLabelClass = "text-xs text-gray-600 uppercase tracking-widest mb-3";
 const listClass =
   "grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3";
-const listItemClass = "text-sm text-gray-500 flex items-center gap-3";
+const listItemClass = "text-lg text-gray-500 flex items-center gap-3";
 
 function Dot() {
   return <span className="w-1 h-1 bg-gray-600 rounded-full flex-shrink-0" />;
@@ -27,7 +27,7 @@ export default function ServicesPage() {
       {/* Sticky navbar */}
       <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black">
         <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-md">
-          <Link href="/" className="text-md font-semibold text-white">
+          <Link href="/" className="text-md font-bold text-white bg-black px-3 py-1 border border-gray-800">
             clone:it
           </Link>
           <div className="flex items-center gap-6">

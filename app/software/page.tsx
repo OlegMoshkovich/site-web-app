@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { UserManualCarousel } from "@/components/user-manual-carousel";
-import { HomeNavbar } from "@/components/home-navbar";
 import { Footer } from "@/components/footer";
 import { CampaignModal } from "@/components/campaign-modal";
-import { useState } from "react";
+import { AuthButtonClient } from "@/components/auth-button-client";
 
 export default function SoftwarePage() {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
@@ -24,21 +24,20 @@ export default function SoftwarePage() {
       />
 
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
-        <HomeNavbar
-          user={null}
-          showSearchSelector={false}
-          onToggleSearch={() => {}}
-          showLabelSelector={false}
-          onToggleLabelSelector={() => {}}
-          selectedLabels={[]}
-          showDateSelector={false}
-          onToggleDateSelector={() => {}}
-          hasActiveFilters={false}
-          areAccordionsExpanded={false}
-          onToggleAccordions={() => {}}
-          onShowCampaignModal={() => setShowCampaignModal(true)}
-          t={() => ""}
-        />
+        <nav className="sticky top-0 z-50 w-full flex justify-center h-16">
+          <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-sm">
+            <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1">clone:it</Link>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCampaignModal(true)}
+                className="h-4 w-4 min-h-[28px] min-w-[28px] bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center rounded-full mr-2"
+              >
+                <span className="text-black text-sm font-bold">i</span>
+              </button>
+              <AuthButtonClient />
+            </div>
+          </div>
+        </nav>
 
         <div className="flex-1 flex flex-col gap-0 w-full max-w-6xl mx-auto px-3 sm:px-8 py-1 sm:py-3 md:py-4">
           <div className="w-full">
