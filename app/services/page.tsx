@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { allPosts } from "content-collections";
+import { useState } from "react";
 
 const sectionClass =
   "min-h-screen flex items-center w-full";
-const innerClass = "w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 py-24";
+const innerClass = "w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 py-24";
 const labelClass = "text-xs text-gray-600 uppercase tracking-widest mb-4";
 const titleClass =
   "text-3xl sm:text-7xl font-semibold text-white leading-tight mb-6";
@@ -22,15 +23,19 @@ function Dot() {
 }
 
 export default function ServicesPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <main className="bg-black">
       {/* Sticky navbar */}
-      <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black">
-        <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-md">
+      <nav className="fixed top-0 z-50 w-full bg-black">
+        <div className="w-full max-w-6xl mx-auto flex justify-between items-center px-3 sm:px-8 h-16">
           <Link href="/" className="text-md font-bold text-white bg-black px-3 py-1 border border-gray-800">
             clone:it
           </Link>
-          <div className="flex items-center gap-6">
+
+          {/* Desktop links */}
+          <div className="hidden sm:flex items-center gap-6">
             <Link href="/software" className="text-sm text-gray-400 hover:text-white transition-colors">
               Our Software
             </Link>
@@ -41,7 +46,44 @@ export default function ServicesPage() {
               Sign in
             </Link>
           </div>
+
+          {/* Hamburger */}
+          <button
+            className="sm:hidden flex items-center justify-center w-8 h-8"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <line x1="1" y1="1" x2="15" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="15" y1="1" x2="1" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            ) : (
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+                <line x1="0" y1="1" x2="16" y2="1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="0" y1="6" x2="16" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="0" y1="11" x2="16" y2="11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="sm:hidden bg-black py-2 flex flex-col gap-5">
+            <div className="w-[90%] mx-auto pt-2 pb-4 flex flex-col gap-4">
+            <Link href="/software" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+              Our Software
+            </Link>
+            <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+              Blog
+            </Link>
+            <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+              Sign in
+            </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* 00 — Hero */}
@@ -58,7 +100,7 @@ export default function ServicesPage() {
 
       {/* Blog scroll */}
       <section className="w-full">
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 pt-16 pb-8">
+        <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 pt-16 pb-8">
           <div className="flex items-center justify-between mb-8">
             <p className={labelClass}>Blog</p>
             <Link href="/blog" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
@@ -320,7 +362,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
+      <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
         <Footer textColor="text-gray-300" />
       </div>
     </main>
