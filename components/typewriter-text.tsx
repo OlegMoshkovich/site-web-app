@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 interface TypewriterTextProps {
   text: string;
@@ -12,26 +12,17 @@ interface TypewriterTextProps {
 
 export function TypewriterText({ 
   text, 
-  speed = 50, 
+  speed = 100, 
   delay = 0, 
   className = "",
   onComplete 
 }: TypewriterTextProps) {
   const [displayText, setDisplayText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
-  const hasRun = useRef(false);
 
   useEffect(() => {
-    if (!text || hasRun.current) {
-      // If already completed, just show the full text
-      if (hasRun.current) {
-        setDisplayText(text);
-        setIsComplete(true);
-      }
-      return;
-    }
+    if (!text) return;
 
-    hasRun.current = true;
     setDisplayText("");
     setIsComplete(false);
 
@@ -43,7 +34,7 @@ export function TypewriterText({
           setDisplayText(text.slice(0, currentIndex));
         } else {
           clearInterval(interval);
-          setDisplayText(text); // Ensure full text is shown
+          setDisplayText(text);
           setIsComplete(true);
           onComplete?.();
         }
