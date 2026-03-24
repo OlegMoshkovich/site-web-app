@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { allPosts } from "content-collections";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const sectionClass =
   "min-h-screen flex items-center w-full";
@@ -24,6 +24,13 @@ function Dot() {
 
 export default function ServicesPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <main className="bg-black">
@@ -89,12 +96,30 @@ export default function ServicesPage() {
       {/* 00 — Hero */}
       <section className="min-h-screen flex items-center w-full">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 py-24">
-          <p className={labelClass}>clone:it GmbH</p>
-          <h1 className={titleClass}>Unsere Leistungen</h1>
-          <p className={descClass}>
-            Baumanagement und digitale Baustelle aus einer Hand — von der
-            Planung über die Ausschreibung bis zur Bauüberwachung.
+          <p className={labelClass}>
+            <span className="block">Baumanagement</span>
+            <span className="block">Örtliche Bauaufsicht</span>
+            <span className="block">Planung | Ausschreibung | Digitale Baustelle</span>
           </p>
+          <h1 className={titleClass}>Wir koordinieren Bauprojekte.</h1>
+          <p className="text-sm sm:text-2xl text-gray-400 leading-relaxed mb-10">
+            Kosten, Fortschritt und Qualität immer im Blick.
+          </p>
+          <p className="text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10">
+            Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Leistungen", href: "#leistungen" },
+              { label: "Referenzen", href: "#referenzen" },
+              { label: "Software", href: "#software" },
+              { label: "Kontakt", href: "#kontakt" },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+                {label}
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -143,7 +168,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 01 — Örtliche Bauaufsicht */}
-      <section className={sectionClass}>
+      <section id="leistungen" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>01</p>
           <h2 className={titleClass}>Örtliche Bauaufsicht</h2>
@@ -166,10 +191,10 @@ export default function ServicesPage() {
           <h2 className={titleClass}>Planung</h2>
           <p className={descClass}>
             Gemeinsam mit unserem Partnerbüro Convex ZT GmbH bieten wir
-            umfassende Ausführungsplanung.
+            Planung vom Entwurf bis zur Ausführungsplanung.
           </p>
           <ul className={listClass}>
-            {["Einreichplanung","Ausführungsplanung","Detailplanung","Tragwerksplanung"].map((item) => (
+            {["Ausführungsplanung","Detailplanung","Tragwerksplanung"].map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
@@ -182,8 +207,7 @@ export default function ServicesPage() {
           <p className={labelClass}>03</p>
           <h2 className={titleClass}>Ausschreibung & Vergabe</h2>
           <p className={descClass}>
-            Wir erstellen Ausschreibungen und begleiten den Vergabeprozess
-            professionell und effizient.
+            Wir erstellen Ausschreibungen und begleiten den Vergabeprozess.
           </p>
           <ul className={listClass}>
             {["Erstellung Leistungsverzeichnisse","Massenermittlung","Angebotsprüfung","Preisspiegel","Vergabeverhandlungen","Vergabevorschlag"].map((item) => (
@@ -197,11 +221,9 @@ export default function ServicesPage() {
       <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>04</p>
-          <h2 className={titleClass}>Digitale Baustelle</h2>
+          <h2 className={titleClass}>Digitale Baustelle – Simple Site</h2>
           <p className={descClass}>
-            Unsere eigene Software Simple Site zur digitalen
-            Baustellendokumentation — Fotodokumentation, Bautagebuch und
-            Berichte, alles in einer App.
+            Unsere eigene Software zur digitalen Baustellendokumentation.
           </p>
           <ul className={listClass}>
             {["Fotodokumentation mit Planverortung","Bautagebuch","Mängelmanagement","Baufortschrittsdokumentation","Automatische Berichte","App & Web Plattform"].map((item) => (
@@ -242,7 +264,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Referenzen */}
-      <section className={sectionClass}>
+      <section id="referenzen" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>Referenzen</p>
           <h2 className={titleClass}>Referenzprojekte</h2>
@@ -270,7 +292,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Software */}
-      <section className={sectionClass}>
+      <section id="software" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>Software</p>
           <h2 className={titleClass}>Unsere Software für die Baustelle</h2>
@@ -286,9 +308,9 @@ export default function ServicesPage() {
             </div>
             <div>
               <p className="text-base font-semibold text-white mb-2">AR BIM Inspection</p>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Pilotprojekte — seeking funding</p>
+              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Pilotprojekte — Seeking funding</p>
               <ul className="space-y-3">
-                {["BIM Modelle auf der Baustelle anzeigen","Kontrolle von Bauteilen"].map((item) => (
+                {["BIM Modelle auf der Baustelle anzeigen","Kontrolle von Bauteilen","Pilotprojekte"].map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
@@ -297,7 +319,7 @@ export default function ServicesPage() {
               <p className="text-base font-semibold text-white mb-2">IT & Softwareentwicklung</p>
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">Digitale Lösungen für Bauprojekte</p>
               <ul className="space-y-3">
-                {["Web- und App-Entwicklung","Technische Beratung"].map((item) => (
+                {["Web- und App-Entwicklung","Technische Beratung","Digitale Lösungen für Bauprojekte"].map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
@@ -344,14 +366,32 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Presse & Auszeichnungen */}
       <section className={sectionClass}>
+        <div className={innerClass}>
+          <p className={labelClass}>Presse & Auszeichnungen</p>
+          <h2 className={titleClass}>Auszeichnungen</h2>
+          <ul className={listClass}>
+            {[
+              "Paul Wegerer: Forbes Top 30 under 30",
+              "Finalist: Austrian Startup Award",
+              "Gewinner: BIM Löwe & Digital Bau Award",
+              "Auswahl durch DB Mindbox (Deutsche Bahn) für Pilotprojekte",
+            ].map((item) => (
+              <li key={item} className={listItemClass}><Dot />{item}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section id="kontakt" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>Kontakt</p>
           <h2 className={titleClass}>Sie planen ein Bauprojekt?</h2>
           <p className={descClass}>
-            Wir unterstützen Sie bei Planung, Bauaufsicht und digitaler
-            Baustellendokumentation.
+            Wir unterstützen Sie gerne bei Planung, Ausschreibung, Örtlicher
+            Bauaufsicht und Digitalisierung.
           </p>
           <a
             href="mailto:paul.wegerer@cloneit.at"
@@ -365,6 +405,17 @@ export default function ServicesPage() {
       <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
         <Footer textColor="text-gray-300" />
       </div>
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-50 w-10 h-10 bg-black border border-gray-800 flex items-center justify-center hover:border-gray-600 transition-colors"
+          aria-label="Scroll to top"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 11V3M7 3L3 7M7 3L11 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
     </main>
   );
 }
