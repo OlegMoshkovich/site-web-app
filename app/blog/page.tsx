@@ -36,28 +36,18 @@ export default function BlogPage() {
             >
               Blog
             </Link>
+            <Link
+              href="/auth/login"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Sign in
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="pt-40 pb-16 w-full">
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-8">
-          <p className="text-xs text-gray-600 uppercase tracking-widest mb-4">
-            clone:it
-          </p>
-          <h1 className="text-3xl sm:text-5xl font-semibold text-white leading-tight mb-6">
-            Blog
-          </h1>
-          <p className="text-sm sm:text-base text-gray-400 max-w-xl leading-relaxed">
-            Insights on construction management, digital tools, and building
-            better software.
-          </p>
-        </div>
-      </section>
-
       {/* Posts grid */}
-      <section className="w-full py-16">
+      <section className="w-full pt-28 pb-16">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8">
           {posts.length === 0 ? (
             <p className="text-gray-600 text-sm">No posts yet.</p>

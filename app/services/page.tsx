@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Footer } from "@/components/footer";
+import { allPosts } from "content-collections";
 
 const sectionClass =
   "min-h-screen flex items-center w-full";
@@ -36,6 +37,9 @@ export default function ServicesPage() {
             <Link href="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">
               Blog
             </Link>
+            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Sign in
+            </Link>
           </div>
         </div>
       </nav>
@@ -49,6 +53,50 @@ export default function ServicesPage() {
             Baumanagement und digitale Baustelle aus einer Hand — von der
             Planung über die Ausschreibung bis zur Bauüberwachung.
           </p>
+        </div>
+      </section>
+
+      {/* Blog scroll */}
+      <section className="w-full">
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 pt-16 pb-8">
+          <div className="flex items-center justify-between mb-8">
+            <p className={labelClass}>Blog</p>
+            <Link href="/blog" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
+              All posts →
+            </Link>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+            {allPosts
+              .slice()
+              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+              .map((post) => (
+                <Link
+                  key={post.slugAsParams}
+                  href={post.slug}
+                  className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                >
+                  {post.coverImage && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="w-full h-36 object-cover"
+                    />
+                  )}
+                  <div className="p-4">
+                    {post.category && (
+                      <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
+                    )}
+                    <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <time className="text-xs text-gray-700">
+                      {new Date(post.published).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    </time>
+                  </div>
+                </Link>
+              ))}
+          </div>
         </div>
       </section>
 
