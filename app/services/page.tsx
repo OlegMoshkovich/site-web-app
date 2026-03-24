@@ -31,8 +31,8 @@ export default function ServicesPage() {
             clone:it
           </Link>
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Simple Site
+            <Link href="/software" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Our Software
             </Link>
             <Link href="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">
               Blog
