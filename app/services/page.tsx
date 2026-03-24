@@ -44,7 +44,7 @@ export default function ServicesPage() {
           {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-6">
             <Link href="/software" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Our Software
+            Unsere Software
             </Link>
             <Link href="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">
               Blog
@@ -298,7 +298,7 @@ export default function ServicesPage() {
           <h2 className={titleClass}>Unsere Software für die Baustelle</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
             <div>
-              <p className="text-base font-semibold text-white mb-2">Simple Site</p>
+              <Link href="/software" className="text-base font-semibold text-white mb-2 underline underline-offset-4 hover:text-gray-300 transition-colors inline-block">Simple Site</Link>
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">Digitale Baustellendokumentation</p>
               <ul className="space-y-3">
                 {["Fotos mit Planverortung","Bautagebuch","Mängelmanagement","Berichte automatisch erstellen","Echtzeit Synchronisation","Web & App"].map((item) => (
