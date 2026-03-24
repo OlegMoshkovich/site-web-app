@@ -12,7 +12,7 @@ interface TypewriterTextProps {
 
 export function TypewriterText({ 
   text, 
-  speed = 50, 
+  speed = 100, 
   delay = 0, 
   className = "",
   onComplete 
