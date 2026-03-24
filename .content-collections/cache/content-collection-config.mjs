@@ -35,11 +35,14 @@ var posts = defineCollection({
     });
     const slug = `/blog/${document._meta.path}`;
     const slugAsParams = document._meta.path;
+    const coverMatch = document.content.match(/src=["']([^"']+)["']/);
+    const coverImage = coverMatch ? coverMatch[1] : null;
     return {
       ...document,
       body,
       slug,
-      slugAsParams
+      slugAsParams,
+      coverImage
     };
   }
 });

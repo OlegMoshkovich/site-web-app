@@ -57,7 +57,7 @@ export default function BlogPage() {
       </section>
 
       {/* Posts grid */}
-      <section className="w-full border-t border-gray-800 py-16">
+      <section className="w-full py-16">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8">
           {posts.length === 0 ? (
             <p className="text-gray-600 text-sm">No posts yet.</p>
@@ -67,8 +67,17 @@ export default function BlogPage() {
                 <Link
                   key={post.slugAsParams}
                   href={post.slug}
-                  className="group block border border-gray-800 hover:border-gray-600 transition-colors p-6"
+                  className="group block border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
                 >
+                  {post.coverImage && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
+                  <div className="p-6">
                   {post.category && (
                     <p className="text-xs text-gray-600 uppercase tracking-widest mb-3">
                       {post.category}
@@ -93,6 +102,7 @@ export default function BlogPage() {
                         {post.author}
                       </span>
                     )}
+                  </div>
                   </div>
                 </Link>
               ))}

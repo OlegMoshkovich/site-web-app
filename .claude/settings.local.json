@@ -29,7 +29,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(gh api:*)",
       "Bash(python3:*)",
-      "Bash(npx content-collections build:*)"
+      "Bash(npx content-collections build:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
