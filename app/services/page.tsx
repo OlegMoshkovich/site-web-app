@@ -351,7 +351,7 @@ export default function ServicesPage() {
                 bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
               },
               {
-                name: "Oleg Moshkovich",
+                name: "M.Eng. Oleg Moshkovich",
                 role: "Product Engineer | Softwareentwicklung",
                 bio: "Spezialist für digitale Lösungen im Bauwesen. Erfahrung in internationalen Großprojekten wie dem Burj Khalifa und Infrastrukturprojekten in New York. Fokus auf Entwicklung smarter Tools für die Baustelle.",
               },
