@@ -28,12 +28,12 @@ export default function SoftwarePage() {
           <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-sm">
             <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
             <div className="flex items-center gap-2">
-              <button
+              {/* <button
                 onClick={() => setShowCampaignModal(true)}
                 className="h-4 w-4 min-h-[28px] min-w-[28px] bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center rounded-full mr-2"
               >
                 <span className="text-black text-sm font-bold">i</span>
-              </button>
+              </button> */}
               <AuthButtonClient />
             </div>
           </div>
