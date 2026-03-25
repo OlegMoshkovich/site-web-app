@@ -10,6 +10,7 @@ import { AuthButtonClient } from "@/components/auth-button-client";
 
 export default function SoftwarePage() {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <main className="min-h-screen flex flex-col items-center relative">
@@ -24,25 +25,68 @@ export default function SoftwarePage() {
       />
 
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
-        <nav className="sticky top-0 z-50 w-full flex justify-center h-16">
-          <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-sm">
+        <nav className="sticky top-0 z-50 w-full bg-transparent">
+          <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 h-16 mx-auto">
             <div className="flex items-center gap-6">
               <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
-              <Link href="/services" className="text-sm text-gray-100 hover:text-white transition-colors">Services</Link>
-              <Link href="/blog" className="text-sm text-gray-100 hover:text-white transition-colors">Blog</Link>
+              <div className="hidden sm:flex items-center gap-6">
+                <Link href="/services" className="text-sm text-gray-100 hover:text-white transition-colors">Services</Link>
+                <Link href="/blog" className="text-sm text-gray-100 hover:text-white transition-colors">Blog</Link>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {/* <button
-                onClick={() => setShowCampaignModal(true)}
-                className="h-4 w-4 min-h-[28px] min-w-[28px] bg-[#00FF1A] hover:bg-green-600 transition-colors cursor-pointer flex items-center justify-center rounded-full mr-2"
-              >
-                <span className="text-black text-sm font-bold">i</span>
-              </button> */}
-        
+            <div className="hidden sm:flex items-center gap-2">
               <AuthButtonClient />
             </div>
+
+            {/* Hamburger */}
+            <button
+              className="sm:hidden flex items-center justify-center w-8 h-8"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+                <line x1="0" y1="1" x2="16" y2="1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="0" y1="6" x2="16" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="0" y1="11" x2="16" y2="11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
         </nav>
+
+        {/* Full-screen mobile menu overlay */}
+        {menuOpen && (
+          <div className="sm:hidden fixed inset-0 z-50 bg-black flex flex-col">
+            {/* Header row */}
+            <div className="flex justify-between items-center px-3 h-16">
+              <Link href="/services" onClick={() => setMenuOpen(false)} className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
+              <button
+                className="flex items-center justify-center w-8 h-8"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <line x1="1" y1="1" x2="15" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="15" y1="1" x2="1" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            {/* Links */}
+            <div className="flex flex-col gap-6 px-3 pt-8">
+              <Link href="/services" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Services
+              </Link>
+              <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Blog
+              </Link>
+              <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Sign in
+              </Link>
+              <Link href="/auth/sign-up" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Sign up
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col gap-0 w-full max-w-6xl mx-auto px-3 sm:px-8 py-1 sm:py-3 md:py-4">
           <div className="w-full">

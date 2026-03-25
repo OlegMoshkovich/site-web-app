@@ -60,34 +60,47 @@ export default function ServicesPage() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
-            {menuOpen ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <line x1="1" y1="1" x2="15" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="15" y1="1" x2="1" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            ) : (
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                <line x1="0" y1="1" x2="16" y2="1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="0" y1="6" x2="16" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="0" y1="11" x2="16" y2="11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            )}
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+              <line x1="0" y1="1" x2="16" y2="1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="0" y1="6" x2="16" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="0" y1="11" x2="16" y2="11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* Full-screen mobile menu overlay */}
         {menuOpen && (
-          <div className="sm:hidden bg-black py-2 flex flex-col gap-5">
-            <div className="w-[90%] mx-auto pt-2 pb-4 flex flex-col gap-4">
-            <Link href="/software" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-              Our Software
-            </Link>
-            <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-              Blog
-            </Link>
-            <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-              Sign in
-            </Link>
+          <div className="sm:hidden fixed inset-0 z-50 bg-black flex flex-col">
+            {/* Header row */}
+            <div className="flex justify-between items-center px-3 h-16">
+              <Link href="/" onClick={() => setMenuOpen(false)} className="text-md font-bold text-white bg-black px-3 py-1 border border-gray-800">
+                clone:it
+              </Link>
+              <button
+                className="flex items-center justify-center w-8 h-8"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <line x1="1" y1="1" x2="15" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="15" y1="1" x2="1" y2="15" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            {/* Links */}
+            <div className="flex flex-col gap-6 px-3 pt-8">
+              <Link href="/software" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Our Software
+              </Link>
+              <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Blog
+              </Link>
+              <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Sign in
+              </Link>
+              <Link href="/auth/sign-up" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Sign up
+              </Link>
             </div>
           </div>
         )}
