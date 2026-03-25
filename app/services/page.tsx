@@ -97,15 +97,15 @@ export default function ServicesPage() {
       <section className="min-h-screen flex items-center w-full">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 py-24">
           <p className={labelClass}>
-            <span className="block">Baumanagement</span>
-            <span className="block">Örtliche Bauaufsicht</span>
+            {/* <span className="block">Baumanagement</span>
+            <span className="block">Örtliche Bauaufsicht</span> */}
             <span className="block">Planung | Ausschreibung | Digitale Baustelle</span>
           </p>
           <h1 className={titleClass}>Wir koordinieren Bauprojekte.</h1>
-          <p className="text-sm sm:text-2xl text-gray-400 leading-relaxed mb-10">
+          <p className="text-sm sm:text-2xl text-gray-400 leading-relaxed mb-5">
             Kosten, Fortschritt und Qualität immer im Blick.
           </p>
-          <p className="text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10">
+          <p className=" text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 sm:pr-30">
             Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.
           </p>
           <div className="flex flex-wrap gap-3">
