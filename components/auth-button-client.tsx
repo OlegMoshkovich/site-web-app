@@ -51,9 +51,11 @@ export function AuthButtonClient() {
       <Button asChild size="sm" variant={"outline"} className="h-8 px-3 text-sm">
         <Link href="/auth/login">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={"default"} className="h-8 px-3 text-sm">
-        <Link href="/auth/sign-up">Sign up</Link>
-      </Button>
+      <div className="hidden md:block">
+        <Button asChild size="sm" variant={"default"} className="h-8 px-3 text-sm">
+          <Link href="/auth/sign-up">Sign up</Link>
+        </Button>
+      </div>
     </div>
   );
 }
