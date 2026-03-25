@@ -26,7 +26,11 @@ export default function SoftwarePage() {
       <div className="flex-1 w-full flex flex-col gap-0 items-center">
         <nav className="sticky top-0 z-50 w-full flex justify-center h-16">
           <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-sm">
-            <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
+            <div className="flex items-center gap-6">
+              <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
+              <Link href="/services" className="text-sm text-gray-100 hover:text-white transition-colors">Services</Link>
+              <Link href="/blog" className="text-sm text-gray-100 hover:text-white transition-colors">Blog</Link>
+            </div>
             <div className="flex items-center gap-2">
               {/* <button
                 onClick={() => setShowCampaignModal(true)}
@@ -34,6 +38,7 @@ export default function SoftwarePage() {
               >
                 <span className="text-black text-sm font-bold">i</span>
               </button> */}
+        
               <AuthButtonClient />
             </div>
           </div>
