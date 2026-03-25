@@ -21,6 +21,10 @@ export default function BlogPage() {
       <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black">
         <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-md">
           <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
+          <div className="flex items-center gap-6">
+            <Link href="/software" className="text-sm text-gray-400 hover:text-white transition-colors">Unsere Software</Link>
+            <Link href="/services" className="text-sm text-gray-400 hover:text-white transition-colors">Services</Link>
+          </div>
         </div>
       </nav>
 
