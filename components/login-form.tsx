@@ -66,7 +66,7 @@ export function LoginForm({
 
           // If user has existing data, they're not new - go to main page
           if (existingData && existingData.length > 0) {
-            router.push("/");
+            window.location.href = "/";
           } else {
             // Check profiles table for onboarding status
             const { data: profile, error: profileError } = await supabase
@@ -77,14 +77,14 @@ export function LoginForm({
 
             // Only redirect to onboarding if profile doesn't exist AND no table error
             if (!profile && !profileError?.message.includes('relation "public.profiles" does not exist')) {
-              router.push("/onboarding");
+              window.location.href = "/onboarding";
             } else {
-              router.push("/");
+              window.location.href = "/";
             }
           }
         } catch (error) {
           console.warn('Error checking onboarding status, going to main app:', error);
-          router.push("/");
+          window.location.href = "/";
         }
       }
     } catch (error: unknown) {

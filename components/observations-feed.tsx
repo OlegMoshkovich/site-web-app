@@ -217,7 +217,7 @@ export function ObservationsFeed({
                     </div>
                   }
                 >
-                  <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-sm">{weekdayPart}</span></span></span>
+                  <span className="font-semibold">{datePart}<span className="font-semibold"> | <span className="text-sm">{weekdayPart}</span></span></span>
                 </AccordionTrigger>
                 <AccordionContent className="p-0 border-none">
                   <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6 gap-1 sm:gap-2 md:gap-3">
