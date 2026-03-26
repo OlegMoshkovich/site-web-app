@@ -167,6 +167,19 @@ export function ObservationsFeed({
         const fmtDay = (d: Date) => d.toLocaleDateString(locale, { day: "numeric", month: "short" });
         const weekRange = `${fmtDay(weekMonday)} – ${fmtDay(weekSunday)}`;
 
+        // Top 4 most frequent labels for this day
+        const labelCounts = new Map<string, number>();
+        obs.forEach(o => {
+          o.labels?.forEach(label => {
+            if (label?.trim()) labelCounts.set(label, (labelCounts.get(label) || 0) + 1);
+          });
+        });
+        const sortedLabels = Array.from(labelCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([label]) => label);
+        const topLabels = sortedLabels.slice(0, 4);
+        const remainingLabels = sortedLabels.length - 4;
+
         return (
           <div key={dateKey} className="space-y-2">
             {showWeekHeader && (
@@ -184,9 +197,24 @@ export function ObservationsFeed({
               <AccordionItem value="observations">
                 <AccordionTrigger
                   rightElement={
-                    <span className="text-xs w-6 h-6 flex items-center justify-center border border-gray-300 font-normal group-data-[state=open]:bg-[#f0f0f0] group-data-[state=closed]:bg-transparent transition-colors">
-                      {obs.length}
-                    </span>
+                    <div className="flex items-end gap-1.5">
+                      {topLabels.map((label, i) => (
+                        <span
+                          key={label}
+                          className={`text-[10px] text-gray-500 border border-gray-200 px-1.5 py-0.5 truncate max-w-[50px] sm:max-w-[72px] leading-none font-normal${i >= 2 ? ' hidden sm:block' : ''}`}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                      {remainingLabels > 0 && (
+                        <span className="text-[10px] text-gray-400 border border-gray-200 px-1.5 py-0.5 leading-none font-normal shrink-0">
+                          +{remainingLabels}
+                        </span>
+                      )}
+                      <span className="text-xs w-6 h-6 flex items-center justify-center border border-gray-300 font-normal group-data-[state=open]:bg-[#f0f0f0] group-data-[state=closed]:bg-transparent transition-colors shrink-0">
+                        {obs.length}
+                      </span>
+                    </div>
                   }
                 >
                   <span className="font-normal">{datePart}<span className="font-normal"> | <span className="text-sm">{weekdayPart}</span></span></span>
