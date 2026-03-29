@@ -30,7 +30,7 @@ const pageContent = {
       signUp: "Sign up",
     },
     hero: {
-      label: "Planning | Tendering | Digital Construction Site",
+      label: "Construction Management | Planning | Tendering | Software",
       title: "We coordinate construction projects.",
       subtitle: "Costs, progress and quality always in view.",
       desc: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion. With our own software Simple Site, we additionally digitise the construction site and project communication.",
@@ -154,7 +154,7 @@ const pageContent = {
       signUp: "Registrieren",
     },
     hero: {
-      label: "Planung | Ausschreibung | Digitale Baustelle",
+      label: "Baumanagement | Planung | Ausschreibung | Software",
       title: "Wir koordinieren Bauprojekte.",
       subtitle: "Kosten, Fortschritt und Qualität immer im Blick.",
       desc: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
