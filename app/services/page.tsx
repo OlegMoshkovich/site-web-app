@@ -46,9 +46,9 @@ const pageContent = {
       allPosts: "All posts →",
     },
     bauaufsicht: {
-      title: "Construction Site Supervision",
+      title: "Construction Management",
       desc: "We represent the interests of the building owner on the construction site and monitor schedule, costs and quality.",
-      items: ["Schedule monitoring", "Cost control", "Quality control", "Invoice verification", "Site coordination", "Defect management", "Documentation"],
+      items: ["Schedule monitoring", "Cost control", "Quality control", "Invoice verification", "Site coordination", "Defect management", "Documentation", "ÖBA/Construction supervision", "Claim management"],
     },
     planung: {
       title: "Planning",
@@ -170,9 +170,9 @@ const pageContent = {
       allPosts: "All posts →",
     },
     bauaufsicht: {
-      title: "Örtliche Bauaufsicht",
+      title: "Baumanagement",
       desc: "Wir vertreten die Interessen des Bauherrn auf der Baustelle und überwachen Termin, Kosten und Qualität.",
-      items: ["Terminüberwachung", "Kostenkontrolle", "Qualitätskontrolle", "Rechnungsprüfung", "Baustellenkoordination", "Mängelmanagement", "Dokumentation"],
+      items: ["Terminüberwachung", "Kostenkontrolle", "Qualitätskontrolle", "Rechnungsprüfung", "Baustellenkoordination", "Mängelmanagement", "Dokumentation", "ÖBA/Bauüberwachung", "Nachtragsprüfungen"],
     },
     planung: {
       title: "Planung",
