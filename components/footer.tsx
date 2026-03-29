@@ -84,9 +84,12 @@ export function Footer({ user, textColor }: FooterProps) {
               <div className="mt-3">
                 Mitglied: Wirtschaftskammer Steiermark (WKO)
               </div>
-              <div className="mt-4">
+              <div className="mt-4 flex gap-4">
                 <Link href="/impressum" className="underline underline-offset-4 hover:text-white transition-colors">
                   Impressum
+                </Link>
+                <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-white transition-colors">
+                  Datenschutz
                 </Link>
               </div>
             </div>
