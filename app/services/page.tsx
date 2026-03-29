@@ -202,15 +202,36 @@ export default function ServicesPage() {
         <div className={innerClass}>
           <p className={labelClass}>02</p>
           <h2 className={titleClass}>Planung</h2>
-          <p className={descClass}>
-            Gemeinsam mit unserem Partnerbüro Convex ZT GmbH bieten wir
-            Planung vom Entwurf bis zur Ausführungsplanung.
+          <p className="text-sm sm:text-2xl text-gray-400 max-w-3xl leading-relaxed mb-10">
+            In Zusammenarbeit mit unserem Partnerbüro{" "}
+            <a
+              href="https://www.convex.at/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors"
+            >
+              convex ZT GmbH
+            </a>{" "}
+            bieten wir Planung vom Entwurf bis zur Ausführungsplanung.
           </p>
-          <ul className={listClass}>
-            {["Ausführungsplanung","Detailplanung","Tragwerksplanung"].map((item) => (
-              <li key={item} className={listItemClass}><Dot />{item}</li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-8">
+            <ul className="space-y-3">
+              {["Einreichplanung","Ausführungsplanung","Tragwerksplanung"].map((item) => (
+                <li key={item} className={listItemClass}><Dot />{item}</li>
+              ))}
+            </ul>
+            <div>
+              <p className={subLabelClass}>Projektübersicht</p>
+              <a
+                href="https://www.convex.at/projekt/projektliste/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-4"
+              >
+                Projektübersicht der convex ZT GmbH →
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
