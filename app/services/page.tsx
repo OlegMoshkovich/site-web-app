@@ -91,6 +91,59 @@ const pageContent = {
         items: ["Construction site supervision", "Tendering", "Project support"],
       },
     },
+    teamReferenzen: {
+      label: "Team Experience",
+      title: "Personal Projects",
+      note: "Selected projects of our team members from previous roles",
+      members: [
+        {
+          name: "DI Liebhard Mattuschka",
+          projects: [
+            {
+              name: "Heizkraftwerk Süd Munich",
+              desc: "Tendering, procurement, execution planning, construction supervision and cost accounting for numerous conversion and new construction measures at HKW-Süd (service phases 6–9).",
+            },
+            {
+              name: "TRAM – Westtangente Munich",
+              desc: "Construction supervision of scheduling and planning services for traffic planning.",
+            },
+            {
+              name: "Tübbing Production – Brenner Base Tunnel",
+              desc: "On-site quality control at Max Bögl in Sengenthal for the production of approximately 45,000 tübbing segments. Coordination to align production schedule and quality for installation at the Brenner site.",
+            },
+            {
+              name: "Mobility Innovation Campus",
+              desc: "New construction of a test site for autonomous driving including parking garage. Project management of construction supervision on behalf of the general planner (service phases 6–9).",
+            },
+            {
+              name: "Rehabilitation of A9 Pyhrnautobahn – 10 km",
+              desc: "Construction supervision of 9 reinforced concrete bridges, road construction & noise barrier.",
+            },
+            {
+              name: "Jesuitenrefektorium Graz & Feuerwache Graz-Ost",
+              desc: "Project management: project control meetings, scheduling, cost planning and cost control.",
+            },
+          ],
+        },
+        {
+          name: "DI Paul Wegerer",
+          projects: [
+            {
+              name: "Heizkraftwerk Süd Munich",
+              desc: "Construction supervision, trade coordination, schedule and quality control on a major industrial construction project.",
+            },
+            {
+              name: "Munich Main Line (Stammstrecke)",
+              desc: "Construction supervision and project management on one of Germany's most complex infrastructure projects.",
+            },
+            {
+              name: "Schaukäserei Melk",
+              desc: "Construction supervision, tendering and project support for commercial construction.",
+            },
+          ],
+        },
+      ],
+    },
     software: {
       label: "Software",
       title: "Our Software for the Construction Site",
@@ -214,6 +267,59 @@ const pageContent = {
         type: "Hochbau / Gewerbebau",
         items: ["Örtliche Bauaufsicht", "Ausschreibung", "Projektbegleitung"],
       },
+    },
+    teamReferenzen: {
+      label: "Teamerfahrung",
+      title: "Persönliche Projekte",
+      note: "Ausgewählte Projekte unserer Teammitglieder aus früheren Tätigkeiten",
+      members: [
+        {
+          name: "DI Liebhard Mattuschka",
+          projects: [
+            {
+              name: "Heizkraftwerk Süd München",
+              desc: "Ausschreibung, Vergabe, Ausführungsplanung, Bauüberwachung und Kostenrechnung für zahlreiche Um- und Neubaumaßnahmen am HKW-Süd (Leistungsphasen 6 bis 9).",
+            },
+            {
+              name: "TRAM – Westtangente München",
+              desc: "Bauüberwachung von Termin- und Planungsleistungen der Verkehrsplanung.",
+            },
+            {
+              name: "Tübbing Produktion – Brenner Basistunnel",
+              desc: "Qualitätskontrolle vor Ort bei der Firma Max Bögl in Sengenthal für die Produktion von insgesamt etwa 45.000 Tübbing-Segmenten. Gesamtabstimmung, sodass die terminliche Produktionsleistung sowie die Qualität für den späteren Einbau vor Ort am Brenner übereinstimmen.",
+            },
+            {
+              name: "Neubau Mobility Innovation Campus",
+              desc: "Testfeld für autonomes Fahren inklusive Parkgarage. Projektleitung Bauüberwachung im Namen des Generalplaners (Leistungsphasen 6 bis 9).",
+            },
+            {
+              name: "Generalsanierung A9 Pyhrnautobahn – 10 km",
+              desc: "Bauüberwachung von 9 Stahlbetonbrücken, Straßenbau & Lärmschutzwand.",
+            },
+            {
+              name: "Jesuitenrefektorium Graz & Feuerwache Graz-Ost",
+              desc: "Projektmanagement: Abhaltung von Projektsteuersitzungen, Terminplanung, Kostenplanung und Kostenkontrolle.",
+            },
+          ],
+        },
+        {
+          name: "DI Paul Wegerer",
+          projects: [
+            {
+              name: "Heizkraftwerk Süd München",
+              desc: "Bauüberwachung, Koordination Gewerke, Termin- und Qualitätskontrolle bei einem Großprojekt im Industriebau.",
+            },
+            {
+              name: "Münchner Stammstrecke",
+              desc: "Bauüberwachung und Projektsteuerung bei einem der komplexesten Infrastrukturprojekte Deutschlands.",
+            },
+            {
+              name: "Schaukäserei Melk",
+              desc: "Örtliche Bauaufsicht, Ausschreibung und Projektbegleitung im Gewerbebau.",
+            },
+          ],
+        },
+      ],
     },
     software: {
       label: "Software",
@@ -552,6 +658,30 @@ export default function ServicesPage() {
                 ))}
               </ul>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Personal Projects */}
+      <section className={sectionClass}>
+        <div className={innerClass}>
+          <p className={labelClass}>{c.teamReferenzen.label}</p>
+          <h2 className={titleClass}>{c.teamReferenzen.title}</h2>
+          <p className="text-xs text-gray-600 mb-10">{c.teamReferenzen.note}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
+            {c.teamReferenzen.members.map((member) => (
+              <div key={member.name}>
+                <p className="text-base font-semibold text-white mb-6">{member.name}</p>
+                <div className="space-y-6">
+                  {member.projects.map((project) => (
+                    <div key={project.name}>
+                      <p className="text-sm text-white mb-1 flex items-start gap-2"><Dot /><span>{project.name}</span></p>
+                      <p className="text-sm text-gray-500 leading-relaxed pl-3">{project.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
