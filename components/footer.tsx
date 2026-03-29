@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export interface FooterProps {
   user?: { id: string; email?: string } | null;
@@ -82,6 +83,11 @@ export function Footer({ user, textColor }: FooterProps) {
               </div>
               <div className="mt-3">
                 Mitglied: Wirtschaftskammer Steiermark (WKO)
+              </div>
+              <div className="mt-4">
+                <Link href="/impressum" className="underline underline-offset-4 hover:text-white transition-colors">
+                  Impressum
+                </Link>
               </div>
             </div>
           </div>
