@@ -528,33 +528,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Warum clone:it */}
-      <section className={sectionClass}>
-        <div className={innerClass}>
-          <p className={labelClass}>{c.warum.label}</p>
-          <h2 className={titleClass}>{c.warum.title}</h2>
-          <p className={descClass}>{c.warum.desc}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-            <div>
-              <p className={subLabelClass}>{c.warum.leistungenLabel}</p>
-              <ul className="space-y-3">
-                {c.warum.leistungenItems.map((item) => (
-                  <li key={item} className={listItemClass}><Dot />{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className={subLabelClass}>{c.warum.vorteilLabel}</p>
-              <ul className="space-y-3">
-                {c.warum.vorteilItems.map((item) => (
-                  <li key={item} className={listItemClass}><Dot />{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Referenzen */}
       <section id="referenzen" className={sectionClass}>
         <div className={innerClass}>
@@ -603,15 +576,6 @@ export default function ServicesPage() {
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.arDesc}</p>
               <ul className="space-y-3">
                 {c.software.arItems.map((item) => (
-                  <li key={item} className={listItemClass}><Dot />{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-base font-semibold text-white mb-2">{c.software.itLabel}</p>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.itDesc}</p>
-              <ul className="space-y-3">
-                {c.software.itItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
