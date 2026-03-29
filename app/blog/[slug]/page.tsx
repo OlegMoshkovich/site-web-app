@@ -1,8 +1,9 @@
 import { allPosts } from "content-collections";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { MdxComponent } from "@/components/mdx-component";
 import { Footer } from "@/components/footer";
+import { BlogPostNavbar } from "../blog-post-navbar";
+import Link from "next/link";
 import "@/app/mdx.css";
 
 interface PostPageProps {
@@ -33,12 +34,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <main className="bg-black min-h-screen">
-      {/* Sticky navbar */}
-      <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black">
-        <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8 text-md">
-          <Link href="/services" className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800">clone:it</Link>
-        </div>
-      </nav>
+      <BlogPostNavbar />
 
       {/* Post header */}
       <section className="pt-40 w-full">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { allPosts } from "content-collections";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/translations";
 
 const sectionClass =
   "min-h-screen flex items-center w-full";
@@ -14,17 +15,289 @@ const titleClass =
 const descClass =
   "text-sm sm:text-2xl text-gray-400 max-w-xl leading-relaxed mb-10";
 const subLabelClass = "text-xs text-gray-600 uppercase tracking-widest mb-3";
-const listClass =
-  "grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3";
 const listItemClass = "text-lg text-gray-500 flex items-center gap-3";
 
 function Dot() {
   return <span className="w-1 h-1 bg-gray-600 rounded-full flex-shrink-0" />;
 }
 
+const pageContent = {
+  en: {
+    nav: {
+      software: "Our Software",
+      blog: "Blog",
+      signIn: "Sign in",
+      signUp: "Sign up",
+    },
+    hero: {
+      label: "Planning | Tendering | Digital Construction Site",
+      title: "We coordinate construction projects.",
+      subtitle: "Costs, progress and quality always in view.",
+      desc: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion. With our own software Simple Site, we additionally digitise the construction site and project communication.",
+      anchors: [
+        { label: "Services", href: "#leistungen" },
+        { label: "References", href: "#referenzen" },
+        { label: "Software", href: "#software" },
+        { label: "Contact", href: "#kontakt" },
+      ],
+    },
+    blog: {
+      heading: "Blog",
+      allPosts: "All posts →",
+    },
+    bauaufsicht: {
+      title: "Construction Site Supervision",
+      desc: "We represent the interests of the building owner on the construction site and monitor schedule, costs and quality.",
+      items: ["Schedule monitoring", "Cost control", "Quality control", "Invoice verification", "Site coordination", "Defect management", "Documentation"],
+    },
+    planung: {
+      title: "Planning",
+      descBefore: "In collaboration with our partner office ",
+      descAfter: " we offer planning from the draft to the execution planning.",
+      items: ["Submission planning", "Execution planning", "Structural engineering"],
+      sublabel: "Project overview",
+      linkText: "Project overview of convex ZT GmbH →",
+    },
+    ausschreibung: {
+      title: "Tendering & Procurement",
+      desc: "We prepare tenders and support the procurement process.",
+      items: ["Bills of quantities", "Quantity take-off", "Bid evaluation", "Price comparison", "Contract negotiations", "Contract award proposal"],
+    },
+    digital: {
+      title: "Digital Construction Site – Simple Site",
+      desc: "Our own software for digital construction site documentation.",
+      items: ["Photo documentation with plan location", "Construction diary", "Defect management", "Construction progress documentation", "Automatic reports", "App & Web Platform"],
+    },
+    warum: {
+      label: "Why clone:it",
+      title: "Construction management and digital construction site from a single source",
+      desc: "We combine classic construction services with digital construction site documentation and software solutions.",
+      leistungenLabel: "Our Services",
+      leistungenItems: ["Planning", "Tendering", "Construction Site Supervision", "Digital Construction Site Documentation", "Software Solutions for Construction Projects"],
+      vorteilLabel: "Advantage for Building Owners",
+      vorteilItems: ["One point of contact", "Clear communication", "Digital documentation", "Transparent project handling", "Schedule reliability", "Cost control"],
+    },
+    referenzen: {
+      label: "References",
+      title: "Reference Projects",
+      project1: {
+        name: "Heizkraftwerk Süd – Munich",
+        type: "Large-scale industrial construction",
+        items: ["Construction site supervision – civil works", "Trade coordination", "Schedule and quality control"],
+      },
+      project2: {
+        name: "Schaukäserei Melk",
+        type: "Commercial construction",
+        items: ["Construction site supervision", "Tendering", "Project support"],
+      },
+    },
+    software: {
+      label: "Software",
+      title: "Our Software for the Construction Site",
+      simpleSiteDesc: "Digital construction site documentation",
+      simpleSiteItems: ["Photos with plan location", "Construction diary", "Defect management", "Automatic report generation", "Real-time synchronisation", "Web & App"],
+      arLabel: "AR BIM Inspection",
+      arDesc: "Pilot projects — Seeking funding",
+      arItems: ["Display BIM models on site", "Component inspection", "Pilot projects"],
+      itLabel: "IT & Software Development",
+      itDesc: "Digital solutions for construction projects",
+      itItems: ["Web and app development", "Technical consulting", "Digital solutions for construction projects"],
+    },
+    team: {
+      label: "Team",
+      title: "Our Team",
+      members: [
+        {
+          name: "DI Paul Wegerer",
+          role: "Master Builder | Project Management | Digitalisation",
+          bio: "Paul Wegerer studied Construction Management and Civil Engineering at FH Joanneum. After several years of experience in planning, construction supervision and claim management, he passed the master builder examination.",
+        },
+        {
+          name: "DI Liebhard Mattuschka",
+          role: "Project Control | Construction Supervision",
+          bio: "Graduate of FH Joanneum in Construction Management. Experience in construction supervision and project control on major projects such as the Heizkraftwerk Süd in Munich and the Munich main line.",
+        },
+        {
+          name: "Dr. Timur Uzunoglu",
+          role: "Civil Engineer | Construction Expert",
+          bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Supports clone:it as an expert and consultant for complex technical topics.",
+        },
+        {
+          name: "M.Eng. Oleg Moshkovich",
+          role: "Product Engineer | Software Development",
+          bio: "Specialist in digital solutions for the construction industry. Experience in international large-scale projects such as the Burj Khalifa and infrastructure projects in New York. Focus on developing smart tools for construction sites.",
+        },
+      ],
+    },
+    presse: {
+      label: "Press & Awards",
+      title: "Awards",
+      items: [
+        "Paul Wegerer: Forbes Top 30 under 30",
+        "Finalist: Austrian Startup Award",
+        "Winner: BIM Löwe & Digital Bau Award",
+        "Selected by DB Mindbox (Deutsche Bahn) for pilot projects",
+      ],
+    },
+    kontakt: {
+      label: "Contact",
+      title: "Planning a construction project?",
+      desc: "We are happy to support you with planning, tendering, construction site supervision and digitalisation.",
+      cta: "Get in touch",
+    },
+  },
+  de: {
+    nav: {
+      software: "Unsere Software",
+      blog: "Blog",
+      signIn: "Anmelden",
+      signUp: "Registrieren",
+    },
+    hero: {
+      label: "Planung | Ausschreibung | Digitale Baustelle",
+      title: "Wir koordinieren Bauprojekte.",
+      subtitle: "Kosten, Fortschritt und Qualität immer im Blick.",
+      desc: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
+      anchors: [
+        { label: "Leistungen", href: "#leistungen" },
+        { label: "Referenzen", href: "#referenzen" },
+        { label: "Software", href: "#software" },
+        { label: "Kontakt", href: "#kontakt" },
+      ],
+    },
+    blog: {
+      heading: "Blog",
+      allPosts: "All posts →",
+    },
+    bauaufsicht: {
+      title: "Örtliche Bauaufsicht",
+      desc: "Wir vertreten die Interessen des Bauherrn auf der Baustelle und überwachen Termin, Kosten und Qualität.",
+      items: ["Terminüberwachung", "Kostenkontrolle", "Qualitätskontrolle", "Rechnungsprüfung", "Baustellenkoordination", "Mängelmanagement", "Dokumentation"],
+    },
+    planung: {
+      title: "Planung",
+      descBefore: "In Zusammenarbeit mit unserem Partnerbüro ",
+      descAfter: " bieten wir Planung vom Entwurf bis zur Ausführungsplanung.",
+      items: ["Einreichplanung", "Ausführungsplanung", "Tragwerksplanung"],
+      sublabel: "Projektübersicht",
+      linkText: "Projektübersicht der convex ZT GmbH →",
+    },
+    ausschreibung: {
+      title: "Ausschreibung & Vergabe",
+      desc: "Wir erstellen Ausschreibungen und begleiten den Vergabeprozess.",
+      items: ["Erstellung Leistungsverzeichnisse", "Massenermittlung", "Angebotsprüfung", "Preisspiegel", "Vergabeverhandlungen", "Vergabevorschlag"],
+    },
+    digital: {
+      title: "Digitale Baustelle – Simple Site",
+      desc: "Unsere eigene Software zur digitalen Baustellendokumentation.",
+      items: ["Fotodokumentation mit Planverortung", "Bautagebuch", "Mängelmanagement", "Baufortschrittsdokumentation", "Automatische Berichte", "App & Web Plattform"],
+    },
+    warum: {
+      label: "Warum clone:it",
+      title: "Baumanagement und digitale Baustelle aus einer Hand",
+      desc: "Wir kombinieren klassische Bauleistungen mit digitaler Baustellendokumentation und Softwarelösungen.",
+      leistungenLabel: "Unsere Leistungen",
+      leistungenItems: ["Planung", "Ausschreibung", "Örtliche Bauaufsicht", "Digitale Baustellendokumentation", "Softwarelösungen für Bauprojekte"],
+      vorteilLabel: "Vorteil für Bauherren",
+      vorteilItems: ["Ein Ansprechpartner", "Klare Kommunikation", "Digitale Dokumentation", "Transparente Projektabwicklung", "Terminsicherheit", "Kostenkontrolle"],
+    },
+    referenzen: {
+      label: "Referenzen",
+      title: "Referenzprojekte",
+      project1: {
+        name: "Heizkraftwerk Süd – München",
+        type: "Großprojekt Industriebau",
+        items: ["Örtliche Bauaufsicht Hochbau", "Koordination Gewerke", "Termin- und Qualitätskontrolle"],
+      },
+      project2: {
+        name: "Schaukäserei Melk",
+        type: "Hochbau / Gewerbebau",
+        items: ["Örtliche Bauaufsicht", "Ausschreibung", "Projektbegleitung"],
+      },
+    },
+    software: {
+      label: "Software",
+      title: "Unsere Software für die Baustelle",
+      simpleSiteDesc: "Digitale Baustellendokumentation",
+      simpleSiteItems: ["Fotos mit Planverortung", "Bautagebuch", "Mängelmanagement", "Berichte automatisch erstellen", "Echtzeit Synchronisation", "Web & App"],
+      arLabel: "AR BIM Inspection",
+      arDesc: "Pilotprojekte — Seeking funding",
+      arItems: ["BIM Modelle auf der Baustelle anzeigen", "Kontrolle von Bauteilen", "Pilotprojekte"],
+      itLabel: "IT & Softwareentwicklung",
+      itDesc: "Digitale Lösungen für Bauprojekte",
+      itItems: ["Web- und App-Entwicklung", "Technische Beratung", "Digitale Lösungen für Bauprojekte"],
+    },
+    team: {
+      label: "Team",
+      title: "Unser Team",
+      members: [
+        {
+          name: "DI Paul Wegerer",
+          role: "Baumeister | Projektleitung | Digitalisierung",
+          bio: "Paul Wegerer studierte Baumanagement und Ingenieurbau an der FH Joanneum. Nach mehrjähriger Erfahrung in Planung, Bauüberwachung und Claim Management absolvierte er die Baumeisterprüfung.",
+        },
+        {
+          name: "DI Liebhard Mattuschka",
+          role: "Projektsteuerung | Bauüberwachung",
+          bio: "Absolvent der FH Joanneum im Bereich Baumanagement. Erfahrung in der Bauüberwachung und Projektsteuerung bei Großprojekten wie dem Heizkraftwerk Süd in München und der Münchner Stammstrecke.",
+        },
+        {
+          name: "Dr. Timur Uzunoglu",
+          role: "Ziviltechniker | Experte Bauwesen",
+          bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
+        },
+        {
+          name: "M.Eng. Oleg Moshkovich",
+          role: "Product Engineer | Softwareentwicklung",
+          bio: "Spezialist für digitale Lösungen im Bauwesen. Erfahrung in internationalen Großprojekten wie dem Burj Khalifa und Infrastrukturprojekten in New York. Fokus auf Entwicklung smarter Tools für die Baustelle.",
+        },
+      ],
+    },
+    presse: {
+      label: "Presse & Auszeichnungen",
+      title: "Auszeichnungen",
+      items: [
+        "Paul Wegerer: Forbes Top 30 under 30",
+        "Finalist: Austrian Startup Award",
+        "Gewinner: BIM Löwe & Digital Bau Award",
+        "Auswahl durch DB Mindbox (Deutsche Bahn) für Pilotprojekte",
+      ],
+    },
+    kontakt: {
+      label: "Kontakt",
+      title: "Sie planen ein Bauprojekt?",
+      desc: "Wir unterstützen Sie gerne bei Planung, Ausschreibung, Örtlicher Bauaufsicht und Digitalisierung.",
+      cta: "Kontakt aufnehmen",
+    },
+  },
+};
+
+function LangSwitcher({ language, setLanguage }: { language: "de" | "en"; setLanguage: (l: "de" | "en") => void }) {
+  return (
+    <div className="flex items-center gap-1 text-sm">
+      <button
+        onClick={() => setLanguage("de")}
+        className={`${language === "de" ? "text-white" : "text-gray-600 hover:text-gray-400"} transition-colors`}
+      >
+        DE
+      </button>
+      <span className="text-gray-800">|</span>
+      <button
+        onClick={() => setLanguage("en")}
+        className={`${language === "en" ? "text-white" : "text-gray-600 hover:text-gray-400"} transition-colors`}
+      >
+        EN
+      </button>
+    </div>
+  );
+}
+
 export default function ServicesPage() {
+  const { language, setLanguage } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const c = pageContent[language];
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 400);
@@ -44,14 +317,15 @@ export default function ServicesPage() {
           {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-6">
             <Link href="/software" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Unsere Software
+              {c.nav.software}
             </Link>
             <Link href="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Blog
+              {c.nav.blog}
             </Link>
             <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Sign in
+              {c.nav.signIn}
             </Link>
+            <LangSwitcher language={language} setLanguage={setLanguage} />
           </div>
 
           {/* Hamburger */}
@@ -90,17 +364,18 @@ export default function ServicesPage() {
             {/* Links */}
             <div className="flex flex-col gap-6 px-3 pt-8">
               <Link href="/software" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-                Our Software
+                {c.nav.software}
               </Link>
               <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-                Blog
+                {c.nav.blog}
               </Link>
               <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-                Sign in
+                {c.nav.signIn}
               </Link>
               <Link href="/auth/sign-up" onClick={() => setMenuOpen(false)} className="text-sm text-gray-400 hover:text-white transition-colors">
-                Sign up
+                {c.nav.signUp}
               </Link>
+              <LangSwitcher language={language} setLanguage={setLanguage} />
             </div>
           </div>
         )}
@@ -110,24 +385,17 @@ export default function ServicesPage() {
       <section className="min-h-screen flex items-center w-full">
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 py-24">
           <p className={labelClass}>
-            {/* <span className="block">Baumanagement</span>
-            <span className="block">Örtliche Bauaufsicht</span> */}
-            <span className="block">Planung | Ausschreibung | Digitale Baustelle</span>
+            <span className="block">{c.hero.label}</span>
           </p>
-          <h1 className={titleClass}>Wir koordinieren Bauprojekte.</h1>
+          <h1 className={titleClass}>{c.hero.title}</h1>
           <p className="text-sm sm:text-2xl text-gray-400 leading-relaxed mb-5">
-            Kosten, Fortschritt und Qualität immer im Blick.
+            {c.hero.subtitle}
           </p>
-          <p className=" text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 sm:pr-30">
-            Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.
+          <p className="text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 sm:pr-30">
+            {c.hero.desc}
           </p>
           <div className="flex flex-wrap gap-3">
-            {[
-              { label: "Leistungen", href: "#leistungen" },
-              { label: "Referenzen", href: "#referenzen" },
-              { label: "Software", href: "#software" },
-              { label: "Kontakt", href: "#kontakt" },
-            ].map(({ label, href }) => (
+            {c.hero.anchors.map(({ label, href }) => (
               <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
                 {label}
               </a>
@@ -140,9 +408,9 @@ export default function ServicesPage() {
       <section className="w-full">
         <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 pt-16 pb-8">
           <div className="flex items-center justify-between mb-8">
-            <p className={labelClass}>Blog</p>
+            <p className={labelClass}>{c.blog.heading}</p>
             <Link href="/blog" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
-              All posts →
+              {c.blog.allPosts}
             </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
@@ -171,7 +439,7 @@ export default function ServicesPage() {
                       {post.title}
                     </h3>
                     <time className="text-xs text-gray-700">
-                      {new Date(post.published).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                      {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
                     </time>
                   </div>
                 </Link>
@@ -184,13 +452,10 @@ export default function ServicesPage() {
       <section id="leistungen" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>01</p>
-          <h2 className={titleClass}>Örtliche Bauaufsicht</h2>
-          <p className={descClass}>
-            Wir vertreten die Interessen des Bauherrn auf der Baustelle und
-            überwachen Termin, Kosten und Qualität.
-          </p>
-          <ul className={listClass}>
-            {["Terminüberwachung","Kostenkontrolle","Qualitätskontrolle","Rechnungsprüfung","Baustellenkoordination","Mängelmanagement","Dokumentation"].map((item) => (
+          <h2 className={titleClass}>{c.bauaufsicht.title}</h2>
+          <p className={descClass}>{c.bauaufsicht.desc}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
+            {c.bauaufsicht.items.map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
@@ -201,9 +466,9 @@ export default function ServicesPage() {
       <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>02</p>
-          <h2 className={titleClass}>Planung</h2>
+          <h2 className={titleClass}>{c.planung.title}</h2>
           <p className="text-sm sm:text-2xl text-gray-400 max-w-3xl leading-relaxed mb-10">
-            In Zusammenarbeit mit unserem Partnerbüro{" "}
+            {c.planung.descBefore}
             <a
               href="https://www.convex.at/"
               target="_blank"
@@ -211,24 +476,24 @@ export default function ServicesPage() {
               className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors"
             >
               convex ZT GmbH
-            </a>{" "}
-            bieten wir Planung vom Entwurf bis zur Ausführungsplanung.
+            </a>
+            {c.planung.descAfter}
           </p>
           <div className="flex flex-col gap-8">
             <ul className="space-y-3">
-              {["Einreichplanung","Ausführungsplanung","Tragwerksplanung"].map((item) => (
+              {c.planung.items.map((item) => (
                 <li key={item} className={listItemClass}><Dot />{item}</li>
               ))}
             </ul>
             <div>
-              <p className={subLabelClass}>Projektübersicht</p>
+              <p className={subLabelClass}>{c.planung.sublabel}</p>
               <a
                 href="https://www.convex.at/projekt/projektliste/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-4"
               >
-                Projektübersicht der convex ZT GmbH →
+                {c.planung.linkText}
               </a>
             </div>
           </div>
@@ -239,12 +504,10 @@ export default function ServicesPage() {
       <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>03</p>
-          <h2 className={titleClass}>Ausschreibung & Vergabe</h2>
-          <p className={descClass}>
-            Wir erstellen Ausschreibungen und begleiten den Vergabeprozess.
-          </p>
-          <ul className={listClass}>
-            {["Erstellung Leistungsverzeichnisse","Massenermittlung","Angebotsprüfung","Preisspiegel","Vergabeverhandlungen","Vergabevorschlag"].map((item) => (
+          <h2 className={titleClass}>{c.ausschreibung.title}</h2>
+          <p className={descClass}>{c.ausschreibung.desc}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
+            {c.ausschreibung.items.map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
@@ -255,12 +518,10 @@ export default function ServicesPage() {
       <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>04</p>
-          <h2 className={titleClass}>Digitale Baustelle – Simple Site</h2>
-          <p className={descClass}>
-            Unsere eigene Software zur digitalen Baustellendokumentation.
-          </p>
-          <ul className={listClass}>
-            {["Fotodokumentation mit Planverortung","Bautagebuch","Mängelmanagement","Baufortschrittsdokumentation","Automatische Berichte","App & Web Plattform"].map((item) => (
+          <h2 className={titleClass}>{c.digital.title}</h2>
+          <p className={descClass}>{c.digital.desc}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
+            {c.digital.items.map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
@@ -270,25 +531,22 @@ export default function ServicesPage() {
       {/* Warum clone:it */}
       <section className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Warum clone:it</p>
-          <h2 className={titleClass}>Baumanagement und digitale Baustelle aus einer Hand</h2>
-          <p className={descClass}>
-            Wir kombinieren klassische Bauleistungen mit digitaler
-            Baustellendokumentation und Softwarelösungen.
-          </p>
+          <p className={labelClass}>{c.warum.label}</p>
+          <h2 className={titleClass}>{c.warum.title}</h2>
+          <p className={descClass}>{c.warum.desc}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
             <div>
-              <p className={subLabelClass}>Unsere Leistungen</p>
+              <p className={subLabelClass}>{c.warum.leistungenLabel}</p>
               <ul className="space-y-3">
-                {["Planung","Ausschreibung","Örtliche Bauaufsicht","Digitale Baustellendokumentation","Softwarelösungen für Bauprojekte"].map((item) => (
+                {c.warum.leistungenItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className={subLabelClass}>Vorteil für Bauherren</p>
+              <p className={subLabelClass}>{c.warum.vorteilLabel}</p>
               <ul className="space-y-3">
-                {["Ein Ansprechpartner","Klare Kommunikation","Digitale Dokumentation","Transparente Projektabwicklung","Terminsicherheit","Kostenkontrolle"].map((item) => (
+                {c.warum.vorteilItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
@@ -300,23 +558,23 @@ export default function ServicesPage() {
       {/* Referenzen */}
       <section id="referenzen" className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Referenzen</p>
-          <h2 className={titleClass}>Referenzprojekte</h2>
+          <p className={labelClass}>{c.referenzen.label}</p>
+          <h2 className={titleClass}>{c.referenzen.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
             <div>
-              <p className="text-base font-semibold text-white mb-2">Heizkraftwerk Süd – München</p>
-              <p className="text-xs text-gray-600 mb-4">Großprojekt Industriebau</p>
+              <p className="text-base font-semibold text-white mb-2">{c.referenzen.project1.name}</p>
+              <p className="text-xs text-gray-600 mb-4">{c.referenzen.project1.type}</p>
               <ul className="space-y-3">
-                {["Örtliche Bauaufsicht Hochbau","Koordination Gewerke","Termin- und Qualitätskontrolle"].map((item) => (
+                {c.referenzen.project1.items.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-base font-semibold text-white mb-2">Schaukäserei Melk</p>
-              <p className="text-xs text-gray-600 mb-4">Hochbau / Gewerbebau</p>
+              <p className="text-base font-semibold text-white mb-2">{c.referenzen.project2.name}</p>
+              <p className="text-xs text-gray-600 mb-4">{c.referenzen.project2.type}</p>
               <ul className="space-y-3">
-                {["Örtliche Bauaufsicht","Ausschreibung","Projektbegleitung"].map((item) => (
+                {c.referenzen.project2.items.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
@@ -328,32 +586,32 @@ export default function ServicesPage() {
       {/* Software */}
       <section id="software" className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Software</p>
-          <h2 className={titleClass}>Unsere Software für die Baustelle</h2>
+          <p className={labelClass}>{c.software.label}</p>
+          <h2 className={titleClass}>{c.software.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
             <div>
               <Link href="/software" className="text-base font-semibold text-white mb-2 underline underline-offset-4 hover:text-gray-300 transition-colors inline-block">Simple Site</Link>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Digitale Baustellendokumentation</p>
+              <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.simpleSiteDesc}</p>
               <ul className="space-y-3">
-                {["Fotos mit Planverortung","Bautagebuch","Mängelmanagement","Berichte automatisch erstellen","Echtzeit Synchronisation","Web & App"].map((item) => (
+                {c.software.simpleSiteItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-base font-semibold text-white mb-2">AR BIM Inspection</p>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Pilotprojekte — Seeking funding</p>
+              <p className="text-base font-semibold text-white mb-2">{c.software.arLabel}</p>
+              <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.arDesc}</p>
               <ul className="space-y-3">
-                {["BIM Modelle auf der Baustelle anzeigen","Kontrolle von Bauteilen","Pilotprojekte"].map((item) => (
+                {c.software.arItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-base font-semibold text-white mb-2">IT & Softwareentwicklung</p>
-              <p className="text-xs text-gray-500 mb-4 leading-relaxed">Digitale Lösungen für Bauprojekte</p>
+              <p className="text-base font-semibold text-white mb-2">{c.software.itLabel}</p>
+              <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.itDesc}</p>
               <ul className="space-y-3">
-                {["Web- und App-Entwicklung","Technische Beratung","Digitale Lösungen für Bauprojekte"].map((item) => (
+                {c.software.itItems.map((item) => (
                   <li key={item} className={listItemClass}><Dot />{item}</li>
                 ))}
               </ul>
@@ -365,31 +623,10 @@ export default function ServicesPage() {
       {/* Team */}
       <section className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Team</p>
-          <h2 className={titleClass}>Unser Team</h2>
+          <p className={labelClass}>{c.team.label}</p>
+          <h2 className={titleClass}>{c.team.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-            {[
-              {
-                name: "DI Paul Wegerer",
-                role: "Baumeister | Projektleitung | Digitalisierung",
-                bio: "Paul Wegerer studierte Baumanagement und Ingenieurbau an der FH Joanneum. Nach mehrjähriger Erfahrung in Planung, Bauüberwachung und Claim Management absolvierte er die Baumeisterprüfung.",
-              },
-              {
-                name: "DI Liebhard Mattuschka",
-                role: "Projektsteuerung | Bauüberwachung",
-                bio: "Absolvent der FH Joanneum im Bereich Baumanagement. Erfahrung in der Bauüberwachung und Projektsteuerung bei Großprojekten wie dem Heizkraftwerk Süd in München und der Münchner Stammstrecke.",
-              },
-              {
-                name: "Dr. Timur Uzunoglu",
-                role: "Ziviltechniker | Experte Bauwesen",
-                bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
-              },
-              {
-                name: "M.Eng. Oleg Moshkovich",
-                role: "Product Engineer | Softwareentwicklung",
-                bio: "Spezialist für digitale Lösungen im Bauwesen. Erfahrung in internationalen Großprojekten wie dem Burj Khalifa und Infrastrukturprojekten in New York. Fokus auf Entwicklung smarter Tools für die Baustelle.",
-              },
-            ].map((person) => (
+            {c.team.members.map((person) => (
               <div key={person.name}>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
                 <p className="text-xs text-gray-600 mb-3">{person.role}</p>
@@ -403,15 +640,10 @@ export default function ServicesPage() {
       {/* Presse & Auszeichnungen */}
       <section className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Presse & Auszeichnungen</p>
-          <h2 className={titleClass}>Auszeichnungen</h2>
-          <ul className={listClass}>
-            {[
-              "Paul Wegerer: Forbes Top 30 under 30",
-              "Finalist: Austrian Startup Award",
-              "Gewinner: BIM Löwe & Digital Bau Award",
-              "Auswahl durch DB Mindbox (Deutsche Bahn) für Pilotprojekte",
-            ].map((item) => (
+          <p className={labelClass}>{c.presse.label}</p>
+          <h2 className={titleClass}>{c.presse.title}</h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
+            {c.presse.items.map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
@@ -421,17 +653,14 @@ export default function ServicesPage() {
       {/* CTA */}
       <section id="kontakt" className={sectionClass}>
         <div className={innerClass}>
-          <p className={labelClass}>Kontakt</p>
-          <h2 className={titleClass}>Sie planen ein Bauprojekt?</h2>
-          <p className={descClass}>
-            Wir unterstützen Sie gerne bei Planung, Ausschreibung, Örtlicher
-            Bauaufsicht und Digitalisierung.
-          </p>
+          <p className={labelClass}>{c.kontakt.label}</p>
+          <h2 className={titleClass}>{c.kontakt.title}</h2>
+          <p className={descClass}>{c.kontakt.desc}</p>
           <a
             href="mailto:paul.wegerer@cloneit.at"
             className="inline-block text-sm text-black bg-white px-6 py-3 hover:bg-gray-100 transition-colors"
           >
-            Kontakt aufnehmen
+            {c.kontakt.cta}
           </a>
         </div>
       </section>
