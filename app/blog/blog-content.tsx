@@ -12,7 +12,7 @@ interface Post {
   published: string;
   category?: string;
   author?: string;
-  coverImage?: string;
+  coverImage?: string | null;
 }
 
 const ui = {
