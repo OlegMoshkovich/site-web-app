@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Footer } from "@/components/footer";
 import { allPosts } from "content-collections";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/translations";
 
 const sectionClass =
-  "min-h-screen flex items-center w-full";
+  "flex items-center w-full";
 const innerClass = "w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 py-24";
 const labelClass = "text-xs text-gray-600 uppercase tracking-widest mb-4";
 const titleClass =
@@ -33,7 +34,8 @@ const pageContent = {
       label: "Construction Management | Planning | Tendering | Software",
       title: "We coordinate construction projects.",
       subtitle: "Costs, progress and quality always in view.",
-      desc: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion. With our own software Simple Site, we additionally digitise the construction site and project communication.",
+      descBefore: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion. With our own software ",
+      descAfter: ", we additionally digitise the construction site and project communication.",
       anchors: [
         { label: "Services", href: "#leistungen" },
         { label: "References", href: "#referenzen" },
@@ -53,7 +55,8 @@ const pageContent = {
     planung: {
       title: "Planning",
       descBefore: "In collaboration with our partner office ",
-      descAfter: " we offer planning from the draft to the execution planning.",
+      descAfter: " we offer planning from the draft to the execution planning",
+      descHighlight: "also for the most complex projects.",
       items: ["Submission planning", "Execution planning", "Structural engineering"],
       sublabel: "Project overview",
       linkText: "Project overview of convex ZT GmbH →",
@@ -164,21 +167,25 @@ const pageContent = {
           name: "DI Paul Wegerer",
           role: "Master Builder | Project Management | Digitalisation",
           bio: "Paul Wegerer studied Construction Management and Civil Engineering at FH Joanneum. After several years of experience in planning, construction supervision and claim management, he passed the master builder examination.",
+          image: "/images/Paul.webp",
         },
         {
           name: "DI Liebhard Mattuschka",
           role: "Project Control | Construction Supervision",
           bio: "Graduate of FH Joanneum in Construction Management. Experience in construction supervision and project control on major projects such as the Heizkraftwerk Süd in Munich and the Munich main line.",
+          image: "/images/Liebhard.webp",
         },
         {
           name: "Dr. Timur Uzunoglu",
           role: "Civil Engineer | Construction Expert",
           bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Supports clone:it as an expert and consultant for complex technical topics.",
+          image: "/images/Timur.webp",
         },
         {
           name: "M.Eng. Oleg Moshkovich",
           role: "Product Engineer | Software Development",
           bio: "Specialist in digital solutions for the construction industry. Experience in international large-scale projects such as the Burj Khalifa and infrastructure projects in New York. Focus on developing smart tools for construction sites.",
+          image: "/images/Oleg.webp",
         },
       ],
     },
@@ -210,7 +217,8 @@ const pageContent = {
       label: "Baumanagement | Planung | Ausschreibung | Software",
       title: "Wir koordinieren Bauprojekte.",
       subtitle: "Kosten, Fortschritt und Qualität immer im Blick.",
-      desc: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software Simple Site digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
+      descBefore: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software ",
+      descAfter: " digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
       anchors: [
         { label: "Leistungen", href: "#leistungen" },
         { label: "Referenzen", href: "#referenzen" },
@@ -230,7 +238,8 @@ const pageContent = {
     planung: {
       title: "Planung",
       descBefore: "In Zusammenarbeit mit unserem Partnerbüro ",
-      descAfter: " bieten wir Planung vom Entwurf bis zur Ausführungsplanung.",
+      descAfter: " bieten wir Planung vom Entwurf bis zur Ausführungsplanung",
+      descHighlight: "auch für komplexeste Projekte.",
       items: ["Einreichplanung", "Ausführungsplanung", "Tragwerksplanung"],
       sublabel: "Projektübersicht",
       linkText: "Projektübersicht der convex ZT GmbH →",
@@ -341,21 +350,25 @@ const pageContent = {
           name: "DI Paul Wegerer",
           role: "Baumeister | Projektleitung | Digitalisierung",
           bio: "Paul Wegerer studierte Baumanagement und Ingenieurbau an der FH Joanneum. Nach mehrjähriger Erfahrung in Planung, Bauüberwachung und Claim Management absolvierte er die Baumeisterprüfung.",
+          image: "/images/Paul.webp",
         },
         {
           name: "DI Liebhard Mattuschka",
           role: "Projektsteuerung | Bauüberwachung",
           bio: "Absolvent der FH Joanneum im Bereich Baumanagement. Erfahrung in der Bauüberwachung und Projektsteuerung bei Großprojekten wie dem Heizkraftwerk Süd in München und der Münchner Stammstrecke.",
+          image: "/images/Liebhard.webp",
         },
         {
           name: "Dr. Timur Uzunoglu",
           role: "Ziviltechniker | Experte Bauwesen",
           bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
+          image: "/images/Timur.webp",
         },
         {
           name: "M.Eng. Oleg Moshkovich",
           role: "Product Engineer | Softwareentwicklung",
           bio: "Spezialist für digitale Lösungen im Bauwesen. Erfahrung in internationalen Großprojekten wie dem Burj Khalifa und Infrastrukturprojekten in New York. Fokus auf Entwicklung smarter Tools für die Baustelle.",
+          image: "/images/Oleg.webp",
         },
       ],
     },
@@ -498,7 +511,9 @@ export default function ServicesPage() {
             {c.hero.subtitle}
           </p>
           <p className="text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 sm:pr-30">
-            {c.hero.desc}
+            {c.hero.descBefore}
+            <Link href="/software" className="text-gray-400 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
+            {c.hero.descAfter}
           </p>
           <div className="flex flex-wrap gap-3">
             {c.hero.anchors.map(({ label, href }) => (
@@ -584,6 +599,7 @@ export default function ServicesPage() {
               convex ZT GmbH
             </a>
             {c.planung.descAfter}
+            {" "}<span className="text-gray-400">{c.planung.descHighlight}</span>
           </p>
           <div className="flex flex-col gap-8">
             <ul className="space-y-3">
@@ -722,6 +738,15 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
             {c.team.members.map((person) => (
               <div key={person.name}>
+                <div className="w-16 h-16 rounded-full overflow-hidden mb-4 bg-gray-800">
+                  <Image
+                    src={person.image}
+                    alt={person.name}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
                 <p className="text-xs text-gray-600 mb-3">{person.role}</p>
                 <p className="text-sm text-gray-500 leading-relaxed">{person.bio}</p>
