@@ -34,7 +34,8 @@ const pageContent = {
       label: "Construction Management | Planning | Tendering | Software",
       title: "We coordinate construction projects.",
       subtitle: "Costs, progress and quality always in view.",
-      descBefore: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion. With our own software ",
+      descBefore: "We support building owners and companies in the implementation of construction projects – from planning and tendering to construction supervision and completion.",
+      descBefore2: "With our own software ",
       descAfter: ", we additionally digitise the construction site and project communication.",
       anchors: [
         { label: "Services", href: "#leistungen" },
@@ -217,7 +218,8 @@ const pageContent = {
       label: "Baumanagement | Planung | Ausschreibung | Software",
       title: "Wir koordinieren Bauprojekte.",
       subtitle: "Kosten, Fortschritt und Qualität immer im Blick.",
-      descBefore: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. Mit unserer eigenen Software ",
+      descBefore: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung.",
+      descBefore2: "Mit unserer eigenen Software ",
       descAfter: " digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
       anchors: [
         { label: "Leistungen", href: "#leistungen" },
@@ -512,7 +514,8 @@ export default function ServicesPage() {
           </p>
           <p className="text-sm sm:text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 sm:pr-30">
             {c.hero.descBefore}
-            <Link href="/software" className="text-gray-400 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
+            <br className="sm:hidden" />
+            {c.hero.descBefore2}<Link href="/software" className="text-gray-500 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
             {c.hero.descAfter}
           </p>
           <div className="flex flex-wrap gap-3">
@@ -594,7 +597,7 @@ export default function ServicesPage() {
               href="https://www.convex.at/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors"
+              className="text-gray-400 underline underline-offset-4 hover:text-white transition-colors"
             >
               convex ZT GmbH
             </a>
