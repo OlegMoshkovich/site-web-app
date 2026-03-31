@@ -183,7 +183,7 @@ const pageContent = {
           image: "/images/Timur.webp",
         },
         {
-          name: "M.Eng. Oleg Moshkovich",
+          name: "Oleg Moshkovich M.Eng",
           role: "Product Engineer | Software Development",
           bio: "Specialist in digital solutions for the construction industry. Experience in international large-scale projects such as the Burj Khalifa and infrastructure projects in New York. Focus on developing smart tools for construction sites.",
           image: "/images/Oleg.webp",
