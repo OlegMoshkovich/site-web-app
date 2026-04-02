@@ -47,6 +47,8 @@ export interface ObservationWithUrl extends Observation {
   sites?: { name: string; logo_url?: string | null } | null;
   profiles?: { email: string } | null;
   user_email?: string;
+  /** Enriched from profiles.full_name when available */
+  user_name?: string | null;
 }
 
 export interface ObservationWithPhoto extends Observation {

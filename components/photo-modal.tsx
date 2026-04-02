@@ -5,11 +5,12 @@ import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
+import { buildObservationPhotoDownloadBlob } from "@/lib/build-observation-download-blob";
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
 
@@ -63,6 +64,7 @@ export function PhotoModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const downloadInFlightRef = useRef(false);
 
   // Plan preview state
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
@@ -567,6 +569,31 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
     w.document.close();
   }, [observation, imageUrl, hasPlanAnchor, planImageData, anchorX, anchorY]);
 
+  const handleDownloadPhoto = useCallback(async () => {
+    if (!imageUrl || downloadInFlightRef.current) return;
+    downloadInFlightRef.current = true;
+    try {
+      const result = await buildObservationPhotoDownloadBlob(imageUrl, observation);
+      if (!result) {
+        alert("Failed to download photo.");
+        return;
+      }
+      const objectUrl = URL.createObjectURL(result.blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Error downloading photo:", error);
+      alert("Failed to download photo. Please try again.");
+    } finally {
+      downloadInFlightRef.current = false;
+    }
+  }, [imageUrl, observation]);
+
   const handlePlanImageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!editingPlanAnchor) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -667,6 +694,14 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 disabled={scale <= 0.5}
               >
                 <ZoomOut className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPhoto}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                aria-label="Download photo"
+              >
+                <Download className="h-4 w-4" />
               </button>
               {scale !== 1 && (
                 <button
