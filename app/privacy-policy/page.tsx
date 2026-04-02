@@ -3,52 +3,43 @@
 import { Footer } from "@/components/footer";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
-import { getNavbarClasses, getContentClasses } from "@/lib/layout-constants";
-import Image from "next/image";
 import { useState } from "react";
+
+const policyBodyClass =
+  "text-sm sm:text-base max-w-none py-8 leading-relaxed text-gray-300 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white";
 
 export default function PrivacyPolicyPage() {
   const [language, setLanguage] = useState<"de" | "en">("de");
 
   return (
-    <main className="flex flex-col items-center">
-      <div className="w-full flex flex-col gap-0 items-center">
-        {/* Navbar */}
-        <nav className={`${getNavbarClasses().container} bg-white`}>
-          <div className={getNavbarClasses().content}>
-            <div className="flex text-lg gap-5 items-center font-semibold">
-              <Link
-                href="/"
-                className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
-              >
-                <Image
-                  src="/images/banner_logo.png"
-                  alt="Site Banner"
-                  width={120}
-                  height={32}
-                  className="h-4 sm:h-6 w-auto max-w-none"
-                />
-              </Link>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setLanguage(language === "de" ? "en" : "de")}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                {language === "de" ? "EN" : "DE"}
-              </button>
-              <AuthButtonClient />
-            </div>
+    <main className="bg-black min-h-screen flex flex-col">
+      <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black border-b border-gray-800">
+        <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8">
+          <Link
+            href="/"
+            className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800 hover:border-gray-600 transition-colors"
+          >
+            clone:it
+          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLanguage(language === "de" ? "en" : "de")}
+              className="px-3 py-1.5 text-sm font-medium text-gray-200 border border-gray-600 rounded-md hover:bg-gray-900 hover:text-white transition-colors"
+            >
+              {language === "de" ? "EN" : "DE"}
+            </button>
+            <AuthButtonClient appearance="dark" />
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* Main content area */}
-        <div className={getContentClasses().container}>
-          <div className={`${getContentClasses().inner} max-w-4xl`}>
+      <div className="w-full max-w-6xl mx-auto px-3 sm:px-8 pt-28 pb-12 flex-1">
+        <div className="max-w-4xl">
             {language === "de" ? (
-            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none py-8">
+            <div className={policyBodyClass}>
               <h1 className="text-3xl font-bold mb-6">Datenschutzerklärung (EU / DSGVO)</h1>
-              <p className="text-sm text-gray-600 mb-8">Stand: 14.01.2026</p>
+              <p className="text-sm text-gray-400 mb-8">Stand: 14.01.2026</p>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">1. Verantwortlicher</h2>
@@ -61,9 +52,9 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">Technischer Leiter: Dipl. Ing. Liebhard Mattuschka (CTO)</p>
 
                 <p className="mb-2"><strong>Kontakt:</strong></p>
-                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-1">Telefon: +43 676 755 5310</p>
-                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.cloneit.at</a></p>
+                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.cloneit.at</a></p>
 
                 <p className="mb-1">Firmenbuchnummer: FN 601893 m</p>
                 <p className="mb-1">Firmenbuchgericht: Graz</p>
@@ -126,7 +117,7 @@ export default function PrivacyPolicyPage() {
                   <li>werden nach spätestens 14 Tagen automatisch gelöscht</li>
                 </ul>
 
-                <p className="text-sm italic">Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem sicheren und stabilen Betrieb des Dienstes)</p>
+                <p className="text-sm italic text-gray-400">Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem sicheren und stabilen Betrieb des Dienstes)</p>
               </section>
 
               <section className="mb-8">
@@ -217,17 +208,17 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">Insbesondere können Sie der Verarbeitung Ihrer Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO jederzeit widersprechen.</p>
 
                 <p className="mb-2"><strong>Zur Ausübung Ihrer Rechte kontaktieren Sie uns unter:</strong></p>
-                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-4">Telefon: +43 676 755 5310</p>
 
                 <p className="mb-2">Sie haben zudem das Recht, Beschwerde bei der zuständigen Aufsichtsbehörde einzulegen:</p>
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-gray-900/50 border border-gray-800 p-4 rounded-lg">
                   <p className="mb-1"><strong>Österreichische Datenschutzbehörde</strong></p>
                   <p className="mb-1">Barichgasse 40–42</p>
                   <p className="mb-1">1030 Wien</p>
                   <p className="mb-1">Telefon: +43 1 52 152-0</p>
-                  <p className="mb-1">E-Mail: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
-                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                  <p className="mb-1">E-Mail: <a href="mailto:dsb@dsb.gv.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">dsb@dsb.gv.at</a></p>
+                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.dsb.gv.at</a></p>
                 </div>
               </section>
 
@@ -270,17 +261,17 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-1">8054 Graz</p>
                 <p className="mb-4">Österreich</p>
 
-                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">E-Mail: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-1">Telefon: +43 676 755 5310</p>
-                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.cloneit.at</a></p>
+                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.cloneit.at</a></p>
 
-                <p className="text-sm text-gray-600 mt-8">Stand: 14.01.2026</p>
+                <p className="text-sm text-gray-400 mt-8">Stand: 14.01.2026</p>
               </section>
             </div>
             ) : (
-            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none py-8">
+            <div className={policyBodyClass}>
               <h1 className="text-3xl font-bold mb-6">Privacy Policy (EU / GDPR)</h1>
-              <p className="text-sm text-gray-600 mb-8">Last Updated: January 14, 2026</p>
+              <p className="text-sm text-gray-400 mb-8">Last Updated: January 14, 2026</p>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">1. Controller</h2>
@@ -293,9 +284,9 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">Technical Director: Dipl. Ing. Liebhard Mattuschka (CTO)</p>
 
                 <p className="mb-2"><strong>Contact:</strong></p>
-                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-1">Phone: +43 676 755 5310</p>
-                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.cloneit.at</a></p>
+                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.cloneit.at</a></p>
 
                 <p className="mb-1">Company Registration Number: FN 601893 m</p>
                 <p className="mb-1">Company Court: Graz</p>
@@ -358,7 +349,7 @@ export default function PrivacyPolicyPage() {
                   <li>is automatically deleted after a maximum of 14 days</li>
                 </ul>
 
-                <p className="text-sm italic">Legal basis: Art. 6(1)(f) GDPR (legitimate interest in secure and stable operation of the Service)</p>
+                <p className="text-sm italic text-gray-400">Legal basis: Art. 6(1)(f) GDPR (legitimate interest in secure and stable operation of the Service)</p>
               </section>
 
               <section className="mb-8">
@@ -449,17 +440,17 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">In particular, you may object at any time to the processing of your data based on Art. 6(1)(f) GDPR.</p>
 
                 <p className="mb-2"><strong>To exercise your rights, contact us at:</strong></p>
-                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-4">Phone: +43 676 755 5310</p>
 
                 <p className="mb-2">You also have the right to lodge a complaint with the competent supervisory authority:</p>
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-gray-900/50 border border-gray-800 p-4 rounded-lg">
                   <p className="mb-1"><strong>Austrian Data Protection Authority</strong></p>
                   <p className="mb-1">Barichgasse 40–42</p>
                   <p className="mb-1">1030 Vienna</p>
                   <p className="mb-1">Phone: +43 1 52 152-0</p>
-                  <p className="mb-1">Email: <a href="mailto:dsb@dsb.gv.at" className="text-blue-600 hover:underline">dsb@dsb.gv.at</a></p>
-                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.dsb.gv.at</a></p>
+                  <p className="mb-1">Email: <a href="mailto:dsb@dsb.gv.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">dsb@dsb.gv.at</a></p>
+                  <p>Website: <a href="https://www.dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.dsb.gv.at</a></p>
                 </div>
               </section>
 
@@ -502,17 +493,18 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-1">8054 Graz</p>
                 <p className="mb-4">Austria</p>
 
-                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-600 hover:underline">paul.wegerer@cloneit.at</a></p>
+                <p className="mb-1">Email: <a href="mailto:paul.wegerer@cloneit.at" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">paul.wegerer@cloneit.at</a></p>
                 <p className="mb-1">Phone: +43 676 755 5310</p>
-                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">www.cloneit.at</a></p>
+                <p className="mb-4">Website: <a href="https://www.cloneit.at" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors">www.cloneit.at</a></p>
 
-                <p className="text-sm text-gray-600 mt-8">Last Updated: January 14, 2026</p>
+                <p className="text-sm text-gray-400 mt-8">Last Updated: January 14, 2026</p>
               </section>
             </div>
             )}
 
-            <Footer />
-          </div>
+            <div className="w-full border-t border-gray-800 mt-12 pt-8 [&>footer]:mt-0 [&>footer]:mb-0">
+              <Footer textColor="text-gray-300" />
+            </div>
         </div>
       </div>
     </main>
