@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
 import { getContentClasses } from "@/lib/layout-constants";
+import { FolderUp } from "lucide-react";
 import { useObservationsStore } from "@/lib/store/observations-store";
 import { usePhotoDownload } from "@/lib/hooks/use-photo-download";
 import { useSelectionBox } from "@/lib/hooks/use-selection-box";
@@ -315,6 +316,22 @@ export default function Home() {
             className="hidden"
             onChange={handleFileInputChange}
           />
+        )}
+
+        {user && (
+          <div className="sm:hidden sticky top-16 z-40 w-full bg-white pb-[10px]">
+            <div className="w-full max-w-6xl mx-auto px-3">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                size="sm"
+                className="w-full h-8 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                title={t("uploadPhotos")}
+              >
+                <FolderUp className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Main content */}
