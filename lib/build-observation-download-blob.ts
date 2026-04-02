@@ -89,7 +89,7 @@ export async function buildObservationPhotoDownloadBlob(
       finalBlob = await overlayTimestampOnImage(finalBlob, {
         timestamp: timestampLabel,
         site: siteLabel,
-        user: userLabel,
+        // user: userLabel,
         siteLogoUrl: obs.sites?.logo_url ?? null,
       });
       extension = '.jpg';

@@ -33,19 +33,23 @@ interface PhotoModalProps {
   hasNext?: boolean;
   onObservationUpdate?: (updatedObservation: ObservationWithUrl) => void;
   siteLabels?: Label[];
+  nextImageUrl?: string | null;
+  prevImageUrl?: string | null;
 }
 
-export function PhotoModal({ 
-  isOpen, 
-  onClose, 
-  imageUrl, 
-  observation, 
-  onPrevious, 
-  onNext, 
-  hasPrevious = false, 
+export function PhotoModal({
+  isOpen,
+  onClose,
+  imageUrl,
+  observation,
+  onPrevious,
+  onNext,
+  hasPrevious = false,
   hasNext = false,
   onObservationUpdate,
-  siteLabels = []
+  siteLabels = [],
+  nextImageUrl,
+  prevImageUrl,
 }: PhotoModalProps) {
   const supabase = createClient();
   const [imageLoading, setImageLoading] = useState(true);
@@ -162,6 +166,15 @@ export function PhotoModal({
     // Only show loading state if there's an image to load
     setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
+
+  // Preload adjacent images so navigation feels instant
+  useEffect(() => {
+    const urls = [nextImageUrl, prevImageUrl].filter(Boolean) as string[];
+    urls.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, [nextImageUrl, prevImageUrl]);
 
   useEffect(() => {
     if (!isOpen) setIsDownloadLoading(false);

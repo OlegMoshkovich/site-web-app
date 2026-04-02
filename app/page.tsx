@@ -448,6 +448,8 @@ export default function Home() {
             onNext={handleNextPhoto}
             hasPrevious={currentPhotoIndex > 0}
             hasNext={currentPhotoIndex < all.length - 1}
+            nextImageUrl={all[currentPhotoIndex + 1]?.signedUrl}
+            prevImageUrl={all[currentPhotoIndex - 1]?.signedUrl}
             siteLabels={currentSiteLabels}
             onObservationUpdate={(updated) => {
               setObservations(observations.map(o => o.id === updated.id ? updated : o));
