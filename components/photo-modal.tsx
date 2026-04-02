@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User, Download } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User, Download, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -64,7 +64,7 @@ export function PhotoModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const downloadInFlightRef = useRef(false);
+  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
   // Plan preview state
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
@@ -162,6 +162,10 @@ export function PhotoModal({
     // Only show loading state if there's an image to load
     setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
+
+  useEffect(() => {
+    if (!isOpen) setIsDownloadLoading(false);
+  }, [isOpen]);
 
   // Zoom and pan handlers
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -570,8 +574,8 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
   }, [observation, imageUrl, hasPlanAnchor, planImageData, anchorX, anchorY]);
 
   const handleDownloadPhoto = useCallback(async () => {
-    if (!imageUrl || downloadInFlightRef.current) return;
-    downloadInFlightRef.current = true;
+    if (!imageUrl || isDownloadLoading) return;
+    setIsDownloadLoading(true);
     try {
       const result = await buildObservationPhotoDownloadBlob(imageUrl, observation);
       if (!result) {
@@ -590,9 +594,9 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
       console.error("Error downloading photo:", error);
       alert("Failed to download photo. Please try again.");
     } finally {
-      downloadInFlightRef.current = false;
+      setIsDownloadLoading(false);
     }
-  }, [imageUrl, observation]);
+  }, [imageUrl, observation, isDownloadLoading]);
 
   const handlePlanImageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!editingPlanAnchor) return;
@@ -648,6 +652,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
             </div>
           )}
+
+          {isDownloadLoading && (
+            <div
+              className="absolute inset-0 z-[35] flex flex-col items-center justify-center gap-3 bg-gray-900/45 text-white"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <Loader2 className="h-10 w-10 animate-spin text-white" aria-hidden />
+              <span className="text-sm font-medium">Preparing download…</span>
+            </div>
+          )}
           
           {/* Site Logo */}
           {observation.sites?.logo_url && (
@@ -698,10 +714,15 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <button
                 type="button"
                 onClick={handleDownloadPhoto}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors disabled:opacity-60 disabled:pointer-events-none"
                 aria-label="Download photo"
+                disabled={isDownloadLoading}
               >
-                <Download className="h-4 w-4" />
+                {isDownloadLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
               </button>
               {scale !== 1 && (
                 <button
