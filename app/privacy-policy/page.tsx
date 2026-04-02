@@ -1,36 +1,27 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Footer } from "@/components/footer";
-import { AuthButtonClient } from "@/components/auth-button-client";
 import Link from "next/link";
-import { useState } from "react";
 
 const policyBodyClass =
   "text-sm sm:text-base max-w-none py-8 leading-relaxed text-gray-300 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white";
 
-export default function PrivacyPolicyPage() {
-  const [language, setLanguage] = useState<"de" | "en">("de");
+function PrivacyPolicyContent() {
+  const searchParams = useSearchParams();
+  const language = searchParams.get("lang") === "en" ? "en" : "de";
 
   return (
     <main className="bg-black min-h-screen flex flex-col">
       <nav className="fixed top-0 z-50 w-full flex justify-center h-16 bg-black border-b border-gray-800">
-        <div className="w-full max-w-6xl flex justify-between items-center px-3 sm:px-8">
+        <div className="w-full max-w-6xl flex items-center px-3 sm:px-8">
           <Link
             href="/"
             className="font-bold text-white text-base bg-black px-3 py-1 border border-gray-800 hover:border-gray-600 transition-colors"
           >
             clone:it
           </Link>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setLanguage(language === "de" ? "en" : "de")}
-              className="px-3 py-1.5 text-sm font-medium text-gray-200 border border-gray-600 rounded-md hover:bg-gray-900 hover:text-white transition-colors"
-            >
-              {language === "de" ? "EN" : "DE"}
-            </button>
-            <AuthButtonClient appearance="dark" />
-          </div>
         </div>
       </nav>
 
@@ -508,5 +499,20 @@ export default function PrivacyPolicyPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function PrivacyPolicyPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-black flex flex-col">
+          <div className="fixed top-0 z-50 w-full h-16 bg-black border-b border-gray-800" aria-hidden />
+          <div className="flex-1 pt-28" aria-busy="true" aria-label="Loading" />
+        </main>
+      }
+    >
+      <PrivacyPolicyContent />
+    </Suspense>
   );
 }

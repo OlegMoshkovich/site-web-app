@@ -286,6 +286,25 @@ export default [
     "coverImage": "https://www.cloneit.at/3zw5u3/wp-content/uploads/a67e755d-f333-45bc-b1b1-7cd687580fb8-311x233.jpg"
   },
   {
+    "title": "Forbes 30 Under 30 – Paul Wegerer",
+    "description": "Paul Wegerer, Co-Founder der clone:it GmbH, wurde in die Forbes 30 Under 30 Liste aufgenommen.",
+    "published": "2025-12-05T12:00:00.000Z",
+    "category": "Recognition",
+    "author": "Paul-Wegerer",
+    "content": "<img\n  src=\"/example-data/blog/paul_forbes.png\"\n  alt=\"Forbes 30 Under 30 – Paul Wegerer\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Forbes 30 Under 30 – Paul Wegerer\n\nPaul Wegerer, Co-Founder und Geschäftsführer der clone:it GmbH, wurde aufgrund der erfolgreichen Pilotprojekte und Auszeichnungen seines Unternehmens in die *Forbes 30 Under 30* Liste aufgenommen.\n\nSein Ziel ist es, die Baubranche mit praxisnahen, innovativen Tools zu unterstützen und die Baustelle transparenter und effizienter zu gestalten. Mit der von clone:it entwickelten Software werden Bauprojekte digital begleitet und die Zusammenarbeit zwischen Ausführung, Planung und Bauherr deutlich verbessert.\n\n---\n\n**#Forbes #30Under30 #cloneit #Baubranche #Digitalisierung #Startup**",
+    "_meta": {
+      "filePath": "forbes_30_under_30_paul_wegerer.mdx",
+      "fileName": "forbes_30_under_30_paul_wegerer.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "forbes_30_under_30_paul_wegerer"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var s=Object.defineProperty;var g=Object.getOwnPropertyDescriptor;var m=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,p=Object.prototype.hasOwnProperty;var b=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),w=(n,e)=>{for(var t in e)s(n,t,{get:e[t],enumerable:!0})},u=(n,e,t,a)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of m(e))!p.call(n,i)&&i!==t&&s(n,i,{get:()=>e[i],enumerable:!(a=g(e,i))||a.enumerable});return n};var x=(n,e,t)=>(t=n!=null?c(f(n)):{},u(e||!n||!n.__esModule?s(t,\"default\",{value:n,enumerable:!0}):t,n)),_=n=>u(s({},\"__esModule\",{value:!0}),n);var o=b((z,d)=>{d.exports=_jsx_runtime});var j={};w(j,{default:()=>h});var r=x(o());function l(n){let e={a:\"a\",em:\"em\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(\"img\",{src:\"/example-data/blog/paul_forbes.png\",alt:\"Forbes 30 Under 30 \\u2013 Paul Wegerer\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,r.jsx)(e.h2,{id:\"forbes-30-under-30--paul-wegerer\",children:(0,r.jsx)(e.a,{href:\"#forbes-30-under-30--paul-wegerer\",children:\"Forbes 30 Under 30 \\u2013 Paul Wegerer\"})}),`\n`,(0,r.jsxs)(e.p,{children:[\"Paul Wegerer, Co-Founder und Gesch\\xE4ftsf\\xFChrer der clone:it GmbH, wurde aufgrund der erfolgreichen Pilotprojekte und Auszeichnungen seines Unternehmens in die \",(0,r.jsx)(e.em,{children:\"Forbes 30 Under 30\"}),\" Liste aufgenommen.\"]}),`\n`,(0,r.jsx)(e.p,{children:\"Sein Ziel ist es, die Baubranche mit praxisnahen, innovativen Tools zu unterst\\xFCtzen und die Baustelle transparenter und effizienter zu gestalten. Mit der von clone:it entwickelten Software werden Bauprojekte digital begleitet und die Zusammenarbeit zwischen Ausf\\xFChrung, Planung und Bauherr deutlich verbessert.\"}),`\n`,(0,r.jsx)(e.hr,{}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.strong,{children:\"#Forbes #30Under30 #cloneit #Baubranche #Digitalisierung #Startup\"})})]})}function h(n={}){let{wrapper:e}=n.components||{};return e?(0,r.jsx)(e,{...n,children:(0,r.jsx)(l,{...n})}):l(n)}return _(j);})();\n;return Component;",
+    "slug": "/blog/forbes_30_under_30_paul_wegerer",
+    "slugAsParams": "forbes_30_under_30_paul_wegerer",
+    "coverImage": "/example-data/blog/paul_forbes.png"
+  },
+  {
     "title": "Exciting News from the Future of Railroad Construction Industry 2024 Program!",
     "description": "clone:it joins Deutsche Bahn's 100-day innovation program at DB mindbox.",
     "published": "2024-09-07T12:00:00.000Z",
@@ -341,6 +360,25 @@ export default [
     "slug": "/blog/poc_salzgitter_cloneit",
     "slugAsParams": "poc_salzgitter_cloneit",
     "coverImage": "https://www.cloneit.at/3zw5u3/wp-content/uploads/2024.03.08_PoC_Salzgitter-DE-scaled-400x400.jpg"
+  },
+  {
+    "title": "Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels getestet",
+    "description": "Erstmaliger Testeinsatz der Simple Site App auf einem ÖBB Infrastrukturprojekt – mit großen Vorteilen für Dokumentation und Abrechnung.",
+    "published": "2026-10-06T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Paul-Wegerer",
+    "content": "<img\n  src=\"/example-data/blog/obb_blog.jpg\"\n  alt=\"Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels getestet\n\nAb dem Projekt „4-gleisiger Ausbau Linz–Wels\" wurde die Simple Site App erstmals testweise eingesetzt. Die hohen Anforderungen an die Dokumentation von Infrastrukturprojekten der ÖBB gaben den entscheidenden Anstoß für die Weiterentwicklung der App.\n\nGerade bei Baustellen, die über mehrere Jahre laufen und bei denen die Fotodokumentation von mehreren Arbeitsgruppen mit bis zu acht Personen durchgeführt wird, ist cloudbasiertes Arbeiten mit standardisierten Labels und Plan-Mapping mit sehr großen Vorteilen verbunden.\n\nSowohl für die Abrechnung als auch für die Bearbeitung von Mehrkostenforderungen konnte durch die strukturierten und durchsuchbaren Daten bereits viel Zeit eingespart werden.\n\n---\n\n**#SimpleSite #ÖBB #Infrastruktur #Fotodokumentation #Digitalisierung #Baustelle**",
+    "_meta": {
+      "filePath": "simple_site_oebb_linz_wels.mdx",
+      "fileName": "simple_site_oebb_linz_wels.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "simple_site_oebb_linz_wels"
+    },
+    "body": "var Component=(()=>{var h=Object.create;var s=Object.defineProperty;var c=Object.getOwnPropertyDescriptor;var b=Object.getOwnPropertyNames;var p=Object.getPrototypeOf,m=Object.prototype.hasOwnProperty;var f=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),k=(n,e)=>{for(var r in e)s(n,r,{get:e[r],enumerable:!0})},u=(n,e,r,a)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of b(e))!m.call(n,i)&&i!==r&&s(n,i,{get:()=>e[i],enumerable:!(a=c(e,i))||a.enumerable});return n};var j=(n,e,r)=>(r=n!=null?h(p(n)):{},u(e||!n||!n.__esModule?s(r,\"default\",{value:n,enumerable:!0}):r,n)),w=n=>u(s({},\"__esModule\",{value:!0}),n);var l=f((x,o)=>{o.exports=_jsx_runtime});var A={};k(A,{default:()=>g});var t=j(l());function d(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,t.jsxs)(t.Fragment,{children:[(0,t.jsx)(\"img\",{src:\"/example-data/blog/obb_blog.jpg\",alt:\"Simple Site auf \\xD6BB Projekt \\u2013 4-gleisiger Ausbau Linz\\u2013Wels\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,t.jsx)(e.h2,{id:\"simple-site-auf-\\xF6bb-projekt--4-gleisiger-ausbau-linzwels-getestet\",children:(0,t.jsx)(e.a,{href:\"#simple-site-auf-\\xF6bb-projekt--4-gleisiger-ausbau-linzwels-getestet\",children:\"Simple Site auf \\xD6BB Projekt \\u2013 4-gleisiger Ausbau Linz\\u2013Wels getestet\"})}),`\n`,(0,t.jsx)(e.p,{children:'Ab dem Projekt \\u201E4-gleisiger Ausbau Linz\\u2013Wels\" wurde die Simple Site App erstmals testweise eingesetzt. Die hohen Anforderungen an die Dokumentation von Infrastrukturprojekten der \\xD6BB gaben den entscheidenden Ansto\\xDF f\\xFCr die Weiterentwicklung der App.'}),`\n`,(0,t.jsx)(e.p,{children:\"Gerade bei Baustellen, die \\xFCber mehrere Jahre laufen und bei denen die Fotodokumentation von mehreren Arbeitsgruppen mit bis zu acht Personen durchgef\\xFChrt wird, ist cloudbasiertes Arbeiten mit standardisierten Labels und Plan-Mapping mit sehr gro\\xDFen Vorteilen verbunden.\"}),`\n`,(0,t.jsx)(e.p,{children:\"Sowohl f\\xFCr die Abrechnung als auch f\\xFCr die Bearbeitung von Mehrkostenforderungen konnte durch die strukturierten und durchsuchbaren Daten bereits viel Zeit eingespart werden.\"}),`\n`,(0,t.jsx)(e.hr,{}),`\n`,(0,t.jsx)(e.p,{children:(0,t.jsx)(e.strong,{children:\"#SimpleSite #\\xD6BB #Infrastruktur #Fotodokumentation #Digitalisierung #Baustelle\"})})]})}function g(n={}){let{wrapper:e}=n.components||{};return e?(0,t.jsx)(e,{...n,children:(0,t.jsx)(d,{...n})}):d(n)}return w(A);})();\n;return Component;",
+    "slug": "/blog/simple_site_oebb_linz_wels",
+    "slugAsParams": "simple_site_oebb_linz_wels",
+    "coverImage": "/example-data/blog/obb_blog.jpg"
   },
   {
     "title": "clone:it at TUM Venture Labs Design Thinking Workshop",

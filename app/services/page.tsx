@@ -68,9 +68,10 @@ const pageContent = {
       items: ["Bills of quantities", "Quantity take-off", "Bid evaluation", "Price comparison", "Contract negotiations", "Contract award proposal"],
     },
     digital: {
-      title: "Digital Construction Site – Simple Site",
-      desc: "Our own software for digital construction site documentation.",
-      items: ["Photo documentation with plan location", "Construction diary", "Defect management", "Construction progress documentation", "Automatic reports", "App & Web Platform"],
+      title: "Software Development",
+      desc: "We develop tailored software solutions for the construction and infrastructure industry. Drawing on our experience in construction practice, we quickly understand requirements and implement them as efficient digital solutions. Development is done entirely in-house.",
+      leistungenLabel: "Services:",
+      items: ["Web-based applications", "Mobile apps (Android & iOS)", "AI integrations and automations", "3D models, BIM applications and databases"],
     },
     warum: {
       label: "Why clone:it",
@@ -143,6 +144,24 @@ const pageContent = {
             {
               name: "Schaukäserei Melk",
               desc: "Construction supervision, tendering and project support for commercial construction.",
+            },
+          ],
+        },
+        {
+          name: "Oleg Moshkovich M.Eng",
+          projects: [
+            {
+              name: "East Side Access – MTA New York",
+              desc: "Led BIM strategy and modelling for the MTA's largest infrastructure programme in 50 years — a $18B underground transit expansion. Delivered a master model of 50 components covering 4 miles of tunnels and a three-level station 150 feet below Midtown Manhattan.",
+            },
+            {
+              name: "New York City High-Rise Residential Complex",
+              desc: "Developed BIM models and established coordination and issue resolution workflows across design and construction phases of a large-scale high-rise residential project.",
+            },
+            {
+              name: "Virtual Design and Construction Textbook",
+              desc: "Co-authored a textbook covering team structure, software selection, and production workflows for effective Virtual Design and Construction practice.",
+              link: "https://www.amazon.de/-/en/Implementing-Virtual-Design-Construction-Using/dp/1032923725/",
             },
           ],
         },
@@ -252,9 +271,10 @@ const pageContent = {
       items: ["Erstellung Leistungsverzeichnisse", "Massenermittlung", "Angebotsprüfung", "Preisspiegel", "Vergabeverhandlungen", "Vergabevorschlag"],
     },
     digital: {
-      title: "Digitale Baustelle – Simple Site",
-      desc: "Unsere eigene Software zur digitalen Baustellendokumentation.",
-      items: ["Fotodokumentation mit Planverortung", "Bautagebuch", "Mängelmanagement", "Baufortschrittsdokumentation", "Automatische Berichte", "App & Web Plattform"],
+      title: "Softwareentwicklung",
+      desc: "Wir entwickeln maßgeschneiderte Softwarelösungen für die Bau- und Infrastrukturbranche. Durch unsere Erfahrung in der Baupraxis verstehen wir Anforderungen schnell und setzen diese in effiziente digitale Lösungen um. Die Entwicklung erfolgt vollständig in-house.",
+      leistungenLabel: "Leistungen:",
+      items: ["Webbasierte Anwendungen", "Mobile Apps (Android & iOS)", "KI-Integrationen und Automatisierungen", "3D-Modelle, BIM-Anwendungen und Datenbanken"],
     },
     warum: {
       label: "Warum clone:it",
@@ -327,6 +347,24 @@ const pageContent = {
             {
               name: "Schaukäserei Melk",
               desc: "Örtliche Bauaufsicht, Ausschreibung und Projektbegleitung im Gewerbebau.",
+            },
+          ],
+        },
+        {
+          name: "Oleg Moshkovich M.Eng",
+          projects: [
+            {
+              name: "East Side Access – MTA New York",
+              desc: "Leitung der BIM-Strategie und Modellierung für das größte MTA-Infrastrukturprogramm der letzten 50 Jahre — ein 18-Milliarden-Dollar Untergrundprojekt. Mastermodell mit 50 Komponenten, 6,4 km Tunnel und einer dreigeschossigen Station 45 Meter unter der Innenstadt Manhattans.",
+            },
+            {
+              name: "Hochhaus-Wohnkomplex New York City",
+              desc: "Entwicklung von BIM-Modellen sowie Koordinations- und Problemlösungsprozessen über alle Design- und Bauphasen eines großmaßstäblichen Hochhausprojekts.",
+            },
+            {
+              name: "Fachbuch Virtual Design and Construction",
+              desc: "Mitautor eines Fachbuchs über Teamstruktur, Softwareauswahl und Produktions-Workflows für effektive Virtual Design and Construction (VDC) Prozesse.",
+              link: "https://www.amazon.de/-/en/Implementing-Virtual-Design-Construction-Using/dp/1032923725/",
             },
           ],
         },
@@ -639,12 +677,13 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 04 — Digitale Baustelle */}
+      {/* 04 — Softwareentwicklung */}
       <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>04</p>
           <h2 className={titleClass}>{c.digital.title}</h2>
-          <p className={descClass}>{c.digital.desc}</p>
+          <p className="text-sm sm:text-2xl text-gray-400 max-w-2xl leading-relaxed mb-10">{c.digital.desc}</p>
+          <p className="text-sm sm:text-2xl text-gray-400 max-w-2xl leading-relaxed mb-10">{c.digital.leistungenLabel}</p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
             {c.digital.items.map((item) => (
               <li key={item} className={listItemClass}><Dot />{item}</li>
@@ -694,7 +733,13 @@ export default function ServicesPage() {
                 <div className="space-y-6">
                   {member.projects.map((project) => (
                     <div key={project.name}>
-                      <p className="text-sm text-white mb-1 flex items-start gap-2"><Dot /><span>{project.name}</span></p>
+                      <p className="text-sm text-white mb-1 flex items-start gap-2"><Dot />
+                        {"link" in project && project.link ? (
+                          <a href={project.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-300 transition-colors">{project.name}</a>
+                        ) : (
+                          <span>{project.name}</span>
+                        )}
+                      </p>
                       <p className="text-sm text-gray-500 leading-relaxed pl-3">{project.desc}</p>
                     </div>
                   ))}
