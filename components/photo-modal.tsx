@@ -53,6 +53,7 @@ export function PhotoModal({
 }: PhotoModalProps) {
   const supabase = createClient();
   const [imageLoading, setImageLoading] = useState(true);
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [shareSuccess, setShareSuccess] = useState(false);
   
   // Editing state
@@ -167,14 +168,8 @@ export function PhotoModal({
     setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
 
-  // Preload adjacent images so navigation feels instant
-  useEffect(() => {
-    const urls = [nextImageUrl, prevImageUrl].filter(Boolean) as string[];
-    urls.forEach((url) => {
-      const img = new window.Image();
-      img.src = url;
-    });
-  }, [nextImageUrl, prevImageUrl]);
+  // Adjacent image URLs are preloaded via hidden <Image> components in JSX below,
+  // using the same Next.js optimization pipeline as the main image.
 
   useEffect(() => {
     if (!isOpen) setIsDownloadLoading(false);
@@ -661,9 +656,21 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-            </div>
+            <>
+              {/* Show previous image dimmed so there's no blank flash during navigation */}
+              {loadedImageUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={loadedImageUrl}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-contain opacity-30 z-10 pointer-events-none"
+                />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+              </div>
+            </>
           )}
 
           {isDownloadLoading && (
@@ -828,6 +835,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </button>
           )}
           
+          {/* Hidden preload images — rendered through Next.js optimization pipeline so navigation is instant */}
+          {nextImageUrl && (
+            <div className="absolute overflow-hidden" style={{ width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: -1 }} aria-hidden>
+              <Image src={nextImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 90vw" priority />
+            </div>
+          )}
+          {prevImageUrl && (
+            <div className="absolute overflow-hidden" style={{ width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: -1 }} aria-hidden>
+              <Image src={prevImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 90vw" />
+            </div>
+          )}
+
           {/* Zoomable/Pannable Image Container or Text Display */}
           {imageUrl ? (
             <div
@@ -849,11 +868,10 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 priority
                 draggable={false}
                 onLoad={() => {
-                  console.log('Image loaded for observation:', observation.id);
+                  setLoadedImageUrl(imageUrl);
                   setImageLoading(false);
                 }}
                 onError={() => {
-                  console.log('Image error for observation:', observation.id);
                   setImageLoading(false);
                 }}
               />
