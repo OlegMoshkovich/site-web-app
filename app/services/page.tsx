@@ -41,7 +41,6 @@ const pageContent = {
         { label: "Services", href: "#leistungen" },
         { label: "References", href: "#referenzen" },
         { label: "Software", href: "#software" },
-        { label: "Contact", href: "#kontakt" },
       ],
     },
     blog: {
@@ -250,7 +249,6 @@ const pageContent = {
         { label: "Leistungen", href: "#leistungen" },
         { label: "Referenzen", href: "#referenzen" },
         { label: "Software", href: "#software" },
-        { label: "Kontakt", href: "#kontakt" },
       ],
     },
     blog: {
@@ -569,7 +567,7 @@ export default function ServicesPage() {
             {c.hero.descAfter}
           </p>
           <div className="mb-6 -mt-4">
-            <Image src="/images/Baumeister-Logo-weiss.png" alt="Baumeister" width={100} height={100} />
+            <Image src="/images/Baumeister-Logo-weiss.png" alt="Baumeister" width={100} height={100} className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px]" />
           </div>
           <div className="flex flex-wrap gap-3">
             {c.hero.anchors.map(({ label, href }) => (
