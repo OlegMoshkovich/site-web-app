@@ -30,7 +30,25 @@ export function ObservationCard({
   const hasPhoto = Boolean(observation.signedUrl);
   const labels = observation.labels ?? [];
   const timestamp = resolveObservationDateTime(observation);
-  const timeStr = `${timestamp.toLocaleDateString('en-GB')} ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+  const tsFields = (() => {
+    if (typeof window === "undefined" || !observation.site_id) return { datetime: true, user: false, logo: true };
+    try {
+      const saved = localStorage.getItem(`timestamp_fields_${observation.site_id}`);
+      if (saved) return JSON.parse(saved) as { datetime: boolean; user: boolean; logo: boolean };
+    } catch { /* ignore */ }
+    return { datetime: true, user: false, logo: true };
+  })();
+
+  const timeStrParts: string[] = [];
+  if (tsFields.datetime !== false) {
+    timeStrParts.push(`${timestamp.toLocaleDateString('en-GB')} ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+  }
+  if (tsFields.user) {
+    const userStr = observation.user_name?.trim() || observation.user_email?.trim() || observation.profiles?.email?.trim();
+    if (userStr) timeStrParts.push(userStr);
+  }
+  const timeStr = timeStrParts.join(' · ');
 
   const labelBadges = labels.length > 0 && (
     <div className="mt-1 flex flex-wrap gap-1">

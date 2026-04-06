@@ -260,6 +260,29 @@ export default function SettingsPage() {
   // User pending invitations state
   const [userPendingInvitations, setUserPendingInvitations] = useState<(CollaborationInvitation & { site_name?: string })[]>([]);
 
+  // Timestamp content setting state
+  const [selectedSiteForTimestamp, setSelectedSiteForTimestamp] = useState<string>("");
+  const [timestampFields, setTimestampFields] = useState<{ datetime: boolean; user: boolean; logo: boolean }>({ datetime: true, user: false, logo: true });
+
+  // Load saved timestamp fields when site changes
+  useEffect(() => {
+    if (selectedSiteForTimestamp) {
+      try {
+        const saved = localStorage.getItem(`timestamp_fields_${selectedSiteForTimestamp}`);
+        if (saved) setTimestampFields(JSON.parse(saved));
+        else setTimestampFields({ datetime: true, user: false, logo: true });
+      } catch { setTimestampFields({ datetime: true, user: false, logo: true }); }
+    }
+  }, [selectedSiteForTimestamp]);
+
+  const [timestampSaved, setTimestampSaved] = useState(false);
+  const handleSaveTimestampContent = () => {
+    if (!selectedSiteForTimestamp) return;
+    localStorage.setItem(`timestamp_fields_${selectedSiteForTimestamp}`, JSON.stringify(timestampFields));
+    setTimestampSaved(true);
+    setTimeout(() => setTimestampSaved(false), 2000);
+  };
+
   // Drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -2094,6 +2117,70 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Timestamp Content */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Timestamp Content
+              </CardTitle>
+              <CardDescription>
+                Configure what is shown in the photo timestamp overlay
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="siteSelectTimestamp">Select Site</Label>
+                <select
+                  id="siteSelectTimestamp"
+                  value={selectedSiteForTimestamp}
+                  onChange={(e) => setSelectedSiteForTimestamp(e.target.value)}
+                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
+                    backgroundSize: "12px 12px",
+                    backgroundPosition: "calc(100% - 12px) center",
+                    backgroundRepeat: "no-repeat",
+                    appearance: "none"
+                  }}
+                >
+                  <option value="">Choose a site...</option>
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>{site.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedSiteForTimestamp && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Include in overlay</Label>
+                    <div className="space-y-2">
+                      {(["datetime", "user", "logo"] as const).map((field) => (
+                        <label key={field} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={timestampFields[field]}
+                            onChange={(e) => setTimestampFields(prev => ({ ...prev, [field]: e.target.checked }))}
+                            className="accent-black w-4 h-4"
+                          />
+                          <span className="text-sm">
+                            {field === "datetime" && "Date & Time (e.g. 06/04/2026 14:30)"}
+                            {field === "user" && "User (name or email of the photographer)"}
+                            {field === "logo" && "Logo (site logo, top-left corner)"}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <Button type="button" onClick={handleSaveTimestampContent} className="w-full">
+                    {timestampSaved ? "Saved ✓" : "Save"}
+                  </Button>
                 </>
               )}
             </CardContent>

@@ -14,13 +14,29 @@ export type PhotoDownloadObservationFields = ObservationDateFields & {
   user_name?: string | null;
 };
 
+export type TimestampOverlayOptions = {
+  datetime?: boolean;
+  user?: boolean;
+  logo?: boolean;
+};
+
+function readTimestampOptions(siteId: string | null | undefined): TimestampOverlayOptions {
+  if (!siteId || typeof window === 'undefined') return { datetime: true, user: false, logo: true };
+  try {
+    const saved = localStorage.getItem(`timestamp_fields_${siteId}`);
+    if (saved) return JSON.parse(saved);
+  } catch { /* ignore */ }
+  return { datetime: true, user: false, logo: true };
+}
+
 /**
  * Fetches a photo, compresses when possible, applies the same overlay as bulk download, returns blob + filename.
  */
 export async function buildObservationPhotoDownloadBlob(
   photoUrl: string,
   obs: PhotoDownloadObservationFields,
-  targetSizeKB: number = 2000
+  targetSizeKB: number = 2000,
+  overlayOptions?: TimestampOverlayOptions
 ): Promise<{ blob: Blob; filename: string } | null> {
   const response = await fetch(photoUrl);
   if (!response.ok) return null;
@@ -74,6 +90,7 @@ export async function buildObservationPhotoDownloadBlob(
   }
 
   if (blob.type.startsWith('image/')) {
+    const opts = overlayOptions ?? readTimestampOptions(obs.site_id);
     const timestamp = resolveObservationDateTime(obs);
     const timestampLabel = `${timestamp.toLocaleDateString('en-GB')} ${timestamp.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
     const siteLabel =
@@ -87,10 +104,10 @@ export async function buildObservationPhotoDownloadBlob(
       `User ${obs.user_id.slice(0, 8)}…`;
     try {
       finalBlob = await overlayTimestampOnImage(finalBlob, {
-        timestamp: timestampLabel,
+        timestamp: opts.datetime !== false ? timestampLabel : undefined,
         site: siteLabel,
-        // user: userLabel,
-        siteLogoUrl: obs.sites?.logo_url ?? null,
+        user: opts.user ? userLabel : undefined,
+        siteLogoUrl: opts.logo !== false ? (obs.sites?.logo_url ?? null) : null,
       });
       extension = '.jpg';
     } catch (overlayError) {

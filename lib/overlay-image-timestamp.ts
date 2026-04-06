@@ -2,7 +2,7 @@
  * Metadata burned into downloaded observation photos (logo top-left, text bottom-right).
  */
 export type PhotoDownloadOverlayInfo = {
-  timestamp: string;
+  timestamp?: string | null;
   site?: string | null;
   user?: string | null;
   /** Public URL for site logo; drawn top-left when load succeeds */
@@ -91,7 +91,7 @@ export async function overlayTimestampOnImage(
     }
   }
 
-  const lines = [info.timestamp, info.site?.trim(), info.user?.trim()]
+  const lines = [info.timestamp?.trim(), info.site?.trim(), info.user?.trim()]
     .filter((x): x is string => Boolean(x))
     .map(truncateLine);
 
