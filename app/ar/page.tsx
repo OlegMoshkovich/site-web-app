@@ -16,6 +16,10 @@ export default function ArPage(): React.JSX.Element {
     <>
       <Hero />
       <Logos />
+      <Problem />
+      {/* <Solution /> */}
+      {/* <Stats /> */}
+      <SolutionOverview />
       {/* <Testimonials /> */}
       <FAQ />
     </>

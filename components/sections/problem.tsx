@@ -38,7 +38,7 @@ export function Problem(): React.JSX.Element {
           <TextGenerateWithSelectBoxEffect words="BIM-Modelle mühelos dort nutzen, wo sie am meisten bewirken" />
         </h1>
       </div>
-      <div className="grid divide-y border-t border-dashed md:grid-cols-3 md:divide-x md:divide-y-0">
+      <div className="grid md:grid-cols-3">
         {DATA.map((statement, index) => (
           <BlurFade
             key={index}

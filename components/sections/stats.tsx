@@ -37,14 +37,11 @@ const DATA = [
 export function Stats(): React.JSX.Element {
   return (
     <GridSection>
-      <div className="grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4">
         {DATA.map((stat, index) => (
           <div
             key={index}
-            className={cn(
-              'flex min-h-[150px] flex-col items-center border-dashed p-6 text-center lg:p-8',
-              (index === 2 || index === 3) && 'border-t lg:border-t-0'
-            )}
+            className="flex min-h-[150px] flex-col items-center p-6 text-center lg:p-8"
           >
             {/* Number with suffix */}
             <p className="flex items-center text-2xl font-semibold md:text-3xl">
