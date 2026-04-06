@@ -5,6 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 // This check can be removed, it is just for tutorial purposes
 export const hasEnvVars =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
