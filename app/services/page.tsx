@@ -93,6 +93,7 @@ const pageContent = {
       project2: {
         name: "Schaukäserei Melk",
         type: "Commercial construction",
+        link: "/blog/schaukaserei_melk",
         items: ["Construction site supervision", "Tendering", "Project support"],
       },
     },
@@ -144,6 +145,11 @@ const pageContent = {
             {
               name: "Schaukäserei Melk",
               desc: "Construction supervision, tendering and project support for commercial construction.",
+            },
+            {
+              name: "ÖBB – 4-Track Expansion Linz–Wels",
+              desc: "First test deployment of Simple Site on an ÖBB infrastructure project. The high documentation requirements drove key improvements to the app.",
+              link: "/blog/simple_site_oebb_linz_wels",
             },
           ],
         },
@@ -213,10 +219,10 @@ const pageContent = {
       label: "Press & Awards",
       title: "Awards",
       items: [
-        "Paul Wegerer: Forbes Top 30 under 30",
-        "Finalist: Austrian Startup Award",
-        "Winner: BIM Löwe & Digital Bau Award",
-        "Selected by DB Mindbox (Deutsche Bahn) for pilot projects",
+        { label: "Paul Wegerer: Forbes Top 30 under 30", link: "/blog/forbes_30_under_30_paul_wegerer" },
+        { label: "Finalist: Austrian Startup Award", link: "/blog/austrian_startuo_worldcup" },
+        { label: "Winner: BIM Löwe & Digital Bau Award", link: "/blog/cloneit_bim_loewen_2023" },
+        { label: "Selected by DB Mindbox (Deutsche Bahn) for pilot projects", link: "/blog/cloneit_poc_dbmindbox" },
       ],
     },
     kontakt: {
@@ -237,7 +243,7 @@ const pageContent = {
       label: "Baumanagement | Planung | Ausschreibung | Software",
       title: "Wir koordinieren Bauprojekte.",
       subtitle: "Kosten, Fortschritt und Qualität immer im Blick.",
-      descBefore: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung.",
+      descBefore: "Wir unterstützen Bauherren und Unternehmen bei der Umsetzung von Bauprojekten – von der Planung über die Ausschreibung bis zur Bauüberwachung und Fertigstellung. ",
       descBefore2: "Mit unserer eigenen Software ",
       descAfter: " digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
       anchors: [
@@ -296,6 +302,7 @@ const pageContent = {
       project2: {
         name: "Schaukäserei Melk",
         type: "Hochbau / Gewerbebau",
+        link: "/blog/schaukaserei_melk",
         items: ["Örtliche Bauaufsicht", "Ausschreibung", "Projektbegleitung"],
       },
     },
@@ -347,6 +354,11 @@ const pageContent = {
             {
               name: "Schaukäserei Melk",
               desc: "Örtliche Bauaufsicht, Ausschreibung und Projektbegleitung im Gewerbebau.",
+            },
+            {
+              name: "ÖBB – 4-gleisiger Ausbau Linz–Wels",
+              desc: "Erster Testeinsatz von Simple Site auf einem ÖBB-Infrastrukturprojekt. Die hohen Dokumentationsanforderungen gaben den entscheidenden Anstoß für die Weiterentwicklung der App.",
+              link: "/blog/simple_site_oebb_linz_wels",
             },
           ],
         },
@@ -416,10 +428,10 @@ const pageContent = {
       label: "Presse & Auszeichnungen",
       title: "Auszeichnungen",
       items: [
-        "Paul Wegerer: Forbes Top 30 under 30",
-        "Finalist: Austrian Startup Award",
-        "Gewinner: BIM Löwe & Digital Bau Award",
-        "Auswahl durch DB Mindbox (Deutsche Bahn) für Pilotprojekte",
+        { label: "Paul Wegerer: Forbes Top 30 under 30", link: "/blog/forbes_30_under_30_paul_wegerer" },
+        { label: "Finalist: Austrian Startup Award", link: "/blog/austrian_startuo_worldcup" },
+        { label: "Gewinner: BIM Löwe & Digital Bau Award", link: "/blog/cloneit_bim_loewen_2023" },
+        { label: "Auswahl durch DB Mindbox (Deutsche Bahn) für Pilotprojekte", link: "/blog/cloneit_poc_dbmindbox" },
       ],
     },
     kontakt: {
@@ -556,6 +568,9 @@ export default function ServicesPage() {
             {c.hero.descBefore2}<Link href="/software" className="text-gray-500 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
             {c.hero.descAfter}
           </p>
+          <div className="mb-6 -mt-4">
+            <Image src="/images/Baumeister-Logo-weiss.png" alt="Baumeister" width={100} height={100} />
+          </div>
           <div className="flex flex-wrap gap-3">
             {c.hero.anchors.map(({ label, href }) => (
               <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
@@ -708,7 +723,15 @@ export default function ServicesPage() {
               </ul>
             </div>
             <div>
-              <p className="text-base font-semibold text-white mb-2">{c.referenzen.project2.name}</p>
+              <p className="text-base font-semibold text-white mb-2">
+                {"link" in c.referenzen.project2 && c.referenzen.project2.link ? (
+                  <Link href={c.referenzen.project2.link} className="underline underline-offset-2 hover:text-gray-300 transition-colors">
+                    {c.referenzen.project2.name}
+                  </Link>
+                ) : (
+                  c.referenzen.project2.name
+                )}
+              </p>
               <p className="text-xs text-gray-600 mb-4">{c.referenzen.project2.type}</p>
               <ul className="space-y-3">
                 {c.referenzen.project2.items.map((item) => (
@@ -720,8 +743,8 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Team Personal Projects */}
-      <section className={sectionClass}>
+      {/* Team Personal Projects (with descriptions) */}
+      {/* <section className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>{c.teamReferenzen.label}</p>
           <h2 className={titleClass}>{c.teamReferenzen.title}</h2>
@@ -747,6 +770,73 @@ export default function ServicesPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section> */}
+
+      {/* Team Personal Projects (names only) */}
+      <section className={sectionClass}>
+        <div className={innerClass}>
+          <p className={labelClass}>{c.teamReferenzen.label}</p>
+          <h2 className={titleClass}>{c.teamReferenzen.title}</h2>
+          <p className="text-xs text-gray-600 mb-10">{c.teamReferenzen.note}</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
+            {c.teamReferenzen.members.map((member) => (
+              <div key={member.name}>
+                <p className="text-base font-semibold text-white mb-6">{member.name}</p>
+                <div className="space-y-3">
+                  {member.projects.map((project) => (
+                    <p key={project.name} className="text-sm text-gray-400 flex items-start gap-2">
+                      <Dot />
+                      {"link" in project && project.link ? (
+                        <a href={project.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-200 transition-colors">{project.name}</a>
+                      ) : (
+                        <span>{project.name}</span>
+                      )}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Blog scroll – Bauprojekt posts */}
+          {(() => {
+            const bauprojektPosts = allPosts
+              .filter((p) => p.tags?.includes("Bauprojekt") || p.tags?.includes("Baustelle"))
+              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+            return bauprojektPosts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-2 mt-14" style={{ scrollbarWidth: "none" }}>
+                {bauprojektPosts.map((post) => (
+                  <Link
+                    key={post.slugAsParams}
+                    href={post.slug}
+                    className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                  >
+                    {post.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-36 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      {post.category && (
+                        <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
+                      )}
+                      <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <time className="text-xs text-gray-700">
+                        {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </section>
 
@@ -775,6 +865,44 @@ export default function ServicesPage() {
               </ul>
             </div>
           </div>
+
+          {/* Blog scroll – SimpleSite posts */}
+          {(() => {
+            const simpleSitePosts = allPosts
+              .filter((p) => p.tags?.includes("SimpleSite"))
+              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+            return simpleSitePosts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-2 mt-14" style={{ scrollbarWidth: "none" }}>
+                {simpleSitePosts.map((post) => (
+                  <Link
+                    key={post.slugAsParams}
+                    href={post.slug}
+                    className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                  >
+                    {post.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-36 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      {post.category && (
+                        <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
+                      )}
+                      <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <time className="text-xs text-gray-700">
+                        {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </section>
 
@@ -811,7 +939,12 @@ export default function ServicesPage() {
           <h2 className={titleClass}>{c.presse.title}</h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
             {c.presse.items.map((item) => (
-              <li key={item} className={listItemClass}><Dot />{item}</li>
+              <li key={item.label} className={listItemClass}>
+                <Dot />
+                <Link href={item.link} className="hover:text-white transition-colors underline underline-offset-2">
+                  {item.label}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>

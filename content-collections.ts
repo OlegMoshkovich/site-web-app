@@ -17,6 +17,7 @@ const posts = defineCollection({
     category: z.string().optional(),
     author: z.string().optional(),
     content: z.string(),
+    tags: z.array(z.string()).optional(),
   }),
   transform: async (document, context) => {
     const body = await compileMDX(context, document, {

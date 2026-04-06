@@ -362,12 +362,61 @@ export default [
     "coverImage": "https://www.cloneit.at/3zw5u3/wp-content/uploads/2024.03.08_PoC_Salzgitter-DE-scaled-400x400.jpg"
   },
   {
+    "title": "Schaukäserei Melk – Planung, Ausschreibung und ÖBA",
+    "description": "Die clone:it GmbH wurde mit der Ausführungsplanung, der Ausschreibung und Vergabe sowie mit den Leistungen der örtlichen Bauaufsicht für das Projekt „Schaukäserei Melk\" beauftragt.",
+    "published": "2026-03-30T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Paul-Wegerer",
+    "content": "<img\n  src=\"/example-data/blog/Kasehutte Melk Huf-Haus.png\"\n  alt=\"Schaukäserei Melk – Käsehütte Maria Taferl\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Schaukäserei Melk – Planung, Ausschreibung und ÖBA\n\nDie clone:it GmbH wurde mit der Ausführungsplanung, der Ausschreibung und Vergabe sowie mit den Leistungen der örtlichen Bauaufsicht für das Projekt „Schaukäserei Melk\" beauftragt.\n\nDie Käsehütte Maria Taferl der Familie Stix realisiert in Melk ein innovatives Projekt rund um die Käseproduktion. Neben einer Produktionsstätte entstehen ein Shop, ein Kommissionierbereich und ein Verkostungsraum. Zusätzlich werden eine Autowerkstätte, eine Kinderbetreuungseinrichtung sowie ein Fitnessclub errichtet.\n\nIm Fokus des Projekts stehen Nachhaltigkeit, Regionalität sowie innovative Produktions- und Betriebsabläufe. Mit diesem Projekt begleiten wir das Vorhaben von der Planung über die Ausschreibung bis zur Umsetzung auf der Baustelle.\n\n---\n\n**#SchaukäsereiMelk #Planung #Ausschreibung #ÖBA #Bauprojekt #Nachhaltigkeit**",
+    "tags": [
+      "Bauprojekt"
+    ],
+    "_meta": {
+      "filePath": "schaukaserei_melk.mdx",
+      "fileName": "schaukaserei_melk.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "schaukaserei_melk"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var s=Object.defineProperty;var g=Object.getOwnPropertyDescriptor;var k=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,b=Object.prototype.hasOwnProperty;var p=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),f=(n,e)=>{for(var r in e)s(n,r,{get:e[r],enumerable:!0})},a=(n,e,r,u)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let t of k(e))!b.call(n,t)&&t!==r&&s(n,t,{get:()=>e[t],enumerable:!(u=g(e,t))||u.enumerable});return n};var M=(n,e,r)=>(r=n!=null?c(m(n)):{},a(e||!n||!n.__esModule?s(r,\"default\",{value:n,enumerable:!0}):r,n)),j=n=>a(s({},\"__esModule\",{value:!0}),n);var l=p((P,h)=>{h.exports=_jsx_runtime});var w={};f(w,{default:()=>d});var i=M(l());function o(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,i.jsxs)(i.Fragment,{children:[(0,i.jsx)(\"img\",{src:\"/example-data/blog/Kasehutte Melk Huf-Haus.png\",alt:\"Schauk\\xE4serei Melk \\u2013 K\\xE4seh\\xFCtte Maria Taferl\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,i.jsx)(e.h2,{id:\"schauk\\xE4serei-melk--planung-ausschreibung-und-\\xF6ba\",children:(0,i.jsx)(e.a,{href:\"#schauk\\xE4serei-melk--planung-ausschreibung-und-\\xF6ba\",children:\"Schauk\\xE4serei Melk \\u2013 Planung, Ausschreibung und \\xD6BA\"})}),`\n`,(0,i.jsx)(e.p,{children:'Die clone:it GmbH wurde mit der Ausf\\xFChrungsplanung, der Ausschreibung und Vergabe sowie mit den Leistungen der \\xF6rtlichen Bauaufsicht f\\xFCr das Projekt \\u201ESchauk\\xE4serei Melk\" beauftragt.'}),`\n`,(0,i.jsx)(e.p,{children:\"Die K\\xE4seh\\xFCtte Maria Taferl der Familie Stix realisiert in Melk ein innovatives Projekt rund um die K\\xE4seproduktion. Neben einer Produktionsst\\xE4tte entstehen ein Shop, ein Kommissionierbereich und ein Verkostungsraum. Zus\\xE4tzlich werden eine Autowerkst\\xE4tte, eine Kinderbetreuungseinrichtung sowie ein Fitnessclub errichtet.\"}),`\n`,(0,i.jsx)(e.p,{children:\"Im Fokus des Projekts stehen Nachhaltigkeit, Regionalit\\xE4t sowie innovative Produktions- und Betriebsabl\\xE4ufe. Mit diesem Projekt begleiten wir das Vorhaben von der Planung \\xFCber die Ausschreibung bis zur Umsetzung auf der Baustelle.\"}),`\n`,(0,i.jsx)(e.hr,{}),`\n`,(0,i.jsx)(e.p,{children:(0,i.jsx)(e.strong,{children:\"#Schauk\\xE4sereiMelk #Planung #Ausschreibung #\\xD6BA #Bauprojekt #Nachhaltigkeit\"})})]})}function d(n={}){let{wrapper:e}=n.components||{};return e?(0,i.jsx)(e,{...n,children:(0,i.jsx)(o,{...n})}):o(n)}return j(w);})();\n;return Component;",
+    "slug": "/blog/schaukaserei_melk",
+    "slugAsParams": "schaukaserei_melk",
+    "coverImage": "/example-data/blog/Kasehutte Melk Huf-Haus.png"
+  },
+  {
+    "title": "Simple Site auf zwei APG-Projekten im Einsatz",
+    "description": "Die Software clone:it Simple Site wird aktuell auf zwei Projekten der Austrian Power Grid (APG) für die tägliche Baufortschrittsdokumentation eingesetzt.",
+    "published": "2026-01-20T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Paul-Wegerer",
+    "content": "<img\n  src=\"/example-data/blog/2026-04-01_APG_VYF_EBU_802b05bb.jpg\"\n  alt=\"Simple Site auf zwei APG-Projekten im Einsatz\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Simple Site auf zwei APG-Projekten im Einsatz\n\nDie Software clone:it Simple Site wird aktuell auf zwei Projekten der Austrian Power Grid (APG) für die tägliche Baufortschrittsdokumentation eingesetzt.\n\nDurch laufende Weiterentwicklungen bietet die Software einen großen Mehrwert für die cloudbasierte Baustellendokumentation, die sowohl am Desktop als auch direkt über die App auf der Baustelle genutzt werden kann. Dadurch wird die Zusammenarbeit zwischen Projektbeteiligten deutlich erleichtert und Informationen stehen jederzeit zentral zur Verfügung.\n\nUnser Ziel ist es, die Software täglich weiter zu verbessern und langfristig neue Standards in der Fotodokumentation und Baudokumentation von Energieinfrastrukturprojekten zu setzen.\n\n---\n\n**#SimpleSite #APG #Energieinfrastruktur #Fotodokumentation #Digitalisierung #Baustelle**",
+    "tags": [
+      "SimpleSite",
+      "Baustelle"
+    ],
+    "_meta": {
+      "filePath": "simple_site_apg.mdx",
+      "fileName": "simple_site_apg.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "simple_site_apg"
+    },
+    "body": "var Component=(()=>{var h=Object.create;var a=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var g=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,p=Object.prototype.hasOwnProperty;var w=(t,e)=>()=>(e||t((e={exports:{}}).exports,e),e.exports),k=(t,e)=>{for(var i in e)a(t,i,{get:e[i],enumerable:!0})},s=(t,e,i,o)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let r of g(e))!p.call(t,r)&&r!==i&&a(t,r,{get:()=>e[r],enumerable:!(o=m(e,r))||o.enumerable});return t};var z=(t,e,i)=>(i=t!=null?h(f(t)):{},s(e||!t||!t.__esModule?a(i,\"default\",{value:t,enumerable:!0}):i,t)),j=t=>s(a({},\"__esModule\",{value:!0}),t);var d=w((b,u)=>{u.exports=_jsx_runtime});var S={};k(S,{default:()=>c});var n=z(d());function l(t){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...t.components};return(0,n.jsxs)(n.Fragment,{children:[(0,n.jsx)(\"img\",{src:\"/example-data/blog/2026-04-01_APG_VYF_EBU_802b05bb.jpg\",alt:\"Simple Site auf zwei APG-Projekten im Einsatz\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,n.jsx)(e.h2,{id:\"simple-site-auf-zwei-apg-projekten-im-einsatz\",children:(0,n.jsx)(e.a,{href:\"#simple-site-auf-zwei-apg-projekten-im-einsatz\",children:\"Simple Site auf zwei APG-Projekten im Einsatz\"})}),`\n`,(0,n.jsx)(e.p,{children:\"Die Software clone:it Simple Site wird aktuell auf zwei Projekten der Austrian Power Grid (APG) f\\xFCr die t\\xE4gliche Baufortschrittsdokumentation eingesetzt.\"}),`\n`,(0,n.jsx)(e.p,{children:\"Durch laufende Weiterentwicklungen bietet die Software einen gro\\xDFen Mehrwert f\\xFCr die cloudbasierte Baustellendokumentation, die sowohl am Desktop als auch direkt \\xFCber die App auf der Baustelle genutzt werden kann. Dadurch wird die Zusammenarbeit zwischen Projektbeteiligten deutlich erleichtert und Informationen stehen jederzeit zentral zur Verf\\xFCgung.\"}),`\n`,(0,n.jsx)(e.p,{children:\"Unser Ziel ist es, die Software t\\xE4glich weiter zu verbessern und langfristig neue Standards in der Fotodokumentation und Baudokumentation von Energieinfrastrukturprojekten zu setzen.\"}),`\n`,(0,n.jsx)(e.hr,{}),`\n`,(0,n.jsx)(e.p,{children:(0,n.jsx)(e.strong,{children:\"#SimpleSite #APG #Energieinfrastruktur #Fotodokumentation #Digitalisierung #Baustelle\"})})]})}function c(t={}){let{wrapper:e}=t.components||{};return e?(0,n.jsx)(e,{...t,children:(0,n.jsx)(l,{...t})}):l(t)}return j(S);})();\n;return Component;",
+    "slug": "/blog/simple_site_apg",
+    "slugAsParams": "simple_site_apg",
+    "coverImage": "/example-data/blog/2026-04-01_APG_VYF_EBU_802b05bb.jpg"
+  },
+  {
     "title": "Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels getestet",
     "description": "Erstmaliger Testeinsatz der Simple Site App auf einem ÖBB Infrastrukturprojekt – mit großen Vorteilen für Dokumentation und Abrechnung.",
-    "published": "2026-10-06T12:00:00.000Z",
+    "published": "2025-10-06T12:00:00.000Z",
     "category": "Projekt",
     "author": "Paul-Wegerer",
     "content": "<img\n  src=\"/example-data/blog/obb_blog.jpg\"\n  alt=\"Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels getestet\n\nAb dem Projekt „4-gleisiger Ausbau Linz–Wels\" wurde die Simple Site App erstmals testweise eingesetzt. Die hohen Anforderungen an die Dokumentation von Infrastrukturprojekten der ÖBB gaben den entscheidenden Anstoß für die Weiterentwicklung der App.\n\nGerade bei Baustellen, die über mehrere Jahre laufen und bei denen die Fotodokumentation von mehreren Arbeitsgruppen mit bis zu acht Personen durchgeführt wird, ist cloudbasiertes Arbeiten mit standardisierten Labels und Plan-Mapping mit sehr großen Vorteilen verbunden.\n\nSowohl für die Abrechnung als auch für die Bearbeitung von Mehrkostenforderungen konnte durch die strukturierten und durchsuchbaren Daten bereits viel Zeit eingespart werden.\n\n---\n\n**#SimpleSite #ÖBB #Infrastruktur #Fotodokumentation #Digitalisierung #Baustelle**",
+    "tags": [
+      "SimpleSite",
+      "Baustelle"
+    ],
     "_meta": {
       "filePath": "simple_site_oebb_linz_wels.mdx",
       "fileName": "simple_site_oebb_linz_wels.mdx",
