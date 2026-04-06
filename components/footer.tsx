@@ -28,7 +28,7 @@ export function Footer({ user, textColor }: FooterProps) {
 
   return (
     <footer className="w-full pt-8 pb-0 mt-12 sm:mt-12 mb-8">
-      <div className="mx-[10px] md:mx-0">
+      <div className="w-full max-w-6xl mx-auto px-3 sm:px-8">
         <div className={`text-xs ${textColor} flex gap-4`}>
           <Link href="/impressum" className="underline underline-offset-4 hover:text-white transition-colors">
             Impressum

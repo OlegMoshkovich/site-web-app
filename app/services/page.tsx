@@ -856,7 +856,7 @@ export default function ServicesPage() {
               </ul>
             </div>
             <div>
-              <p className="text-base font-semibold text-white mb-2">{c.software.arLabel}</p>
+              <Link href="/ar" className="text-base font-semibold text-white mb-2 underline underline-offset-2 hover:text-gray-300 transition-colors">{c.software.arLabel}</Link>
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">{c.software.arDesc}</p>
               <ul className="space-y-3">
                 {c.software.arItems.map((item) => (
