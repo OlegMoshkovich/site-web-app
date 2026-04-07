@@ -545,6 +545,32 @@ export default function ReportDetailPage() {
         return yPosition;
       };
 
+      // Build label order map from siteLabels: parent → children, respecting order_index
+      // Result: a flat ordered list where each parent is immediately followed by its children
+      const labelOrderMap = new Map<string, number>();
+      {
+        let idx = 0;
+        const parents = [...siteLabels]
+          .filter(l => !l.parent_id)
+          .sort((a, b) => (a.order_index - b.order_index) || a.name.localeCompare(b.name));
+        for (const parent of parents) {
+          labelOrderMap.set(parent.name, idx++);
+          const children = [...siteLabels]
+            .filter(l => l.parent_id === parent.id)
+            .sort((a, b) => (a.order_index - b.order_index) || a.name.localeCompare(b.name));
+          for (const child of children) {
+            labelOrderMap.set(child.name, idx++);
+          }
+        }
+        // Orphan labels (not in siteLabels) get appended at the end
+      }
+      const sortLabelsBySettings = (labels: string[]) =>
+        [...labels].sort((a, b) => {
+          const ai = labelOrderMap.has(a) ? labelOrderMap.get(a)! : Number.MAX_SAFE_INTEGER;
+          const bi = labelOrderMap.has(b) ? labelOrderMap.get(b)! : Number.MAX_SAFE_INTEGER;
+          return ai !== bi ? ai - bi : a.localeCompare(b);
+        });
+
       // Add header to first page with full details
       let yPosition = await addHeader(true);
 
@@ -642,7 +668,7 @@ export default function ReportDetailPage() {
             pdf.text(timestamp, textStartX + aufgenommenWidth + 2, textY);
             textY += 10;
 
-            // 3. Labels — each as a bordered badge
+            // 3. Labels — each as a bordered badge, sorted by settings order
             if (observation.labels && observation.labels.length > 0) {
               pdf.setFontSize(8);
               pdf.setFont('helvetica', 'normal');
@@ -653,7 +679,7 @@ export default function ReportDetailPage() {
               const gapY = 2;
               let bx = textStartX;
 
-              for (const label of observation.labels) {
+              for (const label of sortLabelsBySettings(observation.labels)) {
                 const tw = pdf.getTextWidth(label);
                 const bw = tw + padX * 2;
 
@@ -976,27 +1002,38 @@ export default function ReportDetailPage() {
       setSiteLabels([...dbLabels, ...extraLabels]);
 
       // Fetch plan signed URLs for observations that have a plan
+      // Only include valid UUIDs to avoid PostgreSQL type errors when plan field
+      // contains non-UUID values (e.g. plan names from older mobile app versions)
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       const uniquePlanIds = [...new Set(
-        sortedObservationsData.filter((o: Observation) => o.plan).map((o: Observation) => o.plan as string)
+        sortedObservationsData
+          .filter((o: Observation) => o.plan && UUID_REGEX.test(o.plan))
+          .map((o: Observation) => o.plan as string)
       )];
       if (uniquePlanIds.length > 0) {
         try {
-          const { data: planRows } = await supabase
+          const { data: planRows, error: planQueryError } = await supabase
             .from('site_plans')
             .select('id, plan_name, plan_url, site_id')
             .in('id', uniquePlanIds);
+          if (planQueryError) {
+            console.error('Error querying site_plans:', planQueryError);
+          }
           if (planRows) {
             const planMap: Record<string, { url: string; name: string; isPdf: boolean } | null> = {};
             await Promise.all(planRows.map(async (plan: { id: string; plan_name: string; plan_url: string; site_id: string }) => {
               try {
-                const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
+                const fileName = plan.plan_url?.split('/').pop()?.split('?')[0];
                 const filePath = `${plan.site_id}/${fileName}`;
                 const { data: urlData } = await supabase.storage
                   .from('plans')
                   .createSignedUrl(filePath, 604800);
+                const isPdf = (fileName ?? '').toLowerCase().endsWith('.pdf');
                 if (urlData) {
-                  const isPdf = (fileName ?? '').toLowerCase().endsWith('.pdf');
                   planMap[plan.id] = { url: urlData.signedUrl, name: plan.plan_name, isPdf };
+                } else if (plan.plan_url) {
+                  // Fall back to the stored URL (may still be valid)
+                  planMap[plan.id] = { url: plan.plan_url, name: plan.plan_name, isPdf };
                 } else {
                   planMap[plan.id] = null;
                 }
