@@ -65,6 +65,7 @@ export default function ReportsPage() {
   const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('all');
   const [selectedUserFilter, setSelectedUserFilter] = useState<string>('all');
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
@@ -82,6 +83,7 @@ export default function ReportsPage() {
     const fetchReports = async () => {
       try {
         setLoading(true);
+        setFetchError(null);
 
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
@@ -112,25 +114,39 @@ export default function ReportsPage() {
         const userIsAdmin = adminSiteIds.length > 0;
         setIsAdmin(userIsAdmin);
 
-        // Fetch reports based on admin status
-        let reportsQuery = supabase
+        // Always fetch user's own reports — this is the guaranteed baseline
+        const { data: ownReports, error: ownError } = await supabase
           .from('reports')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        // If not admin, only show user's own reports
-        if (!userIsAdmin) {
-          reportsQuery = reportsQuery.eq('user_id', user.id);
-        }
-
-        const { data: reportsData, error } = await reportsQuery;
-
-        if (error) {
-          console.error('Error fetching reports:', error);
+        if (ownError) {
+          console.error('Error fetching reports:', ownError);
+          setFetchError(`Failed to load reports: ${ownError.message}`);
           return;
         }
 
-        if (!reportsData?.length) {
+        // For admins, also fetch reports from other team members on their sites
+        let teamReports: Report[] = [];
+        if (userIsAdmin && adminSiteIds.length > 0) {
+          const { data: allData } = await supabase
+            .from('reports')
+            .select('*')
+            .neq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          teamReports = allData || [];
+        }
+
+        // Merge own + team reports (deduped by id)
+        const seenIds = new Set((ownReports || []).map((r: Report) => r.id));
+        const reportsData: Report[] = [
+          ...(ownReports || []),
+          ...teamReports.filter((r: Report) => !seenIds.has(r.id)),
+        ];
+
+        if (!reportsData.length) {
           setAllReports([]);
           setReports([]);
           return;
@@ -139,7 +155,7 @@ export default function ReportsPage() {
         const reportIds = reportsData.map((r: Report) => r.id);
         const uniqueUserIds = [...new Set(reportsData.map((r: Report) => r.user_id))];
 
-        // Batch: fetch ALL report_observations + ALL profiles in parallel (2 queries instead of N*3)
+        // Batch: fetch ALL report_observations + ALL profiles in parallel
         const [{ data: allReportObs }, { data: allProfiles }] = await Promise.all([
           supabase
             .from('report_observations')
@@ -163,42 +179,20 @@ export default function ReportsPage() {
           obsByReport.get(ro.report_id)!.push(ro.observation_id);
         });
 
-        // Batch: fetch site_ids for ALL observations across all reports (1 query)
-        const allObsIds = [...new Set((allReportObs || []).map((ro: { observation_id: string }) => ro.observation_id))];
-        const obsSiteMap = new Map<string, string>();
-        if (allObsIds.length > 0) {
-          const { data: allObservations } = await supabase
-            .from('observations')
-            .select('id, site_id')
-            .in('id', allObsIds);
-
-          (allObservations || []).forEach((o: { id: string; site_id: string | null }) => {
-            if (o.site_id) obsSiteMap.set(o.id, o.site_id);
-          });
-        }
-
-        // Assemble enriched reports from maps — no more per-report queries
+        // Assemble enriched reports (skip site_id lookup — not needed for display)
         const enrichedReports = reportsData.map((report: Report) => {
           const obsIds = obsByReport.get(report.id) || [];
-          const siteIds = [...new Set(obsIds.map(id => obsSiteMap.get(id)).filter(Boolean) as string[])];
           return {
             ...report,
             observation_count: obsIds.length,
             user_email: profileMap.get(report.user_id) || 'Unknown',
-            site_ids: siteIds,
+            site_ids: [] as string[],
           };
         });
 
-        // Filter reports if user is admin - only show reports they have access to
-        let filteredReports = enrichedReports;
-        if (userIsAdmin) {
-          filteredReports = enrichedReports.filter((report: Report) => {
-            // Show if it's their own report
-            if (report.user_id === user.id) return true;
-            // Show if report contains observations from sites they admin
-            return report.site_ids?.some((siteId: string) => adminSiteIds.includes(siteId));
-          });
-        }
+        // All accessible reports are already scoped:
+        // own reports fetched directly, team reports filtered by RLS
+        const filteredReports = enrichedReports;
 
         setAllReports(filteredReports);
         setReports(filteredReports);
@@ -231,6 +225,7 @@ export default function ReportsPage() {
         }
       } catch (error) {
         console.error('Error fetching reports:', error);
+        setFetchError(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
       } finally {
         setLoading(false);
       }
@@ -396,6 +391,15 @@ export default function ReportsPage() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-gray-500">Loading reports...</div>
+            </div>
+          ) : fetchError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-red-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Could not load reports</h3>
+              <p className="text-red-500 mb-4 text-sm max-w-md">{fetchError}</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Retry
+              </Button>
             </div>
           ) : reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">

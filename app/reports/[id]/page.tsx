@@ -587,58 +587,35 @@ export default function ReportDetailPage() {
             // Add image
             pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
 
-            // Add logo overlay on photo if available
-            if (observation.sites?.logo_url) {
-              try {
-                const logoImg = new window.Image();
-                logoImg.crossOrigin = 'anonymous';
-                await new Promise((resolve, reject) => {
-                  logoImg.onload = resolve;
-                  logoImg.onerror = reject;
-                  logoImg.src = observation.sites!.logo_url!;
-                });
-
-                const logoCanvas = document.createElement('canvas');
-                const logoCtx = logoCanvas.getContext('2d');
-                // Scale down logo to reduce file size
-                const logoMaxSize = 100;
-                const logoScale = Math.min(1, logoMaxSize / Math.max(logoImg.width, logoImg.height));
-                logoCanvas.width = Math.round(logoImg.width * logoScale);
-                logoCanvas.height = Math.round(logoImg.height * logoScale);
-                if (logoCtx) {
-                  logoCtx.fillStyle = 'white';
-                  logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
-                  logoCtx.globalAlpha = 0.5; // Set 50% transparency
-                  logoCtx.drawImage(logoImg, 0, 0, logoCanvas.width, logoCanvas.height);
-                }
-
-                const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality); // Use JPEG instead of PNG for smaller size
-
-                // Position logo on top-left of photo
-                const photoLogoWidth = 12; // Double the size from 6 to 12
-                const photoLogoHeight = (logoImg.height / logoImg.width) * photoLogoWidth;
-                pdf.addImage(logoData, 'JPEG', margin + 2, yPosition + 2, photoLogoWidth, photoLogoHeight);
-              } catch (error) {
-                console.error('Error adding logo overlay to photo:', error);
-              }
-            }
+            // Timestamp at bottom-left of photo
+            const photoTimestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE', {
+              year: 'numeric', month: '2-digit', day: '2-digit'
+            });
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text(photoTimestamp, margin + 2, yPosition + imgHeight - 2);
+            pdf.setTextColor(0, 0, 0);
 
             // Add text content next to image
             const textStartX = margin + imgWidth + 10;
             const textWidth = pageWidth - textStartX - margin;
             let textY = yPosition + 5;
 
-            // Add category if available from labels
-            const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Fotodokumentation';
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Gebäude: ', textStartX, textY);
-            pdf.setFont('helvetica', 'normal');
-            const gebaudeWidth = pdf.getTextWidth('Gebäude: ');
-            pdf.text(category, textStartX + gebaudeWidth + 1, textY);
-            textY += 5;
+            // 1. Beschreibung (note) — first item
+            if (observation.note) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text('Beschreibung:', textStartX, textY);
+              textY += 5;
+              pdf.setFont('helvetica', 'normal');
+              const noteText = observation.note.replace(/^Beschreibung:\s*/i, '');
+              const noteLines = pdf.splitTextToSize(noteText, textWidth);
+              pdf.text(noteLines, textStartX, textY);
+              textY += noteLines.length * 5 + 4;
+            }
 
-            // Add timestamp
+            // 2. Aufgenommen am
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'bold');
             pdf.text('Aufgenommen am: ', textStartX, textY);
@@ -650,28 +627,41 @@ export default function ReportDetailPage() {
             });
             const aufgenommenWidth = pdf.getTextWidth('Aufgenommen am: ');
             pdf.text(timestamp, textStartX + aufgenommenWidth + 2, textY);
-            textY += 5;
+            textY += 10;
 
-            // Add labels
+            // 3. Labels — each as a bordered badge
             if (observation.labels && observation.labels.length > 0) {
-              pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'bold');
-              pdf.text('Labels:', textStartX, textY);
+              pdf.setFontSize(8);
               pdf.setFont('helvetica', 'normal');
-              const bereichWidth = pdf.getTextWidth('Labels:');
-              const labelText = observation.labels.join(', ');
-              const labelLines = pdf.splitTextToSize(labelText, textWidth - bereichWidth - 2);
-              pdf.text(labelLines, textStartX + bereichWidth + 1, textY);
-              textY += labelLines.length * 4 + 5;
-            }
 
-            // Add note
-            if (observation.note) {
-              pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'normal');
-              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
-              pdf.text(noteLines, textStartX, textY);
-              textY += noteLines.length * 5 + 2;
+              const badgeHeight = 5;
+              const padX = 2.5;
+              const gapX = 2;
+              const gapY = 2;
+              let bx = textStartX;
+
+              for (const label of observation.labels) {
+                const tw = pdf.getTextWidth(label);
+                const bw = tw + padX * 2;
+
+                // Wrap to next row if badge doesn't fit
+                if (bx + bw > textStartX + textWidth && bx > textStartX) {
+                  bx = textStartX;
+                  textY += badgeHeight + gapY;
+                }
+
+                // Draw border
+                pdf.setDrawColor(120, 120, 120);
+                pdf.setLineWidth(0.3);
+                pdf.rect(bx, textY - 3.5, bw, badgeHeight, 'S');
+
+                // Draw label text
+                pdf.text(label, bx + padX, textY);
+
+                bx += bw + gapX;
+              }
+
+              textY += badgeHeight + 3;
             }
 
             // Add plan if available (both image and PDF plans)
@@ -1283,7 +1273,7 @@ export default function ReportDetailPage() {
                       {/* Image */}
                       {observation.signedUrl && (
                         <div
-                          className="flex-shrink-0 relative bg-transparent cursor-pointer w-80 lg:w-80 lg:border lg:border-gray-200"
+                          className="flex-shrink-0 relative bg-transparent cursor-pointer w-80 lg:w-80 lg:border lg:border-gray-200 flex items-center justify-center"
                           onClick={() => openPhotoModal(observation)}
                         >
                           <Image

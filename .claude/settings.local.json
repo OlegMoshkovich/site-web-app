@@ -32,7 +32,8 @@
       "Bash(npx content-collections build:*)",
       "Bash(done)",
       "Bash(for f in blog-posts pricing-plans cookie-policy terms-of-use contact privacy-policy story-hero careers-benefits story-team careers-positions pricing-faq testimonials solution)",
-      "Bash(do grep -rl sections/$f /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app/app /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app/components)"
+      "Bash(do grep -rl sections/$f /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app/app /Users/olegmoshkovich/Desktop/dev/cloneit/site-web-app/components)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

@@ -352,68 +352,35 @@ function ReportPageContent() {
             // Add the image
             pdf.addImage(imgData, 'JPEG', margin + 5, yPosition + 5, imgWidth, imgHeight);
             
-            // Add site logo overlay on photo if available
-            if (observation.sites?.logo_url) {
-              try {
-                const photoLogoImg = new window.Image();
-                photoLogoImg.crossOrigin = 'anonymous';
-                await new Promise((resolve, reject) => {
-                  photoLogoImg.onload = resolve;
-                  photoLogoImg.onerror = reject;
-                  photoLogoImg.src = observation.sites!.logo_url!;
-                });
-
-                const photoLogoCanvas = document.createElement('canvas');
-                const photoLogoCtx = photoLogoCanvas.getContext('2d');
-                photoLogoCanvas.width = photoLogoImg.width;
-                photoLogoCanvas.height = photoLogoImg.height;
-                photoLogoCtx?.drawImage(photoLogoImg, 0, 0);
-
-                const photoLogoData = photoLogoCanvas.toDataURL('image/jpeg', imageQuality);
-                
-                // Position small logo overlay on top-left of photo
-                const logoSize = 8;
-                const logoHeight = (photoLogoImg.height / photoLogoImg.width) * logoSize;
-                
-                // Add white background for logo visibility
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(margin + 8, yPosition + 8, logoSize + 2, logoHeight + 2, 'F');
-                
-                // Add the logo
-                pdf.addImage(photoLogoData, 'JPEG', margin + 9, yPosition + 9, logoSize, logoHeight);
-              } catch (error) {
-                console.error('Error adding photo logo overlay:', error);
-              }
-            }
-            
             // Add text content in the right column
             let textY = yPosition + 10;
-            
-            // Add category (removed observation number)
-            
+
+            // Add note first with "Beschreibung:" label
+            if (displaySettings.note && observation.note) {
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text('Beschreibung:', textStartX, textY);
+              textY += 5;
+              pdf.setFont('helvetica', 'normal');
+              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
+              pdf.text(noteLines, textStartX, textY);
+              textY += noteLines.length * 6 + 5;
+            }
+
             // Add category/type if available from labels
             const category = observation.labels && observation.labels.length > 0 ? observation.labels[0] : 'Observation';
             pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Gebäude: ${category}`, textStartX, textY);
             textY += 7;
-            
+
             // Add timestamp
             pdf.setFontSize(9);
             pdf.setFont('helvetica', 'normal');
-            const timestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE') + ' ' + 
+            const timestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE') + ' ' +
                              resolveObservationDateTime(observation).toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
             pdf.text(`Aufgenommen am: ${timestamp}`, textStartX, textY);
             textY += 10;
-            
-            // Add note
-            if (displaySettings.note && observation.note) {
-              pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'normal');
-              const noteLines = pdf.splitTextToSize(observation.note, textWidth);
-              pdf.text(noteLines, textStartX, textY);
-              textY += noteLines.length * 6 + 5;
-            }
             
             // Add labels
             if (displaySettings.labels && observation.labels && observation.labels.length > 0) {
