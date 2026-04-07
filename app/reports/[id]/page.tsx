@@ -424,13 +424,14 @@ export default function ReportDetailPage() {
     try {
       setIsGeneratingPDF(true);
 
-      // Quality settings: compression ratio for JPEG
+      // Quality settings: JPEG compression + canvas resolution
       const qualityMap = {
-        low: 0.5,
-        medium: 0.7,
-        high: 1.0  // Maximum quality (no compression)
+        low:    { jpeg: 0.5, maxDim: 400 },
+        medium: { jpeg: 0.7, maxDim: 600 },
+        high:   { jpeg: 0.92, maxDim: 900 }, // 1.0 causes toDataURL issues in many browsers
       };
-      const imageQuality = qualityMap[quality];
+      const imageQuality = qualityMap[quality].jpeg;
+      const maxDimensionForQuality = qualityMap[quality].maxDim;
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -571,10 +572,7 @@ export default function ReportDetailPage() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Aggressive scaling for smaller PDF file size
-            // Target around 400px max dimension to significantly reduce file size
-            const maxDimension = 400;
-            const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+            const scale = Math.min(1, maxDimensionForQuality / Math.max(img.width, img.height));
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
 
