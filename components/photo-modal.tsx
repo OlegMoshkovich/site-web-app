@@ -258,15 +258,22 @@ export function PhotoModal({
         onNext();
       } else if (e.key === 'Escape') {
         resetZoom();
-      } else if (e.key === '+' || e.key === '=') {
-        e.preventDefault();
-        zoomIn();
-      } else if (e.key === '-') {
-        e.preventDefault();
-        zoomOut();
-      } else if (e.key === '0') {
-        e.preventDefault();
-        resetZoom();
+      } else {
+        // Skip zoom shortcuts when an input/textarea has focus (editing mode)
+        const tag = (document.activeElement as HTMLElement)?.tagName;
+        const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement as HTMLElement)?.isContentEditable;
+        if (!isEditing) {
+          if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            zoomIn();
+          } else if (e.key === '-') {
+            e.preventDefault();
+            zoomOut();
+          } else if (e.key === '0') {
+            e.preventDefault();
+            resetZoom();
+          }
+        }
       }
     };
 
