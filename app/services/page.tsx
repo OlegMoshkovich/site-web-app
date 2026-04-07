@@ -566,9 +566,6 @@ export default function ServicesPage() {
             {c.hero.descBefore2}<Link href="/software" className="text-gray-500 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
             {c.hero.descAfter}
           </p>
-          <div className="mb-6 -mt-4">
-            <Image src="/images/Baumeister-Logo-weiss.png" alt="Baumeister" width={100} height={100} className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px]" />
-          </div>
           <div className="flex flex-wrap gap-3">
             {c.hero.anchors.map(({ label, href }) => (
               <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
@@ -954,6 +951,9 @@ export default function ServicesPage() {
           <p className={labelClass}>{c.kontakt.label}</p>
           <h2 className={titleClass}>{c.kontakt.title}</h2>
           <p className={descClass}>{c.kontakt.desc}</p>
+          <div className="mb-6">
+            <Image src="/images/Baumeister-Logo-weiss.png" alt="Baumeister" width={50} height={50} className="w-[40px] h-[40px] sm:w-[60px] sm:h-[60px]" />
+          </div>
           <a
             href="mailto:paul.wegerer@cloneit.at"
             className="inline-block text-sm text-black bg-white px-6 py-3 hover:bg-gray-100 transition-colors"
