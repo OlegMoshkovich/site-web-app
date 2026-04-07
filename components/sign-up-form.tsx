@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,7 +37,6 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
@@ -49,22 +47,33 @@ export function SignUpForm({
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: invitationToken
-            ? `${window.location.origin}/invitations/${invitationToken}`
-            : `${window.location.origin}/onboarding`,
+      const response = await fetch("/api/signup-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email,
+          password,
+          redirectPath: invitationToken
+            ? `/invitations/${invitationToken}`
+            : "/onboarding",
+        }),
       });
-      if (error) throw error;
-      // When email confirmations are on, Supabase returns an empty identities
-      // array for an already-registered address instead of raising an error.
-      if (data.user?.identities?.length === 0) {
-        setError(t('accountAlreadyExists'));
-        return;
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        if (typeof payload?.error === "string" && payload.error.includes("already")) {
+          setError(t('accountAlreadyExists'));
+          return;
+        }
+
+        throw new Error(
+          typeof payload?.error === "string" ? payload.error : "An error occurred",
+        );
       }
+
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

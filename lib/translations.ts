@@ -313,6 +313,9 @@ export const translations = {
     
     // Sign up success
     thankYouForSigningUp: "Thank you for signing up!",
+    signupRequestReceived: "Your account has been created and your confirmation link has been sent to our team for a personalized invitation.",
+    adminWillFollowUpTitle: "Next step",
+    adminWillFollowUpMessage: "We'll review your signup and send you your confirmation link personally.",
     checkEmailToConfirm: "Please check your email to confirm your account before",
     signInLink: "signing in",
     checkEmailToConfirmAfter: ". Please also check your spam folder, sometimes emails end up there.",
@@ -642,6 +645,9 @@ export const translations = {
     
     // Sign up success
     thankYouForSigningUp: "Vielen Dank für Ihre Registrierung!",
+    signupRequestReceived: "Ihr Konto wurde erstellt und Ihr Bestätigungslink wurde an unser Team für eine persönliche Einladung gesendet.",
+    adminWillFollowUpTitle: "Nächster Schritt",
+    adminWillFollowUpMessage: "Wir prüfen Ihre Registrierung und senden Ihnen den Bestätigungslink persönlich zu.",
     checkEmailToConfirm: "Bitte überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen, bevor Sie sich",
     signInLink: "anmelden",
     checkEmailToConfirmAfter: ". Bitte überprüfen Sie auch Ihren Spam-Ordner, manchmal landen E-Mails dort.",

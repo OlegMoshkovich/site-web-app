@@ -32,25 +32,27 @@ export default function Page() {
               <CardTitle className="text-2xl">
                 {t("thankYouForSigningUp")}
               </CardTitle>
-              {/* <CardDescription>Check your email to confirm</CardDescription> */}
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {t("checkEmailToConfirm")} <Link href="/auth/login" className="text-blue-500 underline">{t("signInLink")}</Link>{t("checkEmailToConfirmAfter")}
+                {t("signupRequestReceived")}
               </p>
 
-              {/* Prominent spam folder warning */}
               <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm font-semibold text-yellow-800 mb-1">
-                  {t("checkSpamFolderWarning")}
+                  {t("adminWillFollowUpTitle")}
                 </p>
                 <p className="text-xs text-yellow-700">
-                  {t("checkSpamFolderMessage")}
+                  {t("adminWillFollowUpMessage")}
                 </p>
               </div>
 
               <p className="text-sm text-muted-foreground mt-4">
-                {t("ifYouHaveQuestions")} <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-500">paul.wegerer@cloneit.at</a>.
+                {t("ifYouHaveQuestions")}{" "}
+                <a href="mailto:paul.wegerer@cloneit.at" className="text-blue-500">
+                  paul.wegerer@cloneit.at
+                </a>
+                .
               </p>
             </CardContent>
           </Card>
