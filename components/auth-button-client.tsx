@@ -6,7 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import { LogoutButton } from "./logout-button";
 import { useEffect, useState } from "react";
 
-export function AuthButtonClient() {
+type AuthButtonClientProps = {
+  /** Dark navbar (e.g. legal pages on black background) */
+  appearance?: "default" | "dark";
+};
+
+export function AuthButtonClient({ appearance = "default" }: AuthButtonClientProps) {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -42,18 +47,46 @@ export function AuthButtonClient() {
     return null;
   }
 
+  const isDark = appearance === "dark";
+
   return user ? (
     <div className="flex items-center gap-4">
-      <LogoutButton />
+      <LogoutButton
+        className={
+          isDark
+            ? "border-gray-600 bg-transparent text-gray-200 hover:bg-gray-900 hover:text-white"
+            : undefined
+        }
+      />
     </div>
   ) : (
     <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"} className="h-8 px-3 text-sm">
+      <Button
+        asChild
+        size="sm"
+        variant="outline"
+        className={
+          isDark
+            ? "h-8 px-3 text-sm border-gray-600 bg-transparent text-gray-200 hover:bg-gray-900 hover:text-white"
+            : "h-8 px-3 text-sm"
+        }
+      >
         <Link href="/auth/login">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={"default"} className="h-8 px-3 text-sm">
-        <Link href="/auth/sign-up">Sign up</Link>
-      </Button>
+      <div className="hidden md:block">
+        <Button
+          asChild
+          size="sm"
+          variant={isDark ? "outline" : "default"}
+          className={
+            isDark
+              ? "h-8 px-3 text-sm border-gray-600 bg-white text-black hover:bg-gray-200"
+              : "h-8 px-3 text-sm"
+          }
+        >
+          <Link href="/auth/sign-up">Sign up</Link>
+        </Button>
+      </div>
     </div>
   );
 }

@@ -5,11 +5,12 @@ import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Share, Edit3, X, Check, Printer, User, Download, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
+import { buildObservationPhotoDownloadBlob } from "@/lib/build-observation-download-blob";
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
 
@@ -32,22 +33,27 @@ interface PhotoModalProps {
   hasNext?: boolean;
   onObservationUpdate?: (updatedObservation: ObservationWithUrl) => void;
   siteLabels?: Label[];
+  nextImageUrl?: string | null;
+  prevImageUrl?: string | null;
 }
 
-export function PhotoModal({ 
-  isOpen, 
-  onClose, 
-  imageUrl, 
-  observation, 
-  onPrevious, 
-  onNext, 
-  hasPrevious = false, 
+export function PhotoModal({
+  isOpen,
+  onClose,
+  imageUrl,
+  observation,
+  onPrevious,
+  onNext,
+  hasPrevious = false,
   hasNext = false,
   onObservationUpdate,
-  siteLabels = []
+  siteLabels = [],
+  nextImageUrl,
+  prevImageUrl,
 }: PhotoModalProps) {
   const supabase = createClient();
   const [imageLoading, setImageLoading] = useState(true);
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [shareSuccess, setShareSuccess] = useState(false);
   
   // Editing state
@@ -63,6 +69,7 @@ export function PhotoModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
   // Plan preview state
   const [planImageData, setPlanImageData] = useState<{ url: string; name: string; isPdf: boolean } | null>(null);
@@ -160,6 +167,13 @@ export function PhotoModal({
     // Only show loading state if there's an image to load
     setImageLoading(!!imageUrl);
   }, [imageUrl, observation.id]);
+
+  // Adjacent image URLs are preloaded via hidden <Image> components in JSX below,
+  // using the same Next.js optimization pipeline as the main image.
+
+  useEffect(() => {
+    if (!isOpen) setIsDownloadLoading(false);
+  }, [isOpen]);
 
   // Zoom and pan handlers
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -567,6 +581,31 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
     w.document.close();
   }, [observation, imageUrl, hasPlanAnchor, planImageData, anchorX, anchorY]);
 
+  const handleDownloadPhoto = useCallback(async () => {
+    if (!imageUrl || isDownloadLoading) return;
+    setIsDownloadLoading(true);
+    try {
+      const result = await buildObservationPhotoDownloadBlob(imageUrl, observation);
+      if (!result) {
+        alert("Failed to download photo.");
+        return;
+      }
+      const objectUrl = URL.createObjectURL(result.blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Error downloading photo:", error);
+      alert("Failed to download photo. Please try again.");
+    } finally {
+      setIsDownloadLoading(false);
+    }
+  }, [imageUrl, observation, isDownloadLoading]);
+
   const handlePlanImageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!editingPlanAnchor) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -617,8 +656,32 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+            <>
+              {/* Show previous image dimmed so there's no blank flash during navigation */}
+              {loadedImageUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={loadedImageUrl}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-contain opacity-30 z-10 pointer-events-none"
+                />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+              </div>
+            </>
+          )}
+
+          {isDownloadLoading && (
+            <div
+              className="absolute inset-0 z-[35] flex flex-col items-center justify-center gap-3 bg-gray-900/45 text-white"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <Loader2 className="h-10 w-10 animate-spin text-white" aria-hidden />
+              <span className="text-sm font-medium">Preparing download…</span>
             </div>
           )}
           
@@ -667,6 +730,19 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 disabled={scale <= 0.5}
               >
                 <ZoomOut className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPhoto}
+                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                aria-label="Download photo"
+                disabled={isDownloadLoading}
+              >
+                {isDownloadLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
               </button>
               {scale !== 1 && (
                 <button
@@ -759,6 +835,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </button>
           )}
           
+          {/* Hidden preload images — rendered through Next.js optimization pipeline so navigation is instant */}
+          {nextImageUrl && (
+            <div className="absolute overflow-hidden" style={{ width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: -1 }} aria-hidden>
+              <Image src={nextImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 90vw" priority />
+            </div>
+          )}
+          {prevImageUrl && (
+            <div className="absolute overflow-hidden" style={{ width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: -1 }} aria-hidden>
+              <Image src={prevImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 90vw" />
+            </div>
+          )}
+
           {/* Zoomable/Pannable Image Container or Text Display */}
           {imageUrl ? (
             <div
@@ -780,11 +868,10 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 priority
                 draggable={false}
                 onLoad={() => {
-                  console.log('Image loaded for observation:', observation.id);
+                  setLoadedImageUrl(imageUrl);
                   setImageLoading(false);
                 }}
                 onError={() => {
-                  console.log('Image error for observation:', observation.id);
                   setImageLoading(false);
                 }}
               />

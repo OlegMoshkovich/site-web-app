@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { compressImageForDownload } from '@/lib/compress-image';
-import { resolveObservationDateTime } from '@/lib/observation-dates';
+import { buildObservationPhotoDownloadBlob } from '@/lib/build-observation-download-blob';
 import type { ObservationWithUrl } from '@/lib/store/observations-store';
 
 export function usePhotoDownload(
@@ -34,57 +33,10 @@ export function usePhotoDownload(
       for (const obs of obsWithPhotos) {
         try {
           if (obs.signedUrl) {
-            const response = await fetch(obs.signedUrl);
-            if (!response.ok) continue;
+            const built = await buildObservationPhotoDownloadBlob(obs.signedUrl, obs, targetSizeKB);
+            if (!built) continue;
 
-            const blob = await response.blob();
-            let finalBlob = blob;
-            let extension = blob.type.includes('jpeg') || blob.type.includes('jpg') ? '.jpg' :
-                           blob.type.includes('png') ? '.png' : '.jpg';
-
-            try {
-              if (blob.type.startsWith('image/')) {
-                const compressedBlob = await compressImageForDownload(blob, targetSizeKB);
-                finalBlob = compressedBlob;
-                extension = '.jpg';
-              }
-            } catch (compressionError) {
-              console.warn(`Failed to compress image for observation ${obs.id}, attempting basic fallback compression:`, compressionError);
-
-              try {
-                if (blob.type.startsWith('image/')) {
-                  const canvas = document.createElement('canvas');
-                  const ctx = canvas.getContext('2d');
-                  const img = new window.Image();
-
-                  await new Promise((resolve, reject) => {
-                    img.onload = () => {
-                      canvas.width = 1500;
-                      canvas.height = 1500;
-                      ctx?.drawImage(img, 0, 0, 1500, 1500);
-                      canvas.toBlob((fallbackBlob) => {
-                        if (fallbackBlob) {
-                          finalBlob = fallbackBlob;
-                          extension = '.jpg';
-                        }
-                        resolve(fallbackBlob);
-                      }, 'image/jpeg', 0.7);
-                    };
-                    img.onerror = reject;
-                    img.src = URL.createObjectURL(blob);
-                  });
-                }
-              } catch (fallbackError) {
-                console.warn(`Fallback compression also failed for ${obs.id}, using original:`, fallbackError);
-              }
-            }
-
-            const date = resolveObservationDateTime(obs).toISOString();
-            const dateStr = new Date(date).toISOString().split('T')[0];
-            const site = obs.sites?.name ? `_${obs.sites.name.replace(/[^a-zA-Z0-9]/g, '_')}` : obs.site_id ? `_site_${obs.site_id.slice(0, 8)}` : '';
-            const filename = `${dateStr}${site}_${obs.id.slice(0, 8)}${extension}`;
-
-            zip.file(filename, finalBlob);
+            zip.file(built.filename, built.blob);
             downloadCount++;
           }
         } catch (error) {
