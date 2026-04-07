@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Edit3,
   Check,
+  Trash2,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -283,6 +284,20 @@ export default function ReportDetailPage() {
     setObservations(prev => prev.map(o => o.id === observationId ? { ...o, labels: next } : o));
     setPendingChanges(prev => ({ ...prev, [observationId]: { ...prev[observationId], labels: next } }));
   }, []);
+
+  const handleRemoveObservation = useCallback(async (observationId: string) => {
+    if (!confirm('Remove this observation from the report?')) return;
+    const { error } = await supabase
+      .from('report_observations')
+      .delete()
+      .eq('report_id', reportId)
+      .eq('observation_id', observationId);
+    if (error) {
+      alert('Failed to remove observation.');
+      return;
+    }
+    setObservations(prev => prev.filter(o => o.id !== observationId));
+  }, [supabase, reportId]);
 
   const handleCommitChanges = useCallback(async () => {
     const entries = Object.entries(pendingChanges);
@@ -1307,8 +1322,8 @@ export default function ReportDetailPage() {
                       <div className="flex-1 w-full lg:w-auto">
                         {/* Always show CardHeader for consistent layout */}
                         <CardHeader className="pb-3 print:pb-2">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-1 w-full">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="space-y-1 flex-1 min-w-0">
                               <CardTitle className={`text-lg print:text-base ${!observation.note ? 'text-gray-600' : ''}`}>
                                 <EditableText
                                   value={observation.note || ''}
@@ -1319,6 +1334,15 @@ export default function ReportDetailPage() {
                                 />
                               </CardTitle>
                             </div>
+                            {isAuthenticated && (
+                              <button
+                                onClick={() => handleRemoveObservation(observation.id)}
+                                className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors p-1 rounded print:hidden"
+                                title="Remove from report"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </CardHeader>
 
