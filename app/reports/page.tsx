@@ -168,8 +168,8 @@ export default function ReportsPage() {
         ]);
 
         // Build profile lookup map
-        const profileMap = new Map(
-          (allProfiles || []).map((p: { id: string; email: string }) => [p.id, p.email])
+        const profileMap = new Map<string, string>(
+          (allProfiles || []).map((p: { id: string; email: string }) => [p.id, p.email] as [string, string])
         );
 
         // Group observation IDs by report
