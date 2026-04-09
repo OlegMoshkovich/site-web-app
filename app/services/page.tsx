@@ -38,9 +38,16 @@ const pageContent = {
       descBefore2: "With our own software ",
       descAfter: ", we additionally digitise the construction site and project communication.",
       anchors: [
-        { label: "Services", href: "#leistungen" },
+        { label: "Construction Management", href: "#leistungen" },
+        { label: "Planning", href: "#planung" },
+        { label: "Tendering", href: "#ausschreibung" },
+        { label: "Software Dev", href: "#digital" },
         { label: "References", href: "#referenzen" },
+        { label: "Personal Projects", href: "#teamerfahrung" },
         { label: "Software", href: "#software" },
+        { label: "Team", href: "#team" },
+        { label: "Awards", href: "#presse" },
+        { label: "Contact", href: "#kontakt" },
       ],
     },
     blog: {
@@ -246,9 +253,16 @@ const pageContent = {
       descBefore2: "Mit unserer eigenen Software ",
       descAfter: " digitalisieren wir zusätzlich die Baustelle und Projektkommunikation.",
       anchors: [
-        { label: "Leistungen", href: "#leistungen" },
+        { label: "Baumanagement", href: "#leistungen" },
+        { label: "Planung", href: "#planung" },
+        { label: "Ausschreibung", href: "#ausschreibung" },
+        { label: "Softwareentwicklung", href: "#digital" },
         { label: "Referenzen", href: "#referenzen" },
+        { label: "Teamerfahrung", href: "#teamerfahrung" },
         { label: "Software", href: "#software" },
+        { label: "Team", href: "#team" },
+        { label: "Auszeichnungen", href: "#presse" },
+        { label: "Kontakt", href: "#kontakt" },
       ],
     },
     blog: {
@@ -566,11 +580,28 @@ export default function ServicesPage() {
             {c.hero.descBefore2}<Link href="/software" className="text-gray-500 underline underline-offset-2 hover:text-white transition-colors">Simple Site</Link>
             {c.hero.descAfter}
           </p>
-          <div className="flex flex-wrap gap-3">
-            {c.hero.anchors.map(({ label, href }) => (
-              <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
-                {label}
-              </a>
+          {/* Mobile layout: 2 / 3 / 3 / 2 */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            {[c.hero.anchors.slice(0, 2), c.hero.anchors.slice(2, 5), c.hero.anchors.slice(5, 8), c.hero.anchors.slice(8)].map((group, i) => (
+              <div key={i} className="flex gap-3">
+                {group.map(({ label, href }) => (
+                  <a key={label} href={href} className="text-xs text-gray-400 border border-gray-700 px-3 py-1.5 hover:border-gray-400 hover:text-white transition-colors">
+                    {label}
+                  </a>
+                ))}
+              </div>
+            ))}
+          </div>
+          {/* Desktop layout: 5 / 5 */}
+          <div className="hidden sm:flex flex-col gap-3">
+            {[c.hero.anchors.slice(0, 5), c.hero.anchors.slice(5)].map((group, i) => (
+              <div key={i} className="flex gap-3">
+                {group.map(({ label, href }) => (
+                  <a key={label} href={href} className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+                    {label}
+                  </a>
+                ))}
+              </div>
             ))}
           </div>
         </div>
@@ -635,7 +666,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 02 — Planung */}
-      <section className={sectionClass}>
+      <section id="planung" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>02</p>
           <h2 className={titleClass}>{c.planung.title}</h2>
@@ -674,7 +705,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 03 — Ausschreibung */}
-      <section className={sectionClass}>
+      <section id="ausschreibung" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>03</p>
           <h2 className={titleClass}>{c.ausschreibung.title}</h2>
@@ -688,7 +719,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 04 — Softwareentwicklung */}
-      <section className={sectionClass}>
+      <section id="digital" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>04</p>
           <h2 className={titleClass}>{c.digital.title}</h2>
@@ -769,7 +800,7 @@ export default function ServicesPage() {
       </section> */}
 
       {/* Team Personal Projects (names only) */}
-      <section className={sectionClass}>
+      <section id="teamerfahrung" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>{c.teamReferenzen.label}</p>
           <h2 className={titleClass}>{c.teamReferenzen.title}</h2>
@@ -902,7 +933,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Team */}
-      <section className={sectionClass}>
+      <section id="team" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>{c.team.label}</p>
           <h2 className={titleClass}>{c.team.title}</h2>
@@ -928,7 +959,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Presse & Auszeichnungen */}
-      <section className={sectionClass}>
+      <section id="presse" className={sectionClass}>
         <div className={innerClass}>
           <p className={labelClass}>{c.presse.label}</p>
           <h2 className={titleClass}>{c.presse.title}</h2>
