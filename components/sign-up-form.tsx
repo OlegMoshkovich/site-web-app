@@ -65,6 +65,13 @@ export function SignUpForm({
         setError(t('accountAlreadyExists'));
         return;
       }
+      void fetch("/api/notify-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }).catch(() => {
+        /* admin mail is best-effort; signup already succeeded */
+      });
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
