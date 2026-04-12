@@ -43,10 +43,11 @@ export function HomeNavbar({
   t,
 }: HomeNavbarProps) {
   const router = useRouter();
+  const nav = getNavbarClasses({ background: user ? "surface" : "transparent" });
 
   return (
-    <nav className={`${getNavbarClasses().container} ${user ? `${homeTheme.navbarSurface} border-b border-border` : ''}`}>
-      <div className={getNavbarClasses().content}>
+    <nav className={nav.container}>
+      <div className={nav.content}>
         <div className="flex items-center gap-2">
           {!user && (
             <div className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center rounded">

@@ -7,8 +7,6 @@
 export const homeTheme = {
   main: "bg-background text-foreground",
 
-  navbarSurface: "bg-background",
-
   /** Toolbar / chrome outline buttons (search, tags, filter, reports, settings) */
   outlineIconButton:
     "h-8 w-8 px-0 text-sm border-border flex items-center justify-center bg-background hover:bg-accent hover:text-accent-foreground",
