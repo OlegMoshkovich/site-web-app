@@ -41,7 +41,9 @@ export function Modal({ isOpen, onClose, children, className = "" }: ModalProps)
       />
       
       {/* Modal content */}
-      <div className={`relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-hidden ${className}`}>
+      <div
+        className={`relative rounded-lg border border-border bg-card text-card-foreground shadow-xl max-w-4xl max-h-[90vh] overflow-hidden ${className}`}
+      >
         
         {/* Content */}
         {children}

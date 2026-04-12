@@ -33,6 +33,31 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ThemeSwitcher } from "@/components/theme-switcher";
+
+/** Native `<select>` styling so dark mode gets readable text and surfaces (matches `Input`). */
+const NATIVE_SELECT_CLASS =
+  "w-full rounded-md border border-border bg-background px-3 py-2 pr-8 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
+
+const NATIVE_SELECT_STYLE: React.CSSProperties = {
+  appearance: "none",
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundSize: "12px 12px",
+  backgroundPosition: "calc(100% - 12px) center",
+  backgroundRepeat: "no-repeat",
+};
+
+const NATIVE_SELECT_SMALL_STYLE: React.CSSProperties = {
+  appearance: "none",
+  backgroundImage: NATIVE_SELECT_STYLE.backgroundImage,
+  backgroundSize: "8px 8px",
+  backgroundPosition: "calc(100% - 4px) center",
+  backgroundRepeat: "no-repeat",
+  paddingRight: "16px",
+};
+
+const NATIVE_SELECT_SM_CLASS =
+  "rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 // Sortable Label Component
 interface SortableLabelProps {
@@ -91,21 +116,21 @@ function SortableLabel({ label, subLabels, onEdit, onDelete, onAddChild, t }: So
     <div
       ref={setNodeRef}
       style={style}
-      className="border rounded-md p-3"
+      className="rounded-md border border-border p-3"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">
           <button
-            className="cursor-grab active:cursor-grabbing touch-none p-1 hover:bg-gray-100 rounded"
+            className="cursor-grab touch-none rounded p-1 hover:bg-muted active:cursor-grabbing"
             {...attributes}
             {...listeners}
           >
-            <GripVertical className="h-5 w-5 text-gray-400" />
+            <GripVertical className="h-5 w-5 text-muted-foreground" />
           </button>
           <div>
-            <span className="font-medium">{label.name}</span>
+            <span className="font-medium text-foreground">{label.name}</span>
             {label.description && (
-              <p className="text-sm text-gray-600 mt-1">{label.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{label.description}</p>
             )}
           </div>
         </div>
@@ -136,15 +161,15 @@ function SortableLabel({ label, subLabels, onEdit, onDelete, onAddChild, t }: So
           </Button>
         </div>
       </div>
-      <div className="mt-2 ml-4 border-l-2 border-gray-200 pl-4">
+      <div className="ml-4 mt-2 border-l-2 border-border pl-4">
         {subLabels.length > 0 && (
           <>
             {subLabels.map((subLabel) => (
               <div key={subLabel.id} className="flex items-center justify-between py-1">
                 <div>
-                  <span className="text-sm">{subLabel.name}</span>
+                  <span className="text-sm text-foreground">{subLabel.name}</span>
                   {subLabel.description && (
-                    <p className="text-xs text-gray-500">{subLabel.description}</p>
+                    <p className="text-xs text-muted-foreground">{subLabel.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -1454,20 +1479,20 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-4 items-center">
+    <main className="flex min-h-screen flex-col items-center bg-background text-foreground">
+      <div className="flex w-full flex-1 flex-col items-center gap-4">
         {/* Top navigation bar with site title, language selector, and auth */}
-        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-between items-center px-3 sm:px-5 text-sm">
-            <div className="flex text-lg gap-5 items-center font-semibold">
-              <Link href="/" className="hover:text-gray-700 transition-colors cursor-pointer">
+        <nav className="sticky top-0 z-20 flex h-16 w-full justify-center border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+          <div className="flex w-full max-w-5xl items-center justify-between px-3 text-sm sm:px-5">
+            <div className="flex items-center gap-5 text-lg font-semibold">
+              <Link href="/" className="cursor-pointer text-foreground transition-colors hover:text-muted-foreground">
                 {t("siteTitle")}
               </Link>
             </div>
@@ -1476,23 +1501,25 @@ export default function SettingsPage() {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
-                className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer text-center"
-                style={{ 
+                className="h-8 w-8 cursor-pointer rounded-md border border-border bg-background px-0 text-center text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{
                   textAlignLast: "center",
-                  appearance: "none"
+                  appearance: "none",
                 }}
               >
                 <option value="en">EN</option>
                 <option value="de">DE</option>
               </select>
 
-              {/* Settings gear icon */}
+              <ThemeSwitcher dropdownSide="bottom" dropdownAlign="end" triggerClassName="h-8 w-8 border-border bg-background px-0" />
+
+              {/* Settings gear icon (current page) */}
               {user && (
                 <Button
                   onClick={() => router.push('/settings')}
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-gray-200 text-gray-700"
+                  className="h-8 w-8 border-border bg-accent px-0 text-accent-foreground hover:bg-accent/90"
                   title="Settings"
                 >
                   <Settings className="h-4 w-4" />
@@ -1518,29 +1545,32 @@ export default function SettingsPage() {
                 <ArrowLeft className="h-4 w-4" />
                 {t('back')}
               </Button>
-              <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('settings')}</h1>
             </div>
 
             {/* Pending Invitations Alert */}
             {userPendingInvitations.length > 0 && (
-              <Card className="border-blue-200 bg-blue-50">
+              <Card className="border-blue-500/40 bg-blue-500/10 dark:bg-blue-950/40">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <CardTitle className="flex items-center gap-2 text-foreground">
                     <Users className="h-5 w-5" />
                     Pending Collaboration Invitations
                   </CardTitle>
-                  <CardDescription className="text-blue-700">
+                  <CardDescription>
                     You have been invited to collaborate on the following sites:
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {userPendingInvitations.map((invitation) => (
-                    <div key={invitation.id} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-md">
+                    <div
+                      key={invitation.id}
+                      className="flex items-center justify-between rounded-md border border-blue-500/30 bg-card p-3"
+                    >
                       <div>
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-foreground">
                           {invitation.site_name}
                         </div>
-                        <div className="text-sm text-gray-600 capitalize">
+                        <div className="text-sm capitalize text-muted-foreground">
                           Role: {invitation.role} • Expires: {new Date(invitation.expires_at).toLocaleDateString()}
                         </div>
                       </div>
@@ -1602,7 +1632,7 @@ export default function SettingsPage() {
                   className="cursor-pointer"
                 />
                 {selectedLogo && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     Selected logo: {selectedLogo.name}
                   </div>
                 )}
@@ -1610,7 +1640,7 @@ export default function SettingsPage() {
               <Button onClick={handleCreateSite} className="w-full" disabled={isUploadingLogo}>
                 {isUploadingLogo ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                     Creating...
                   </>
                 ) : (
@@ -1627,7 +1657,7 @@ export default function SettingsPage() {
                   <Label>{t('existingSites')}</Label>
                   <div className="space-y-2">
                     {sites.map((site, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 transition-colors">
+                      <div key={index} className="flex items-center justify-between rounded-md border border-border p-3 transition-colors hover:bg-muted/50">
                         <div 
                           className="flex items-center gap-3 flex-1 cursor-pointer"
                           onClick={() => handleEditSite(site)}
@@ -1639,14 +1669,14 @@ export default function SettingsPage() {
                               className="w-8 h-8 object-contain rounded border"
                             />
                           ) : (
-                            <div className="w-8 h-8 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-500">
+                            <div className="w-8 h-8 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground">
                               No Logo
                             </div>
                           )}
                           <div>
                             <span className="font-medium">{site.name}</span>
                             {site.description && (
-                              <p className="text-sm text-gray-600">{site.description}</p>
+                              <p className="text-sm text-muted-foreground">{site.description}</p>
                             )}
                           </div>
                         </div>
@@ -1685,14 +1715,8 @@ export default function SettingsPage() {
                   id="siteSelectInvite"
                   value={selectedSiteForInvite}
                   onChange={(e) => setSelectedSiteForInvite(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">{t('chooseASite')}</option>
                   {sites.map((site) => (
@@ -1721,14 +1745,8 @@ export default function SettingsPage() {
                   id="inviteRole"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as "admin" | "collaborator")}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="collaborator">Collaborator (own observations only)</option>
                   <option value="admin">Admin (see all observations)</option>
@@ -1765,14 +1783,8 @@ export default function SettingsPage() {
                   id="siteSelect"
                   value={selectedSiteForLabels}
                   onChange={(e) => setSelectedSiteForLabels(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">{t('chooseASite')}</option>
                   {sites.map((site) => (
@@ -1804,14 +1816,8 @@ export default function SettingsPage() {
                           id="labelCategory"
                           value={newLabelCategory}
                           onChange={(e) => setNewLabelCategory(e.target.value as "location" | "gewerk" | "type")}
-                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                          style={{
-                            backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                            backgroundSize: "12px 12px",
-                            backgroundPosition: "calc(100% - 12px) center",
-                            backgroundRepeat: "no-repeat",
-                            appearance: "none"
-                          }}
+                          className={NATIVE_SELECT_CLASS}
+                          style={NATIVE_SELECT_STYLE}
                         >
                           <option value="location">{t('location')}</option>
                           <option value="gewerk">{t('gewerk')}</option>
@@ -1824,14 +1830,8 @@ export default function SettingsPage() {
                           id="labelParent"
                           value={newLabelParent}
                           onChange={(e) => setNewLabelParent(e.target.value)}
-                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                          style={{
-                            backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                            backgroundSize: "12px 12px",
-                            backgroundPosition: "calc(100% - 12px) center",
-                            backgroundRepeat: "no-repeat",
-                            appearance: "none"
-                          }}
+                          className={NATIVE_SELECT_CLASS}
+                          style={NATIVE_SELECT_STYLE}
                         >
                           <option value="">{t('noParentTopLevel')}</option>
                           {labels
@@ -1872,7 +1872,7 @@ export default function SettingsPage() {
 
                         return (
                           <div key={category} className="mb-6">
-                            <h4 className="font-medium text-gray-700 mb-2 capitalize">{category}</h4>
+                            <h4 className="font-medium text-foreground mb-2 capitalize">{category}</h4>
                             <DndContext
                               sensors={sensors}
                               collisionDetection={closestCenter}
@@ -1929,14 +1929,8 @@ export default function SettingsPage() {
                   id="siteSelectPlans"
                   value={selectedSiteForPlans}
                   onChange={(e) => setSelectedSiteForPlans(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">{t('chooseASite')}</option>
                   {sites.map((site) => (
@@ -1954,7 +1948,7 @@ export default function SettingsPage() {
                     <h3 className="text-lg font-medium mb-4">{t('uploadPlan')}</h3>
                     
                     {/* Single File Upload */}
-                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                    <div className="mb-6 p-4 border border-border rounded-lg">
                       <h4 className="text-md font-medium mb-3">Single File Upload</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -1980,32 +1974,32 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       {selectedFile && (
-                        <div className="mt-2 text-sm text-gray-600">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Selected file: {selectedFile.name}
                         </div>
                       )}
                     </div>
 
                     {/* Bulk Upload Section */}
-                    <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                    <div className="mb-6 p-4 border border-border rounded-lg">
                       <h4 className="text-md font-medium mb-3">Bulk Upload</h4>
                       
                       {/* Drag and Drop Area */}
                       <div 
                         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                          isDragOver 
-                            ? 'border-blue-400 bg-blue-50' 
-                            : 'border-gray-300 hover:border-gray-400'
+                          isDragOver
+                            ? "border-blue-500/60 bg-blue-500/15 dark:bg-blue-950/50"
+                            : "border-border hover:border-muted-foreground/50"
                         }`}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                       >
-                        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                        <p className="text-lg font-medium text-gray-700 mb-2">
+                        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-lg font-medium text-foreground mb-2">
                           Drag and drop files here, or click to select
                         </p>
-                        <p className="text-sm text-gray-500 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                           Supports images (PNG, JPG, etc.) and PDF files
                         </p>
                         <Input
@@ -2036,18 +2030,23 @@ export default function SettingsPage() {
                             {selectedFiles.map((file, index) => {
                               const status = uploadProgress[file.name] || 'pending';
                               return (
-                                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div key={index} className="flex items-center justify-between p-2 bg-muted/40 rounded">
                                   <span className="text-sm truncate flex-1">{file.name}</span>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-muted-foreground">
                                       {(file.size / (1024 * 1024)).toFixed(1)} MB
                                     </span>
-                                    <span className={`text-xs px-2 py-1 rounded ${
-                                      status === 'pending' ? 'bg-gray-200 text-gray-700' :
-                                      status === 'uploading' ? 'bg-blue-200 text-blue-700' :
-                                      status === 'completed' ? 'bg-green-200 text-green-700' :
-                                      'bg-red-200 text-red-700'
-                                    }`}>
+                                    <span
+                                      className={`rounded px-2 py-1 text-xs ${
+                                        status === "pending"
+                                          ? "bg-muted text-foreground"
+                                          : status === "uploading"
+                                            ? "bg-blue-500/20 text-blue-800 dark:text-blue-200"
+                                            : status === "completed"
+                                              ? "bg-green-500/20 text-green-800 dark:text-green-300"
+                                              : "bg-red-500/20 text-red-800 dark:text-red-300"
+                                      }`}
+                                    >
                                       {status === 'pending' ? 'Pending' :
                                        status === 'uploading' ? 'Uploading...' :
                                        status === 'completed' ? 'Completed' :
@@ -2069,7 +2068,7 @@ export default function SettingsPage() {
                     >
                       {isUploading ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                           Uploading...
                         </>
                       ) : (
@@ -2087,17 +2086,17 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Existing Plans</h3>
                       <div className="space-y-3">
                         {plans.map((plan) => (
-                          <div key={plan.id} className="flex items-center justify-between p-3 border rounded-md">
+                          <div key={plan.id} className="flex items-center justify-between rounded-md border border-border p-3">
                             <div className="flex items-center gap-3">
-                              <FileImage className="h-5 w-5 text-gray-500" />
+                              <FileImage className="h-5 w-5 text-muted-foreground" />
                               <div>
                                 <span className="font-medium">{plan.plan_name}</span>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-muted-foreground">
                                   <a 
                                     href={plan.plan_url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="hover:text-blue-600 underline"
+                                    className="hover:text-primary underline"
                                   >
                                     View Plan
                                   </a>
@@ -2140,14 +2139,8 @@ export default function SettingsPage() {
                   id="siteSelectTimestamp"
                   value={selectedSiteForTimestamp}
                   onChange={(e) => setSelectedSiteForTimestamp(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">Choose a site...</option>
                   {sites.map((site) => (
@@ -2205,14 +2198,8 @@ export default function SettingsPage() {
                   id="siteSelectCollaborators"
                   value={selectedSiteForCollaborators}
                   onChange={(e) => setSelectedSiteForCollaborators(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  className={NATIVE_SELECT_CLASS}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">Choose a site</option>
                   {sites.map((site) => (
@@ -2231,12 +2218,12 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Current Collaborators</h3>
                       <div className="space-y-3">
                         {collaborators.map((collaborator) => (
-                          <div key={collaborator.id} className="flex items-center justify-between p-3 border rounded-md">
+                          <div key={collaborator.id} className="flex items-center justify-between rounded-md border border-border p-3">
                             <div className="flex items-center gap-3">
-                              <Users className="h-5 w-5 text-gray-500" />
+                              <Users className="h-5 w-5 text-muted-foreground" />
                               <div className="flex-1">
                                 <span className="font-medium">{collaborator.email}</span>
-                                <div className="text-sm text-gray-500 capitalize">
+                                <div className="text-sm text-muted-foreground capitalize">
                                   {collaborator.role}
                                   {collaborator.role === 'owner' && ' (cannot be modified)'}
                                 </div>
@@ -2260,15 +2247,8 @@ export default function SettingsPage() {
                                       );
                                     }
                                   }}
-                                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-gray-400 bg-white"
-                                  style={{
-                                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                                    backgroundSize: "8px 8px",
-                                    backgroundPosition: "calc(100% - 4px) center",
-                                    backgroundRepeat: "no-repeat",
-                                    appearance: "none",
-                                    paddingRight: "16px"
-                                  }}
+                                  className={NATIVE_SELECT_SM_CLASS}
+                                  style={NATIVE_SELECT_SMALL_STYLE}
                                 >
                                   <option value="collaborator">Collaborator</option>
                                   <option value="admin">Admin</option>
@@ -2279,7 +2259,7 @@ export default function SettingsPage() {
                                   variant="outline" 
                                   size="sm" 
                                   onClick={() => handleRemoveCollaborator(collaborator.user_id, collaborator.email || 'Unknown')}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:hover:bg-red-950/50"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -2297,12 +2277,15 @@ export default function SettingsPage() {
                       <h3 className="text-lg font-medium mb-4">Pending Invitations</h3>
                       <div className="space-y-3">
                         {pendingInvitations.map((invitation) => (
-                          <div key={invitation.id} className="flex items-center justify-between p-3 border rounded-md bg-yellow-50">
+                          <div
+                            key={invitation.id}
+                            className="flex items-center justify-between rounded-md border border-amber-500/35 bg-amber-500/10 p-3 dark:bg-amber-950/30"
+                          >
                             <div className="flex items-center gap-3">
                               <Users className="h-5 w-5 text-yellow-600" />
                               <div>
                                 <span className="font-medium">{invitation.invited_email}</span>
-                                <div className="text-sm text-gray-500 capitalize">
+                                <div className="text-sm text-muted-foreground capitalize">
                                   {invitation.role} - Expires: {new Date(invitation.expires_at).toLocaleDateString()}
                                 </div>
                               </div>
@@ -2317,7 +2300,7 @@ export default function SettingsPage() {
                   )}
 
                   {collaborators.length === 0 && pendingInvitations.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       No collaborators or pending invitations for this site.
                     </div>
                   )}
@@ -2343,49 +2326,49 @@ export default function SettingsPage() {
                 <Trash2 className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Delete Site</h2>
-                <p className="text-sm text-gray-500">This action cannot be undone</p>
+                <h2 className="text-xl font-semibold text-foreground">Delete Site</h2>
+                <p className="text-sm text-muted-foreground">This action cannot be undone</p>
               </div>
             </div>
 
-            <p className="text-gray-700 mb-4">
+            <p className="text-foreground mb-4">
               You are about to permanently delete <span className="font-semibold">"{deletingSite.name}"</span> and all of its associated data.
             </p>
 
             {/* Site stats */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-5">
-              <p className="text-sm font-medium text-gray-700 mb-3">The following data will be deleted:</p>
+            <div className="bg-muted/40 border border-border rounded-lg p-4 mb-5">
+              <p className="text-sm font-medium text-foreground mb-3">The following data will be deleted:</p>
               {isLoadingStats ? (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-muted-foreground" />
                   Loading site data...
                 </div>
               ) : siteStats ? (
                 <ul className="space-y-2">
                   <li className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <Tags className="h-4 w-4 text-gray-400" />
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Tags className="h-4 w-4 text-muted-foreground" />
                       Labels
                     </span>
-                    <span className={`font-semibold ${siteStats.labels > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                    <span className={`font-semibold ${siteStats.labels > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
                       {siteStats.labels}
                     </span>
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <FileImage className="h-4 w-4 text-gray-400" />
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <FileImage className="h-4 w-4 text-muted-foreground" />
                       Plans
                     </span>
-                    <span className={`font-semibold ${siteStats.plans > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                    <span className={`font-semibold ${siteStats.plans > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
                       {siteStats.plans}
                     </span>
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="h-4 w-4 text-gray-400" />
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
                       Observations
                     </span>
-                    <span className={`font-semibold ${siteStats.observations > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                    <span className={`font-semibold ${siteStats.observations > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
                       {siteStats.observations}
                     </span>
                   </li>
@@ -2396,7 +2379,7 @@ export default function SettingsPage() {
             {/* Name confirmation */}
             <div className="space-y-2 mb-6">
               <Label htmlFor="deleteConfirmName">
-                Type <span className="font-semibold text-gray-900">{deletingSite.name}</span> to confirm deletion
+                Type <span className="font-semibold text-foreground">{deletingSite.name}</span> to confirm deletion
               </Label>
               <Input
                 id="deleteConfirmName"
@@ -2423,7 +2406,7 @@ export default function SettingsPage() {
               >
                 {isDeletingSite ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                     Deleting...
                   </>
                 ) : (
@@ -2480,11 +2463,11 @@ export default function SettingsPage() {
                     className="w-16 h-16 object-contain rounded border"
                   />
                 ) : (
-                  <div className="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center text-sm text-gray-500">
+                  <div className="w-16 h-16 bg-muted rounded border flex items-center justify-center text-sm text-muted-foreground">
                     {t('noLogo')}
                   </div>
                 )}
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {editingSite.logo_url ? t('currentLogoText') : t('noLogoUploaded')}
                 </div>
               </div>
@@ -2501,7 +2484,7 @@ export default function SettingsPage() {
                 className="cursor-pointer"
               />
               {editSiteLogo && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {t('newLogoSelected')}: {editSiteLogo.name}
                 </div>
               )}
@@ -2521,7 +2504,7 @@ export default function SettingsPage() {
               >
                 {isUpdatingSite ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                     {t('updating')}
                   </>
                 ) : (
@@ -2560,15 +2543,9 @@ export default function SettingsPage() {
                   id="editLabelCategory"
                   value={editLabelCategory}
                   onChange={(e) => setEditLabelCategory(e.target.value as "location" | "gewerk" | "type")}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className={NATIVE_SELECT_CLASS}
                   disabled={isUpdatingLabel}
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="location">{t('location')}</option>
                   <option value="gewerk">{t('gewerk')}</option>
@@ -2582,15 +2559,9 @@ export default function SettingsPage() {
                   id="editLabelParent"
                   value={editLabelParent}
                   onChange={(e) => setEditLabelParent(e.target.value)}
-                  className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 bg-white"
+                  className={NATIVE_SELECT_CLASS}
                   disabled={isUpdatingLabel}
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")`,
-                    backgroundSize: "12px 12px",
-                    backgroundPosition: "calc(100% - 12px) center",
-                    backgroundRepeat: "no-repeat",
-                    appearance: "none"
-                  }}
+                  style={NATIVE_SELECT_STYLE}
                 >
                   <option value="">{t('noParentTopLevel')}</option>
                   {labels
@@ -2633,7 +2604,7 @@ export default function SettingsPage() {
                 >
                   {isUpdatingLabel ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                       {t('updating')}
                     </>
                   ) : (
