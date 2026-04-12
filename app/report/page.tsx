@@ -234,7 +234,11 @@ function ReportPageContent() {
           const logoCtx = logoCanvas.getContext('2d');
           logoCanvas.width = logoImg.width;
           logoCanvas.height = logoImg.height;
-          logoCtx?.drawImage(logoImg, 0, 0);
+          if (logoCtx) {
+            logoCtx.fillStyle = 'white';
+            logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
+            logoCtx.drawImage(logoImg, 0, 0);
+          }
 
           const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
           

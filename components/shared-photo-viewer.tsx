@@ -200,12 +200,15 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="dark flex min-h-screen flex-col bg-background text-foreground">
       {/* Top navigation bar */}
-      <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
+      <nav className="sticky top-0 z-20 flex h-16 w-full justify-center border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+        <div className="flex w-full items-center justify-between px-2 text-sm sm:px-4">
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-lg font-semibold hover:text-gray-700 transition-colors">
+            <Link
+              href="/"
+              className="text-lg font-semibold text-foreground transition-colors hover:text-muted-foreground"
+            >
               Simple Site
             </Link>
           </div>
@@ -215,7 +218,7 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="h-8 w-8 px-0 text-sm border border-gray-300 bg-white focus:outline-none focus:border-gray-400 cursor-pointer appearance-none text-center"
+              className="h-8 w-8 cursor-pointer appearance-none rounded-md border border-input bg-background px-0 text-center text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
               style={{ textAlignLast: "center" }}
               title="Change Language"
             >
@@ -225,16 +228,18 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             {isAuthenticated && (
               <button
                 onClick={downloadPhoto}
-                className="h-8 px-3 hover:bg-gray-200 text-gray-700 border border-gray-300 text-sm font-medium transition-colors flex items-center gap-1"
+                className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 title="Download photo"
+                type="button"
               >
                 <Download className="h-4 w-4" />
               </button>
             )}
             
             <button
+              type="button"
               onClick={() => setShowInfoModal(true)}
-              className="h-8 px-3 text-gray-700 border border-gray-300 text-sm font-medium transition-colors flex items-center gap-1"
+              className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
               <Info className="h-4 w-4" />
             </button>
@@ -248,23 +253,23 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
         {/* Image container */}
         <div 
           ref={imageContainerRef}
-          className="relative bg-gray-100 h-96 md:h-[500px] flex-shrink-0 overflow-hidden border border-gray-200 rounded-lg"
+          className="relative h-96 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-muted md:h-[500px]"
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-muted">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
             </div>
           )}
           
           {/* Site logo overlay - top left */}
-          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-30">
+          <div className="absolute left-2 top-2 z-30 sm:left-4 sm:top-4">
             {observation.sites?.logo_url ? (
-              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 shadow-lg opacity-80">
+              <div className="rounded-lg border border-border bg-white p-2 shadow-md">
                 <img 
                   src={observation.sites.logo_url} 
                   alt={`${observation.sites.name} logo`}
-                  className="h-6 sm:h-8 w-auto object-contain rounded opacity-90"
+                  className="h-6 w-auto object-contain rounded sm:h-8"
                 />
               </div>
             ) : (
@@ -273,25 +278,27 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
                 alt="Simple Site"
                 width={160}
                 height={40}
-                className="h-6 sm:h-8 w-auto bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm"
+                className="h-6 w-auto rounded bg-white px-2 py-1 text-xs sm:h-8 sm:px-3 sm:py-2 sm:text-sm"
                 priority
               />
             )}
           </div>
           
           {/* Zoom controls */}
-          <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+          <div className="absolute right-4 top-4 z-30 flex flex-col gap-2">
             <button
+              type="button"
               onClick={zoomIn}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors rounded"
+              className="rounded-md bg-secondary p-2 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-40"
               aria-label="Zoom in"
               disabled={scale >= 3}
             >
               <ZoomIn className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={zoomOut}
-              className="bg-black hover:bg-gray-800 text-white p-2 transition-colors rounded"
+              className="rounded-md bg-secondary p-2 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-40"
               aria-label="Zoom out"
               disabled={scale <= 0.5}
             >
@@ -299,8 +306,9 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
             </button>
             {scale !== 1 && (
               <button
+                type="button"
                 onClick={resetZoom}
-                className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors rounded"
+                className="rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground transition-colors hover:bg-secondary/80"
                 aria-label="Reset zoom"
               >
                 1:1
@@ -310,26 +318,26 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
           
           {/* Zoom indicator */}
           {scale !== 1 && (
-            <div className="absolute bottom-4 right-4 z-30 bg-black/70 text-white px-2 py-1 text-xs rounded">
+            <div className="absolute bottom-4 right-4 z-30 rounded-md border border-border/50 bg-background/90 px-2 py-1 text-xs text-foreground backdrop-blur-sm">
               {Math.round(scale * 100)}%
             </div>
           )}
           
           {/* Timestamp and elevation tags overlay - centered at bottom */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 text-white px-3 py-1 text-xs rounded flex items-center gap-2">
+          <div className="absolute bottom-4 left-1/2 z-30 flex max-w-[95%] -translate-x-1/2 transform items-center gap-2 rounded-md bg-black/75 px-3 py-1.5 text-xs text-white backdrop-blur-sm">
             <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
-                <span className="text-gray-300">•</span>
+                <span className="text-white/60">•</span>
                 <span>📍 {observation.sites.name}</span>
               </>
             )}
             {observation.labels && observation.labels.length > 0 && (
               <>
-                <span className="text-gray-300">•</span>
+                <span className="text-white/60">•</span>
                 <div className="flex items-center gap-1">
                   {[...new Set(observation.labels)].slice(0, 3).map((label, idx) => (
-                    <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                    <span key={idx} className="rounded bg-white/15 px-1.5 py-0.5 text-xs">
                       {label}
                     </span>
                   ))}
@@ -367,25 +375,25 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
         </div>
         
         {/* Info panel */}
-        <div className="mt-6 bg-white p-6 border border-gray-200 rounded-lg">
+        <div className="mt-6 rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
           <div className="space-y-4">
             {/* Note */}
             {observation.note && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">{t("noteTitle")}</h3>
-                <p className="text-gray-700">{observation.note}</p>
+                <h3 className="mb-2 font-semibold text-card-foreground">{t("noteTitle")}</h3>
+                <p className="text-muted-foreground">{observation.note}</p>
               </div>
             )}
 
             {/* Labels */}
             {observation.labels && observation.labels.length > 0 && (
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">{t("labelsTitle")}</h4>
+                <h4 className="mb-2 font-medium text-card-foreground">{t("labelsTitle")}</h4>
                 <div className="flex flex-wrap gap-2">
                   {[...new Set(observation.labels)].map((label, idx) => (
                     <span
                       key={`shared-label-${idx}`}
-                      className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"
+                      className="rounded-md border border-border bg-muted px-2 py-1 text-xs text-foreground"
                     >
                       {processLabel(label)}
                     </span>
@@ -398,55 +406,56 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
         </div>
       </div>
       
-      {/* Footer */}
-      <Footer />
+      {/* Footer — muted links on dark shared page */}
+      <Footer textColor="text-muted-foreground" />
       
       {/* Info Modal */}
       {showInfoModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-card text-card-foreground shadow-xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">{t("simpleSiteMobileApp")}</h2>
+            <div className="flex items-center justify-between border-b border-border p-6">
+              <h2 className="text-lg font-semibold text-card-foreground">{t("simpleSiteMobileApp")}</h2>
               <button
+                type="button"
                 onClick={() => setShowInfoModal(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
             {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <p className="text-gray-700">
+            <div className="space-y-4 p-6">
+              <p className="text-muted-foreground">
                 {t("essentialForCollecting")}
               </p>
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{t("takePhotosAndAddNotes")}</span>
+                  <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span className="text-foreground">{t("takePhotosAndAddNotes")}</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{t("gpsLocationTracking")}</span>
+                  <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span className="text-foreground">{t("gpsLocationTracking")}</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{t("automaticSyncWithSites")}</span>
+                  <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span className="text-foreground">{t("automaticSyncWithSites")}</span>
                 </div>
               </div>
               
               <div className="pt-4">
-                <p className="text-sm font-medium text-gray-900 mb-3">{t("webVsMobile")}</p>
+                <p className="mb-3 text-sm font-medium text-card-foreground">{t("webVsMobile")}</p>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <p className="font-medium text-gray-900">{t("webPortal")}</p>
-                    <p className="text-gray-600">{t("viewTeamObservationsGenerateReports")}</p>
+                    <p className="font-medium text-card-foreground">{t("webPortal")}</p>
+                    <p className="text-muted-foreground">{t("viewTeamObservationsGenerateReports")}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{t("mobileApp")}</p>
-                    <p className="text-gray-600">{t("requiredForCollectingObservations")}</p>
+                    <p className="font-medium text-card-foreground">{t("mobileApp")}</p>
+                    <p className="text-muted-foreground">{t("requiredForCollectingObservations")}</p>
                   </div>
                 </div>
               </div>

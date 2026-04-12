@@ -324,19 +324,19 @@ export function FolderUploadModal({
   return (
     <Modal isOpen={isOpen} onClose={handleCancel}>
       <div className="p-6 max-w-2xl max-h-[90vh] flex flex-col">
-        <h2 className="text-2xl font-bold mb-4 flex-shrink-0">Upload Images</h2>
+        <h2 className="mb-4 flex-shrink-0 text-2xl font-bold text-foreground">Upload Images</h2>
 
         {/* Scrollable Content */}
         <div className="overflow-y-auto flex-1 -mx-6 px-6">
           {/* Summary */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Files: {filesWithProgress.length}</span>
-            <span className="font-medium">
+          <div className="mb-4 rounded-lg border border-border bg-muted/40 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span className="font-medium text-foreground">Files: {filesWithProgress.length}</span>
+            <span className="font-medium text-foreground">
               Original Size: {formatFileSize(totalOriginalSize)}
             </span>
             {totalCompressedSize > 0 && (
-              <span className="font-medium text-green-600">
+              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                 Compressed: {formatFileSize(totalCompressedSize)} ({compressionPercentage}% saved)
               </span>
             )}
@@ -344,8 +344,8 @@ export function FolderUploadModal({
         </div>
 
         {/* File List */}
-        <div className="max-h-60 overflow-y-auto mb-4 border rounded-lg">
-          <div className="divide-y">
+        <div className="mb-4 max-h-60 overflow-y-auto rounded-lg border border-border">
+          <div className="divide-y divide-border">
             {filesWithProgress.map(fileWithProgress => (
               <FileRow
                 key={fileWithProgress.id}
@@ -358,7 +358,7 @@ export function FolderUploadModal({
         {/* Site/Project Selector */}
         {!uploadSummary && (
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Project (Optional):
             </label>
             <Select
@@ -378,7 +378,7 @@ export function FolderUploadModal({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               Associate these images with a project. You can change this later.
             </p>
           </div>
@@ -387,17 +387,17 @@ export function FolderUploadModal({
         {/* Label Selector - shown when site is selected and has labels */}
         {!uploadSummary && selectedSiteId && availableLabels.length > 0 && (
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Labels (Optional):
             </label>
             {isLoadingLabels ? (
-              <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+              <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading labels...
               </div>
             ) : (
               <>
-                <div className="p-3 border rounded-lg max-h-52 overflow-y-auto">
+                <div className="max-h-52 overflow-y-auto rounded-lg border border-border bg-muted/30 p-3">
                   {(() => {
                     const sorted = [...availableLabels].sort((a, b) => a.order_index - b.order_index);
                     const categories = [...new Set(sorted.map(l => l.category))];
@@ -414,10 +414,10 @@ export function FolderUploadModal({
                               isSelected ? prev.filter(l => l !== label.name) : [...prev, label.name]
                             );
                           }}
-                          className={`px-2 py-0.5 text-xs border transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                          className={`rounded-md border px-2 py-0.5 text-xs transition-all disabled:cursor-not-allowed disabled:opacity-50
                             ${isSelected
-                              ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                              ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                              : "border-border bg-muted text-foreground hover:bg-muted/80"
                             }`}
                         >
                           {label.name}
@@ -437,7 +437,7 @@ export function FolderUploadModal({
 
                           return (
                             <div key={category}>
-                              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">{category}</p>
+                              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{category}</p>
                               <div className="space-y-1">
                                 {/* Parents without children — all in one wrapped row */}
                                 {parents.filter(p => !childrenMap[p.id]).length > 0 && (
@@ -449,7 +449,7 @@ export function FolderUploadModal({
                                 {parents.filter(p => childrenMap[p.id]).map(parent => (
                                   <div key={parent.id}>
                                     <div className="flex flex-wrap gap-1">{labelBtn(parent)}</div>
-                                    <div className="flex flex-wrap gap-1 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                    <div className="ml-3 mt-1 flex flex-wrap gap-1 border-l-2 border-border pl-2">
                                       {childrenMap[parent.id].map(child => labelBtn(child))}
                                     </div>
                                   </div>
@@ -466,7 +466,7 @@ export function FolderUploadModal({
                     );
                   })()}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Click labels to attach them to all uploaded images.
                   {selectedLabels.length > 0 && ` (${selectedLabels.length} selected)`}
                 </p>
@@ -478,10 +478,10 @@ export function FolderUploadModal({
         {/* Plan Position */}
         {!uploadSummary && selectedSiteId && (
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Plan Position (Optional):
             </label>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="mb-2 text-xs text-muted-foreground">
               Select a plan and click to place an anchor. Applied to all uploaded images.
             </p>
             <WebPlanWidget
@@ -495,11 +495,11 @@ export function FolderUploadModal({
             />
             {pendingAnchor && (
               <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-green-600">Anchor placed.</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">Anchor placed.</p>
                 <button
                   onClick={() => { setPendingAnchor(null); setPendingPlanId(null); }}
                   disabled={isProcessing}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                  className="text-xs text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
                 >
                   Clear
                 </button>
@@ -511,7 +511,7 @@ export function FolderUploadModal({
         {/* Compression Quality Selector */}
         {!uploadSummary && (
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Compression Quality:
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -523,14 +523,15 @@ export function FolderUploadModal({
                       key={quality}
                       onClick={() => handleCompressionQualityChange(quality)}
                       disabled={isProcessing}
-                      className={`p-3 border-2 rounded-lg text-left transition-colors ${
+                      type="button"
+                      className={`rounded-lg border-2 p-3 text-left transition-colors ${
                         compressionQuality === quality
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card hover:border-muted-foreground/30"
+                      } ${isProcessing ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                     >
-                      <div className="font-semibold text-sm">{preset.label}</div>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <div className="text-sm font-semibold text-foreground">{preset.label}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {preset.description}
                       </div>
                     </button>
@@ -543,15 +544,15 @@ export function FolderUploadModal({
 
         {/* Upload Summary */}
         {uploadSummary && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mb-4 rounded-lg border border-primary/25 bg-primary/10 p-4 dark:bg-primary/15">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <div className="flex-1">
-                <p className="font-semibold text-blue-900 mb-1">Upload Complete</p>
-                <div className="text-sm text-blue-800 space-y-1">
+                <p className="mb-1 font-semibold text-foreground">Upload Complete</p>
+                <div className="space-y-1 text-sm text-foreground/90">
                   <p>Successfully uploaded: {uploadSummary.success} files</p>
                   {uploadSummary.failed > 0 && (
-                    <p className="text-red-600">Failed: {uploadSummary.failed} files</p>
+                    <p className="text-destructive">Failed: {uploadSummary.failed} files</p>
                   )}
                 </div>
               </div>
@@ -602,14 +603,14 @@ function FileRow({ fileWithProgress }: { fileWithProgress: FileWithProgress }) {
   const getStatusIcon = () => {
     switch (status) {
       case 'pending':
-        return <Clock className="h-4 w-4 text-gray-400" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
       case 'compressing':
       case 'uploading':
-        return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
       case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
 
@@ -629,34 +630,34 @@ function FileRow({ fileWithProgress }: { fileWithProgress: FileWithProgress }) {
   };
 
   return (
-    <div className="p-3 hover:bg-gray-50 transition-colors">
+    <div className="p-3 transition-colors hover:bg-muted/50">
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0">{getStatusIcon()}</div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" title={file.name}>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground" title={file.name}>
             {file.name}
           </p>
-          <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span>{formatFileSize(originalSize)}</span>
             {compressedSize && compressedSize !== originalSize && (
               <>
                 <span>→</span>
-                <span className="text-green-600 font-medium">
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
                   {formatFileSize(compressedSize)}
                 </span>
               </>
             )}
-            <span className="text-gray-400">•</span>
+            <span className="text-muted-foreground/60">•</span>
             <span className={
-              status === 'error' ? 'text-red-600' :
-              status === 'completed' ? 'text-green-600' :
-              ''
+              status === 'error' ? 'text-destructive' :
+              status === 'completed' ? 'text-emerald-600 dark:text-emerald-400' :
+              'text-muted-foreground'
             }>
               {getStatusText()}
             </span>
           </div>
           {error && (
-            <p className="text-xs text-red-600 mt-1 truncate" title={error}>
+            <p className="mt-1 truncate text-xs text-destructive" title={error}>
               {error}
             </p>
           )}

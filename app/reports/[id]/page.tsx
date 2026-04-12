@@ -1178,7 +1178,7 @@ export default function ReportDetailPage() {
                 {/* Site Logo */}
                 {displayObservations.length > 0 && displayObservations[0].sites?.logo_url && (
                   <div className="flex-shrink-0">
-                    <div className="rounded-lg border border-border bg-background/95 p-2 backdrop-blur-sm">
+                    <div className="rounded-lg border border-border bg-white p-2 shadow-sm">
                       <img
                         src={displayObservations[0].sites.logo_url}
                         alt={`${displayObservations[0].sites.name} logo`}

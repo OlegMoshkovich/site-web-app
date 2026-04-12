@@ -123,20 +123,20 @@ export function FolderUploadDropZone({ onFilesDropped }: FolderUploadDropZonePro
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       style={{ pointerEvents: 'none' }}
     >
-      <div className="bg-white p-8 rounded-lg shadow-xl max-w-md mx-4 border-4 border-dashed border-blue-500">
+      <div className="mx-4 max-w-md rounded-lg border-4 border-dashed border-primary bg-card p-8 text-card-foreground shadow-xl">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <FolderUp className="h-16 w-16 text-blue-500" />
-            <Upload className="h-8 w-8 text-blue-600 absolute -bottom-1 -right-1" />
+            <FolderUp className="h-16 w-16 text-primary" />
+            <Upload className="absolute -bottom-1 -right-1 h-8 w-8 text-primary" />
           </div>
           <div className="text-center">
-            <p className="text-xl font-semibold text-gray-900 mb-2">
+            <p className="mb-2 text-xl font-semibold text-foreground">
               Drop folder to upload images
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               All images in the folder will be extracted
             </p>
           </div>
