@@ -5,10 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ZoomIn, ZoomOut, Info, X, Download } from "lucide-react";
 import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
 import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
 import type { Observation } from "@/types/supabase";
 import { createClient } from "@/lib/supabase/client";
+import { getNavbarClasses } from "@/lib/layout-constants";
+import { homeTheme } from "@/lib/app-theme";
+import { cn } from "@/lib/utils";
 
 interface SharedPhotoViewerProps {
   observation: Observation & { sites?: { name: string; logo_url?: string | null } | null };
@@ -199,57 +203,74 @@ export function SharedPhotoViewer({ observation, imageUrl }: SharedPhotoViewerPr
     return processedLabel.replace(/\s+/g, " ").trim();
   };
 
+  const nav = getNavbarClasses({ background: "surface" });
+
   return (
     <div className="dark flex min-h-screen flex-col bg-background text-foreground">
-      {/* Top navigation bar */}
-      <nav className="sticky top-0 z-20 flex h-16 w-full justify-center border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
-        <div className="flex w-full items-center justify-between px-2 text-sm sm:px-4">
+      {/* Top navigation — same shell + button styling as home (HomeNavbar) */}
+      <nav className={nav.container}>
+        <div className={nav.content}>
           <div className="flex items-center gap-2">
             <Link
               href="/"
-              className="text-lg font-semibold text-foreground transition-colors hover:text-muted-foreground"
+              className="flex h-8 items-center rounded px-2 transition-opacity hover:opacity-80 sm:px-3"
+              title="Simple Site"
             >
-              Simple Site
+              <Image
+                src="/images/banner_logo.png"
+                alt="Simple Site"
+                width={120}
+                height={32}
+                className="h-4 w-auto max-w-none sm:h-6"
+                priority
+              />
             </Link>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            {/* Language selector */}
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="h-8 w-8 cursor-pointer appearance-none rounded-md border border-input bg-background px-0 text-center text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className={cn(
+                "h-8 min-w-[2.75rem] cursor-pointer appearance-none rounded-md border border-border bg-background px-2 text-center text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              )}
               style={{ textAlignLast: "center" }}
               title="Change Language"
+              aria-label="Change language"
             >
               <option value="en">EN</option>
               <option value="de">DE</option>
             </select>
             {isAuthenticated && (
-              <button
-                onClick={downloadPhoto}
-                className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                title="Download photo"
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
+                className={homeTheme.outlineIconButton}
+                onClick={downloadPhoto}
+                title="Download photo"
+                aria-label="Download photo"
               >
                 <Download className="h-4 w-4" />
-              </button>
+              </Button>
             )}
-            
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className={homeTheme.outlineIconButton}
               onClick={() => setShowInfoModal(true)}
-              className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              title="Info"
+              aria-label="Info"
             >
               <Info className="h-4 w-4" />
-            </button>
-          
+            </Button>
           </div>
         </div>
       </nav>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full p-4">
+      {/* Main content — width + horizontal padding aligned with home (layout-constants) */}
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-3 py-4 sm:px-8">
         {/* Image container */}
         <div 
           ref={imageContainerRef}
