@@ -28,7 +28,7 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "group flex flex-1 items-center justify-between py-2 px-0 transition-all bg-white text-black outline-1 border-b border-gray-200 text-lgmd:text-2xl sm:text-lglg:text-2xl font-semibold text-black leading-tight break-words hyphens-auto",
+        "group flex flex-1 items-center justify-between py-2 px-0 transition-all bg-background text-foreground outline-1 border-b border-border text-lgmd:text-2xl sm:text-lglg:text-2xl font-semibold leading-tight break-words hyphens-auto",
         !rightElement && "[&[data-state=open]>svg]:rotate-180",
         className
       )}
@@ -36,7 +36,7 @@ const AccordionTrigger = React.forwardRef<
     >
       {children}
       {rightElement ?? (
-        <ChevronDown className="h-6 w-6 shrink-0 text-black transition-transform duration-200" />
+        <ChevronDown className="h-6 w-6 shrink-0 text-foreground transition-transform duration-200" />
       )}
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
@@ -49,10 +49,10 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-lg md:text-2xl sm:text-lg lg:text-2xl font-semibold text-black leading-tight break-words  data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden text-lg md:text-2xl sm:text-lg lg:text-2xl font-semibold text-foreground leading-tight break-words  data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
-    <div className={cn("py-5 px-0 text-lg md:text-2xl sm:text-lg lg:text-2xl font-semibold text-black leading-tight break-words hyphens-auto", className)}>{children}</div>
+    <div className={cn("py-5 px-0 text-lg md:text-2xl sm:text-lg lg:text-2xl font-semibold text-foreground leading-tight break-words hyphens-auto", className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;

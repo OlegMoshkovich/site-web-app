@@ -5,6 +5,8 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { processLabel } from "@/lib/search-utils";
 import type { translations } from "@/lib/translations";
 import type { Label } from "@/lib/labels";
+import { homeTheme } from "@/lib/app-theme";
+import { cn } from "@/lib/utils";
 
 type TFn = (key: keyof typeof translations.en) => string;
 
@@ -88,11 +90,9 @@ export function FilterPanel({
       <button
         key={label.id}
         onClick={() => onToggleLabel(label.name)}
-        className={`px-3 py-1 text-sm border transition-colors ${
-          isSelected
-            ? "bg-black text-white border-black"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-        }`}
+        className={cn(
+          isSelected ? homeTheme.labelToggleSelected : homeTheme.labelToggle,
+        )}
       >
         {processLabel(label.name)}
       </button>
@@ -123,7 +123,7 @@ export function FilterPanel({
 
           return (
             <div key={category}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">{category}</p>
+              <p className={homeTheme.labelCategoryHeading}>{category}</p>
               <div className="space-y-1">
                 {/* Parents without children — all in one wrapped row */}
                 {parents.filter(p => !childrenMap[p.id]).length > 0 && (
@@ -135,7 +135,7 @@ export function FilterPanel({
                 {parents.filter(p => childrenMap[p.id]).map(parent => (
                   <div key={parent.id}>
                     <div className="flex flex-wrap gap-2">{labelBtn(parent)}</div>
-                    <div className="flex flex-wrap gap-2 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                    <div className={cn("flex flex-wrap gap-2 mt-1 ml-3 pl-2", homeTheme.labelHierarchyIndent)}>
                       {childrenMap[parent.id].map(child => labelBtn(child))}
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export function FilterPanel({
   return (
     <>
       {showDateSelector && (
-        <div className="sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+        <div className={cn("sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4", homeTheme.filterStickyPanel)}>
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
             <DateRangePicker
               startDate={startDate}
@@ -172,7 +172,7 @@ export function FilterPanel({
                 id="userFilter"
                 value={selectedUserId}
                 onChange={(e) => onUserChange(e.target.value)}
-                className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
+                className="px-2 py-1 text-sm border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring w-32 sm:w-auto"
               >
                 <option value="">{t("allUsers")}</option>
                 {availableUsers.map((user) => (
@@ -188,7 +188,7 @@ export function FilterPanel({
                 id="siteFilter"
                 value={selectedSiteId}
                 onChange={(e) => onSiteChange(e.target.value)}
-                className="px-2 py-1 text-sm border focus:outline-none focus:ring-primary w-32 sm:w-auto"
+                className="px-2 py-1 text-sm border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring w-32 sm:w-auto"
               >
                 <option value="">{t("allSites")}</option>
                 {availableSites.map((site) => (
@@ -234,13 +234,13 @@ export function FilterPanel({
               </Button>
             </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500 italic">{t("filteringNote")}</div>
+          <div className={homeTheme.filterNote}>{t("filteringNote")}</div>
         </div>
       )}
 
       {showSearchSelector && (
         <div
-          className="sticky z-40 flex flex-col gap-2 w-full p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+          className={cn("sticky z-40 flex flex-col gap-2 w-full p-4", homeTheme.filterStickyPanel)}
           style={{ top: showDateSelector ? '140px' : '64px' }}
         >
           <label className="text-sm font-medium text-muted-foreground">{t("search")}</label>
@@ -249,7 +249,7 @@ export function FilterPanel({
             placeholder={t("searchObservations")}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full px-3 py-2 text-base border border-gray-300 focus:outline-none focus:border-gray-400"
+            className={homeTheme.searchField}
             style={{ fontSize: "16px" }}
           />
           {searchQuery && (
@@ -264,7 +264,7 @@ export function FilterPanel({
 
       {showLabelSelector && (
         <div
-          className="sticky z-40 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
+          className={cn("sticky z-40 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4", homeTheme.filterStickyPanel)}
           style={{
             top: showDateSelector && showSearchSelector ? '240px' :
                  showDateSelector ? '140px' :
@@ -283,11 +283,9 @@ export function FilterPanel({
                       <button
                         key={label}
                         onClick={() => onToggleLabel(label)}
-                        className={`px-3 py-1 text-sm border transition-colors ${
-                          isSelected
-                            ? "bg-black text-white border-black"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                        }`}
+                        className={cn(
+                          isSelected ? homeTheme.labelToggleSelected : homeTheme.labelToggle,
+                        )}
                       >
                         {processLabel(label)}
                       </button>
@@ -303,7 +301,7 @@ export function FilterPanel({
               <div className="text-xs text-muted-foreground">
                 {selectedLabels.length} {selectedLabels.length === 1 ? t("labelSelected") : t("labelsSelected")}
               </div>
-              <button onClick={onClearLabels} className="text-xs text-blue-600 hover:text-blue-800">
+              <button type="button" onClick={onClearLabels} className={homeTheme.linkAccent}>
                 {t("clearAllLabels")}
               </button>
             </div>

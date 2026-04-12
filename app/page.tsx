@@ -17,11 +17,12 @@ import { CampaignModal } from "@/components/campaign-modal";
 import { HomeNavbar } from "@/components/home-navbar";
 import { ObservationsFeed } from "@/components/observations-feed";
 import { SelectionActions } from "@/components/selection-actions";
-import { HomeBottomBar } from "@/components/home-bottom-bar";
+import { HomeAppFooter } from "@/components/home-app-footer";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
 import { getContentClasses } from "@/lib/layout-constants";
+import { homeTheme } from "@/lib/app-theme";
 import { FolderUp } from "lucide-react";
 import { useObservationsStore } from "@/lib/store/observations-store";
 import { usePhotoDownload } from "@/lib/hooks/use-photo-download";
@@ -64,6 +65,7 @@ export default function Home() {
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
   const [showModelMenu, setShowModelMenu] = useState<boolean>(false);
+  const [claudeOpen, setClaudeOpen] = useState(false);
   const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
@@ -283,7 +285,7 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen flex flex-col items-center relative ${user ? 'pb-10' : ''} ${selectionBox ? 'select-none' : ''}`}
+      className={`min-h-screen flex flex-col items-center relative ${user ? homeTheme.main : ''} ${user ? 'pb-24 sm:pb-28' : ''} ${selectionBox ? 'select-none' : ''}`}
       style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
       onMouseDown={handleSelectionStart}
     >
@@ -319,13 +321,13 @@ export default function Home() {
         )}
 
         {user && (
-          <div className="sm:hidden sticky top-16 z-40 w-full bg-white pb-[10px]">
+          <div className={homeTheme.mobileUploadStrip}>
             <div className="w-full max-w-6xl mx-auto px-3">
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
                 size="sm"
-                className="w-full h-8 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                className={homeTheme.mobileUploadButton}
                 title={t("uploadPhotos")}
               >
                 <FolderUp className="h-4 w-4" />
@@ -344,7 +346,7 @@ export default function Home() {
                 </h1>
                 <div className="mt-8">
                   <div className="flex justify-center">
-                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-gray-200 animate-pulse rounded-lg" />}>
+                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-muted animate-pulse rounded-lg" />}>
                       <UserManualCarousel width={600} mobileHeight={300} desktopHeight={400} />
                     </Suspense>
                   </div>
@@ -410,7 +412,7 @@ export default function Home() {
                 <div className="space-y-6">
                   <p className="text-muted-foreground text-lg">{t('noObservationsPastTwoDays')}</p>
                   <div className="space-y-4">
-                    <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
+                    <p className="text-sm text-muted-foreground">{t('loadObservationsLongerPeriod')}</p>
                     <div className="flex flex-wrap justify-center gap-3">
                       {(['week', 'month'] as const).map((type) => (
                         <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className="shadow-md hover:shadow-lg transition-all">
@@ -423,7 +425,19 @@ export default function Home() {
               </div>
             )}
 
-            {!isLoading && <Footer user={user} textColor={user ? "text-black" : "text-white"} />}
+            {!isLoading &&
+              (user ? (
+                <HomeAppFooter
+                  onUploadClick={() => fileInputRef.current?.click()}
+                  showModelMenu={showModelMenu}
+                  onToggleModelMenu={() => setShowModelMenu(!showModelMenu)}
+                  claudeOpen={claudeOpen}
+                  onClaudeToggle={() => setClaudeOpen((o) => !o)}
+                  t={t}
+                />
+              ) : (
+                <Footer />
+              ))}
           </div>
         </div>
       </div>
@@ -497,21 +511,16 @@ export default function Home() {
       />
 
       {user && (
-        <HomeBottomBar
-          onUploadClick={() => fileInputRef.current?.click()}
-          showModelMenu={showModelMenu}
-          onToggleModelMenu={() => setShowModelMenu(!showModelMenu)}
-          t={t}
+        <ClaudeChat
+          selectedObservations={selectedObservations}
+          allObservations={observations.filter(obs => obs.taken_at !== null || obs.photo_date !== null).map(obs => ({
+            ...obs, taken_at: obs.taken_at || obs.photo_date || obs.created_at,
+          }))}
+          onLoadMoreData={async (period: 'week' | 'month') => { await loadMoreObservations(user.id, period); }}
+          isOpen={claudeOpen}
+          onOpenChange={setClaudeOpen}
         />
       )}
-
-      {user && <ClaudeChat
-        selectedObservations={selectedObservations}
-        allObservations={observations.filter(obs => obs.taken_at !== null || obs.photo_date !== null).map(obs => ({
-          ...obs, taken_at: obs.taken_at || obs.photo_date || obs.created_at,
-        }))}
-        onLoadMoreData={async (period: 'week' | 'month') => { await loadMoreObservations(user.id, period); }}
-      />}
 
       {selectionBox && (() => {
         const left = Math.min(selectionBox.startX, selectionBox.currentX);
@@ -519,7 +528,10 @@ export default function Home() {
         const width = Math.abs(selectionBox.currentX - selectionBox.startX);
         const height = Math.abs(selectionBox.currentY - selectionBox.startY);
         return (
-          <div className="fixed pointer-events-none z-[5]" style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, border: '2px solid #3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' }} />
+          <div
+            className={`fixed pointer-events-none z-[5] ${homeTheme.selectionOverlay}`}
+            style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` }}
+          />
         );
       })()}
 

@@ -56,7 +56,7 @@ export function ObservationCard({
         <Badge
           key={`${observation.id}-label-${idx}`}
           variant="outline"
-          className="text-[10px] leading-tight px-1 py-0 border border-gray-300 bg-gray-50 text-gray-600 truncate max-w-[50ch]"
+          className="text-[10px] leading-tight px-1 py-0 border border-border bg-muted/60 text-muted-foreground truncate max-w-[50ch]"
         >
           {processLabel(label)}
         </Badge>
@@ -77,7 +77,7 @@ export function ObservationCard({
       <Checkbox
         checked={isSelected}
         onCheckedChange={() => onToggleSelect(observation.id)}
-        className="bg-white border-2 border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 shadow-md w-5 h-5"
+        className="bg-background border-2 border-border data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 shadow-md w-5 h-5"
       />
     </div>
   );
@@ -105,8 +105,8 @@ export function ObservationCard({
             onToggleSelect(observation.id);
           }}
         >
-          <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-400 border-t-transparent"></div>
+          <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent"></div>
           </div>
           <Image
             src={observation.signedUrl as string}
@@ -150,24 +150,24 @@ export function ObservationCard({
     <div className="w-full">
       <div
         data-observation-id={observation.id}
-        className={`relative aspect-square w-full overflow-hidden group select-none cursor-pointer bg-gradient-to-br from-gray-100 to-gray-200 border-2 ${
-          isSelected ? "ring-2 ring-blue-500 ring-offset-1 border-blue-400" : "border-gray-300"
+        className={`relative aspect-square w-full overflow-hidden group select-none cursor-pointer bg-gradient-to-br from-muted to-muted/70 border-2 ${
+          isSelected ? "ring-2 ring-blue-500 ring-offset-1 border-blue-400" : "border-border"
         }`}
         onClick={() => {
           if (isDragging) return;
           onToggleSelect(observation.id);
         }}
       >
-        <div className="absolute top-0 left-0 right-0 bg-gray-800 text-white p-1.5 text-xs">
+        <div className="absolute top-0 left-0 right-0 bg-foreground text-background p-1.5 text-xs">
           <p className="text-center leading-tight">{timeStr}</p>
         </div>
         <div className="absolute inset-0 flex items-center justify-center p-3 pt-10 pb-10">
-          <p className="text-xs text-gray-700 line-clamp-6 text-center leading-tight">
+          <p className="text-xs text-foreground line-clamp-6 text-center leading-tight">
             {observation.note}
           </p>
         </div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
-          <FileText className="h-12 w-12 text-gray-400" />
+          <FileText className="h-12 w-12 text-muted-foreground" />
         </div>
         <button
           onClick={(e) => onOpenPhoto(observation, e)}
