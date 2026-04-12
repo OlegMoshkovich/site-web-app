@@ -19,7 +19,6 @@ import {
   Loader2,
   Edit3,
   Check,
-  Trash2,
 } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useRouter, useParams } from "next/navigation";
@@ -28,7 +27,11 @@ import { generateWordReport, downloadWordDocument } from "@/lib/wordExport";
 import Image from "next/image";
 import { translations, type Language } from "@/lib/translations";
 import { resolveObservationDateTime } from "@/lib/observation-dates";
-import { getLabelsForSite, type Label } from "@/lib/labels";
+import {
+  getLabelsForSite,
+  sortLabelNamesBySiteLabelDefinitions,
+  type Label,
+} from "@/lib/labels";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ReportNavbar } from "@/components/report-navbar";
@@ -283,20 +286,6 @@ export default function ReportDetailPage() {
     setObservations(prev => prev.map(o => o.id === observationId ? { ...o, labels: next } : o));
     setPendingChanges(prev => ({ ...prev, [observationId]: { ...prev[observationId], labels: next } }));
   }, []);
-
-  const handleRemoveObservation = useCallback(async (observationId: string) => {
-    if (!confirm('Remove this observation from the report?')) return;
-    const { error } = await supabase
-      .from('report_observations')
-      .delete()
-      .eq('report_id', reportId)
-      .eq('observation_id', observationId);
-    if (error) {
-      alert('Failed to remove observation.');
-      return;
-    }
-    setObservations(prev => prev.filter(o => o.id !== observationId));
-  }, [supabase, reportId]);
 
   const handleCommitChanges = useCallback(async () => {
     const entries = Object.entries(pendingChanges);
@@ -558,31 +547,8 @@ export default function ReportDetailPage() {
         return yPosition;
       };
 
-      // Build label order map from siteLabels: parent → children, respecting order_index
-      // Result: a flat ordered list where each parent is immediately followed by its children
-      const labelOrderMap = new Map<string, number>();
-      {
-        let idx = 0;
-        const parents = [...siteLabels]
-          .filter(l => !l.parent_id)
-          .sort((a, b) => (a.order_index - b.order_index) || a.name.localeCompare(b.name));
-        for (const parent of parents) {
-          labelOrderMap.set(parent.name, idx++);
-          const children = [...siteLabels]
-            .filter(l => l.parent_id === parent.id)
-            .sort((a, b) => (a.order_index - b.order_index) || a.name.localeCompare(b.name));
-          for (const child of children) {
-            labelOrderMap.set(child.name, idx++);
-          }
-        }
-        // Orphan labels (not in siteLabels) get appended at the end
-      }
-      const sortLabelsBySettings = (labels: string[]) =>
-        [...labels].sort((a, b) => {
-          const ai = labelOrderMap.has(a) ? labelOrderMap.get(a)! : Number.MAX_SAFE_INTEGER;
-          const bi = labelOrderMap.has(b) ? labelOrderMap.get(b)! : Number.MAX_SAFE_INTEGER;
-          return ai !== bi ? ai - bi : a.localeCompare(b);
-        });
+      const sortLabelsBySettings = (labels: string[] | null | undefined) =>
+        sortLabelNamesBySiteLabelDefinitions(labels ?? [], siteLabels);
 
       // Add header to first page with full details
       let yPosition = await addHeader(true);
@@ -821,7 +787,7 @@ export default function ReportDetailPage() {
               pdf.text('Labels:', margin, yPosition);
               pdf.setFont('helvetica', 'normal');
               const bereichWidth = pdf.getTextWidth('Labels:');
-              pdf.text(observation.labels.join(', '), margin + bereichWidth + 2, yPosition);
+              pdf.text(sortLabelsBySettings(observation.labels).join(', '), margin + bereichWidth + 2, yPosition);
               yPosition += 8;
             }
 
@@ -879,8 +845,21 @@ export default function ReportDetailPage() {
         gps: true
       };
 
+      const observationsForWord = displayObservations.map((o) => ({
+        ...o,
+        labels:
+          o.labels && o.labels.length > 0
+            ? sortLabelNamesBySiteLabelDefinitions([...o.labels], siteLabels)
+            : o.labels,
+      }));
+
       // Generate Word document with quality parameter
-      const blob = await generateWordReport(displayObservations, reportData, displaySettings, quality);
+      const blob = await generateWordReport(
+        observationsForWord,
+        reportData,
+        displaySettings,
+        quality
+      );
 
       // Download the document
       const filename = report?.title
@@ -1232,7 +1211,10 @@ export default function ReportDetailPage() {
               {/* All unique labels */}
               {(() => {
                 const allLabels = observations.flatMap(obs => obs.labels || []);
-                const uniqueLabels = [...new Set(allLabels)];
+                const uniqueLabels = sortLabelNamesBySiteLabelDefinitions(
+                  [...new Set(allLabels)],
+                  siteLabels
+                );
                 if (uniqueLabels.length > 0) {
                   return (
                     <div className="border-t border-border pt-4">
@@ -1334,15 +1316,6 @@ export default function ReportDetailPage() {
                                 />
                               </CardTitle>
                             </div>
-                            {isAuthenticated && (
-                              <button
-                                onClick={() => handleRemoveObservation(observation.id)}
-                                className="flex-shrink-0 rounded p-1 text-muted-foreground transition-colors hover:text-destructive print:hidden"
-                                title="Remove from report"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            )}
                           </div>
                         </CardHeader>
 
@@ -1350,7 +1323,10 @@ export default function ReportDetailPage() {
                           <div className="space-y-3 print:space-y-2">
                             {/* Labels */}
                             <div className="flex flex-wrap gap-1 items-center">
-                              {[...new Set(observation.labels || [])].map((label) => (
+                              {sortLabelNamesBySiteLabelDefinitions(
+                                [...new Set(observation.labels || [])],
+                                siteLabels
+                              ).map((label) => (
                                 <Badge
                                   key={`${observation.id}-${label}`}
                                   variant="outline"
@@ -1395,12 +1371,21 @@ export default function ReportDetailPage() {
                                       </div>
                                       {/* Label list */}
                                       <div className="max-h-48 overflow-y-auto py-1">
-                                        {siteLabels
-                                          .filter(l =>
-                                            !(observation.labels || []).includes(l.name) &&
-                                            l.name.toLowerCase().includes(labelFilter.toLowerCase())
-                                          )
-                                          .map(label => (
+                                        {(() => {
+                                          const filtered = siteLabels.filter(
+                                            (l) =>
+                                              !(observation.labels || []).includes(l.name) &&
+                                              l.name.toLowerCase().includes(labelFilter.toLowerCase())
+                                          );
+                                          const orderedNames = sortLabelNamesBySiteLabelDefinitions(
+                                            filtered.map((l) => l.name),
+                                            siteLabels
+                                          );
+                                          const byName = new Map(filtered.map((l) => [l.name, l]));
+                                          return orderedNames
+                                            .map((name) => byName.get(name))
+                                            .filter((l): l is Label => l != null)
+                                            .map((label) => (
                                             <button
                                               key={label.id}
                                               onMouseDown={(e) => {
@@ -1417,7 +1402,8 @@ export default function ReportDetailPage() {
                                             >
                                               {label.name}
                                             </button>
-                                          ))}
+                                          ));
+                                        })()}
                                         {siteLabels.filter(l =>
                                           !(observation.labels || []).includes(l.name) &&
                                           l.name.toLowerCase().includes(labelFilter.toLowerCase())
@@ -1513,9 +1499,6 @@ export default function ReportDetailPage() {
                                         }}
                                       />
                                     )}
-                                    <div className="absolute bottom-1 left-2 rounded bg-background/90 px-1 text-xs text-muted-foreground backdrop-blur-sm">
-                                      {planData.name}
-                                    </div>
                                   </div>
                                 </div>
                               );
@@ -1723,7 +1706,10 @@ export default function ReportDetailPage() {
                   <div>
                     <h4 className="mb-2 font-medium text-card-foreground">{t("labelsTitle")}</h4>
                     <div className="flex flex-wrap gap-2">
-                      {[...new Set(selectedPhoto.labels)].map((label, idx) => (
+                      {sortLabelNamesBySiteLabelDefinitions(
+                        [...new Set(selectedPhoto.labels)],
+                        siteLabels
+                      ).map((label, idx) => (
                         <span
                           key={idx}
                           className="rounded border border-border bg-muted/50 px-2 py-1 text-xs text-foreground"

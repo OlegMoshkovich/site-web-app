@@ -84,6 +84,9 @@ export const translations = {
 
     // Note
     noteTitle: "Note",
+    observationEditSignInRequired: "Please sign in to edit observations.",
+    observationEditNotOwner:
+      "You can't edit this observation because it doesn't belong to you. Only the user who created it can make changes.",
     noNote: "No note",
     createdBy: "Created by",
     
@@ -416,6 +419,10 @@ export const translations = {
 
     // Note
     noteTitle: "Notiz",
+    observationEditSignInRequired:
+      "Bitte melden Sie sich an, um Beobachtungen zu bearbeiten.",
+    observationEditNotOwner:
+      "Sie können diese Beobachtung nicht bearbeiten, da sie Ihnen nicht gehört. Nur der Ersteller kann Änderungen vornehmen.",
     noNote: "Keine Anmerkungen",
     createdBy: "Erstellt von",
     

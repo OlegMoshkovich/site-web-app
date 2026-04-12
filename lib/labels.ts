@@ -16,6 +16,52 @@ export interface LabelHierarchy {
 }
 
 /**
+ * Build a total order for label names from site label definitions (settings):
+ * each root label (no parent), then its children, by order_index then name.
+ * Used for consistent display on reports, PDF, etc.
+ */
+export function buildLabelOrderMap(siteLabels: Label[]): Map<string, number> {
+  const labelOrderMap = new Map<string, number>();
+  let idx = 0;
+  const parents = [...siteLabels]
+    .filter((l) => !l.parent_id)
+    .sort(
+      (a, b) =>
+        a.order_index - b.order_index || a.name.localeCompare(b.name)
+    );
+  for (const parent of parents) {
+    labelOrderMap.set(parent.name, idx++);
+    const children = [...siteLabels]
+      .filter((l) => l.parent_id === parent.id)
+      .sort(
+        (a, b) =>
+          a.order_index - b.order_index || a.name.localeCompare(b.name)
+      );
+    for (const child of children) {
+      labelOrderMap.set(child.name, idx++);
+    }
+  }
+  return labelOrderMap;
+}
+
+/**
+ * Sort label names for display/export to match settings order (parent → children).
+ * Names not defined in siteLabels sort last, then by localeCompare.
+ */
+export function sortLabelNamesBySiteLabelDefinitions(
+  labelNames: string[],
+  siteLabels: Label[]
+): string[] {
+  const unique = [...new Set(labelNames.filter(Boolean))];
+  const orderMap = buildLabelOrderMap(siteLabels);
+  return unique.sort((a, b) => {
+    const ai = orderMap.has(a) ? orderMap.get(a)! : Number.MAX_SAFE_INTEGER;
+    const bi = orderMap.has(b) ? orderMap.get(b)! : Number.MAX_SAFE_INTEGER;
+    return ai !== bi ? ai - bi : a.localeCompare(b);
+  });
+}
+
+/**
  * Get all labels for a specific site (all collaborators' labels)
  */
 export async function getLabelsForSite(siteId: string, userId?: string): Promise<Label[]> {

@@ -14,6 +14,7 @@ import { buildObservationPhotoDownloadBlob } from "@/lib/build-observation-downl
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { useLanguage, useTranslations } from "@/lib/translations";
 
 /** Toolbar / nav controls on top of the photo — theme-aware, readable on varied imagery */
 const photoToolbarBtn =
@@ -57,6 +58,10 @@ export function PhotoModal({
   prevImageUrl,
 }: PhotoModalProps) {
   const supabase = createClient();
+  const { language } = useLanguage();
+  const t = useTranslations(language);
+  /** `undefined` = auth not resolved yet for this open session */
+  const [viewerUserId, setViewerUserId] = useState<string | null | undefined>(undefined);
   const [imageLoading, setImageLoading] = useState(true);
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [shareSuccess, setShareSuccess] = useState(false);
@@ -95,6 +100,39 @@ export function PhotoModal({
   const anchorY: number | null = observation.plan_anchor?.y ?? null;
   const hasPlanAnchor =
     anchorX != null && anchorY != null && !(anchorX === 0 && anchorY === 0);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setViewerUserId(undefined);
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!cancelled) setViewerUserId(user?.id ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, supabase, observation.id]);
+
+  const assertCanEditObservation = useCallback((): boolean => {
+    if (viewerUserId === undefined) return false;
+    if (!viewerUserId) {
+      alert(t("observationEditSignInRequired"));
+      return false;
+    }
+    if (viewerUserId !== observation.user_id) {
+      alert(t("observationEditNotOwner"));
+      return false;
+    }
+    return true;
+  }, [viewerUserId, observation.user_id, t]);
+
+  const isObservationOwner =
+    viewerUserId !== undefined &&
+    viewerUserId !== null &&
+    viewerUserId === observation.user_id;
 
   // Load all available plans for the site
   useEffect(() => {
@@ -357,9 +395,10 @@ export function PhotoModal({
   }, [observation.id]);
 
   const handleStartEditNote = useCallback(() => {
+    if (!assertCanEditObservation()) return;
     setEditNoteValue(observation.note || "");
     setEditingNote(true);
-  }, [observation.note]);
+  }, [assertCanEditObservation, observation.note]);
 
   const handleCancelEditNote = useCallback(() => {
     setEditingNote(false);
@@ -367,6 +406,7 @@ export function PhotoModal({
   }, []);
 
   const handleSaveNote = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -394,12 +434,13 @@ export function PhotoModal({
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, editNoteValue, onObservationUpdate]);
+  }, [supabase, observation, editNoteValue, onObservationUpdate, assertCanEditObservation]);
 
   const handleStartEditLabels = useCallback(() => {
+    if (!assertCanEditObservation()) return;
     setSelectedLabelNames(new Set(observation.labels || []));
     setEditingLabels(true);
-  }, [observation.labels]);
+  }, [assertCanEditObservation, observation.labels]);
 
   const handleCancelEditLabels = useCallback(() => {
     setEditingLabels(false);
@@ -419,6 +460,7 @@ export function PhotoModal({
   }, []);
 
   const handleSaveLabels = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     setIsSaving(true);
     try {
       // Convert selected label names to array
@@ -448,9 +490,10 @@ export function PhotoModal({
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
+  }, [supabase, observation, selectedLabelNames, onObservationUpdate, assertCanEditObservation]);
 
   const handleRemoveLabel = useCallback(async (labelName: string) => {
+    if (!assertCanEditObservation()) return;
     const newLabels = (observation.labels || []).filter(l => l !== labelName);
     const next = newLabels.length > 0 ? newLabels : null;
     const { error } = await supabase
@@ -459,7 +502,7 @@ export function PhotoModal({
       .eq("id", observation.id);
     if (error) { console.error("Error removing label:", error); return; }
     if (onObservationUpdate) onObservationUpdate({ ...observation, labels: next });
-  }, [supabase, observation, onObservationUpdate]);
+  }, [supabase, observation, onObservationUpdate, assertCanEditObservation]);
 
   const handlePrint = useCallback(() => {
     const dateStr = resolveObservationDateTime(observation).toLocaleString('en-GB');
@@ -627,6 +670,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
   }, [editingPlanAnchor]);
 
   const handleSavePlanAnchor = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     if (!pendingAnchor) return;
     setIsSaving(true);
     try {
@@ -655,7 +699,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, pendingAnchor, onObservationUpdate]);
+  }, [supabase, observation, pendingAnchor, onObservationUpdate, assertCanEditObservation]);
 
   return (
     <>
@@ -824,13 +868,20 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                       className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs text-foreground"
                     >
                       {label}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setLabelToRemove(label); }}
-                        className="leading-none text-muted-foreground transition-colors hover:text-destructive"
-                        title="Remove label"
-                      >
-                        ×
-                      </button>
+                      {isObservationOwner && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!assertCanEditObservation()) return;
+                            setLabelToRemove(label);
+                          }}
+                          className="leading-none text-muted-foreground transition-colors hover:text-destructive"
+                          title="Remove label"
+                        >
+                          ×
+                        </button>
+                      )}
                     </span>
                   ))}
                 </div>
@@ -923,14 +974,15 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-foreground">Beschreibung</h3>
                 {!editingNote && (
-                  <button
-                    onClick={handleStartEditNote}
-                    className="p-1 text-muted-foreground transition-colors hover:text-primary"
-                    title="Edit note"
-                    disabled={isSaving}
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
+                <button
+                  type="button"
+                  onClick={handleStartEditNote}
+                  className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                  title="Edit note"
+                  disabled={isSaving || viewerUserId === undefined}
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
                 )}
               </div>
               {editingNote ? (
@@ -1132,10 +1184,11 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-foreground">Labels</h4>
                 <button
+                  type="button"
                   onClick={handleStartEditLabels}
-                  className="p-1 text-muted-foreground transition-colors hover:text-primary"
+                  className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                   title="Edit labels"
-                  disabled={isSaving}
+                  disabled={isSaving || viewerUserId === undefined}
                 >
                   <Edit3 className="h-4 w-4" />
                 </button>
@@ -1170,9 +1223,15 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   <h4 className="font-semibold text-foreground">Planposition</h4>
                 </div>
                 <button
-                  onClick={() => { setAddingPlanAnchor(true); setEditingPlanAnchor(true); setPendingAnchor(null); }}
-                  className="text-xs text-muted-foreground transition-colors hover:text-primary"
-                  disabled={isSaving}
+                  type="button"
+                  onClick={() => {
+                    if (!assertCanEditObservation()) return;
+                    setAddingPlanAnchor(true);
+                    setEditingPlanAnchor(true);
+                    setPendingAnchor(null);
+                  }}
+                  className="text-xs text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                  disabled={isSaving || viewerUserId === undefined}
                 >
                   + Planposition hinzufügen
                 </button>
@@ -1184,10 +1243,15 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   <h4 className="font-semibold text-foreground">Planposition</h4>
                   {!editingPlanAnchor ? (
                     <button
-                      onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
-                      className="p-1 text-muted-foreground transition-colors hover:text-primary"
+                      type="button"
+                      onClick={() => {
+                        if (!assertCanEditObservation()) return;
+                        setEditingPlanAnchor(true);
+                        setPendingAnchor(null);
+                      }}
+                      className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                       title="Edit plan position"
-                      disabled={isSaving}
+                      disabled={isSaving || viewerUserId === undefined}
                     >
                       <Edit3 className="h-4 w-4" />
                     </button>
