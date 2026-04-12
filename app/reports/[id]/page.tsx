@@ -356,7 +356,7 @@ export default function ReportDetailPage() {
   const [labelFilter, setLabelFilter] = useState('');
   const [observationSortMode, setObservationSortMode] = useState<
     "selection" | "timeline"
-  >("selection");
+  >("timeline");
 
   const displayObservations = useMemo(() => {
     if (observationSortMode === "selection") {
@@ -1285,18 +1285,6 @@ export default function ReportDetailPage() {
                           <div className="absolute left-0 top-0 flex h-8 w-8 items-center justify-center bg-foreground text-background text-sm font-bold shadow-md">
                             {index + 1}
                           </div>
-                          {/* Site Logo overlay on each photo */}
-                          {observation.sites?.logo_url && (
-                            <div className="absolute bottom-2 right-2 z-10">
-                              <div className="rounded-lg p-1.5 opacity-80">
-                                <img
-                                  src={observation.sites.logo_url}
-                                  alt={`${observation.sites.name} logo`}
-                                  className="h-6 w-auto object-contain rounded opacity-90"
-                                />
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
 
@@ -1663,19 +1651,6 @@ export default function ReportDetailPage() {
               {scale !== 1 && (
                 <div className="absolute bottom-4 right-4 z-30 rounded border border-border bg-card/95 px-2 py-1 text-xs text-foreground shadow-lg backdrop-blur-sm">
                   {Math.round(scale * 100)}%
-                </div>
-              )}
-
-              {/* Site logo overlay */}
-              {selectedPhoto.sites?.logo_url && (
-                <div className="absolute left-4 top-4 z-30">
-                  <div className="rounded-lg border border-border bg-card/95 p-2 shadow-lg backdrop-blur-sm">
-                    <img
-                      src={selectedPhoto.sites.logo_url}
-                      alt={`${selectedPhoto.sites.name} logo`}
-                      className="w-12 h-12 object-contain rounded"
-                    />
-                  </div>
                 </div>
               )}
 

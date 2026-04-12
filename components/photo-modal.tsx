@@ -510,9 +510,7 @@ export function PhotoModal({
     const labels  = observation.labels ? [...new Set(observation.labels)] : [];
     const note     = observation.note || '';
     const createdBy = observation.user_email || `User ${observation.user_id.slice(0, 8)}...`;
-    const logoHtml  = observation.sites?.logo_url
-      ? `<img src="${observation.sites.logo_url}" class="logo" />`
-      : '';
+    const logoHtml = "";
 
     // ── Plan block ────────────────────────────────────────────────────────────
     // Use percentage-based positioning so the dot stays correct at any width.
@@ -738,19 +736,6 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             >
               <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" aria-hidden />
               <span className="text-sm font-medium text-foreground">Preparing download…</span>
-            </div>
-          )}
-          
-          {/* Site Logo */}
-          {observation.sites?.logo_url && (
-            <div className="absolute top-4 left-4 z-30">
-              <div className="rounded-lg border border-border bg-card/90 p-2 shadow-lg backdrop-blur-sm">
-                <img 
-                  src={observation.sites.logo_url} 
-                  alt={`${observation.sites.name} logo`}
-                  className="w-12 h-12 object-contain rounded opacity-90"
-                />
-              </div>
             </div>
           )}
 
