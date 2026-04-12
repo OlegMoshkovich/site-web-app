@@ -120,6 +120,9 @@ export const translations = {
     errorLoadingReport: "Error loading report",
     tryAgain: "Try Again",
     noPhotoAvailable: "No photo available",
+    observationOrder: "Observation order",
+    observationOrderTimeline: "Timeline",
+    observationOrderSelection: "Selection order",
     
     // Settings page
     back: "Back",
@@ -449,6 +452,9 @@ export const translations = {
     errorLoadingReport: "Fehler beim Laden des Berichts",
     tryAgain: "Erneut versuchen",
     noPhotoAvailable: "Kein Foto verfügbar",
+    observationOrder: "Beobachtungsreihenfolge",
+    observationOrderTimeline: "Zeitachse",
+    observationOrderSelection: "Auswahlreihenfolge",
     
     // Settings page
     back: "Zurück",

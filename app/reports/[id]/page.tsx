@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Info,
   X,
-  Download,
   ZoomIn,
   ZoomOut,
   Loader2,
-  ArrowLeft,
   Edit3,
   Check,
   Trash2,
@@ -33,6 +31,7 @@ import { resolveObservationDateTime } from "@/lib/observation-dates";
 import { getLabelsForSite, type Label } from "@/lib/labels";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ReportNavbar } from "@/components/report-navbar";
 
 interface Report {
   id: string;
@@ -118,7 +117,7 @@ function EditableText({
   };
 
   if (!enabled) {
-    return <span className={className}>{value || <span className="text-gray-400 italic">{placeholder}</span>}</span>;
+    return <span className={className}>{value || <span className="text-muted-foreground italic">{placeholder}</span>}</span>;
   }
 
   if (isEditing) {
@@ -149,10 +148,10 @@ function EditableText({
   return (
     <span
       onClick={() => setIsEditing(true)}
-      className={`cursor-text hover:bg-blue-50 rounded px-1 -mx-1 transition-colors group relative ${className}`}
+      className={`cursor-text rounded px-1 -mx-1 transition-colors hover:bg-muted/60 group relative ${className}`}
       title="Click to edit"
     >
-      {value || <span className="text-gray-400 italic">{placeholder}</span>}
+      {value || <span className="text-muted-foreground italic">{placeholder}</span>}
     </span>
   );
 }
@@ -366,6 +365,20 @@ export default function ReportDetailPage() {
   const [siteLabels, setSiteLabels] = useState<Label[]>([]);
   const [addingLabelFor, setAddingLabelFor] = useState<string | null>(null);
   const [labelFilter, setLabelFilter] = useState('');
+  const [observationSortMode, setObservationSortMode] = useState<
+    "selection" | "timeline"
+  >("selection");
+
+  const displayObservations = useMemo(() => {
+    if (observationSortMode === "selection") {
+      return observations;
+    }
+    return [...observations].sort(
+      (a, b) =>
+        resolveObservationDateTime(a).getTime() -
+        resolveObservationDateTime(b).getTime()
+    );
+  }, [observations, observationSortMode]);
 
   // Mouse and touch event listeners for modal
   useEffect(() => {
@@ -457,14 +470,14 @@ export default function ReportDetailPage() {
         yPosition += titleLines.length * 7; // Adjust for multiple lines
 
         // Add site logo in top-right corner if available
-        if (observations.length > 0 && observations[0].sites?.logo_url) {
+        if (displayObservations.length > 0 && displayObservations[0].sites?.logo_url) {
           try {
             const logoImg = new window.Image();
             logoImg.crossOrigin = 'anonymous';
             await new Promise((resolve, reject) => {
               logoImg.onload = resolve;
               logoImg.onerror = reject;
-              logoImg.src = observations[0].sites!.logo_url!;
+              logoImg.src = displayObservations[0].sites!.logo_url!;
             });
 
             const logoCanvas = document.createElement('canvas');
@@ -575,8 +588,8 @@ export default function ReportDetailPage() {
       let yPosition = await addHeader(true);
 
       // Process each observation
-      for (let i = 0; i < observations.length; i++) {
-        const observation = observations[i];
+      for (let i = 0; i < displayObservations.length; i++) {
+        const observation = displayObservations[i];
 
         // Check if we need a new page - adjusted for 2 observations per page
         if (yPosition > pageHeight - 120) {
@@ -867,7 +880,7 @@ export default function ReportDetailPage() {
       };
 
       // Generate Word document with quality parameter
-      const blob = await generateWordReport(observations, reportData, displaySettings, quality);
+      const blob = await generateWordReport(displayObservations, reportData, displaySettings, quality);
 
       // Download the document
       const filename = report?.title
@@ -1111,10 +1124,10 @@ export default function ReportDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col items-center">
-        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+      <main className="flex min-h-screen flex-col items-center bg-background text-foreground">
+        <div className="flex w-full flex-1 flex-col items-center gap-0">
           <div className="flex items-center justify-center py-12">
-            <div className="text-gray-500">Loading report...</div>
+            <div className="text-muted-foreground">Loading report...</div>
           </div>
         </div>
       </main>
@@ -1123,11 +1136,11 @@ export default function ReportDetailPage() {
 
   if (!report) {
     return (
-      <main className="min-h-screen flex flex-col items-center">
-        <div className="flex-1 w-full flex flex-col gap-0 items-center">
+      <main className="flex min-h-screen flex-col items-center bg-background text-foreground">
+        <div className="flex w-full flex-1 flex-col items-center gap-0">
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Report not found</h3>
-            <p className="text-gray-500 mb-4">The report you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
+            <h3 className="mb-2 text-lg font-medium text-foreground">Report not found</h3>
+            <p className="mb-4 text-muted-foreground">The report you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
             <Button onClick={() => router.push('/reports')} variant="outline">
               Back to Reports
             </Button>
@@ -1139,129 +1152,57 @@ export default function ReportDetailPage() {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top navigation bar */}
-      <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="w-full flex justify-between items-center px-2 sm:px-4 text-sm">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push('/')}
-              className="hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <Image
-                src="/images/banner_logo.png"
-                alt="Site Logo"
-                width={120}
-                height={32}
-                className="w-auto object-contain lg:h-6 h-5"
-              />
-            </button>
-            {isAuthenticated && (
-              <button
-                onClick={() => router.push('/reports')}
-                className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
-                title="Back to Reports"
-              >
-                <ArrowLeft className="h-5 w-5 text-gray-600" />
-              </button>
-            )}
-          </div>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <ReportNavbar
+        t={t}
+        isAuthenticated={isAuthenticated}
+        onBackToReports={() => router.push("/reports")}
+        onPdfClick={() => {
+          setDownloadType("pdf");
+          setShowQualityDialog(true);
+        }}
+        pdfDisabled={isGeneratingPDF}
+        pdfLoading={isGeneratingPDF}
+        pdfLabelShort={isGeneratingPDF ? "Generating..." : "PDF"}
+        onWordClick={() => {
+          setDownloadType("word");
+          setShowQualityDialog(true);
+        }}
+        wordDisabled={isGeneratingWord}
+        wordLoading={isGeneratingWord}
+        wordLabelShort={isGeneratingWord ? "Generating..." : "Word"}
+        onInfoClick={() => setShowInfoModal(true)}
+        showSave={isAuthenticated && Object.keys(pendingChanges).length > 0}
+        onSave={handleCommitChanges}
+        saveDisabled={isSavingAll}
+        saveLoading={isSavingAll}
+        saveSuccess={saveSuccess}
+        saveCount={Object.keys(pendingChanges).length}
+      />
 
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                setDownloadType('pdf');
-                setShowQualityDialog(true);
-              }}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 transition-all"
-              title="Download PDF Report"
-              disabled={isGeneratingPDF}
-            >
-              {isGeneratingPDF ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline ml-1">
-                {isGeneratingPDF ? 'Generating...' : 'PDF'}
-              </span>
-            </Button>
-            <Button
-              onClick={() => {
-                setDownloadType('word');
-                setShowQualityDialog(true);
-              }}
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 transition-all hidden sm:inline-flex"
-              title="Download Word Report"
-              disabled={isGeneratingWord}
-            >
-              {isGeneratingWord ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline ml-1">
-                {isGeneratingWord ? 'Generating...' : 'Word'}
-              </span>
-            </Button>
-            {isAuthenticated && Object.keys(pendingChanges).length > 0 && (
-              <Button
-                onClick={handleCommitChanges}
-                disabled={isSavingAll}
-                size="sm"
-                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white transition-all"
-                title="Save pending changes to database"
-              >
-                {isSavingAll ? (
-                  <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</>
-                ) : saveSuccess ? (
-                  <>✓ Saved</>
-                ) : (
-                  <>Save ({Object.keys(pendingChanges).length})</>
-                )}
-              </Button>
-            )}
-            <Button
-              onClick={() => setShowInfoModal(true)}
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0 transition-all"
-              title="Info"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center">
-        {/* Main content */}
-        <div className="flex-1 flex flex-col gap-6 max-w-4xl px-3 sm:px-5 py-6 w-full print:max-w-none print:px-4 print:py-2">
+      {/* Main content — same max width + horizontal padding as navbar (layout-constants) */}
+      <div className="flex flex-1 flex-col items-center">
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-3 py-6 sm:px-8 print:max-w-none print:px-4 print:py-2">
           {/* Report Info Card */}
           <Card>
             <CardHeader>
               {/* Title and Logo on same line */}
               <div className="flex justify-between items-center mb-4">
-                <CardTitle className="flex-1">
+                <CardTitle className="flex-1 text-card-foreground">
                   <EditableText
                     value={report.title}
                     onSave={(v) => handleUpdateReport('title', v)}
                     enabled={isAuthenticated}
-                    className="text-xl font-semibold"
+                    className="text-xl font-semibold text-card-foreground"
                   />
                 </CardTitle>
                 {/* Site Logo */}
-                {observations.length > 0 && observations[0].sites?.logo_url && (
+                {displayObservations.length > 0 && displayObservations[0].sites?.logo_url && (
                   <div className="flex-shrink-0">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2">
+                    <div className="rounded-lg border border-border bg-background/95 p-2 backdrop-blur-sm">
                       <img
-                        src={observations[0].sites.logo_url}
-                        alt={`${observations[0].sites.name} logo`}
+                        src={displayObservations[0].sites.logo_url}
+                        alt={`${displayObservations[0].sites.name} logo`}
                         className="h-10 sm:h-12 w-auto object-contain rounded"
                       />
                     </div>
@@ -1270,7 +1211,7 @@ export default function ReportDetailPage() {
               </div>
               {/* Description */}
               <div className="mt-3">
-                <CardDescription className="text-black text-sm pb-3" style={{ fontSize: '14px' }}>
+                <CardDescription className="pb-3 text-sm text-muted-foreground [&_.cursor-text]:text-card-foreground">
                   <EditableText
                     value={report.description || ''}
                     onSave={(v) => handleUpdateReport('description', v)}
@@ -1280,12 +1221,11 @@ export default function ReportDetailPage() {
                   />
                 </CardDescription>
               </div>
-              <div className="flex justify-start">
-                        <div className="text-sm text-gray-500 flex items-center gap-1">
-                          {/* <Calendar className="h-4 w-4" /> */}
-                          <span>Erstellt {formatDate(report.report_date || report.created_at)}</span>
-                        </div>
-                      </div>
+              <div className="mt-4 flex justify-start">
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>Erstellt {formatDate(report.report_date || report.created_at)}</span>
+                </div>
+              </div>
             </CardHeader>
 
             <CardContent className="pt-0">
@@ -1295,8 +1235,8 @@ export default function ReportDetailPage() {
                 const uniqueLabels = [...new Set(allLabels)];
                 if (uniqueLabels.length > 0) {
                   return (
-                    <div className="border-t pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Labels</h4>
+                    <div className="border-t border-border pt-4">
+                      <h4 className="mb-2 font-medium text-card-foreground">Labels</h4>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {uniqueLabels.map((label, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
@@ -1316,14 +1256,39 @@ export default function ReportDetailPage() {
           {/* Observations */}
           {observations.length > 0 ? (
             <div className="space-y-4">
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/50 px-4 py-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t("observationOrder")}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant={observationSortMode === "timeline" ? "default" : "outline"}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setObservationSortMode("timeline")}
+                  >
+                    {t("observationOrderTimeline")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={observationSortMode === "selection" ? "default" : "outline"}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setObservationSortMode("selection")}
+                  >
+                    {t("observationOrderSelection")}
+                  </Button>
+                </div>
+              </div>
               <div className="grid gap-4 print:gap-2">
-                {observations.map((observation, index) => (
+                {displayObservations.map((observation, index) => (
                   <Card key={observation.id} className="overflow-hidden print:break-inside-avoid p-0">
                     <div className="flex flex-col lg:flex-row print:flex-row items-center lg:items-stretch print:items-stretch">
                       {/* Image */}
                       {observation.signedUrl && (
                         <div
-                          className="flex-shrink-0 relative bg-transparent cursor-pointer w-80 lg:w-80 lg:border lg:border-gray-200 flex items-center justify-center"
+                          className="relative flex w-80 flex-shrink-0 cursor-pointer items-center justify-center bg-transparent lg:w-80 lg:border lg:border-border"
                           onClick={() => openPhotoModal(observation)}
                         >
                           <Image
@@ -1335,7 +1300,7 @@ export default function ReportDetailPage() {
                             style={{ maxHeight: '280px' }}
                           />
                           {/* Photo number overlay */}
-                          <div className="absolute top-0 left-0 w-8 h-8 bg-black text-white flex items-center justify-center text-sm font-bold shadow-md">
+                          <div className="absolute left-0 top-0 flex h-8 w-8 items-center justify-center bg-foreground text-background text-sm font-bold shadow-md">
                             {index + 1}
                           </div>
                           {/* Site Logo overlay on each photo */}
@@ -1359,7 +1324,7 @@ export default function ReportDetailPage() {
                         <CardHeader className="pb-3 print:pb-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="space-y-1 flex-1 min-w-0">
-                              <CardTitle className={`text-lg print:text-base ${!observation.note ? 'text-gray-600' : ''}`}>
+                              <CardTitle className={`text-lg text-card-foreground print:text-base ${!observation.note ? "text-muted-foreground" : ""}`}>
                                 <EditableText
                                   value={observation.note || ''}
                                   onSave={(v) => handleUpdateObservationNote(observation.id, v)}
@@ -1372,7 +1337,7 @@ export default function ReportDetailPage() {
                             {isAuthenticated && (
                               <button
                                 onClick={() => handleRemoveObservation(observation.id)}
-                                className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors p-1 rounded print:hidden"
+                                className="flex-shrink-0 rounded p-1 text-muted-foreground transition-colors hover:text-destructive print:hidden"
                                 title="Remove from report"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1395,7 +1360,7 @@ export default function ReportDetailPage() {
                                   {isAuthenticated && (
                                     <button
                                       onClick={() => setLabelRemoveConfirm({ observationId: observation.id, label })}
-                                      className="ml-0.5 hover:text-red-500 transition-colors leading-none"
+                                      className="ml-0.5 leading-none transition-colors hover:text-destructive"
                                       title="Remove label"
                                     >
                                       ×
@@ -1413,9 +1378,9 @@ export default function ReportDetailPage() {
                                       className="fixed inset-0 z-40"
                                       onClick={() => { setAddingLabelFor(null); setLabelFilter(''); }}
                                     />
-                                    <div className="absolute left-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-52">
+                                    <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded-lg border border-border bg-popover text-popover-foreground shadow-lg">
                                       {/* Filter input */}
-                                      <div className="p-2 border-b border-gray-100">
+                                      <div className="border-b border-border p-2">
                                         <input
                                           autoFocus
                                           type="text"
@@ -1424,7 +1389,7 @@ export default function ReportDetailPage() {
                                           onKeyDown={(e) => {
                                             if (e.key === 'Escape') { setAddingLabelFor(null); setLabelFilter(''); }
                                           }}
-                                          className="w-full text-xs border border-gray-300 rounded px-2 py-1 outline-none focus:border-blue-400"
+                                          className="w-full rounded border border-input bg-background px-2 py-1 text-xs text-foreground outline-none ring-ring focus:border-ring focus:ring-2 focus:ring-ring/30"
                                           placeholder="Search labels..."
                                         />
                                       </div>
@@ -1448,7 +1413,7 @@ export default function ReportDetailPage() {
                                                 setAddingLabelFor(null);
                                                 setLabelFilter('');
                                               }}
-                                              className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors"
+                                              className="w-full rounded-sm px-3 py-1.5 text-left text-xs text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                                             >
                                               {label.name}
                                             </button>
@@ -1457,7 +1422,7 @@ export default function ReportDetailPage() {
                                           !(observation.labels || []).includes(l.name) &&
                                           l.name.toLowerCase().includes(labelFilter.toLowerCase())
                                         ).length === 0 && (
-                                          <div className="px-3 py-2 text-xs text-gray-400 italic">No labels available</div>
+                                          <div className="px-3 py-2 text-xs italic text-muted-foreground">No labels available</div>
                                         )}
                                       </div>
                                     </div>
@@ -1465,7 +1430,7 @@ export default function ReportDetailPage() {
                                 ) : (
                                   <button
                                     onClick={() => { setAddingLabelFor(observation.id); setLabelFilter(''); }}
-                                    className="text-xs border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors px-1.5 py-0.5 rounded"
+                                    className="rounded border border-dashed border-border px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
                                     title="Add label"
                                   >
                                     + label
@@ -1484,21 +1449,21 @@ export default function ReportDetailPage() {
                               return (
                                 <div>
                                   <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-sm font-semibold text-gray-900">Planposition</h4>
+                                    <h4 className="text-sm font-semibold text-card-foreground">Planposition</h4>
                                     {isAuthenticated && (
                                       isEditing ? (
                                         <div className="flex items-center gap-1">
                                           <button
                                             onClick={() => handleSaveAnchor(observation.id)}
                                             disabled={!pending}
-                                            className="text-green-600 hover:text-green-700 disabled:opacity-40 p-1 transition-colors"
+                                            className="p-1 text-emerald-600 transition-colors hover:text-emerald-700 disabled:opacity-40 dark:text-emerald-500 dark:hover:text-emerald-400"
                                             title="Save position"
                                           >
                                             <Check className="h-4 w-4" />
                                           </button>
                                           <button
                                             onClick={() => { setEditingAnchorFor(null); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
-                                            className="text-gray-500 hover:text-red-600 p-1 transition-colors"
+                                            className="p-1 text-muted-foreground transition-colors hover:text-destructive"
                                             title="Cancel"
                                           >
                                             <X className="h-4 w-4" />
@@ -1507,7 +1472,7 @@ export default function ReportDetailPage() {
                                       ) : (
                                         <button
                                           onClick={() => { setEditingAnchorFor(observation.id); setPendingAnchorMap(prev => { const n={...prev}; delete n[observation.id]; return n; }); }}
-                                          className="text-gray-500 hover:text-blue-600 p-1 transition-colors"
+                                          className="p-1 text-muted-foreground transition-colors hover:text-primary"
                                           title="Edit plan position"
                                         >
                                           <Edit3 className="h-4 w-4" />
@@ -1516,10 +1481,10 @@ export default function ReportDetailPage() {
                                     )}
                                   </div>
                                   {isEditing && (
-                                    <p className="text-xs text-gray-500 mb-1">Click on the plan to set a new position</p>
+                                    <p className="mb-1 text-xs text-muted-foreground">Click on the plan to set a new position</p>
                                   )}
                                   <div
-                                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                                    className="relative overflow-hidden rounded-lg border border-border"
                                     style={{ width: 320, height: 280, cursor: isEditing ? 'crosshair' : 'default' }}
                                     onClick={(e) => handlePlanClick(e, observation.id)}
                                   >
@@ -1548,7 +1513,7 @@ export default function ReportDetailPage() {
                                         }}
                                       />
                                     )}
-                                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                                    <div className="absolute bottom-1 left-2 rounded bg-background/90 px-1 text-xs text-muted-foreground backdrop-blur-sm">
                                       {planData.name}
                                     </div>
                                   </div>
@@ -1557,10 +1522,10 @@ export default function ReportDetailPage() {
                             })()}
 
                             {/* Date + pending indicator */}
-                            <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                            <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
                               <span>{formatDate(resolveObservationDateTime(observation).toISOString())}</span>
                               {pendingChanges[observation.id] && (
-                                <span className="text-amber-500">unsaved</span>
+                                <span className="text-amber-600 dark:text-amber-400">unsaved</span>
                               )}
                             </div>
                           </div>
@@ -1572,8 +1537,8 @@ export default function ReportDetailPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No observations found in this report.</p>
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">No observations found in this report.</p>
             </div>
           )}
         </div>
@@ -1581,52 +1546,52 @@ export default function ReportDetailPage() {
 
       {/* Info Modal */}
       {showInfoModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-card text-card-foreground shadow-lg">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Simple Site Mobile App</h2>
+            <div className="flex items-center justify-between border-b border-border p-6">
+              <h2 className="text-lg font-semibold">Simple Site Mobile App</h2>
               <button
                 onClick={() => setShowInfoModal(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
               <div>
-                <p className="text-gray-600 mb-4">Unverzichtbar für das Sammeln von Beobachtungen vor Ort</p>
+                <p className="mb-4 text-muted-foreground">Unverzichtbar für das Sammeln von Beobachtungen vor Ort</p>
 
-                <ul className="space-y-3 mb-6">
+                <ul className="mb-6 space-y-3">
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">Fotos aufnehmen und Notizen vor Ort hinzufügen</span>
+                    <div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
+                    <span className="text-foreground">Fotos aufnehmen und Notizen vor Ort hinzufügen</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">GPS-Standortverfolgung</span>
+                    <div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
+                    <span className="text-foreground">GPS-Standortverfolgung</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-700">Automatische Synchronisation mit Ihren Standorten</span>
+                    <div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
+                    <span className="text-foreground">Automatische Synchronisation mit Ihren Standorten</span>
                   </li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Web vs Mobile:</h3>
+                <h3 className="mb-3 font-semibold text-foreground">Web vs Mobile:</h3>
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900">Web Portal:</h4>
-                    <p className="text-gray-600 text-sm">Team-Beobachtungen anzeigen, Berichte erstellen und Einstellungen verwalten</p>
+                    <h4 className="font-medium text-foreground">Web Portal:</h4>
+                    <p className="text-sm text-muted-foreground">Team-Beobachtungen anzeigen, Berichte erstellen und Einstellungen verwalten</p>
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-900">Mobile App:</h4>
-                    <p className="text-gray-600 text-sm">Erforderlich für das Sammeln von Beobachtungen vor Ort</p>
+                    <h4 className="font-medium text-foreground">Mobile App:</h4>
+                    <p className="text-sm text-muted-foreground">Erforderlich für das Sammeln von Beobachtungen vor Ort</p>
                   </div>
                 </div>
               </div>
@@ -1655,15 +1620,15 @@ export default function ReportDetailPage() {
 
       {/* Photo Modal */}
       {selectedPhoto && selectedPhoto.signedUrl && (
-        <div className="fixed inset-0 bg-white backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="relative w-full h-full max-w-7xl max-h-full flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background p-4">
+          <div className="relative flex h-full max-h-full w-full max-w-7xl flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-              <div className="text-gray-900">
+            <div className="flex items-center justify-between border-b border-border bg-card/95 p-4 backdrop-blur-sm">
+              <div className="text-card-foreground">
                 <h3 className="text-lg font-semibold">
-                  {selectedPhoto.note || `Fotodokumentation ${observations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
+                  {selectedPhoto.note || `Fotodokumentation ${displayObservations.findIndex(obs => obs.id === selectedPhoto.id) + 1}`}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {resolveObservationDateTime(selectedPhoto).toLocaleDateString('de-DE', {
                     year: 'numeric',
                     month: '2-digit',
@@ -1673,7 +1638,7 @@ export default function ReportDetailPage() {
               </div>
               <button
                 onClick={closePhotoModal}
-                className="p-2 hover:bg-gray-100 rounded transition-colors text-gray-700"
+                className="rounded p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -1682,21 +1647,21 @@ export default function ReportDetailPage() {
             {/* Image Container */}
             <div
               ref={imageContainerRef}
-              className="flex-1 relative bg-gray-100 overflow-hidden"
+              className="relative flex-1 overflow-hidden bg-muted"
               style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             >
               {/* Zoom Controls */}
-              <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
+              <div className="absolute right-4 top-4 z-30 flex flex-col gap-2">
                 <button
                   onClick={zoomIn}
-                  className="bg-white/90 hover:bg-white text-gray-700 p-2 transition-colors rounded shadow-lg border border-gray-200"
+                  className="rounded border border-border bg-card/95 p-2 text-foreground shadow-lg backdrop-blur-sm transition-colors hover:bg-muted"
                   disabled={scale >= 3}
                 >
                   <ZoomIn className="h-4 w-4" />
                 </button>
                 <button
                   onClick={zoomOut}
-                  className="bg-white/90 hover:bg-white text-gray-700 p-2 transition-colors rounded shadow-lg border border-gray-200"
+                  className="rounded border border-border bg-card/95 p-2 text-foreground shadow-lg backdrop-blur-sm transition-colors hover:bg-muted"
                   disabled={scale <= 0.5}
                 >
                   <ZoomOut className="h-4 w-4" />
@@ -1704,7 +1669,7 @@ export default function ReportDetailPage() {
                 {scale !== 1 && (
                   <button
                     onClick={resetZoom}
-                    className="bg-white/90 hover:bg-white text-gray-700 px-2 py-1 text-xs transition-colors rounded shadow-lg border border-gray-200"
+                    className="rounded border border-border bg-card/95 px-2 py-1 text-xs text-foreground shadow-lg backdrop-blur-sm transition-colors hover:bg-muted"
                   >
                     1:1
                   </button>
@@ -1713,15 +1678,15 @@ export default function ReportDetailPage() {
 
               {/* Zoom indicator */}
               {scale !== 1 && (
-                <div className="absolute bottom-4 right-4 z-30 bg-white/90 text-gray-700 px-2 py-1 text-xs rounded shadow-lg border border-gray-200">
+                <div className="absolute bottom-4 right-4 z-30 rounded border border-border bg-card/95 px-2 py-1 text-xs text-foreground shadow-lg backdrop-blur-sm">
                   {Math.round(scale * 100)}%
                 </div>
               )}
 
               {/* Site logo overlay */}
               {selectedPhoto.sites?.logo_url && (
-                <div className="absolute top-4 left-4 z-30">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200">
+                <div className="absolute left-4 top-4 z-30">
+                  <div className="rounded-lg border border-border bg-card/95 p-2 shadow-lg backdrop-blur-sm">
                     <img
                       src={selectedPhoto.sites.logo_url}
                       alt={`${selectedPhoto.sites.name} logo`}
@@ -1752,16 +1717,16 @@ export default function ReportDetailPage() {
             </div>
 
             {/* Bottom Info Panel */}
-            <div className="bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 max-h-32 overflow-y-auto">
+            <div className="max-h-32 overflow-y-auto border-t border-border bg-card/95 p-4 backdrop-blur-sm">
               <div className="space-y-2">
                 {selectedPhoto.labels && selectedPhoto.labels.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">{t("labelsTitle")}</h4>
+                    <h4 className="mb-2 font-medium text-card-foreground">{t("labelsTitle")}</h4>
                     <div className="flex flex-wrap gap-2">
                       {[...new Set(selectedPhoto.labels)].map((label, idx) => (
                         <span
                           key={idx}
-                          className="text-xs px-2 py-1 border border-gray-300 bg-gray-50 rounded"
+                          className="rounded border border-border bg-muted/50 px-2 py-1 text-xs text-foreground"
                         >
                           {processLabel(label)}
                         </span>
@@ -1771,8 +1736,8 @@ export default function ReportDetailPage() {
                 )}
                 {selectedPhoto.note && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-1">{t("noteTitle")}</h4>
-                    <p className="text-sm text-gray-700">{selectedPhoto.note}</p>
+                    <h4 className="mb-1 font-medium text-card-foreground">{t("noteTitle")}</h4>
+                    <p className="text-sm text-muted-foreground">{selectedPhoto.note}</p>
                   </div>
                 )}
               </div>
@@ -1783,12 +1748,12 @@ export default function ReportDetailPage() {
 
       {/* Quality Selection Dialog */}
       {showQualityDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 text-card-foreground shadow-lg">
+            <h3 className="mb-4 text-lg font-semibold">
               {language === "de" ? "Fotoqualität auswählen" : "Select Photo Quality"}
             </h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="mb-6 text-sm text-muted-foreground">
               {language === "de"
                 ? `Wählen Sie die Qualität für Fotos in Ihrem ${downloadType === 'pdf' ? 'PDF' : 'Word'}-Dokument. Höhere Qualität erzeugt größere Dateien.`
                 : `Choose the quality for photos in your ${downloadType === 'pdf' ? 'PDF' : 'Word'} document. Higher quality produces larger files.`}
@@ -1803,12 +1768,12 @@ export default function ReportDetailPage() {
                     handleExportWord('low');
                   }
                 }}
-                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-primary hover:bg-accent"
               >
-                <div className="font-semibold">
+                <div className="font-semibold text-foreground">
                   {language === "de" ? "Niedrige Qualität" : "Low Quality"}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {language === "de"
                     ? downloadType === 'pdf' ? "0.5 JPEG-Kompression - Kleinere Dateigröße" : "Kleinere Bilder - Kleinere Dateigröße"
                     : downloadType === 'pdf' ? "0.5 JPEG compression - Smaller file size" : "Smaller images - Smaller file size"}
@@ -1823,15 +1788,15 @@ export default function ReportDetailPage() {
                     handleExportWord('medium');
                   }
                 }}
-                className="w-full p-4 text-left border-2 border-blue-500 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                className="w-full rounded-lg border-2 border-primary bg-primary/10 p-4 text-left transition-colors hover:bg-primary/15"
               >
-                <div className="font-semibold flex items-center gap-2">
+                <div className="flex items-center gap-2 font-semibold text-foreground">
                   {language === "de" ? "Mittlere Qualität" : "Medium Quality"}
-                  <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                  <span className="rounded bg-primary px-2 py-0.5 text-xs text-primary-foreground">
                     {language === "de" ? "Empfohlen" : "Recommended"}
                   </span>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {language === "de"
                     ? downloadType === 'pdf' ? "0.7 JPEG-Kompression - Ausgewogene Qualität" : "Mittlere Bilder - Ausgewogene Qualität"
                     : downloadType === 'pdf' ? "0.7 JPEG compression - Balanced quality" : "Medium images - Balanced quality"}
@@ -1846,12 +1811,12 @@ export default function ReportDetailPage() {
                     handleExportWord('high');
                   }
                 }}
-                className="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                className="w-full rounded-lg border-2 border-border p-4 text-left transition-colors hover:border-primary hover:bg-accent"
               >
-                <div className="font-semibold">
+                <div className="font-semibold text-foreground">
                   {language === "de" ? "Hohe Qualität" : "High Quality"}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {language === "de"
                     ? downloadType === 'pdf' ? "1.0 JPEG (unkomprimiert) - Maximale Qualität, sehr große Datei" : "3200×2400px Bilder - Maximale Qualität, sehr große Datei"
                     : downloadType === 'pdf' ? "1.0 JPEG (uncompressed) - Maximum quality, very large file" : "3200×2400px images - Maximum quality, very large file"}
