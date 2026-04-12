@@ -188,18 +188,18 @@ export default function OnboardingPage() {
                 alt="Simple Site Icon"
                 width={80}
                 height={80}
-                className="w-20 h-20 border border-gray-300 rounded"
+                className="h-20 w-20 rounded-md border border-border bg-background"
               />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold">{t('welcomeToSimpleSite')}</h2>
-              <p className="text-gray-600 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-foreground">{t('welcomeToSimpleSite')}</h2>
+              <p className="mx-auto max-w-md text-muted-foreground">
                 {t('welcomeDescription')}
               </p>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-black">{t('whatYouCanDo')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4 text-left">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatYouCanDo')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('createAndManageObservationSites')}</li>
                   <li>• {t('collaborateWithTeamMembers')}</li>
                   <li>• {t('collectObservationsWithPhotos')}</li>
@@ -215,22 +215,22 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Users className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('youreAlreadyPartOfATeam')}</h2>
-              <p className="text-gray-600">{t('foundExistingCollaborations')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('youreAlreadyPartOfATeam')}</h2>
+              <p className="text-muted-foreground">{t('foundExistingCollaborations')}</p>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                <p className="text-sm text-green-800 mb-3">
+              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 dark:bg-emerald-950/30">
+                <p className="mb-3 text-sm text-foreground">
                   {t('skipIntroductionAndStart')}
                 </p>
                 <Button 
                   onClick={completeOnboarding}
                   variant="outline"
-                  className="border-green-300 text-green-800 hover:bg-green-100 w-full"
+                  className="w-full border-emerald-600/40 text-foreground hover:bg-emerald-500/10 dark:border-emerald-500/40"
                 >
                   {t('goToMySites')}
                 </Button>
@@ -244,17 +244,17 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <MapPin className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('sites')}</h2>
-              <p className="text-gray-600">{t('siteIsLocation')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('sites')}</h2>
+              <p className="text-muted-foreground">{t('siteIsLocation')}</p>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatYouCanDo')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('createMultipleObservationSites')}</li>
                   <li>• {t('addDescriptionsAndDetails')}</li>
                   <li>• {t('manageSiteCollaborators')}</li>
@@ -262,8 +262,8 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 dark:bg-primary/10">
+                <p className="text-sm text-foreground">
                   <strong>{t('toCreateSites')}</strong> {t('goToSettingsSiteManagement')}
                 </p>
               </div>
@@ -275,17 +275,17 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Tag className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Tag className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('observationLabels')}</h2>
-              <p className="text-gray-600">{t('labelsHelpCategorize')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('observationLabels')}</h2>
+              <p className="text-muted-foreground">{t('labelsHelpCategorize')}</p>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatYouCanDo')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('createHierarchicalLabelSystems')}</li>
                   <li>• {t('organizeLabelsByLocation')}</li>
                   <li>• {t('useLabelsToFilter')}</li>
@@ -293,14 +293,14 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-sm text-black">
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm text-foreground">
                   <strong>{t('commonLabelExamples')}</strong> {t('issueProgressCompleted')}
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 dark:bg-primary/10">
+                <p className="text-sm text-foreground">
                   <strong>{t('toCreateLabels')}</strong> {t('goToSettingsLabelManagement')}
                 </p>
               </div>
@@ -312,17 +312,17 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Upload className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Upload className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('sitePlans')}</h2>
-              <p className="text-gray-600">{t('uploadFloorPlansOrSiteMaps')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('sitePlans')}</h2>
+              <p className="text-muted-foreground">{t('uploadFloorPlansOrSiteMaps')}</p>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatYouCanDo')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('uploadFloorPlansSiteMaps')}</li>
                   <li>• {t('supportForImages')}</li>
                   <li>• {t('pinObservationsDirectly')}</li>
@@ -330,14 +330,14 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-sm text-black">
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm text-foreground">
                   {t('plansHelpTeamMembers')}
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 dark:bg-primary/10">
+                <p className="text-sm text-foreground">
                   <strong>{t('toUploadPlans')}</strong> {t('goToSettingsPlanManagement')}
                 </p>
               </div>
@@ -349,17 +349,17 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Users className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('teamCollaboration')}</h2>
-              <p className="text-gray-600">{t('addTeamMembersToCollaborate')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('teamCollaboration')}</h2>
+              <p className="text-muted-foreground">{t('addTeamMembersToCollaborate')}</p>
             </div>
             
             <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold text-black mb-2">{t('whatYouCanDo')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatYouCanDo')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('inviteTeamMembersViaEmail')}</li>
                   <li>• {t('setDifferentPermissionLevels')}</li>
                   <li>• {t('viewTeamObservationsRealTime')}</li>
@@ -367,14 +367,14 @@ export default function OnboardingPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-sm text-black">
+              <div className="rounded-lg border border-border bg-muted/50 p-3">
+                <p className="text-sm text-foreground">
                   {t('teamMembersWillReceive')}
                 </p>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 dark:bg-primary/10">
+                <p className="text-sm text-foreground">
                   <strong>{t('toInviteTeamMembers')}</strong> {t('goToSettingsCollaborationManagement')}
                 </p>
               </div>
@@ -386,27 +386,27 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Smartphone className="h-6 w-6 text-black" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Smartphone className="h-6 w-6 text-foreground" />
               </div>
-              <h2 className="text-xl font-bold mb-2">{t('getTheMobileApp')}</h2>
-              <p className="text-gray-600">{t('essentialForCollecting')}</p>
+              <h2 className="mb-2 text-xl font-bold text-foreground">{t('getTheMobileApp')}</h2>
+              <p className="text-muted-foreground">{t('essentialForCollecting')}</p>
             </div>
             
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-6 rounded-lg">
-                <h3 className="font-semibold mb-3 text-black">{t('simpleSiteMobileApp')}</h3>
-                <ul className="text-sm space-y-2 mb-4">
+              <div className="rounded-lg border border-border bg-gradient-to-br from-muted/80 to-muted p-6 dark:from-muted/50 dark:to-muted/80">
+                <h3 className="mb-3 font-semibold text-foreground">{t('simpleSiteMobileApp')}</h3>
+                <ul className="mb-4 space-y-2 text-sm text-foreground">
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-black" />
+                    <Check className="h-4 w-4 shrink-0 text-primary" />
                     {t('takePhotosAndAddNotes')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-black" />
+                    <Check className="h-4 w-4 shrink-0 text-primary" />
                     {t('gpsLocationTracking')}
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-black" />
+                    <Check className="h-4 w-4 shrink-0 text-primary" />
                     {t('automaticSyncWithSites')}
                   </li>
                 </ul>
@@ -416,22 +416,22 @@ export default function OnboardingPage() {
                     href="https://apps.apple.com/us/app/simple-site/id6749160249"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:opacity-80 transition-opacity"
+                    className="transition-opacity hover:opacity-80"
                   >
                     <Image
                       src="/app_screens/available-app-store_1.png"
                       alt={t('availableOnAppStore')}
                       width={120}
                       height={40}
-                      className="w-auto h-auto object-contain"
+                      className="h-auto w-auto object-contain"
                     />
                   </a>
                 </div>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                <div className="text-sm text-blue-800">
-                  <p className="font-semibold mb-2">{t('webVsMobile')}</p>
+              <div className="rounded-lg border border-primary/25 bg-primary/5 p-4 dark:bg-primary/10">
+                <div className="text-sm text-foreground">
+                  <p className="mb-2 font-semibold">{t('webVsMobile')}</p>
                   <ul className="space-y-1">
                     <li>• <strong>{t('webPortal')}</strong> {t('viewTeamObservationsGenerateReports')}</li>
                     <li>• <strong>{t('mobileApp')}</strong> {t('requiredForCollectingObservations')}</li>
@@ -444,19 +444,19 @@ export default function OnboardingPage() {
 
       case 'complete':
         return (
-          <div className="text-center space-y-6">
-            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-black" />
+          <div className="space-y-6 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <CheckCircle className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-black">{t('youreAllSet')}</h2>
-              <p className="text-gray-600 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-foreground">{t('youreAllSet')}</h2>
+              <p className="mx-auto max-w-md text-muted-foreground">
                 {t('welcomeToSimpleSiteComplete')}
               </p>
               
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-black">{t('whatsNext')}</h3>
-                <ul className="text-sm text-black space-y-1">
+              <div className="rounded-lg border border-border bg-muted/50 p-4 text-left">
+                <h3 className="mb-2 font-semibold text-foreground">{t('whatsNext')}</h3>
+                <ul className="space-y-1 text-sm text-foreground">
                   <li>• {t('goToSettingsCreateFirstSite')}</li>
                   <li>• {t('setupObservationLabelsUploadPlans')}</li>
                   <li>• {t('inviteTeamMembersToCollaborate')}</li>
@@ -473,7 +473,7 @@ export default function OnboardingPage() {
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground" />
                     {t('settingUp')}
                   </>
                 ) : (
@@ -498,8 +498,8 @@ export default function OnboardingPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
@@ -517,44 +517,35 @@ export default function OnboardingPage() {
   const progress = ((currentStep + 1) / visibleSteps.length) * 100;
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen bg-background px-4 py-8 text-foreground">
+      <div className="mx-auto max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <h1 className="text-lg font-semibold">{t('setupYourSite')}</h1>
-            <span className="text-sm text-gray-500">
-              {t('step')} {currentStep + 1} {t('of')} {visibleSteps.length}
+          <div className="mb-2 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-foreground">{t("setupYourSite")}</h1>
+            <span className="text-sm text-muted-foreground">
+              {t("step")} {currentStep + 1} {t("of")} {visibleSteps.length}
             </span>
           </div>
           <Progress value={progress} className="w-full" />
         </div>
 
         {/* Main Content */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            {renderStepContent()}
-          </CardContent>
+        <Card className="mb-8 border-border bg-card text-card-foreground shadow-sm">
+          <CardContent className="pt-6">{renderStepContent()}</CardContent>
         </Card>
 
-        {/* Navigation */}
-        {currentStep < ONBOARDING_STEPS.length - 1 && (
+        {/* Navigation — hide on final step (uses inline CTA) */}
+        {currentStep < visibleSteps.length - 1 && (
           <div className="space-y-4">
-            <div className="flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={prevStep}
-                disabled={currentStep === 0}
-              >
+            <div className="flex justify-between gap-3">
+              <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                {t('previous')}
+                {t("previous")}
               </Button>
-              
-              <Button 
-                onClick={nextStep}
-                disabled={!canProceed()}
-              >
-                {t('next')}
+
+              <Button onClick={nextStep} disabled={!canProceed()}>
+                {t("next")}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
