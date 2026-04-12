@@ -206,7 +206,7 @@ const pageContent = {
         {
           name: "DI Liebhard Mattuschka",
           role: "Project Control | Construction Supervision",
-          bio: "Graduate of FH Joanneum in Construction Management. Experience in construction supervision and project control on major projects such as the Heizkraftwerk Süd in Munich and the Munich main line.",
+          bio: "Master’s graduate in Construction Management from FH Joanneum, with strong expertise in planning and delivery. His experience spans construction supervision and project control on large-scale projects in Germany and Austria—including Heizkraftwerk Süd in Munich, the Munich core route (Stammstrecke), and further infrastructure and commercial schemes.",
           image: "/images/Liebhard.webp",
         },
         {
@@ -421,7 +421,7 @@ const pageContent = {
         {
           name: "DI Liebhard Mattuschka",
           role: "Projektsteuerung | Bauüberwachung",
-          bio: "Absolvent der FH Joanneum im Bereich Baumanagement. Erfahrung in der Bauüberwachung und Projektsteuerung bei Großprojekten wie dem Heizkraftwerk Süd in München und der Münchner Stammstrecke.",
+          bio: "Masterabsolvent des Studiengangs Baumanagement an der FH Joanneum – mit fundierter Expertise in Planung und Ausführung. Seine Berufserfahrung umfasst Bauüberwachung und Projektsteuerung bei Großprojekten in Deutschland und Österreich, darunter das Heizkraftwerk Süd in München, die Münchner Stammstrecke sowie weitere Infrastruktur- und Gewerbeprojekte.",
           image: "/images/Liebhard.webp",
         },
         {
