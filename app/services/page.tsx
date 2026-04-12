@@ -9,7 +9,9 @@ import { useLanguage } from "@/lib/translations";
 
 const sectionClass =
   "flex items-center w-full";
-const innerClass = "w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 py-24";
+/** Same horizontal padding as `Footer` (`px-3 sm:px-8`) so the Kontakt block and Impressum align. */
+const innerClass =
+  "w-[90%] sm:w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 py-24";
 const labelClass = "text-xs text-gray-600 uppercase tracking-widest mb-4";
 const titleClass =
   "text-3xl sm:text-7xl font-semibold text-white leading-tight mb-6";
@@ -609,7 +611,7 @@ export default function ServicesPage() {
 
       {/* Blog scroll */}
       <section className="w-full">
-        <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 pt-16 pb-8">
+        <div className="w-[90%] sm:w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 pt-16 pb-8">
           <div className="flex items-center justify-between mb-8">
             <p className={labelClass}>{c.blog.heading}</p>
             <Link href="/blog" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
@@ -994,7 +996,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
+      <div className="w-[90%] sm:w-full max-w-6xl mx-auto border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
         <Footer textColor="text-gray-300" />
       </div>
       {showScrollTop && (
