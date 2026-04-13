@@ -55,32 +55,29 @@ export function SelectionActions({
   const commonLabels = allLabelNames.filter(l => allLabelSets.every(s => s.has(l)));
   const partialLabels = allLabelNames.filter(l => !commonLabels.includes(l));
 
-  const actionBtnClass =
-    "w-full justify-center shadow-lg transition-all hover:shadow-xl";
-
   return (
     <>
-      {/* Same horizontal band as HomeAppFooter / max-w-6xl — avoids overlap with footer upload + aligns all actions */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center pb-[env(safe-area-inset-bottom)] sm:bottom-28">
-        <div className="pointer-events-auto flex w-full max-w-6xl justify-end px-3 sm:px-8">
-          <div className="flex w-full max-w-sm flex-col gap-3 items-stretch">
-            <Button onClick={onClearSelection} variant="secondary" size="lg" className={actionBtnClass}>
+      {/* Horizontal bar above footer — spans full width so it doesn't overlap the observation grid */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-[3.5rem] z-50 sm:bottom-16">
+        <div className="pointer-events-auto bg-background/95 backdrop-blur-sm border-t border-border shadow-lg">
+          <div className="flex w-full max-w-6xl mx-auto px-3 sm:px-8 py-2 gap-2 items-center flex-wrap">
+            <Button onClick={onClearSelection} variant="secondary" size="sm" className="shrink-0">
               {t("clearSelection")}
             </Button>
-            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="lg" className={actionBtnClass}>
-              <Pencil className="h-4 w-4 mr-2 shrink-0" />
+            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="sm" className="shrink-0">
+              <Pencil className="h-4 w-4 mr-1.5 shrink-0" />
               {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
             </Button>
             <Button
               onClick={onOpenPhotoQuality}
               variant="outline"
-              size="lg"
-              className={`hidden md:inline-flex ${actionBtnClass}`}
+              size="sm"
+              className="hidden md:inline-flex shrink-0"
             >
-              <Download className="h-4 w-4 mr-2 shrink-0" />
+              <Download className="h-4 w-4 mr-1.5 shrink-0" />
               {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
             </Button>
-            <Button onClick={onOpenSaveReport} size="lg" className={actionBtnClass}>
+            <Button onClick={onOpenSaveReport} size="sm" className="shrink-0 ml-auto">
               {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
             </Button>
           </div>
