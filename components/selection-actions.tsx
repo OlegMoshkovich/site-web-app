@@ -55,23 +55,36 @@ export function SelectionActions({
   const commonLabels = allLabelNames.filter(l => allLabelSets.every(s => s.has(l)));
   const partialLabels = allLabelNames.filter(l => !commonLabels.includes(l));
 
+  const actionBtnClass =
+    "w-full justify-center shadow-lg transition-all hover:shadow-xl";
+
   return (
     <>
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-        <Button onClick={onClearSelection} variant="secondary" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          {t("clearSelection")}
-        </Button>
-        <Button onClick={onOpenMultiLabelEdit} variant="outline" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          <Pencil className="h-4 w-4 mr-2" />
-          {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
-        </Button>
-        <Button onClick={onOpenPhotoQuality} variant="outline" size="lg" className="hidden md:flex shadow-lg hover:shadow-xl transition-all">
-          <Download className="h-4 w-4 mr-2" />
-          {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
-        </Button>
-        <Button onClick={onOpenSaveReport} size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
-        </Button>
+      {/* Same horizontal band as HomeAppFooter / max-w-6xl — avoids overlap with footer upload + aligns all actions */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center pb-[env(safe-area-inset-bottom)] sm:bottom-28">
+        <div className="pointer-events-auto flex w-full max-w-6xl justify-end px-3 sm:px-8">
+          <div className="flex w-full max-w-sm flex-col gap-3 items-stretch">
+            <Button onClick={onClearSelection} variant="secondary" size="lg" className={actionBtnClass}>
+              {t("clearSelection")}
+            </Button>
+            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="lg" className={actionBtnClass}>
+              <Pencil className="h-4 w-4 mr-2 shrink-0" />
+              {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
+            </Button>
+            <Button
+              onClick={onOpenPhotoQuality}
+              variant="outline"
+              size="lg"
+              className={`hidden md:inline-flex ${actionBtnClass}`}
+            >
+              <Download className="h-4 w-4 mr-2 shrink-0" />
+              {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
+            </Button>
+            <Button onClick={onOpenSaveReport} size="lg" className={actionBtnClass}>
+              {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {showMultiLabelEdit && (
