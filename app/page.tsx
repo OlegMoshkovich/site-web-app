@@ -23,7 +23,7 @@ import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
 import { getContentClasses } from "@/lib/layout-constants";
 import { homeTheme } from "@/lib/app-theme";
-import { FolderUp } from "lucide-react";
+import { FolderUp, Images, Camera } from "lucide-react";
 import { useObservationsStore } from "@/lib/store/observations-store";
 import { usePhotoDownload } from "@/lib/hooks/use-photo-download";
 import { useSelectionBox } from "@/lib/hooks/use-selection-box";
@@ -198,6 +198,17 @@ export default function Home() {
   }, [supabase, observations, setObservations]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+
+  const handleUploadButtonClick = useCallback(() => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      setShowPhotoMenu(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   const handleFolderDrop = useCallback((files: File[]) => {
     if (!user?.id) { alert('Please log in before uploading files.'); return; }
@@ -310,21 +321,31 @@ export default function Home() {
         />
 
         {user && (
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileInputChange}
-          />
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+          </>
         )}
 
         {user && (
           <div className={homeTheme.mobileUploadStrip}>
             <div className="w-full max-w-6xl mx-auto px-3">
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleUploadButtonClick}
                 variant="outline"
                 size="sm"
                 className={homeTheme.mobileUploadButton}
@@ -332,6 +353,40 @@ export default function Home() {
               >
                 <FolderUp className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+        )}
+
+        {showPhotoMenu && (
+          <div
+            className="fixed inset-0 z-50 flex items-end"
+            onClick={() => setShowPhotoMenu(false)}
+          >
+            <div
+              className="w-full bg-background border-t border-border rounded-t-2xl pb-8 pt-2 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+              <button
+                className="flex items-center gap-4 w-full px-6 py-4 text-left hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => { setShowPhotoMenu(false); setTimeout(() => fileInputRef.current?.click(), 50); }}
+              >
+                <Images className="h-6 w-6 text-foreground/70" />
+                <span className="text-base font-medium">{language === 'de' ? 'Fotomediathek' : 'Photo Library'}</span>
+              </button>
+              <button
+                className="flex items-center gap-4 w-full px-6 py-4 text-left hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => { setShowPhotoMenu(false); setTimeout(() => cameraInputRef.current?.click(), 50); }}
+              >
+                <Camera className="h-6 w-6 text-foreground/70" />
+                <span className="text-base font-medium">{language === 'de' ? 'Foto aufnehmen' : 'Take Photo'}</span>
+              </button>
+              <button
+                className="flex items-center justify-center w-full px-6 py-4 mt-1 text-muted-foreground hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => setShowPhotoMenu(false)}
+              >
+                <span className="text-base">{language === 'de' ? 'Abbrechen' : 'Cancel'}</span>
+              </button>
             </div>
           </div>
         )}

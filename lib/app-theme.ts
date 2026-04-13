@@ -43,9 +43,9 @@ export const homeTheme = {
   dateCounter:
     "text-xs w-6 h-6 flex items-center justify-center border border-border font-normal group-data-[state=open]:bg-muted group-data-[state=closed]:bg-transparent transition-colors shrink-0",
 
-  mobileUploadStrip: "sm:hidden sticky top-16 z-40 w-full bg-background pb-[10px] border-b border-border",
+  mobileUploadStrip: "sm:hidden sticky top-16 z-40 w-full bg-background pt-2.5 pb-10",
   mobileUploadButton:
-    "w-full h-8 text-sm border-border flex items-center justify-center bg-background hover:bg-accent hover:text-accent-foreground",
+    "w-full h-8 text-sm border border-border flex items-center justify-center bg-background hover:bg-accent hover:text-accent-foreground",
 
   footerFixed: "fixed bottom-0 left-0 right-0 w-full bg-background z-40 border-t border-border",
   footerText: "text-xs text-muted-foreground",

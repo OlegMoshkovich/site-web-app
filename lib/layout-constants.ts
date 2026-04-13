@@ -47,7 +47,7 @@ export const getNavbarClasses = (opts?: { background?: NavbarBackground; customB
   const { navbar } = LAYOUT_CONSTANTS;
   const bg =
     opts?.background === "surface"
-      ? "bg-background border-b border-border shadow-sm"
+      ? "bg-background shadow-sm"
       : opts?.background === "custom" && opts.customBackgroundClass
         ? opts.customBackgroundClass
         : navbar.background;
