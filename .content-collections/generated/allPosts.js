@@ -324,6 +324,54 @@ export default [
     "coverImage": "/example-data/blog/future_railroad_db_four.jpg"
   },
   {
+    "title": "Heizkraftwerk Süd Baudienstleistung",
+    "description": "clone:it wurde für den Neubau und Zubau des Heizkraftwerks Süd in München beauftragt und übernahm die Generalplanung Bautechnik in den Leistungsphasen 6 bis 9.",
+    "published": "2025-09-15T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "clone:it",
+    "content": "## Heizkraftwerk Süd Baudienstleistung\n\n**Leistungen:** Projektleitung Generalplanung - Bautechnik\n\n**Zeitraum:** 2025, 2026\n\nclone:it wurde für die Jahre 2025 und 2026 für den Neubau und Zubau des Heizkraftwerks Süd in München beauftragt und übernahm Leistungen in den Leistungsphasen 6 bis 9.\n\nIn diesem Leistungsumfang wurde die Generalplanung Bautechnik abgewickelt. In diesem Zuge erfolgte die Mitarbeit in Ausschreibung, Vergabe, Ausführungsplanung, Bauüberwachung und Kostenrechnung für Um- und Neubaumaßnahmen vor Ort für die Stadtwerke München (SWM).\n\nZahlreiche Baumaßnahmen wurden in diesem Projektverlauf zu Ende gebracht, sodass ein Betriebsbeginn des Kraftwerkes durchgeführt werden kann.\n\n[Mehr zum Heizkraftwerk München Süd](https://www.swm.de/unternehmen/magazin/energie/energiestandort-sued)\n\n---\n\n**#Projektleitung #Generalplanung #Bautechnik #München #SWM #Energieinfrastruktur**",
+    "tags": [
+      "Bauüberwachung",
+      "Projektleitung",
+      "München"
+    ],
+    "_meta": {
+      "filePath": "heizkraftwerk_sued_baudienstleistung.mdx",
+      "fileName": "heizkraftwerk_sued_baudienstleistung.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "heizkraftwerk_sued_baudienstleistung"
+    },
+    "body": "var Component=(()=>{var l=Object.create;var a=Object.defineProperty;var o=Object.getOwnPropertyDescriptor;var f=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,k=Object.prototype.hasOwnProperty;var w=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),p=(n,e)=>{for(var t in e)a(n,t,{get:e[t],enumerable:!0})},s=(n,e,t,u)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of f(e))!k.call(n,i)&&i!==t&&a(n,i,{get:()=>e[i],enumerable:!(u=o(e,i))||u.enumerable});return n};var b=(n,e,t)=>(t=n!=null?l(m(n)):{},s(e||!n||!n.__esModule?a(t,\"default\",{value:n,enumerable:!0}):t,n)),M=n=>s(a({},\"__esModule\",{value:!0}),n);var h=w((z,d)=>{d.exports=_jsx_runtime});var j={};p(j,{default:()=>g});var r=b(h());function c(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(e.h2,{id:\"heizkraftwerk-s\\xFCd-baudienstleistung\",children:(0,r.jsx)(e.a,{href:\"#heizkraftwerk-s\\xFCd-baudienstleistung\",children:\"Heizkraftwerk S\\xFCd Baudienstleistung\"})}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Leistungen:\"}),\" Projektleitung Generalplanung - Bautechnik\"]}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2025, 2026\"]}),`\n`,(0,r.jsx)(e.p,{children:\"clone:it wurde f\\xFCr die Jahre 2025 und 2026 f\\xFCr den Neubau und Zubau des Heizkraftwerks S\\xFCd in M\\xFCnchen beauftragt und \\xFCbernahm Leistungen in den Leistungsphasen 6 bis 9.\"}),`\n`,(0,r.jsx)(e.p,{children:\"In diesem Leistungsumfang wurde die Generalplanung Bautechnik abgewickelt. In diesem Zuge erfolgte die Mitarbeit in Ausschreibung, Vergabe, Ausf\\xFChrungsplanung, Bau\\xFCberwachung und Kostenrechnung f\\xFCr Um- und Neubauma\\xDFnahmen vor Ort f\\xFCr die Stadtwerke M\\xFCnchen (SWM).\"}),`\n`,(0,r.jsx)(e.p,{children:\"Zahlreiche Bauma\\xDFnahmen wurden in diesem Projektverlauf zu Ende gebracht, sodass ein Betriebsbeginn des Kraftwerkes durchgef\\xFChrt werden kann.\"}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.a,{href:\"https://www.swm.de/unternehmen/magazin/energie/energiestandort-sued\",children:\"Mehr zum Heizkraftwerk M\\xFCnchen S\\xFCd\"})}),`\n`,(0,r.jsx)(e.hr,{}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.strong,{children:\"#Projektleitung #Generalplanung #Bautechnik #M\\xFCnchen #SWM #Energieinfrastruktur\"})})]})}function g(n={}){let{wrapper:e}=n.components||{};return e?(0,r.jsx)(e,{...n,children:(0,r.jsx)(c,{...n})}):c(n)}return M(j);})();\n;return Component;",
+    "slug": "/blog/heizkraftwerk_sued_baudienstleistung",
+    "slugAsParams": "heizkraftwerk_sued_baudienstleistung",
+    "coverImage": null
+  },
+  {
+    "title": "Heizkraftwerk Süd – Simple Site",
+    "description": "Im Zuge der Generalplanung wurde die App Simple Site weiterentwickelt mit Funktionen, die ideal für den Industriehochbau geeignet sind.",
+    "published": "2025-08-14T12:00:00.000Z",
+    "category": "Softwareentwicklung",
+    "author": "clone:it",
+    "content": "## Heizkraftwerk Süd – Simple Site\n\n**Leistungen:** Softwareentwicklung anhand von einem Industriehochbau\n\n**Zeitraum:** 2025, 2026\n\nIm Zuge der Generalplanung, welche clone:it in den Jahren 2025 und 2026 durchgeführt hat, wurde ebenso die App Simple Site weiterentwickelt. Zahlreiche App-Funktionen, die ideal für den Industriehochbau geeignet sind, wurden im Zuge dieses Projektes weiterentwickelt.\n\nSimple Site konnte damit den Fortschritt im Bauablauf transparent darstellen – sowohl für Auftraggeber als auch für Auftragnehmer.\n\n---\n\n**#SimpleSite #Softwareentwicklung #Industriehochbau #Baudokumentation #Digitalisierung**",
+    "tags": [
+      "SimpleSite",
+      "Softwareentwicklung",
+      "Industriehochbau"
+    ],
+    "_meta": {
+      "filePath": "heizkraftwerk_sued_simple_site.mdx",
+      "fileName": "heizkraftwerk_sued_simple_site.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "heizkraftwerk_sued_simple_site"
+    },
+    "body": "var Component=(()=>{var u=Object.create;var a=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var g=Object.getOwnPropertyNames;var p=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var w=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),k=(n,e)=>{for(var r in e)a(n,r,{get:e[r],enumerable:!0})},s=(n,e,r,h)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of g(e))!f.call(n,i)&&i!==r&&a(n,i,{get:()=>e[i],enumerable:!(h=m(e,i))||h.enumerable});return n};var S=(n,e,r)=>(r=n!=null?u(p(n)):{},s(e||!n||!n.__esModule?a(r,\"default\",{value:n,enumerable:!0}):r,n)),x=n=>s(a({},\"__esModule\",{value:!0}),n);var l=w((j,d)=>{d.exports=_jsx_runtime});var _={};k(_,{default:()=>c});var t=S(l());function o(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,t.jsxs)(t.Fragment,{children:[(0,t.jsx)(e.h2,{id:\"heizkraftwerk-s\\xFCd--simple-site\",children:(0,t.jsx)(e.a,{href:\"#heizkraftwerk-s\\xFCd--simple-site\",children:\"Heizkraftwerk S\\xFCd \\u2013 Simple Site\"})}),`\n`,(0,t.jsxs)(e.p,{children:[(0,t.jsx)(e.strong,{children:\"Leistungen:\"}),\" Softwareentwicklung anhand von einem Industriehochbau\"]}),`\n`,(0,t.jsxs)(e.p,{children:[(0,t.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2025, 2026\"]}),`\n`,(0,t.jsx)(e.p,{children:\"Im Zuge der Generalplanung, welche clone:it in den Jahren 2025 und 2026 durchgef\\xFChrt hat, wurde ebenso die App Simple Site weiterentwickelt. Zahlreiche App-Funktionen, die ideal f\\xFCr den Industriehochbau geeignet sind, wurden im Zuge dieses Projektes weiterentwickelt.\"}),`\n`,(0,t.jsx)(e.p,{children:\"Simple Site konnte damit den Fortschritt im Bauablauf transparent darstellen \\u2013 sowohl f\\xFCr Auftraggeber als auch f\\xFCr Auftragnehmer.\"}),`\n`,(0,t.jsx)(e.hr,{}),`\n`,(0,t.jsx)(e.p,{children:(0,t.jsx)(e.strong,{children:\"#SimpleSite #Softwareentwicklung #Industriehochbau #Baudokumentation #Digitalisierung\"})})]})}function c(n={}){let{wrapper:e}=n.components||{};return e?(0,t.jsx)(e,{...n,children:(0,t.jsx)(o,{...n})}):o(n)}return x(_);})();\n;return Component;",
+    "slug": "/blog/heizkraftwerk_sued_simple_site",
+    "slugAsParams": "heizkraftwerk_sued_simple_site",
+    "coverImage": null
+  },
+  {
     "title": "clone:it bei Workshop mit HOCHTIEF",
     "description": "Vertiefung der Digitalisierung auf der Baustelle mit compare:rebar in einem gemeinsamen Workshop mit HOCHTIEF.",
     "published": "2023-09-18T12:00:00.000Z",
@@ -341,6 +389,30 @@ export default [
     "slug": "/blog/hochtief_workshop_cloneit",
     "slugAsParams": "hochtief_workshop_cloneit",
     "coverImage": "https://www.cloneit.at/3zw5u3/wp-content/uploads/2023.09_Workshop-HOCHTIEF-1024x768.jpg"
+  },
+  {
+    "title": "Neubau Mobility Innovation Campus",
+    "description": "Projektleitung der Bauüberwachung für ein einzigartiges Projekt mit Parkgarage und Außenanlagen als Generalunternehmerleistung bei der BERNARD Gruppe ZT GmbH.",
+    "published": "2024-12-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## Neubau Mobility Innovation Campus\n\n**Leistungen:** Projektleitung Generalplanung und Bauüberwachung, Terminsteuerung\n\n**Zeitraum:** 2023, 2024\n\nUnser Bauingenieur Liebhard Mattuschka hat bei einem einzigartigen Projekt mitgewirkt, bei dem eine Parkgarage inklusive Außenanlagen als Generalunternehmerleistung umgesetzt wurde.\n\nIm Zuge seiner Tätigkeit bei der BERNARD Gruppe ZT GmbH hat er als Projektleiter der Bauüberwachung dieses Projekt von Anfang bis zum Abschluss maßgeblich begleitet.\n\n[Hier mehr über das Projekt](https://www.iabg.de/branchen/automotive/mobility-innovation-campus)\n\n---\n\n**#MobilityInnovationCampus #Projektleitung #Bauüberwachung #BERNARD #IABG**",
+    "tags": [
+      "Projektleitung",
+      "Bauüberwachung",
+      "IABG"
+    ],
+    "_meta": {
+      "filePath": "mobility_innovation_campus.mdx",
+      "fileName": "mobility_innovation_campus.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "mobility_innovation_campus"
+    },
+    "body": "var Component=(()=>{var g=Object.create;var a=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var b=Object.getPrototypeOf,p=Object.prototype.hasOwnProperty;var j=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),k=(n,e)=>{for(var r in e)a(n,r,{get:e[r],enumerable:!0})},o=(n,e,r,u)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let t of d(e))!p.call(n,t)&&t!==r&&a(n,t,{get:()=>e[t],enumerable:!(u=m(e,t))||u.enumerable});return n};var w=(n,e,r)=>(r=n!=null?g(b(n)):{},o(e||!n||!n.__esModule?a(r,\"default\",{value:n,enumerable:!0}):r,n)),v=n=>o(a({},\"__esModule\",{value:!0}),n);var h=j((B,s)=>{s.exports=_jsx_runtime});var x={};k(x,{default:()=>c});var i=w(h());function l(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,i.jsxs)(i.Fragment,{children:[(0,i.jsx)(e.h2,{id:\"neubau-mobility-innovation-campus\",children:(0,i.jsx)(e.a,{href:\"#neubau-mobility-innovation-campus\",children:\"Neubau Mobility Innovation Campus\"})}),`\n`,(0,i.jsxs)(e.p,{children:[(0,i.jsx)(e.strong,{children:\"Leistungen:\"}),\" Projektleitung Generalplanung und Bau\\xFCberwachung, Terminsteuerung\"]}),`\n`,(0,i.jsxs)(e.p,{children:[(0,i.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2023, 2024\"]}),`\n`,(0,i.jsx)(e.p,{children:\"Unser Bauingenieur Liebhard Mattuschka hat bei einem einzigartigen Projekt mitgewirkt, bei dem eine Parkgarage inklusive Au\\xDFenanlagen als Generalunternehmerleistung umgesetzt wurde.\"}),`\n`,(0,i.jsx)(e.p,{children:\"Im Zuge seiner T\\xE4tigkeit bei der BERNARD Gruppe ZT GmbH hat er als Projektleiter der Bau\\xFCberwachung dieses Projekt von Anfang bis zum Abschluss ma\\xDFgeblich begleitet.\"}),`\n`,(0,i.jsx)(e.p,{children:(0,i.jsx)(e.a,{href:\"https://www.iabg.de/branchen/automotive/mobility-innovation-campus\",children:\"Hier mehr \\xFCber das Projekt\"})}),`\n`,(0,i.jsx)(e.hr,{}),`\n`,(0,i.jsx)(e.p,{children:(0,i.jsx)(e.strong,{children:\"#MobilityInnovationCampus #Projektleitung #Bau\\xFCberwachung #BERNARD #IABG\"})})]})}function c(n={}){let{wrapper:e}=n.components||{};return e?(0,i.jsx)(e,{...n,children:(0,i.jsx)(l,{...n})}):l(n)}return v(x);})();\n;return Component;",
+    "slug": "/blog/mobility_innovation_campus",
+    "slugAsParams": "mobility_innovation_campus",
+    "coverImage": null
   },
   {
     "title": "clone:it Proof of Concept in Salzgitter, Deutschland",
@@ -430,12 +502,60 @@ export default [
     "coverImage": "/example-data/blog/obb_blog.jpg"
   },
   {
+    "title": "TRAM Westtangente München",
+    "description": "Koordination der Projektleitung und Bauüberwachung für eines der größten Verkehrsprojekte in München mit Fokus auf Verkehrsplanung und Terminsteuerung.",
+    "published": "2025-05-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## TRAM Westtangente\n\n**Leistungen:** Verkehrsplanung, Bauüberwachung, Terminsteuerung\n\n**Zeitraum:** 2024, 2025\n\nBei einem der größten Verkehrsprojekte durfte unser Bauingenieur Liebhard Mattuschka aktiv mitwirken und für das Tram-Verkehrsprojekt in München die Koordination von Projektleitung der Bauüberwachung über die Gesamtkoordination von Termin- und Planungsleistungen der Verkehrsplanung übernehmen.\n\n[Hier mehr über das Projekt](https://westtangente.mvg.de/projekt.html)\n\n---\n\n**#Verkehrsplanung #Tram #München #MVG #Bauüberwachung #Terminsteuerung**",
+    "tags": [
+      "Verkehrsplanung",
+      "Bauüberwachung",
+      "München"
+    ],
+    "_meta": {
+      "filePath": "tram_westtangente_muenchen.mdx",
+      "fileName": "tram_westtangente_muenchen.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "tram_westtangente_muenchen"
+    },
+    "body": "var Component=(()=>{var g=Object.create;var i=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var l=Object.getOwnPropertyNames;var p=Object.getPrototypeOf,k=Object.prototype.hasOwnProperty;var j=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),f=(n,e)=>{for(var t in e)i(n,t,{get:e[t],enumerable:!0})},h=(n,e,t,s)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let a of l(e))!k.call(n,a)&&a!==t&&i(n,a,{get:()=>e[a],enumerable:!(s=m(e,a))||s.enumerable});return n};var w=(n,e,t)=>(t=n!=null?g(p(n)):{},h(e||!n||!n.__esModule?i(t,\"default\",{value:n,enumerable:!0}):t,n)),x=n=>h(i({},\"__esModule\",{value:!0}),n);var u=j((_,o)=>{o.exports=_jsx_runtime});var M={};f(M,{default:()=>c});var r=w(u());function d(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(e.h2,{id:\"tram-westtangente\",children:(0,r.jsx)(e.a,{href:\"#tram-westtangente\",children:\"TRAM Westtangente\"})}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Leistungen:\"}),\" Verkehrsplanung, Bau\\xFCberwachung, Terminsteuerung\"]}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2024, 2025\"]}),`\n`,(0,r.jsx)(e.p,{children:\"Bei einem der gr\\xF6\\xDFten Verkehrsprojekte durfte unser Bauingenieur Liebhard Mattuschka aktiv mitwirken und f\\xFCr das Tram-Verkehrsprojekt in M\\xFCnchen die Koordination von Projektleitung der Bau\\xFCberwachung \\xFCber die Gesamtkoordination von Termin- und Planungsleistungen der Verkehrsplanung \\xFCbernehmen.\"}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.a,{href:\"https://westtangente.mvg.de/projekt.html\",children:\"Hier mehr \\xFCber das Projekt\"})}),`\n`,(0,r.jsx)(e.hr,{}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.strong,{children:\"#Verkehrsplanung #Tram #M\\xFCnchen #MVG #Bau\\xFCberwachung #Terminsteuerung\"})})]})}function c(n={}){let{wrapper:e}=n.components||{};return e?(0,r.jsx)(e,{...n,children:(0,r.jsx)(d,{...n})}):d(n)}return x(M);})();\n;return Component;",
+    "slug": "/blog/tram_westtangente_muenchen",
+    "slugAsParams": "tram_westtangente_muenchen",
+    "coverImage": null
+  },
+  {
+    "title": "Tübbingkontrolle Brenner-Basistunnel",
+    "description": "Qualitätskontrolle von 54.000 Tübbing-Segmenten bei Max Bögl für den Brenner-Basistunnel mit Fokus auf termingerechte Produktion und Qualitätssicherung.",
+    "published": "2025-06-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## Tübbingkontrolle Brenner-Basistunnel\n\n**Leistungen:** Projektleitung Bauüberwachung\n\n**Zeitraum:** 2024, 2025\n\nIm Jahr 2024 und 2025 hat unser Bauingenieur Liebhard Mattuschka die Qualitätskontrolle der Tübbing-Segmente bei der Firma Max Bögl in Sengenthal durchgeführt.\n\nDabei war es besonders wichtig, die Qualitätskontrolle direkt vor Ort während der Produktion von insgesamt 54.000 Stück Tübbing-Segmenten sicherzustellen.\n\nDie Gesamtkoordination erfolgte mit dem Ziel, dass die termingerechte Produktionsleistung sowie die Qualität für den späteren Einbau vor Ort am Brenner (AT) übereinstimmen.\n\n---\n\n**#Tunnelbau #Qualitätskontrolle #BrennerBasistunnel #MaxBögl #Bauüberwachung**",
+    "tags": [
+      "Qualitätskontrolle",
+      "Tunnelbau",
+      "Bauüberwachung"
+    ],
+    "_meta": {
+      "filePath": "tuebbingkontrolle_brenner_basistunnel.mdx",
+      "fileName": "tuebbingkontrolle_brenner_basistunnel.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "tuebbingkontrolle_brenner_basistunnel"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var s=Object.defineProperty;var g=Object.getOwnPropertyDescriptor;var b=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,k=Object.prototype.hasOwnProperty;var p=(e,n)=>()=>(n||e((n={exports:{}}).exports,n),n.exports),x=(e,n)=>{for(var t in n)s(e,t,{get:n[t],enumerable:!0})},a=(e,n,t,o)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let i of b(n))!k.call(e,i)&&i!==t&&s(e,i,{get:()=>n[i],enumerable:!(o=g(n,i))||o.enumerable});return e};var B=(e,n,t)=>(t=e!=null?c(m(e)):{},a(n||!e||!e.__esModule?s(t,\"default\",{value:e,enumerable:!0}):t,e)),f=e=>a(s({},\"__esModule\",{value:!0}),e);var d=p((j,l)=>{l.exports=_jsx_runtime});var w={};x(w,{default:()=>h});var r=B(d());function u(e){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...e.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(n.h2,{id:\"t\\xFCbbingkontrolle-brenner-basistunnel\",children:(0,r.jsx)(n.a,{href:\"#t\\xFCbbingkontrolle-brenner-basistunnel\",children:\"T\\xFCbbingkontrolle Brenner-Basistunnel\"})}),`\n`,(0,r.jsxs)(n.p,{children:[(0,r.jsx)(n.strong,{children:\"Leistungen:\"}),\" Projektleitung Bau\\xFCberwachung\"]}),`\n`,(0,r.jsxs)(n.p,{children:[(0,r.jsx)(n.strong,{children:\"Zeitraum:\"}),\" 2024, 2025\"]}),`\n`,(0,r.jsx)(n.p,{children:\"Im Jahr 2024 und 2025 hat unser Bauingenieur Liebhard Mattuschka die Qualit\\xE4tskontrolle der T\\xFCbbing-Segmente bei der Firma Max B\\xF6gl in Sengenthal durchgef\\xFChrt.\"}),`\n`,(0,r.jsx)(n.p,{children:\"Dabei war es besonders wichtig, die Qualit\\xE4tskontrolle direkt vor Ort w\\xE4hrend der Produktion von insgesamt 54.000 St\\xFCck T\\xFCbbing-Segmenten sicherzustellen.\"}),`\n`,(0,r.jsx)(n.p,{children:\"Die Gesamtkoordination erfolgte mit dem Ziel, dass die termingerechte Produktionsleistung sowie die Qualit\\xE4t f\\xFCr den sp\\xE4teren Einbau vor Ort am Brenner (AT) \\xFCbereinstimmen.\"}),`\n`,(0,r.jsx)(n.hr,{}),`\n`,(0,r.jsx)(n.p,{children:(0,r.jsx)(n.strong,{children:\"#Tunnelbau #Qualit\\xE4tskontrolle #BrennerBasistunnel #MaxB\\xF6gl #Bau\\xFCberwachung\"})})]})}function h(e={}){let{wrapper:n}=e.components||{};return n?(0,r.jsx)(n,{...e,children:(0,r.jsx)(u,{...e})}):u(e)}return f(w);})();\n;return Component;",
+    "slug": "/blog/tuebbingkontrolle_brenner_basistunnel",
+    "slugAsParams": "tuebbingkontrolle_brenner_basistunnel",
+    "coverImage": null
+  },
+  {
     "title": "clone:it at TUM Venture Labs Design Thinking Workshop",
-    "description": "Liebhard Mattuschka and Asse Boerties collaborate with international MBA students on creative solutions.",
+    "description": "Liebhard Mattuschka collaborates with international MBA students on creative solutions.",
     "published": "2024-05-31T12:00:00.000Z",
     "category": "Events",
     "author": "Liebhard-Mattuschka",
-    "content": "<img\n  src=\"/example-data/blog/tum_vl_workshop_one.jpg\"\n  alt=\"clone:it Team at TUM Venture Labs Design Thinking Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🌟 clone:it at TUM Venture Labs Design Thinking Workshop\n\nNot long ago, **clone:it** participated in an **inspiring design thinking workshop** organized by **TUM Venture Labs**.\n\nOur team members, **Liebhard Mattuschka** and **Asse Boerties**, had the opportunity to **introduce clone:it** and collaborate with **international MBA students and business professionals** to develop creative solutions for our challenges.\n\n<img\n  src=\"/example-data/blog/tum_vl_workshop_two.jpg\"\n  alt=\"Collaboration at TUM Venture Labs Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Fresh Insights and Future Collaborations\n\nWe are thrilled with the **fresh insights and potential solutions** the participants provided and look forward to **incorporating them into our projects**.\n\nAdditionally, we **eagerly anticipate participating in more initiatives** by **TUM Venture Labs**. The **collaboration and exchange of ideas** with talented individuals have been truly **invaluable**.\n\n---\n\n**#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit**",
+    "content": "<img\n  src=\"/example-data/blog/tum_vl_workshop_one.jpg\"\n  alt=\"clone:it Team at TUM Venture Labs Design Thinking Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🌟 clone:it at TUM Venture Labs Design Thinking Workshop\n\nNot long ago, **clone:it** participated in an **inspiring design thinking workshop** organized by **TUM Venture Labs**.\n\nOur team member **Liebhard Mattuschka** had the opportunity to **introduce clone:it** and collaborate with **international MBA students and business professionals** to develop creative solutions for our challenges.\n\n<img\n  src=\"/example-data/blog/tum_vl_workshop_two.jpg\"\n  alt=\"Collaboration at TUM Venture Labs Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Fresh Insights and Future Collaborations\n\nWe are thrilled with the **fresh insights and potential solutions** the participants provided and look forward to **incorporating them into our projects**.\n\nAdditionally, we **eagerly anticipate participating in more initiatives** by **TUM Venture Labs**. The **collaboration and exchange of ideas** with talented individuals have been truly **invaluable**.\n\n---\n\n**#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit**",
     "_meta": {
       "filePath": "TUM_Venture_Labs_Workshop.mdx",
       "fileName": "TUM_Venture_Labs_Workshop.mdx",
@@ -443,7 +563,7 @@ export default [
       "extension": "mdx",
       "path": "TUM_Venture_Labs_Workshop"
     },
-    "body": "var Component=(()=>{var g=Object.create;var o=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var p=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,b=Object.prototype.hasOwnProperty;var f=(t,n)=>()=>(n||t((n={exports:{}}).exports,n),n.exports),w=(t,n)=>{for(var i in n)o(t,i,{get:n[i],enumerable:!0})},s=(t,n,i,a)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let r of p(n))!b.call(t,r)&&r!==i&&o(t,r,{get:()=>n[r],enumerable:!(a=u(n,r))||a.enumerable});return t};var k=(t,n,i)=>(i=t!=null?g(m(t)):{},s(n||!t||!t.__esModule?o(i,\"default\",{value:t,enumerable:!0}):i,t)),v=t=>s(o({},\"__esModule\",{value:!0}),t);var h=f((M,l)=>{l.exports=_jsx_runtime});var _={};w(_,{default:()=>c});var e=k(h());function d(t){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...t.components};return(0,e.jsxs)(e.Fragment,{children:[(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_one.jpg\",alt:\"clone:it Team at TUM Venture Labs Design Thinking Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:(0,e.jsx)(n.a,{href:\"#-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:\"\\u{1F31F} clone:it at TUM Venture Labs Design Thinking Workshop\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"Not long ago, \",(0,e.jsx)(n.strong,{children:\"clone:it\"}),\" participated in an \",(0,e.jsx)(n.strong,{children:\"inspiring design thinking workshop\"}),\" organized by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Our team members, \",(0,e.jsx)(n.strong,{children:\"Liebhard Mattuschka\"}),\" and \",(0,e.jsx)(n.strong,{children:\"Asse Boerties\"}),\", had the opportunity to \",(0,e.jsx)(n.strong,{children:\"introduce clone:it\"}),\" and collaborate with \",(0,e.jsx)(n.strong,{children:\"international MBA students and business professionals\"}),\" to develop creative solutions for our challenges.\"]}),`\n`,(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_two.jpg\",alt:\"Collaboration at TUM Venture Labs Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-fresh-insights-and-future-collaborations\",children:(0,e.jsx)(n.a,{href:\"#-fresh-insights-and-future-collaborations\",children:\"\\u{1F680} Fresh Insights and Future Collaborations\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"We are thrilled with the \",(0,e.jsx)(n.strong,{children:\"fresh insights and potential solutions\"}),\" the participants provided and look forward to \",(0,e.jsx)(n.strong,{children:\"incorporating them into our projects\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Additionally, we \",(0,e.jsx)(n.strong,{children:\"eagerly anticipate participating in more initiatives\"}),\" by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\". The \",(0,e.jsx)(n.strong,{children:\"collaboration and exchange of ideas\"}),\" with talented individuals have been truly \",(0,e.jsx)(n.strong,{children:\"invaluable\"}),\".\"]}),`\n`,(0,e.jsx)(n.hr,{}),`\n`,(0,e.jsx)(n.p,{children:(0,e.jsx)(n.strong,{children:\"#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit\"})})]})}function c(t={}){let{wrapper:n}=t.components||{};return n?(0,e.jsx)(n,{...t,children:(0,e.jsx)(d,{...t})}):d(t)}return v(_);})();\n;return Component;",
+    "body": "var Component=(()=>{var g=Object.create;var o=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var p=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,b=Object.prototype.hasOwnProperty;var f=(t,n)=>()=>(n||t((n={exports:{}}).exports,n),n.exports),w=(t,n)=>{for(var i in n)o(t,i,{get:n[i],enumerable:!0})},s=(t,n,i,a)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let r of p(n))!b.call(t,r)&&r!==i&&o(t,r,{get:()=>n[r],enumerable:!(a=u(n,r))||a.enumerable});return t};var k=(t,n,i)=>(i=t!=null?g(m(t)):{},s(n||!t||!t.__esModule?o(i,\"default\",{value:t,enumerable:!0}):i,t)),v=t=>s(o({},\"__esModule\",{value:!0}),t);var h=f((M,l)=>{l.exports=_jsx_runtime});var _={};w(_,{default:()=>c});var e=k(h());function d(t){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...t.components};return(0,e.jsxs)(e.Fragment,{children:[(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_one.jpg\",alt:\"clone:it Team at TUM Venture Labs Design Thinking Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:(0,e.jsx)(n.a,{href:\"#-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:\"\\u{1F31F} clone:it at TUM Venture Labs Design Thinking Workshop\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"Not long ago, \",(0,e.jsx)(n.strong,{children:\"clone:it\"}),\" participated in an \",(0,e.jsx)(n.strong,{children:\"inspiring design thinking workshop\"}),\" organized by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Our team member \",(0,e.jsx)(n.strong,{children:\"Liebhard Mattuschka\"}),\" had the opportunity to \",(0,e.jsx)(n.strong,{children:\"introduce clone:it\"}),\" and collaborate with \",(0,e.jsx)(n.strong,{children:\"international MBA students and business professionals\"}),\" to develop creative solutions for our challenges.\"]}),`\n`,(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_two.jpg\",alt:\"Collaboration at TUM Venture Labs Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-fresh-insights-and-future-collaborations\",children:(0,e.jsx)(n.a,{href:\"#-fresh-insights-and-future-collaborations\",children:\"\\u{1F680} Fresh Insights and Future Collaborations\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"We are thrilled with the \",(0,e.jsx)(n.strong,{children:\"fresh insights and potential solutions\"}),\" the participants provided and look forward to \",(0,e.jsx)(n.strong,{children:\"incorporating them into our projects\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Additionally, we \",(0,e.jsx)(n.strong,{children:\"eagerly anticipate participating in more initiatives\"}),\" by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\". The \",(0,e.jsx)(n.strong,{children:\"collaboration and exchange of ideas\"}),\" with talented individuals have been truly \",(0,e.jsx)(n.strong,{children:\"invaluable\"}),\".\"]}),`\n`,(0,e.jsx)(n.hr,{}),`\n`,(0,e.jsx)(n.p,{children:(0,e.jsx)(n.strong,{children:\"#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit\"})})]})}function c(t={}){let{wrapper:n}=t.components||{};return n?(0,e.jsx)(n,{...t,children:(0,e.jsx)(d,{...t})}):d(t)}return v(_);})();\n;return Component;",
     "slug": "/blog/TUM_Venture_Labs_Workshop",
     "slugAsParams": "TUM_Venture_Labs_Workshop",
     "coverImage": "/example-data/blog/tum_vl_workshop_one.jpg"

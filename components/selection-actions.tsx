@@ -57,14 +57,14 @@ export function SelectionActions({
 
   return (
     <>
-      {/* Horizontal bar above footer — spans full width so it doesn't overlap the observation grid */}
+      {/* Horizontal bar above footer — only buttons have pointer-events to not block grid selection */}
       <div className="pointer-events-none fixed inset-x-0 bottom-[3.5rem] z-50 sm:bottom-16">
-        <div className="pointer-events-auto bg-background/95 backdrop-blur-sm border-t border-border shadow-lg">
+        <div className="bg-background/95 backdrop-blur-sm border-t border-border shadow-lg">
           <div className="flex w-full max-w-6xl mx-auto px-3 sm:px-8 py-2 gap-2 items-center flex-wrap">
-            <Button onClick={onClearSelection} variant="secondary" size="sm" className="shrink-0">
+            <Button onClick={onClearSelection} variant="secondary" size="sm" className="shrink-0 pointer-events-auto">
               {t("clearSelection")}
             </Button>
-            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="sm" className="shrink-0">
+            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="sm" className="shrink-0 pointer-events-auto">
               <Pencil className="h-4 w-4 mr-1.5 shrink-0" />
               {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
             </Button>
@@ -72,12 +72,12 @@ export function SelectionActions({
               onClick={onOpenPhotoQuality}
               variant="outline"
               size="sm"
-              className="hidden md:inline-flex shrink-0"
+              className="hidden md:inline-flex shrink-0 pointer-events-auto"
             >
               <Download className="h-4 w-4 mr-1.5 shrink-0" />
               {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
             </Button>
-            <Button onClick={onOpenSaveReport} size="sm" className="shrink-0 ml-auto">
+            <Button onClick={onOpenSaveReport} size="sm" className="shrink-0 ml-auto pointer-events-auto">
               {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
             </Button>
           </div>

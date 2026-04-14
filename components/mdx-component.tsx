@@ -105,12 +105,12 @@ const components = {
     <pre className="my-6" {...props} />
   ),
   code: ({ ...props }) => <code {...props} />,
-  img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
+  img: ({ src, alt, className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt ?? ""}
-      className="my-6 rounded max-w-full"
+      className="my-6 rounded-lg max-w-full h-auto max-h-[400px] object-contain"
       {...props}
     />
   ),
@@ -119,19 +119,21 @@ const components = {
     alt,
     width,
     height,
+    className,
     ...props
   }: {
     src: string;
     alt: string;
     width?: number;
     height?: number;
+    className?: string;
   }) => (
     <Image
       src={src}
       alt={alt}
       width={width ?? 800}
       height={height ?? 450}
-      className="my-6 rounded max-w-full"
+      className="my-6 rounded-lg max-w-full h-auto max-h-[400px] object-contain"
       {...props}
     />
   ),

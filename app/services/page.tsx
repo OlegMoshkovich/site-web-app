@@ -96,6 +96,7 @@ const pageContent = {
       project1: {
         name: "Heizkraftwerk Süd – Munich",
         type: "Large-scale industrial construction",
+        link: "/blog/heizkraftwerk_sued_baudienstleistung",
         items: ["Construction site supervision – civil works", "Trade coordination", "Schedule and quality control"],
       },
       project2: {
@@ -311,6 +312,7 @@ const pageContent = {
       project1: {
         name: "Heizkraftwerk Süd – München",
         type: "Großprojekt Industriebau",
+        link: "/blog/heizkraftwerk_sued_baudienstleistung",
         items: ["Örtliche Bauaufsicht Hochbau", "Koordination Gewerke", "Termin- und Qualitätskontrolle"],
       },
       project2: {
@@ -742,7 +744,15 @@ export default function ServicesPage() {
           <h2 className={titleClass}>{c.referenzen.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
             <div>
-              <p className="text-base font-semibold text-white mb-2">{c.referenzen.project1.name}</p>
+              <p className="text-base font-semibold text-white mb-2">
+                {"link" in c.referenzen.project1 && c.referenzen.project1.link ? (
+                  <Link href={c.referenzen.project1.link} className="underline underline-offset-2 hover:text-gray-300 transition-colors">
+                    {c.referenzen.project1.name}
+                  </Link>
+                ) : (
+                  c.referenzen.project1.name
+                )}
+              </p>
               <p className="text-xs text-gray-600 mb-4">{c.referenzen.project1.type}</p>
               <ul className="space-y-3">
                 {c.referenzen.project1.items.map((item) => (
