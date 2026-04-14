@@ -605,16 +605,6 @@ export default function ReportDetailPage() {
             // Add image
             pdf.addImage(imgData, 'JPEG', margin, yPosition, imgWidth, imgHeight);
 
-            // Timestamp at bottom-left of photo
-            const photoTimestamp = resolveObservationDateTime(observation).toLocaleDateString('de-DE', {
-              year: 'numeric', month: '2-digit', day: '2-digit'
-            });
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text(photoTimestamp, margin + 2, yPosition + imgHeight - 2);
-            pdf.setTextColor(0, 0, 0);
-
             // Add text content next to image
             const textStartX = margin + imgWidth + 10;
             const textWidth = pageWidth - textStartX - margin;
