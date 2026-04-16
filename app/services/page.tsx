@@ -206,8 +206,8 @@ const pageContent = {
         },
         {
           name: "DI Liebhard Mattuschka",
-          role: "Project Control | Construction Supervision",
-          bio: "Master’s graduate in Construction Management from FH Joanneum, with strong expertise in planning and delivery. His experience spans construction supervision and project control on large-scale projects in Germany and Austria—including Heizkraftwerk Süd in Munich, the Munich core route (Stammstrecke), and further infrastructure and commercial schemes.",
+          role: "Site Management – Project Management – Project Control",
+          bio: "Liebhard studied Civil Engineering (Bachelor) in Graz and completed a Master’s in Construction Management and Civil Engineering in cooperation between Graz and a university in the USA, including a semester abroad. He has extensive experience from numerous projects in Austria and Germany.",
           image: "/images/Liebhard.webp",
         },
         {
@@ -422,8 +422,8 @@ const pageContent = {
         },
         {
           name: "DI Liebhard Mattuschka",
-          role: "Projektsteuerung | Bauüberwachung",
-          bio: "Masterabsolvent des Studiengangs Baumanagement an der FH Joanneum – mit fundierter Expertise in Planung und Ausführung. Seine Berufserfahrung umfasst Bauüberwachung und Projektsteuerung bei Großprojekten in Deutschland und Österreich, darunter das Heizkraftwerk Süd in München, die Münchner Stammstrecke sowie weitere Infrastruktur- und Gewerbeprojekte.",
+          role: "Bauleitung – Projektleitung – Projektsteuerung",
+          bio: "Liebhard studierte in Graz Bauingenieurwesen im Bachelor und absolvierte anschließend einen Master in Baumanagement und Ingenieurbau, den er in Kooperation zwischen Graz und einer Universität in den USA mit einem Auslandssemester erfolgreich abschloss. Er verfügt über umfangreiche Erfahrung aus zahlreichen Projekten in Österreich und Deutschland.",
           image: "/images/Liebhard.webp",
         },
         {
@@ -734,6 +734,54 @@ export default function ServicesPage() {
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
+
+          {/* Software product links */}
+          <div className="flex gap-6 mt-12">
+            <Link href="/software" className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+              Simple Site →
+            </Link>
+            <Link href="/ar" className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+              AR BIM Inspection →
+            </Link>
+          </div>
+
+          {/* Blog scroll – SimpleSite posts */}
+          {(() => {
+            const softwarePosts = allPosts
+              .filter((p) => p.tags?.includes("SimpleSite"))
+              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+            return softwarePosts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-2 mt-10" style={{ scrollbarWidth: "none" }}>
+                {softwarePosts.map((post) => (
+                  <Link
+                    key={post.slugAsParams}
+                    href={post.slug}
+                    className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                  >
+                    {post.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-36 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      {post.category && (
+                        <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
+                      )}
+                      <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <time className="text-xs text-gray-700">
+                        {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </section>
 
