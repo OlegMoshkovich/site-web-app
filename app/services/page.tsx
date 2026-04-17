@@ -1015,20 +1015,21 @@ export default function ServicesPage() {
         <div className={innerClass}>
           <p className={labelClass}>{c.team.label}</p>
           <h2 className={titleClass}>{c.team.title}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4 sm:gap-x-8 sm:gap-y-5">
             {c.team.members.map((person) => (
               <div
                 key={person.name}
-                className="rounded-2xl border border-gray-800 bg-black px-4 py-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
+                className="flex flex-col rounded-2xl border border-gray-800 bg-black px-4 py-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
               >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
                   <Image
                     src={person.image}
                     alt={person.name}
                     width={64}
                     height={64}
                     sizes="64px"
-                    className="h-full w-full object-cover object-top"
+                    unoptimized
+                    className="size-full object-cover object-center"
                   />
                 </div>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
