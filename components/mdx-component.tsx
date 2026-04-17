@@ -32,7 +32,7 @@ const components = {
   ),
   h2: ({ ...props }) => (
     <h2
-      className="mt-10 mb-4 text-2xl font-semibold text-white leading-tight border-t border-gray-800 pt-8"
+      className="mt-10 mb-4 text-2xl font-semibold text-white leading-tight border-t border-gray-800 pt-8 first:mt-0 first:border-t-0 first:pt-0"
       {...props}
     />
   ),
