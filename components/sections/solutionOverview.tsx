@@ -39,13 +39,26 @@ function HeroIllustration(): React.JSX.Element {
 
   const [activeTab, setActiveTab] = React.useState('feature1');
   const videoRefs = React.useRef<(HTMLVideoElement | null)[]>([]);
+  const tabPlaybackEnabledRef = React.useRef(false);
+
+  const activeVideoIndex =
+    Number(activeTab.replace(/\D/g, '')) - 1;
+
+  React.useEffect(() => {
+    if (!tabPlaybackEnabledRef.current) return;
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      if (index === activeVideoIndex) {
+        void video.play();
+      } else {
+        video.pause();
+      }
+    });
+  }, [activeTab, activeVideoIndex]);
 
   const handleVideoEnd = (index: number) => {
+    tabPlaybackEnabledRef.current = true;
     setActiveTab(`feature${((index + 1) % tabs.length) + 1}`);
-  };
-
-  const handleTabClick = (tab: string) => {
-    setActiveTab(tab);
   };
 
   return (
@@ -60,8 +73,11 @@ function HeroIllustration(): React.JSX.Element {
       </h1>
 
       <UnderlinedTabs
-        defaultValue={activeTab}
         value={activeTab}
+        onValueChange={(value) => {
+          tabPlaybackEnabledRef.current = true;
+          setActiveTab(value);
+        }}
         className="mt-4"
       >
         <ScrollArea className="max-w-[100vw] lg:max-w-none">
@@ -70,7 +86,6 @@ function HeroIllustration(): React.JSX.Element {
               <UnderlinedTabsTrigger
                 key={index}
                 value={`feature${index + 1}`}
-                onClick={() => handleTabClick(`feature${index + 1}`)}
                 className="relative mx-1 border-none px-2.5 text-base outline-none sm:mx-2 sm:px-3 sm:text-lg"
               >
                 <CubeIcon className="mr-2 size-5 shrink-0" />
@@ -113,7 +128,8 @@ function HeroIllustration(): React.JSX.Element {
                       width="1000"
                       height="550"
                       controls
-                      autoPlay
+                      playsInline
+                      preload="metadata"
                       onEnded={() => handleVideoEnd(index)}
                       className="rounded-xl"
                       style={{ backgroundColor: 'transparent' }}
