@@ -214,7 +214,7 @@ const pageContent = {
         {
           name: "Dr. Timur Uzunoglu",
           role: "Civil Engineer | Construction Expert",
-          bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Supports clone:it as an expert and consultant for complex technical topics.",
+          bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Advises on complex technical topics as an external expert.",
           image: "/images/timur.jpg",
         },
         {
@@ -431,7 +431,7 @@ const pageContent = {
         {
           name: "Dr. Timur Uzunoglu",
           role: "Ziviltechniker | Experte Bauwesen",
-          bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
+          bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Begleitet das Team als Experte und Berater für komplexe Fachthemen.",
           image: "/images/timur.jpg",
         },
         {
@@ -1015,11 +1015,11 @@ export default function ServicesPage() {
         <div className={innerClass}>
           <p className={labelClass}>{c.team.label}</p>
           <h2 className={titleClass}>{c.team.title}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
             {c.team.members.map((person) => (
               <div
                 key={person.name}
-                className="rounded-2xl border border-gray-800 bg-black px-4 py-5 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
+                className="rounded-2xl border border-gray-800 bg-black px-4 py-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
               >
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
                   <Image
