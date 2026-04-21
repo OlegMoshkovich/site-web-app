@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { FolderUp, Box, Bot, X } from "lucide-react";
+import { FolderUp, Bot, X, MapPin } from "lucide-react";
 import { homeClaudeTheme, homeTheme } from "@/lib/app-theme";
 import { cn } from "@/lib/utils";
 import type { translations } from "@/lib/translations";
@@ -11,8 +11,7 @@ type TFn = (key: keyof typeof translations.en) => string;
 
 interface HomeAppFooterProps {
   onUploadClick: () => void;
-  showModelMenu: boolean;
-  onToggleModelMenu: () => void;
+  onMapClick: () => void;
   claudeOpen: boolean;
   onClaudeToggle: () => void;
   t: TFn;
@@ -20,8 +19,7 @@ interface HomeAppFooterProps {
 
 export function HomeAppFooter({
   onUploadClick,
-  showModelMenu,
-  onToggleModelMenu,
+  onMapClick,
   claudeOpen,
   onClaudeToggle,
   t,
@@ -55,29 +53,17 @@ export function HomeAppFooter({
               </Button>
             </div>
 
-            <div className="relative">
-              <Button
-                onClick={onToggleModelMenu}
-                variant="outline"
-                size="sm"
-                className={cn(
-                  homeTheme.bottomBarOutlineButton,
-                  showModelMenu ? homeTheme.outlineIconButtonActive : "",
-                )}
-              >
-                <Box className="h-4 w-4" />
-              </Button>
-              {showModelMenu && (
-                <div className={homeTheme.bottomBarMenu}>
-                  <a href="/model/custom" className={homeTheme.bottomBarMenuLink}>
-                    Custom
-                  </a>
-                  <a href="/model/test-parameters" className={homeTheme.bottomBarMenuLink}>
-                    Test Parameters
-                  </a>
-                </div>
-              )}
-            </div>
+            <Button
+              type="button"
+              onClick={onMapClick}
+              variant="outline"
+              size="sm"
+              className={homeTheme.bottomBarOutlineButton}
+              title={t("mapView")}
+              aria-label={t("mapView")}
+            >
+              <MapPin className="h-4 w-4" />
+            </Button>
 
             <Button
               type="button"

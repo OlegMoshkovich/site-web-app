@@ -43,6 +43,8 @@ interface FilterPanelProps {
   onToggleLabel: (label: string) => void;
   onClearLabels: () => void;
   t: TFn;
+  /** When true, panels stack in normal flow (e.g. inside map modal) instead of sticky under main navbar */
+  embedded?: boolean;
 }
 
 function LoadingSpinner() {
@@ -79,6 +81,7 @@ export function FilterPanel({
   onToggleLabel,
   onClearLabels,
   t,
+  embedded = false,
 }: FilterPanelProps) {
   // Build a set of label names present in observations for filtering
   const availableSet = new Set(availableLabels);
@@ -151,11 +154,23 @@ export function FilterPanel({
       </div>
     );
   };
+  const datePanelClass = embedded
+    ? "relative z-auto flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4 border-b border-border"
+    : "sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4";
+
+  const searchPanelClass = embedded
+    ? "relative z-auto flex flex-col gap-2 w-full p-4 border-b border-border"
+    : "sticky z-40 flex flex-col gap-2 w-full p-4";
+
+  const labelPanelClass = embedded
+    ? "relative z-auto flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4 border-b border-border"
+    : "sticky z-40 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4";
+
   return (
     <>
       {showDateSelector && (
-        <div className={cn("sticky top-16 z-40 flex flex-col sm:items-start sm:justify-between gap-3 sm:gap-4 p-2 sm:p-4", homeTheme.filterStickyPanel)}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4">
+        <div className={cn(datePanelClass, homeTheme.filterStickyPanel)}>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-end gap-2 sm:gap-4">
             <DateRangePicker
               startDate={startDate}
               endDate={endDate}
@@ -164,6 +179,40 @@ export function FilterPanel({
               startLabel={t("start")}
               endLabel={t("end")}
             />
+            <div className="flex flex-row gap-1 sm:gap-2 shrink-0 items-end">
+              <Button
+                onClick={() => onLoadMore("week")}
+                disabled={isLoadingMore}
+                size="sm"
+                variant="outline"
+                className="text-xs px-2 sm:px-3"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <LoadingSpinner />
+                    {t("loading")}
+                  </>
+                ) : (
+                  t("lastWeek")
+                )}
+              </Button>
+              <Button
+                onClick={() => onLoadMore("month")}
+                disabled={isLoadingMore}
+                size="sm"
+                variant="outline"
+                className="text-xs px-2 sm:px-3"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <LoadingSpinner />
+                    {t("loading")}
+                  </>
+                ) : (
+                  t("lastMonth")
+                )}
+              </Button>
+            </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="userFilter" className="text-sm font-medium text-muted-foreground">
                 {t("user")}
@@ -214,24 +263,6 @@ export function FilterPanel({
               >
                 {allSelected ? t("unselectAll") : t("selectAll")}
               </Button>
-              <Button
-                onClick={() => onLoadMore('week')}
-                disabled={isLoadingMore}
-                size="sm"
-                variant="outline"
-                className="flex-1 sm:w-auto text-xs px-2"
-              >
-                {isLoadingMore ? <><LoadingSpinner />Loading...</> : t('lastWeek')}
-              </Button>
-              <Button
-                onClick={() => onLoadMore('month')}
-                disabled={isLoadingMore}
-                size="sm"
-                variant="outline"
-                className="flex-1 sm:w-auto text-xs px-2"
-              >
-                {isLoadingMore ? <><LoadingSpinner />Loading...</> : t('lastMonth')}
-              </Button>
             </div>
           </div>
           <div className={homeTheme.filterNote}>{t("filteringNote")}</div>
@@ -240,8 +271,12 @@ export function FilterPanel({
 
       {showSearchSelector && (
         <div
-          className={cn("sticky z-40 flex flex-col gap-2 w-full p-4", homeTheme.filterStickyPanel)}
-          style={{ top: showDateSelector ? '140px' : '64px' }}
+          className={cn(searchPanelClass, homeTheme.filterStickyPanel)}
+          style={
+            embedded
+              ? undefined
+              : { top: showDateSelector ? "140px" : "64px" }
+          }
         >
           <label className="text-sm font-medium text-muted-foreground">{t("search")}</label>
           <input
@@ -264,12 +299,21 @@ export function FilterPanel({
 
       {showLabelSelector && (
         <div
-          className={cn("sticky z-40 flex flex-col gap-3 w-full max-h-80 overflow-y-auto pr-1 p-4", homeTheme.filterStickyPanel)}
-          style={{
-            top: showDateSelector && showSearchSelector ? '240px' :
-                 showDateSelector ? '140px' :
-                 showSearchSelector ? '164px' : '64px',
-          }}
+          className={cn(labelPanelClass, homeTheme.filterStickyPanel)}
+          style={
+            embedded
+              ? undefined
+              : {
+                  top:
+                    showDateSelector && showSearchSelector
+                      ? "240px"
+                      : showDateSelector
+                        ? "140px"
+                        : showSearchSelector
+                          ? "164px"
+                          : "64px",
+                }
+          }
         >
           <label className="text-sm font-medium text-muted-foreground">{t("filterByLabels")}</label>
           {availableLabels.length > 0 ? (

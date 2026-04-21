@@ -180,6 +180,21 @@ export const translations = {
     // Upload photos
     uploadPhotos: "Upload photos",
 
+    // Map (observations with GPS)
+    mapView: "Map",
+    mapViewTitle: "Observations on map",
+    mapNoObservationsWithLocation:
+      "No observations with GPS in the current view.",
+    mapClose: "Close",
+    mapOpenInGoogleMaps: "Open in Google Maps",
+    mapObservationDate: "Observation date",
+    mapObservationWeek: "Observation week",
+    mapTimelineStepDay: "Day",
+    mapTimelineStepWeek: "Week",
+    mapTimelineStepShowAll: "Show all",
+    mapNoObservationsOnDate: "No observations on this date",
+    mapNoObservationsInWeek: "No observations in this week",
+
     // Plan upload
     uploadPlans: "Upload Plans",
     uploadSitePlansAndMaps: "Upload site plans and maps for reference",
@@ -515,6 +530,21 @@ export const translations = {
     
     // Upload photos
     uploadPhotos: "Fotos hochladen",
+
+    // Map (observations with GPS)
+    mapView: "Karte",
+    mapViewTitle: "Beobachtungen auf der Karte",
+    mapNoObservationsWithLocation:
+      "Keine Beobachtungen mit GPS in der aktuellen Ansicht.",
+    mapClose: "Schließen",
+    mapOpenInGoogleMaps: "In Google Maps öffnen",
+    mapObservationDate: "Beobachtungsdatum",
+    mapObservationWeek: "Beobachtungswoche",
+    mapTimelineStepDay: "Tag",
+    mapTimelineStepWeek: "Woche",
+    mapTimelineStepShowAll: "Alle",
+    mapNoObservationsOnDate: "Keine Beobachtungen an diesem Tag",
+    mapNoObservationsInWeek: "Keine Beobachtungen in dieser Woche",
 
     // Plan upload
     uploadPlans: "Pläne hochladen",

@@ -18,6 +18,7 @@ import { HomeNavbar } from "@/components/home-navbar";
 import { ObservationsFeed } from "@/components/observations-feed";
 import { SelectionActions } from "@/components/selection-actions";
 import { HomeAppFooter } from "@/components/home-app-footer";
+import { ObservationsMapModal } from "@/components/observations-map-modal";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
@@ -64,10 +65,10 @@ export default function Home() {
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
-  const [showModelMenu, setShowModelMenu] = useState<boolean>(false);
   const [claudeOpen, setClaudeOpen] = useState(false);
   const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
@@ -115,6 +116,18 @@ export default function Home() {
     setSelectedPhotoObservation(null);
     setCurrentPhotoIndex(0);
   }, []);
+
+  const openPhotoFromMap = useCallback(
+    (observation: ObservationWithUrl) => {
+      const all = filters.getFilteredObservations().filter((o) => o.signedUrl || o.note);
+      const idx = all.findIndex((o) => o.id === observation.id);
+      if (idx < 0) return;
+      setCurrentPhotoIndex(idx);
+      setSelectedPhotoObservation(observation);
+      setPhotoModalOpen(true);
+    },
+    [filters.getFilteredObservations],
+  );
 
   const handlePreviousPhoto = useCallback(() => {
     const all = filters.getFilteredObservations().filter(o => o.signedUrl || o.note);
@@ -294,6 +307,40 @@ export default function Home() {
     return visibleIds.length > 0 && visibleIds.every(id => selectedObservations.has(id));
   })();
 
+  const mapModalFilterPanelProps = {
+    showDateSelector: filters.showDateSelector,
+    showSearchSelector: filters.showSearchSelector,
+    showLabelSelector: filters.showLabelSelector,
+    startDate: filters.startDate,
+    endDate: filters.endDate,
+    onStartDateChange: filters.setStartDate,
+    onEndDateChange: filters.setEndDate,
+    selectedUserId: filters.selectedUserId,
+    onUserChange: filters.setSelectedUserId,
+    availableUsers: filters.availableUsers,
+    selectedSiteId: filters.selectedSiteId,
+    onSiteChange: filters.setSelectedSiteId,
+    availableSites: filters.availableSites,
+    hasActiveFilters: filters.hasActiveFilters,
+    onClearFilters: filters.handleClearDateRange,
+    onSelectAll: handleSelectAll,
+    allSelected,
+    onLoadMore: handleLoadMore,
+    isLoadingMore,
+    searchQuery: filters.searchQuery,
+    onSearchChange: filters.setSearchQuery,
+    isSearching,
+    searchResultsCount: searchResults.length,
+    availableLabels: storeAvailableLabels,
+    siteLabels: filters.filterPanelSiteLabels,
+    selectedLabels: filters.selectedLabels,
+    onToggleLabel: (label: string) => filters.setSelectedLabels((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    ),
+    onClearLabels: () => filters.setSelectedLabels([]),
+    t,
+  };
+
   return (
     <main
       className={`min-h-screen flex flex-col items-center relative ${user ? homeTheme.main : ''} ${user ? 'pb-24 sm:pb-28' : ''} ${selectionBox ? 'select-none' : ''}`}
@@ -461,6 +508,7 @@ export default function Home() {
                 hasMore={hasMore}
                 language={language}
                 t={t}
+                renderFilterPanel={!showMapModal}
               />
             ) : (
               <div className="text-center py-12">
@@ -484,8 +532,7 @@ export default function Home() {
               (user ? (
                 <HomeAppFooter
                   onUploadClick={() => fileInputRef.current?.click()}
-                  showModelMenu={showModelMenu}
-                  onToggleModelMenu={() => setShowModelMenu(!showModelMenu)}
+                  onMapClick={() => setShowMapModal(true)}
                   claudeOpen={claudeOpen}
                   onClaudeToggle={() => setClaudeOpen((o) => !o)}
                   t={t}
@@ -591,6 +638,29 @@ export default function Home() {
       })()}
 
       <CampaignModal isOpen={showCampaignModal} onClose={() => setShowCampaignModal(false)} />
+
+      {user && (
+        <ObservationsMapModal
+          open={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          observations={filteredObservations}
+          language={language}
+          t={t}
+          onOpenObservation={openPhotoFromMap}
+          filterPanelProps={mapModalFilterPanelProps}
+          showSearchSelector={filters.showSearchSelector}
+          onToggleSearch={() => filters.setShowSearchSelector(!filters.showSearchSelector)}
+          showLabelSelector={filters.showLabelSelector}
+          onToggleLabelSelector={() => filters.setShowLabelSelector(!filters.showLabelSelector)}
+          selectedLabels={filters.selectedLabels}
+          showDateSelector={filters.showDateSelector}
+          onToggleDateSelector={() => filters.setShowDateSelector(!filters.showDateSelector)}
+          hasActiveFilters={filters.hasActiveFilters}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={handleLoadMore}
+        />
+      )}
 
       {user && <FolderUploadDropZone onFilesDropped={handleFolderDrop} />}
       <FolderUploadModal

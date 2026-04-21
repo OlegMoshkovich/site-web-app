@@ -60,6 +60,8 @@ interface ObservationsFeedProps {
   hasMore: boolean;
   language: string;
   t: TFn;
+  /** When false, FilterPanel is not rendered (e.g. shown inside map modal instead) */
+  renderFilterPanel?: boolean;
 }
 
 export function ObservationsFeed({
@@ -102,12 +104,14 @@ export function ObservationsFeed({
   hasMore,
   language,
   t,
+  renderFilterPanel = true,
 }: ObservationsFeedProps) {
   const { groups, sortedDates } = groupObservationsByDate(filteredObservations);
 
 
   return (
     <div className="space-y-8">
+      {renderFilterPanel && (
       <FilterPanel
         showDateSelector={showDateSelector}
         showSearchSelector={showSearchSelector}
@@ -139,6 +143,7 @@ export function ObservationsFeed({
         onClearLabels={onClearLabels}
         t={t}
       />
+      )}
 
       {sortedDates.map((dateKey, dateIndex) => {
         const obs = groups[dateKey];
