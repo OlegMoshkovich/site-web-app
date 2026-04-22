@@ -631,14 +631,14 @@ export function ObservationsMapModal({
             <div className="order-2 flex min-h-0 w-full max-w-[22rem] shrink-0 items-center justify-center self-center py-1 sm:order-3 sm:w-[22rem] sm:max-w-none sm:justify-end sm:py-0">
               <span className="sr-only">
                 {timelineStep === "all"
-                  ? t("mapTimelineStepShowAll")
+                  ? t("mapTimelineStepShowAll" )
                   : timelineStep === "day"
                     ? t("mapObservationDate")
                     : t("mapObservationWeek")}
               </span>
               <p className="w-full text-center text-base font-semibold tabular-nums leading-snug text-foreground sm:ml-6 sm:text-md sm:text-left sm:leading-tight">
                 {timelineStep === "all" &&
-                firstDayInSpectrum &&
+                firstDayInSpectrum && 
                 lastDayInSpectrum ? (
                   <>
                     <span className="block text-muted-foreground sm:inline sm:pr-1">
