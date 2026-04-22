@@ -4,6 +4,9 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SaveReportDialogProps {
   isOpen: boolean;
@@ -106,78 +109,80 @@ export function SaveReportDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-none p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold mb-4">Save Report</h3>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="report-title" className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div
+        className="w-full max-w-md border border-border bg-card p-6 text-card-foreground shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="save-report-title"
+      >
+        <h3 id="save-report-title" className="text-lg font-semibold leading-none tracking-tight text-foreground">
+          Save Report
+        </h3>
+        <div className="mt-6 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="report-title" className="text-muted-foreground">
               Title *
-            </label>
-            <input
+            </Label>
+            <Input
               id="report-title"
               type="text"
               value={reportTitle}
               onChange={(e) => setReportTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
               placeholder="Enter report title"
               autoFocus
             />
           </div>
-          <div>
-            <label htmlFor="report-baustelle" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <Label htmlFor="report-baustelle" className="text-muted-foreground">
               Baustelle
-            </label>
-            <input
+            </Label>
+            <Input
               id="report-baustelle"
               type="text"
               value={reportBaustelle}
               onChange={(e) => setReportBaustelle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
               placeholder="Enter construction site"
             />
           </div>
-          <div>
-            <label htmlFor="report-ersteller" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <Label htmlFor="report-ersteller" className="text-muted-foreground">
               Ersteller
-            </label>
-            <input
+            </Label>
+            <Input
               id="report-ersteller"
               type="text"
               value={reportErsteller}
               onChange={(e) => setReportErsteller(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
               placeholder="Enter report creator"
             />
           </div>
-          <div>
-            <label htmlFor="report-date" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <Label htmlFor="report-date" className="text-muted-foreground">
               Report Date
-            </label>
-            <input
+            </Label>
+            <Input
               id="report-date"
               type="datetime-local"
               value={reportDate}
               onChange={(e) => setReportDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
             />
           </div>
-          <div>
-            <label htmlFor="report-description" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <Label htmlFor="report-description" className="text-muted-foreground">
               Description
-            </label>
-            <textarea
+            </Label>
+            <Textarea
               id="report-description"
               value={reportDescription}
               onChange={(e) => setReportDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-400"
               placeholder="Enter report description (optional)"
               rows={3}
             />
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <Button onClick={handleClose} variant="outline" disabled={isSaving}>
+        <div className="mt-6 flex justify-end gap-2 border-t border-border pt-6">
+          <Button onClick={handleClose} variant="outline" disabled={isSaving} className="border-border">
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={isSaving || !reportTitle.trim()}>

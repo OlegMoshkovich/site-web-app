@@ -234,7 +234,11 @@ function ReportPageContent() {
           const logoCtx = logoCanvas.getContext('2d');
           logoCanvas.width = logoImg.width;
           logoCanvas.height = logoImg.height;
-          logoCtx?.drawImage(logoImg, 0, 0);
+          if (logoCtx) {
+            logoCtx.fillStyle = 'white';
+            logoCtx.fillRect(0, 0, logoCanvas.width, logoCanvas.height);
+            logoCtx.drawImage(logoImg, 0, 0);
+          }
 
           const logoData = logoCanvas.toDataURL('image/jpeg', imageQuality);
           
@@ -1519,24 +1523,6 @@ function ReportPageContent() {
                               className="photo"
                               style={{ objectFit: 'cover' }}
                             />
-                            {/* Site Logo overlay on each photo */}
-                            {observation.sites?.logo_url ? (
-                              <div className={`absolute top-2 z-10 ${anchorNumber ? 'left-10' : 'left-2'}`}>
-                                <div className="bg-white/60 backdrop-blur-sm rounded-lg p-1.5 shadow-lg opacity-80">
-                                  <img 
-                                    src={observation.sites.logo_url} 
-                                    alt={`${observation.sites.name} logo`}
-                                    className="h-6 w-auto object-contain rounded opacity-90"
-                                  />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className={`absolute bottom-2 z-10 ${anchorNumber ? 'left-10' : 'left-2'}`}>
-                                <div className="bg-yellow-100 border border-yellow-300 rounded px-1 py-0.5 text-xs text-yellow-700">
-                                  {observation.sites ? 'No logo' : 'No site'}
-                                </div>
-                              </div>
-                            )}
                           </>
                         ) : (
                           <div className="no-photo">

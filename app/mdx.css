@@ -1,3 +1,15 @@
+/* Blog post image sizing - constrain all images */
+article img,
+section img,
+.prose img {
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
 /* rehype-pretty-code styles */
 [data-rehype-pretty-code-fragment] {
   position: relative;

@@ -179,15 +179,10 @@ export default function WebPlanWidget({
   if (isLoading) {
     return (
       <div
-        style={{
-          width: PLAN_WIDTH,
-          height: PLAN_HEIGHT,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="flex items-center justify-center"
+        style={{ width: PLAN_WIDTH, height: PLAN_HEIGHT }}
       >
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
+        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
@@ -195,17 +190,8 @@ export default function WebPlanWidget({
   if (plans.length === 0) {
     return (
       <div
-        style={{
-          width: PLAN_WIDTH,
-          height: PLAN_HEIGHT,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px dashed #d1d5db',
-          borderRadius: 8,
-          color: '#9ca3af',
-          fontSize: 14,
-        }}
+        className="flex items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground"
+        style={{ width: PLAN_WIDTH, height: PLAN_HEIGHT }}
       >
         No plans available
       </div>
@@ -219,14 +205,8 @@ export default function WebPlanWidget({
         <select
           value={selectedPlanId}
           onChange={(e) => setSelectedPlanId(e.target.value)}
-          style={{
-            width: PLAN_WIDTH,
-            padding: '4px 8px',
-            border: '1px solid #d1d5db',
-            borderRadius: 6,
-            fontSize: 14,
-            background: 'white',
-          }}
+          className="rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+          style={{ width: PLAN_WIDTH }}
         >
           {plans.map((plan) => (
             <option key={plan.id} value={plan.id}>
@@ -239,12 +219,8 @@ export default function WebPlanWidget({
       {/* Drop-mode hint */}
       {onAnchorDrop && (
         <div
-          style={{
-            width: PLAN_WIDTH,
-            textAlign: 'center',
-            fontSize: 12,
-            color: '#6b7280',
-          }}
+          className="text-center text-xs text-muted-foreground"
+          style={{ width: PLAN_WIDTH }}
         >
           Click on the plan to place the anchor
         </div>
@@ -252,13 +228,10 @@ export default function WebPlanWidget({
 
       {/* Plan image + anchors */}
       <div
+        className="relative overflow-hidden rounded-lg border border-border bg-muted/20"
         style={{
-          position: 'relative',
           width: PLAN_WIDTH,
           height: PLAN_HEIGHT,
-          border: '1px solid #d1d5db',
-          borderRadius: 8,
-          overflow: 'hidden',
           cursor: onAnchorDrop ? 'crosshair' : 'default',
         }}
         onClick={handleContainerClick}
@@ -281,18 +254,7 @@ export default function WebPlanWidget({
             />
           )
         ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: '#f3f4f6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#9ca3af',
-              fontSize: 13,
-            }}
-          >
+          <div className="flex h-full w-full items-center justify-center bg-muted text-sm text-muted-foreground">
             No plan selected
           </div>
         )}

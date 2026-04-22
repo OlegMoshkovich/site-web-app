@@ -11,8 +11,21 @@ import {
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
-const ThemeSwitcher = () => {
+type ThemeSwitcherProps = {
+  /** Prefer `"top"` when the control sits in the bottom footer so the menu opens upward. */
+  dropdownSide?: "top" | "bottom";
+  dropdownAlign?: "start" | "center" | "end";
+  /** Merged onto the trigger so it can match outline icon buttons in the footer. */
+  triggerClassName?: string;
+};
+
+const ThemeSwitcher = ({
+  dropdownSide = "bottom",
+  dropdownAlign = "start",
+  triggerClassName,
+}: ThemeSwitcherProps) => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -30,7 +43,14 @@ const ThemeSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={"sm"}>
+        <Button
+          variant={triggerClassName ? "outline" : "ghost"}
+          size="sm"
+          className={cn(
+            triggerClassName ?? "px-2",
+            triggerClassName && "shrink-0",
+          )}
+        >
           {theme === "light" ? (
             <Sun
               key="light"
@@ -52,7 +72,7 @@ const ThemeSwitcher = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-content" align="start">
+      <DropdownMenuContent className="w-content" align={dropdownAlign} side={dropdownSide}>
         <DropdownMenuRadioGroup
           value={theme}
           onValueChange={(e) => setTheme(e)}

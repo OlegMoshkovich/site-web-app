@@ -74,8 +74,8 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
       </section>
 
-      {/* Post content */}
-      <section className="py-16 w-full">
+      {/* Post content — tight top spacing so the first heading isn’t separated by a large gap */}
+      <section className="pt-4 pb-16 w-full">
         <div className="w-full max-w-3xl mx-auto px-3 sm:px-8">
           <MdxComponent code={post.body} />
         </div>

@@ -46,7 +46,7 @@ const DATA = [
 export function FAQ(): React.JSX.Element {
   return (
     <GridSection>
-      <div className="container py-20">
+      <div className="container px-4 py-20">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="text-center lg:text-left">
             <h2 className="mb-2.5 text-3xl font-semibold md:text-5xl">

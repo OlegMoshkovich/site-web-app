@@ -507,13 +507,15 @@ export async function fetchCollaborativeObservationsByTimeRange(
   }
 
   // Apply date range filter using taken_at when available, falling back to created_at.
-  // This matches resolveObservationDateTime which prioritises taken_at over created_at.
+  // NOTE: taken_at may be stored as local time without timezone offset (iOS bug), so it
+  // can appear "in the future" relative to UTC. We always include created_at as a fallback
+  // so recently-uploaded photos are never excluded due to timezone mismatches.
   const startIso = startDate.toISOString();
   const endIso = endDate.toISOString();
   const { data, error, count } = await query
     .or(
       `and(taken_at.gte.${startIso},taken_at.lte.${endIso}),` +
-      `and(taken_at.is.null,created_at.gte.${startIso},created_at.lte.${endIso})`
+      `and(created_at.gte.${startIso},created_at.lte.${endIso})`
     )
     .order('created_at', { ascending: false });
 
@@ -540,7 +542,7 @@ export async function fetchCollaborativeObservationsByTimeRange(
 
   const { count: olderCount } = await hasMoreQuery.or(
     `and(taken_at.not.is.null,taken_at.lt.${startIso}),` +
-    `and(taken_at.is.null,created_at.lt.${startIso})`
+    `and(created_at.lt.${startIso})`
   );
   const hasMore = (olderCount || 0) > 0;
   

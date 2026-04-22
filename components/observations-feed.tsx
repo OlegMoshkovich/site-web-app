@@ -13,6 +13,8 @@ import { groupObservationsByDate } from "@/lib/search-utils";
 import type { Label } from "@/lib/labels";
 import type { ObservationWithUrl } from "@/lib/store/observations-store";
 import type { translations } from "@/lib/translations";
+import { homeTheme } from "@/lib/app-theme";
+import { cn } from "@/lib/utils";
 
 type TFn = (key: keyof typeof translations.en) => string;
 
@@ -58,6 +60,8 @@ interface ObservationsFeedProps {
   hasMore: boolean;
   language: string;
   t: TFn;
+  /** When false, FilterPanel is not rendered (e.g. shown inside map modal instead) */
+  renderFilterPanel?: boolean;
 }
 
 export function ObservationsFeed({
@@ -100,12 +104,14 @@ export function ObservationsFeed({
   hasMore,
   language,
   t,
+  renderFilterPanel = true,
 }: ObservationsFeedProps) {
   const { groups, sortedDates } = groupObservationsByDate(filteredObservations);
 
 
   return (
     <div className="space-y-8">
+      {renderFilterPanel && (
       <FilterPanel
         showDateSelector={showDateSelector}
         showSearchSelector={showSearchSelector}
@@ -137,6 +143,7 @@ export function ObservationsFeed({
         onClearLabels={onClearLabels}
         t={t}
       />
+      )}
 
       {sortedDates.map((dateKey, dateIndex) => {
         const obs = groups[dateKey];
@@ -183,9 +190,9 @@ export function ObservationsFeed({
         return (
           <div key={dateKey} className="space-y-2">
             {showWeekHeader && (
-              <div className={`flex items-baseline gap-2 text-xs font-normal text-gray-400 uppercase tracking-widest px-0 ${dateIndex > 0 ? 'mt-6 pt-6 ' : ''}`}>
+              <div className={cn(`flex items-baseline gap-2 px-0 ${homeTheme.weekHeader}`, dateIndex > 0 && 'mt-6 pt-6')}>
                 <span>{language === "de" ? `KW ${weekNum}` : `Week ${weekNum}`} |</span>
-                <span className=" text-gray-400">{weekRange}</span>
+                <span>{weekRange}</span>
               </div>
             )}
             <Accordion
@@ -201,17 +208,17 @@ export function ObservationsFeed({
                       {topLabels.map((label, i) => (
                         <span
                           key={label}
-                          className={`text-[10px] text-gray-500 border border-gray-200 px-1.5 py-0.5 truncate max-w-[50px] sm:max-w-[72px] leading-none font-normal${i >= 2 ? ' hidden sm:block' : ''}`}
+                          className={cn(homeTheme.observationChip, i >= 2 && 'hidden sm:block')}
                         >
                           {label}
                         </span>
                       ))}
                       {remainingLabels > 0 && (
-                        <span className="text-[10px] text-gray-400 border border-gray-200 px-1.5 py-0.5 leading-none font-normal shrink-0">
+                        <span className={cn(homeTheme.observationChipMore, "shrink-0")}>
                           +{remainingLabels}
                         </span>
                       )}
-                      <span className="text-xs w-6 h-6 flex items-center justify-center border border-gray-300 font-normal group-data-[state=open]:bg-[#f0f0f0] group-data-[state=closed]:bg-transparent transition-colors shrink-0">
+                      <span className={cn(homeTheme.dateCounter, "shrink-0")}>
                         {obs.length}
                       </span>
                     </div>

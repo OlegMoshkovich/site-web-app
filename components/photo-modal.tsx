@@ -13,6 +13,12 @@ import { resolveObservationDateTime } from "@/lib/observation-dates";
 import { buildObservationPhotoDownloadBlob } from "@/lib/build-observation-download-blob";
 import type { Observation } from "@/types/supabase";
 import type { Label } from "@/lib/labels";
+import { cn } from "@/lib/utils";
+import { useLanguage, useTranslations } from "@/lib/translations";
+
+/** Toolbar / nav controls on top of the photo — theme-aware, readable on varied imagery */
+const photoToolbarBtn =
+  "rounded-md border border-border bg-card/95 text-card-foreground shadow-sm backdrop-blur-sm hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
 // Extended observation with signed URL for secure photo access
 interface ObservationWithUrl extends Observation {
@@ -52,6 +58,10 @@ export function PhotoModal({
   prevImageUrl,
 }: PhotoModalProps) {
   const supabase = createClient();
+  const { language } = useLanguage();
+  const t = useTranslations(language);
+  /** `undefined` = auth not resolved yet for this open session */
+  const [viewerUserId, setViewerUserId] = useState<string | null | undefined>(undefined);
   const [imageLoading, setImageLoading] = useState(true);
   const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
   const [shareSuccess, setShareSuccess] = useState(false);
@@ -90,6 +100,39 @@ export function PhotoModal({
   const anchorY: number | null = observation.plan_anchor?.y ?? null;
   const hasPlanAnchor =
     anchorX != null && anchorY != null && !(anchorX === 0 && anchorY === 0);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setViewerUserId(undefined);
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!cancelled) setViewerUserId(user?.id ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, supabase, observation.id]);
+
+  const assertCanEditObservation = useCallback((): boolean => {
+    if (viewerUserId === undefined) return false;
+    if (!viewerUserId) {
+      alert(t("observationEditSignInRequired"));
+      return false;
+    }
+    if (viewerUserId !== observation.user_id) {
+      alert(t("observationEditNotOwner"));
+      return false;
+    }
+    return true;
+  }, [viewerUserId, observation.user_id, t]);
+
+  const isObservationOwner =
+    viewerUserId !== undefined &&
+    viewerUserId !== null &&
+    viewerUserId === observation.user_id;
 
   // Load all available plans for the site
   useEffect(() => {
@@ -352,9 +395,10 @@ export function PhotoModal({
   }, [observation.id]);
 
   const handleStartEditNote = useCallback(() => {
+    if (!assertCanEditObservation()) return;
     setEditNoteValue(observation.note || "");
     setEditingNote(true);
-  }, [observation.note]);
+  }, [assertCanEditObservation, observation.note]);
 
   const handleCancelEditNote = useCallback(() => {
     setEditingNote(false);
@@ -362,6 +406,7 @@ export function PhotoModal({
   }, []);
 
   const handleSaveNote = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -389,12 +434,13 @@ export function PhotoModal({
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, editNoteValue, onObservationUpdate]);
+  }, [supabase, observation, editNoteValue, onObservationUpdate, assertCanEditObservation]);
 
   const handleStartEditLabels = useCallback(() => {
+    if (!assertCanEditObservation()) return;
     setSelectedLabelNames(new Set(observation.labels || []));
     setEditingLabels(true);
-  }, [observation.labels]);
+  }, [assertCanEditObservation, observation.labels]);
 
   const handleCancelEditLabels = useCallback(() => {
     setEditingLabels(false);
@@ -414,6 +460,7 @@ export function PhotoModal({
   }, []);
 
   const handleSaveLabels = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     setIsSaving(true);
     try {
       // Convert selected label names to array
@@ -443,9 +490,10 @@ export function PhotoModal({
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, selectedLabelNames, onObservationUpdate]);
+  }, [supabase, observation, selectedLabelNames, onObservationUpdate, assertCanEditObservation]);
 
   const handleRemoveLabel = useCallback(async (labelName: string) => {
+    if (!assertCanEditObservation()) return;
     const newLabels = (observation.labels || []).filter(l => l !== labelName);
     const next = newLabels.length > 0 ? newLabels : null;
     const { error } = await supabase
@@ -454,7 +502,7 @@ export function PhotoModal({
       .eq("id", observation.id);
     if (error) { console.error("Error removing label:", error); return; }
     if (onObservationUpdate) onObservationUpdate({ ...observation, labels: next });
-  }, [supabase, observation, onObservationUpdate]);
+  }, [supabase, observation, onObservationUpdate, assertCanEditObservation]);
 
   const handlePrint = useCallback(() => {
     const dateStr = resolveObservationDateTime(observation).toLocaleString('en-GB');
@@ -462,9 +510,7 @@ export function PhotoModal({
     const labels  = observation.labels ? [...new Set(observation.labels)] : [];
     const note     = observation.note || '';
     const createdBy = observation.user_email || `User ${observation.user_id.slice(0, 8)}...`;
-    const logoHtml  = observation.sites?.logo_url
-      ? `<img src="${observation.sites.logo_url}" class="logo" />`
-      : '';
+    const logoHtml = "";
 
     // ── Plan block ────────────────────────────────────────────────────────────
     // Use percentage-based positioning so the dot stays correct at any width.
@@ -622,6 +668,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
   }, [editingPlanAnchor]);
 
   const handleSavePlanAnchor = useCallback(async () => {
+    if (!assertCanEditObservation()) return;
     if (!pendingAnchor) return;
     setIsSaving(true);
     try {
@@ -650,7 +697,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
     } finally {
       setIsSaving(false);
     }
-  }, [supabase, observation, pendingAnchor, onObservationUpdate]);
+  }, [supabase, observation, pendingAnchor, onObservationUpdate, assertCanEditObservation]);
 
   return (
     <>
@@ -659,7 +706,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         {/* Image container */}
         <div
           ref={imageContainerRef}
-          className={`relative bg-gray-100 overflow-hidden md:flex-1 md:h-auto ${hasPlanAnchor || addingPlanAnchor ? 'h-[55%] flex-shrink-0' : 'flex-1 min-h-0'}`}
+          className={`relative bg-muted overflow-hidden md:flex-1 md:h-auto ${hasPlanAnchor || addingPlanAnchor ? 'h-[55%] flex-shrink-0' : 'flex-1 min-h-0'}`}
           style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
         >
           {imageLoading && (
@@ -675,33 +722,20 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                 />
               )}
               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             </>
           )}
 
           {isDownloadLoading && (
             <div
-              className="absolute inset-0 z-[35] flex flex-col items-center justify-center gap-3 bg-gray-900/45 text-white"
+              className="absolute inset-0 z-[35] flex flex-col items-center justify-center gap-3 bg-background/60 text-foreground backdrop-blur-sm"
               role="status"
               aria-live="polite"
               aria-busy="true"
             >
-              <Loader2 className="h-10 w-10 animate-spin text-white" aria-hidden />
-              <span className="text-sm font-medium">Preparing download…</span>
-            </div>
-          )}
-          
-          {/* Site Logo */}
-          {observation.sites?.logo_url && (
-            <div className="absolute top-4 left-4 z-30">
-              <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 shadow-lg opacity-80">
-                <img 
-                  src={observation.sites.logo_url} 
-                  alt={`${observation.sites.name} logo`}
-                  className="w-12 h-12 object-contain rounded opacity-90"
-                />
-              </div>
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" aria-hidden />
+              <span className="text-sm font-medium text-foreground">Preparing download…</span>
             </div>
           )}
 
@@ -710,21 +744,26 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
               <button
                 onClick={handleShare}
-                className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
+                className={cn(
+                  "p-2",
+                  shareSuccess
+                    ? "rounded-md bg-green-600 text-white hover:bg-green-700"
+                    : photoToolbarBtn,
+                )}
                 aria-label="Share photo"
               >
                 <Share className="h-4 w-4" />
               </button>
               <button
                 onClick={handlePrint}
-                className="hidden md:block bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className={cn("hidden md:block p-2", photoToolbarBtn)}
                 aria-label="Print"
               >
                 <Printer className="h-4 w-4" />
               </button>
               <button
                 onClick={zoomIn}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className={cn("p-2", photoToolbarBtn)}
                 aria-label="Zoom in"
                 disabled={scale >= 3}
               >
@@ -732,7 +771,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               </button>
               <button
                 onClick={zoomOut}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className={cn("p-2", photoToolbarBtn)}
                 aria-label="Zoom out"
                 disabled={scale <= 0.5}
               >
@@ -741,7 +780,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               <button
                 type="button"
                 onClick={handleDownloadPhoto}
-                className="bg-black hover:bg-gray-800 text-white p-2 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                className={cn("p-2", photoToolbarBtn)}
                 aria-label="Download photo"
                 disabled={isDownloadLoading}
               >
@@ -754,7 +793,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
               {scale !== 1 && (
                 <button
                   onClick={resetZoom}
-                  className="bg-black hover:bg-gray-800 text-white px-2 py-1 text-xs transition-colors"
+                  className={cn("px-2 py-1 text-xs", photoToolbarBtn)}
                   aria-label="Reset zoom"
                 >
                   1:1
@@ -768,14 +807,19 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             <div className="absolute top-4 right-4 z-30 flex flex-col gap-2">
               <button
                 onClick={handleShare}
-                className={`${shareSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-black hover:bg-gray-800'} text-white p-2 transition-colors`}
+                className={cn(
+                  "p-2",
+                  shareSuccess
+                    ? "rounded-md bg-green-600 text-white hover:bg-green-700"
+                    : photoToolbarBtn,
+                )}
                 aria-label="Share note"
               >
                 <Share className="h-4 w-4" />
               </button>
               <button
                 onClick={handlePrint}
-                className="hidden md:block bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+                className={cn("hidden md:block p-2", photoToolbarBtn)}
                 aria-label="Print"
               >
                 <Printer className="h-4 w-4" />
@@ -785,34 +829,44 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           
           {/* Zoom indicator */}
           {scale !== 1 && (
-            <div className="absolute bottom-14 right-4 z-30 bg-black/70 text-white px-2 py-1 text-xs rounded">
+            <div className="absolute bottom-14 right-4 z-30 rounded-md border border-border bg-card/95 px-2 py-1 text-xs text-card-foreground shadow-sm backdrop-blur-sm">
               {Math.round(scale * 100)}%
             </div>
           )}
           
           {/* Timestamp and elevation tags overlay - full width bottom */}
-          <div className="absolute bottom-0 left-0 right-0 z-30 bg-black/70 text-white px-3 py-2 text-xs flex items-center gap-2 flex-wrap">
+          <div className="absolute bottom-0 left-0 right-0 z-30 flex flex-wrap items-center gap-2 border-t border-border bg-card/95 px-3 py-2 text-xs text-card-foreground backdrop-blur-md">
             <span>{resolveObservationDateTime(observation).toLocaleString('en-GB')}</span>
             {(observation.sites?.name && observation.sites.name !== 'Munich') && (
               <>
-                <span className="text-gray-300">•</span>
+                <span className="text-muted-foreground">•</span>
                 <span>📍 {observation.sites.name}</span>
               </>
             )}
             {observation.labels && observation.labels.length > 0 && (
               <>
-                <span className="text-gray-300">•</span>
+                <span className="text-muted-foreground">•</span>
                 <div className="flex items-center gap-1 flex-wrap">
                   {[...new Set(observation.labels)].map((label, idx) => (
-                    <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
+                    <span
+                      key={idx}
+                      className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs text-foreground"
+                    >
                       {label}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setLabelToRemove(label); }}
-                        className="hover:text-red-300 transition-colors leading-none"
-                        title="Remove label"
-                      >
-                        ×
-                      </button>
+                      {isObservationOwner && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!assertCanEditObservation()) return;
+                            setLabelToRemove(label);
+                          }}
+                          className="leading-none text-muted-foreground transition-colors hover:text-destructive"
+                          title="Remove label"
+                        >
+                          ×
+                        </button>
+                      )}
                     </span>
                   ))}
                 </div>
@@ -824,7 +878,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           {hasPrevious && onPrevious && !isDragging && (
             <button
               onClick={onPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              className={cn("absolute left-4 top-1/2 z-10 -translate-y-1/2 p-2", photoToolbarBtn)}
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -835,7 +889,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
           {hasNext && onNext && !isDragging && (
             <button
               onClick={onNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-gray-800 text-white p-2 transition-colors"
+              className={cn("absolute right-4 top-1/2 z-10 -translate-y-1/2 p-2", photoToolbarBtn)}
               aria-label="Next photo"
             >
               <ChevronRight className="h-6 w-6" />
@@ -885,9 +939,9 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
           ) : (
             /* Text-only observation display */
-            <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-muted/80 p-8">
               <div className="max-w-3xl text-center">
-                <p className="text-lg md:text-xl text-gray-800 leading-relaxed whitespace-pre-wrap">
+                <p className="text-lg leading-relaxed text-foreground md:text-xl whitespace-pre-wrap">
                   {observation.note || 'No note provided'}
                 </p>
               </div>
@@ -896,21 +950,24 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
         </div>
         
         {/* Info panel */}
-        <div className={`relative p-4 pt-2 md:p-6 border-t bg-white overflow-y-auto flex-shrink-0 md:max-h-none md:h-auto md:w-96 md:flex-shrink-0 md:border-t-0 md:border-l ${hasPlanAnchor || addingPlanAnchor ? 'h-[45%]' : ''}`}>
+        <div
+          className={`relative flex-shrink-0 overflow-y-auto border-t border-border bg-card p-4 pt-2 text-card-foreground md:h-auto md:max-h-none md:w-96 md:flex-shrink-0 md:border-l md:border-t-0 md:p-6 ${hasPlanAnchor || addingPlanAnchor ? "h-[45%]" : ""}`}
+        >
          
             {/* Note */}
             <div className="mb-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">Beschreibung</h3>
+                <h3 className="font-semibold text-foreground">Beschreibung</h3>
                 {!editingNote && (
-                  <button
-                    onClick={handleStartEditNote}
-                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
-                    title="Edit note"
-                    disabled={isSaving}
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
+                <button
+                  type="button"
+                  onClick={handleStartEditNote}
+                  className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                  title="Edit note"
+                  disabled={isSaving || viewerUserId === undefined}
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
                 )}
               </div>
               {editingNote ? (
@@ -928,7 +985,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         handleCancelEditNote();
                       }
                     }}
-                    className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full resize-none rounded-md border border-border bg-background p-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     rows={3}
                     placeholder="Notiz hinzufügen..."
                     autoFocus
@@ -954,20 +1011,20 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                       <X className="h-3 w-3 mr-1" />
                       Cancel
                     </Button>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       Ctrl+Enter to save • Esc to cancel
                     </span>
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-600 text-sm min-h-[1.5rem]">
-                  {observation.note || <span className="text-gray-400">Keine Anmerkungen</span>}
+                <p className="min-h-[1.5rem] text-sm text-muted-foreground">
+                  {observation.note || <span className="text-muted-foreground/80">Keine Anmerkungen</span>}
                 </p>
               )}
             </div>
             
             {/* Metadata */}
-            <div className="space-y-1 text-xs text-gray-500 hidden md:block">
+            <div className="hidden space-y-1 text-xs text-muted-foreground md:block">
               <div className="flex items-center gap-2">
                 <Calendar className="h-3 w-3 flex-shrink-0" />
                 <span>{resolveObservationDateTime(observation).toLocaleDateString()}</span>
@@ -983,7 +1040,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         href={`https://www.google.com/maps?q=${observation.gps_lat},${observation.gps_lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-2 text-gray-400 hover:text-blue-500 transition-colors"
+                        className="ml-2 text-muted-foreground transition-colors hover:text-primary"
                       >
                         {observation.gps_lat.toFixed(6)}, {observation.gps_lng.toFixed(6)}
                       </a>
@@ -999,13 +1056,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             </div>
             {/* Labels — full-panel overlay when editing */}
             {editingLabels && (
-              <div className="absolute inset-0 bg-white flex flex-col z-10">
+              <div className="absolute inset-0 z-10 flex flex-col bg-card">
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-2.5 border-b flex-shrink-0">
-                  <h4 className="font-semibold text-gray-900">Labels</h4>
+                <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
+                  <h4 className="font-semibold text-foreground">Labels</h4>
                   <button
                     onClick={handleCancelEditLabels}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                    className="p-1 text-muted-foreground transition-colors hover:text-foreground"
                     title="Cancel"
                   >
                     <X className="h-4 w-4" />
@@ -1033,11 +1090,12 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                             key={label.id}
                             onClick={() => handleToggleLabel(label.name)}
                             disabled={isSaving}
-                            className={`px-2 py-0.5 text-xs border transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                              ${selectedLabelNames.has(label.name)
-                                ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                              }`}
+                            className={cn(
+                              "border px-2 py-0.5 text-xs transition-all disabled:cursor-not-allowed disabled:opacity-50",
+                              selectedLabelNames.has(label.name)
+                                ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
+                                : "border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
+                            )}
                             title={label.description || label.name}
                           >
                             {label.name}
@@ -1045,7 +1103,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         );
                         return (
                           <div key={category}>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                               {category}
                             </p>
                             <div className="space-y-1">
@@ -1061,7 +1119,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                                   <div className="flex flex-wrap gap-1">
                                     {labelBtn(parent)}
                                   </div>
-                                  <div className="flex flex-wrap gap-1 mt-1 ml-3 pl-2 border-l-2 border-gray-100">
+                                  <div className="ml-3 mt-1 flex flex-wrap gap-1 border-l-2 border-border pl-2">
                                     {childrenMap[parent.id].map(child => labelBtn(child))}
                                   </div>
                                 </div>
@@ -1076,13 +1134,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                       })}
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-500 p-3 border border-gray-200 rounded-md">
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                       No labels available for this site. Create labels in Settings.
                     </div>
                   )}
                 </div>
                 {/* Footer actions */}
-                <div className="flex items-center gap-2 px-6 py-4 border-t flex-shrink-0">
+                <div className="flex flex-shrink-0 items-center gap-2 border-t border-border px-6 py-4">
                   <Button
                     onClick={handleSaveLabels}
                     size="sm"
@@ -1109,12 +1167,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {/* Labels display */}
             <div className="mt-5 hidden md:block">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">Labels</h4>
+                <h4 className="font-semibold text-foreground">Labels</h4>
                 <button
+                  type="button"
                   onClick={handleStartEditLabels}
-                  className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                  className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                   title="Edit labels"
-                  disabled={isSaving}
+                  disabled={isSaving || viewerUserId === undefined}
                 >
                   <Edit3 className="h-4 w-4" />
                 </button>
@@ -1131,13 +1190,13 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <Badge
                       key={`modal-label-${idx}`}
                       variant="outline"
-                      className="text-[10px] leading-tight px-1.5 py-0.5 border border-gray-300 bg-white whitespace-nowrap"
+                      className="whitespace-nowrap border border-border bg-muted/50 px-1.5 py-0.5 text-[10px] leading-tight text-foreground"
                     >
                       {processLabel(label)}
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-gray-400 italic text-sm">Keine Labels</span>
+                  <span className="text-sm italic text-muted-foreground">Keine Labels</span>
                 )}
               </div>
             </div>
@@ -1146,12 +1205,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {!hasPlanAnchor && !addingPlanAnchor && observation.site_id && (
               <div className="mt-0 md:mt-5">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-gray-900">Planposition</h4>
+                  <h4 className="font-semibold text-foreground">Planposition</h4>
                 </div>
                 <button
-                  onClick={() => { setAddingPlanAnchor(true); setEditingPlanAnchor(true); setPendingAnchor(null); }}
-                  className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
-                  disabled={isSaving}
+                  type="button"
+                  onClick={() => {
+                    if (!assertCanEditObservation()) return;
+                    setAddingPlanAnchor(true);
+                    setEditingPlanAnchor(true);
+                    setPendingAnchor(null);
+                  }}
+                  className="text-xs text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                  disabled={isSaving || viewerUserId === undefined}
                 >
                   + Planposition hinzufügen
                 </button>
@@ -1160,13 +1225,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
             {(hasPlanAnchor || addingPlanAnchor) && (
               <div className="mt-0 md:mt-5">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-gray-900">Planposition</h4>
+                  <h4 className="font-semibold text-foreground">Planposition</h4>
                   {!editingPlanAnchor ? (
                     <button
-                      onClick={() => { setEditingPlanAnchor(true); setPendingAnchor(null); }}
-                      className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                      type="button"
+                      onClick={() => {
+                        if (!assertCanEditObservation()) return;
+                        setEditingPlanAnchor(true);
+                        setPendingAnchor(null);
+                      }}
+                      className="p-1 text-muted-foreground transition-colors hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                       title="Edit plan position"
-                      disabled={isSaving}
+                      disabled={isSaving || viewerUserId === undefined}
                     >
                       <Edit3 className="h-4 w-4" />
                     </button>
@@ -1174,7 +1244,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                     <div className="flex items-center gap-1">
                       <button
                         onClick={handleSavePlanAnchor}
-                        className="text-green-600 hover:text-green-700 transition-colors p-1"
+                        className="p-1 text-green-600 transition-colors hover:text-green-700 dark:text-green-500"
                         title="Save"
                         disabled={isSaving || !pendingAnchor}
                       >
@@ -1182,7 +1252,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                       </button>
                       <button
                         onClick={() => { setEditingPlanAnchor(false); setAddingPlanAnchor(false); setPendingAnchor(null); }}
-                        className="text-gray-500 hover:text-red-600 transition-colors p-1"
+                        className="p-1 text-muted-foreground transition-colors hover:text-destructive"
                         title="Cancel"
                         disabled={isSaving}
                       >
@@ -1195,7 +1265,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   <select
                     value={selectedPlanId ?? ''}
                     onChange={e => { setSelectedPlanId(e.target.value); setPendingAnchor(null); }}
-                    className="w-full mb-2 text-xs border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className="mb-2 w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     {availablePlans.map(p => (
                       <option key={p.id} value={p.id}>{p.plan_name}</option>
@@ -1203,18 +1273,18 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                   </select>
                 )}
                 {editingPlanAnchor && (
-                  <p className="text-xs text-gray-500 mb-1">Klicken Sie auf den Plan, um eine neue Position festzulegen</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Klicken Sie auf den Plan, um eine neue Position festzulegen</p>
                 )}
                 {planImageLoading ? (
                   <div
-                    className="flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50"
+                    className="flex items-center justify-center rounded-lg border border-border bg-muted/50"
                     style={{ width: 320, height: 280 }}
                   >
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
                   </div>
                 ) : planImageData ? (
                   <div
-                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                    className="relative overflow-hidden rounded-lg border border-border"
                     style={{ width: 320, height: 280, cursor: editingPlanAnchor ? 'crosshair' : 'default' }}
                     onClick={handlePlanImageClick}
                   >
@@ -1248,7 +1318,7 @@ ${labels.length > 0 ? `<div class="section"><div class="lbl">Labels</div><div cl
                         />
                       );
                     })()}
-                    <div className="absolute bottom-1 left-2 text-xs text-gray-500 bg-white/80 px-1 rounded">
+                    <div className="absolute bottom-1 left-2 rounded bg-card/90 px-1 text-xs text-muted-foreground backdrop-blur-sm">
                       {planImageData.name}
                     </div>
                   </div>

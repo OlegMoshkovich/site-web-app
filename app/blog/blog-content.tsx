@@ -87,7 +87,7 @@ export function BlogContent({ posts }: { posts: Post[] }) {
                 <Link
                   key={post.slugAsParams}
                   href={post.slug}
-                  className="group block border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                  className="group flex flex-col border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden h-full"
                 >
                   {post.coverImage && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -97,7 +97,7 @@ export function BlogContent({ posts }: { posts: Post[] }) {
                       className="w-full h-48 object-cover"
                     />
                   )}
-                  <div className="p-6">
+                  <div className="p-6 flex flex-col flex-1">
                     {post.category && (
                       <p className="text-xs text-gray-600 uppercase tracking-widest mb-3">
                         {post.category}
@@ -106,10 +106,10 @@ export function BlogContent({ posts }: { posts: Post[] }) {
                     <h2 className="text-base font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors">
                       {post.title}
                     </h2>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-sm text-gray-500 leading-relaxed mb-6 line-clamp-3 flex-1">
                       {post.description}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-800">
                       <time className="text-xs text-gray-700">
                         {new Date(post.published).toLocaleDateString(c.dateLocale, {
                           year: "numeric",

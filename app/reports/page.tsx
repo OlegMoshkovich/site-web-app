@@ -315,47 +315,47 @@ export default function ReportsPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center overflow-x-hidden">
-      <div className="flex-1 w-full flex flex-col gap-0 items-center overflow-x-hidden">
-        {/* Header */}
-        <nav className="sticky top-0 z-20 w-full flex justify-center h-16 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-          <div className="w-full max-w-5xl flex justify-start items-center px-3 sm:px-5 text-sm">
+    <main className="flex min-h-screen flex-col items-center overflow-x-hidden bg-background text-foreground">
+      <div className="flex w-full flex-1 flex-col items-center gap-0 overflow-x-hidden">
+        {/* Header — match settings / semantic theme */}
+        <nav className="sticky top-0 z-20 flex h-16 w-full justify-center border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+          <div className="flex w-full max-w-5xl items-center justify-start px-3 text-sm sm:px-5">
           <button 
               onClick={() => router.push('/')}
-              className="hover:opacity-80 transition-opacity cursor-pointer"
+              className="cursor-pointer transition-opacity hover:opacity-80"
             >
               <Image
                 src="/images/banner_logo.png"
                 alt="Site Logo"
                 width={120}
                 height={32}
-                className="w-auto object-contain lg:h-6 h-5"
+                className="h-5 w-auto object-contain lg:h-6"
               />
             </button>
             <button 
               onClick={() => router.push('/')}
-              className="hover:bg-gray-100 transition-colors p-1 rounded ml-4"
+              className="ml-4 rounded p-1 text-foreground transition-colors hover:bg-muted"
               title="Back to Home"
             >
-              <ArrowLeft className="h-5 w-5 text-gray-600" />
+              <ArrowLeft className="h-5 w-5" />
             </button>
           </div>
         </nav>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col gap-6 max-w-5xl px-3 sm:px-5 py-6 w-full overflow-x-hidden">
+        <div className="flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-x-hidden px-3 py-6 sm:px-5">
           {/* Filter controls - only show for admins */}
           {isAdmin && !loading && allReports.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Filter className="h-4 w-4" />
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/40 p-4 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Filter className="h-4 w-4 text-muted-foreground" />
                 <span>Filters:</span>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full sm:w-auto">
-                <div className="flex flex-col gap-1.5 flex-1 sm:min-w-[200px]">
-                  <label className="text-xs font-medium text-gray-600">User</label>
+              <div className="flex w-full flex-1 flex-col gap-3 sm:w-auto sm:flex-row">
+                <div className="flex flex-1 flex-col gap-1.5 sm:min-w-[200px]">
+                  <label className="text-xs font-medium text-muted-foreground">User</label>
                   <Select value={selectedUserFilter} onValueChange={setSelectedUserFilter}>
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="All users" />
                     </SelectTrigger>
                     <SelectContent>
@@ -368,10 +368,10 @@ export default function ReportsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex flex-col gap-1.5 flex-1 sm:min-w-[200px]">
-                  <label className="text-xs font-medium text-gray-600">Site</label>
+                <div className="flex flex-1 flex-col gap-1.5 sm:min-w-[200px]">
+                  <label className="text-xs font-medium text-muted-foreground">Site</label>
                   <Select value={selectedSiteFilter} onValueChange={setSelectedSiteFilter}>
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="All sites" />
                     </SelectTrigger>
                     <SelectContent>
@@ -390,22 +390,22 @@ export default function ReportsPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="text-gray-500">Loading reports...</div>
+              <div className="text-muted-foreground">Loading reports...</div>
             </div>
           ) : fetchError ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-red-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Could not load reports</h3>
-              <p className="text-red-500 mb-4 text-sm max-w-md">{fetchError}</p>
+              <FileText className="mb-4 h-12 w-12 text-destructive/80" />
+              <h3 className="mb-2 text-lg font-medium text-foreground">Could not load reports</h3>
+              <p className="mb-4 max-w-md text-sm text-destructive">{fetchError}</p>
               <Button onClick={() => window.location.reload()} variant="outline">
                 Retry
               </Button>
             </div>
           ) : reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
-              <p className="text-gray-500 mb-4">
+              <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mb-2 text-lg font-medium text-foreground">No reports yet</h3>
+              <p className="mb-4 text-muted-foreground">
                 Create your first report by selecting observations and clicking &quot;Generate Report&quot;
               </p>
               <Button onClick={() => router.push('/')} variant="outline">
@@ -456,7 +456,7 @@ export default function ReportsPage() {
                           }}
                           variant="outline"
                           size="sm"
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           title="Delete report"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -471,20 +471,20 @@ export default function ReportsPage() {
                     )}
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between text-sm text-gray-500 w-full overflow-hidden">
-                      <div className="flex items-center gap-2 sm:gap-4 flex-wrap min-w-0">
+                    <div className="flex w-full items-center justify-between overflow-hidden text-sm text-muted-foreground">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
                         <div className="flex items-center gap-1 whitespace-nowrap">
-                          <FileText className="h-4 w-4 flex-shrink-0" />
+                          <FileText className="h-4 w-4 shrink-0" />
                           <span className="truncate">{report.observation_count} observations</span>
                         </div>
                         <div className="flex items-center gap-1 whitespace-nowrap">
-                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <Calendar className="h-4 w-4 shrink-0" />
                           <span className="truncate">{formatDate(report.report_date || report.created_at)}</span>
                         </div>
                         {isAdmin && report.user_email && report.user_id !== user?.id && (
                           <div className="flex items-center gap-1 whitespace-nowrap">
-                            <span className="text-xs text-gray-400">by</span>
-                            <span className="truncate text-xs font-medium">{report.user_email}</span>
+                            <span className="text-xs text-muted-foreground/80">by</span>
+                            <span className="truncate text-xs font-medium text-foreground">{report.user_email}</span>
                           </div>
                         )}
                       </div>

@@ -84,6 +84,9 @@ export const translations = {
 
     // Note
     noteTitle: "Note",
+    observationEditSignInRequired: "Please sign in to edit observations.",
+    observationEditNotOwner:
+      "You can't edit this observation because it doesn't belong to you. Only the user who created it can make changes.",
     noNote: "No note",
     createdBy: "Created by",
     
@@ -120,6 +123,9 @@ export const translations = {
     errorLoadingReport: "Error loading report",
     tryAgain: "Try Again",
     noPhotoAvailable: "No photo available",
+    observationOrder: "Observation order",
+    observationOrderTimeline: "Timeline",
+    observationOrderSelection: "Selection order",
     
     // Settings page
     back: "Back",
@@ -173,6 +179,21 @@ export const translations = {
     
     // Upload photos
     uploadPhotos: "Upload photos",
+
+    // Map (observations with GPS)
+    mapView: "Map",
+    mapViewTitle: "Observations on map",
+    mapNoObservationsWithLocation:
+      "No observations with GPS in the current view.",
+    mapClose: "Close",
+    mapOpenInGoogleMaps: "Open in Google Maps",
+    mapObservationDate: "Observation date",
+    mapObservationWeek: "Observation week",
+    mapTimelineStepDay: "Day",
+    mapTimelineStepWeek: "Week",
+    mapTimelineStepShowAll: "Show all",
+    mapNoObservationsOnDate: "No observations on this date",
+    mapNoObservationsInWeek: "No observations in this week",
 
     // Plan upload
     uploadPlans: "Upload Plans",
@@ -413,6 +434,10 @@ export const translations = {
 
     // Note
     noteTitle: "Notiz",
+    observationEditSignInRequired:
+      "Bitte melden Sie sich an, um Beobachtungen zu bearbeiten.",
+    observationEditNotOwner:
+      "Sie können diese Beobachtung nicht bearbeiten, da sie Ihnen nicht gehört. Nur der Ersteller kann Änderungen vornehmen.",
     noNote: "Keine Anmerkungen",
     createdBy: "Erstellt von",
     
@@ -449,6 +474,9 @@ export const translations = {
     errorLoadingReport: "Fehler beim Laden des Berichts",
     tryAgain: "Erneut versuchen",
     noPhotoAvailable: "Kein Foto verfügbar",
+    observationOrder: "Beobachtungsreihenfolge",
+    observationOrderTimeline: "Zeitachse",
+    observationOrderSelection: "Auswahlreihenfolge",
     
     // Settings page
     back: "Zurück",
@@ -502,6 +530,21 @@ export const translations = {
     
     // Upload photos
     uploadPhotos: "Fotos hochladen",
+
+    // Map (observations with GPS)
+    mapView: "Karte",
+    mapViewTitle: "Beobachtungen auf der Karte",
+    mapNoObservationsWithLocation:
+      "Keine Beobachtungen mit GPS in der aktuellen Ansicht.",
+    mapClose: "Schließen",
+    mapOpenInGoogleMaps: "In Google Maps öffnen",
+    mapObservationDate: "Beobachtungsdatum",
+    mapObservationWeek: "Beobachtungswoche",
+    mapTimelineStepDay: "Tag",
+    mapTimelineStepWeek: "Woche",
+    mapTimelineStepShowAll: "Alle",
+    mapNoObservationsOnDate: "Keine Beobachtungen an diesem Tag",
+    mapNoObservationsInWeek: "Keine Beobachtungen in dieser Woche",
 
     // Plan upload
     uploadPlans: "Pläne hochladen",

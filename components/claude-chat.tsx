@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Bot, Send, X, Loader2, User } from 'lucide-react';
 import { translations, useLanguage } from '@/lib/translations';
 import { resolveObservationDateTime } from '@/lib/observation-dates';
+import { homeClaudeTheme } from '@/lib/app-theme';
+import { cn } from '@/lib/utils';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -24,10 +26,28 @@ interface ClaudeChatProps {
     sites?: { name: string } | null;
   }>;
   onLoadMoreData?: (period: 'week' | 'month') => Promise<void>;
+  /** When set with `onOpenChange`, the floating FAB is hidden (e.g. toggle lives in the app footer). */
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function ClaudeChat({ selectedObservations, allObservations, onLoadMoreData }: ClaudeChatProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function ClaudeChat({
+  selectedObservations,
+  allObservations,
+  onLoadMoreData,
+  isOpen: isOpenControlled,
+  onOpenChange,
+}: ClaudeChatProps) {
+  const [isOpenInternal, setIsOpenInternal] = useState(false);
+  const isControlled = isOpenControlled !== undefined;
+  const open = isControlled ? isOpenControlled : isOpenInternal;
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!isControlled) setIsOpenInternal(next);
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange],
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -280,29 +300,33 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
 
   return (
     <>
-      {/* Chat Toggle Button — aligned with accordion right edge */}
-      <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
-        <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
-          <Button
-            onClick={() => setIsOpen(!isOpen)}
-            className={`pointer-events-auto rounded-none h-8 w-8 p-0 shadow-lg ${
-              isOpen ? 'bg-gray-800 hover:bg-gray-900' : 'bg-black hover:bg-gray-800'
-            }`}
-          >
-            {isOpen ? <X className="h-5 w-5 text-white" /> : <Bot className="h-10 w-10 text-white" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Chat Window */}
-      {isOpen && (
-        <div className="fixed bottom-20 right-0 left-0 z-50 pointer-events-none">
+      {!isControlled && (
+        <div className="fixed bottom-2 sm:bottom-6 left-0 right-0 z-40 pointer-events-none">
           <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
-          <div className="pointer-events-auto w-80 h-96 bg-white border border-gray-300 shadow-xl flex flex-col">
+            <Button
+              onClick={() => setOpen(!open)}
+              className={cn(homeClaudeTheme.chatFab, !open && "rounded-none")}
+            >
+              {open ? <X className="h-5 w-5" /> : <Bot className="h-6 w-6" />}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Window — sits above the fixed app footer when the FAB is in the footer */}
+      {open && (
+        <div
+          className={cn(
+            "fixed right-0 left-0 z-50 pointer-events-none",
+            isControlled ? "bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))]" : "bottom-20",
+          )}
+        >
+          <div className="max-w-6xl mx-auto px-3 sm:px-8 flex justify-end">
+          <div className={homeClaudeTheme.panel}>
           {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-white">
+          <div className={homeClaudeTheme.header}>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-black">{mounted ? t('aiAssistant') : 'AI Assistant'}</span>
+              <span className={homeClaudeTheme.headerTitle}>{mounted ? t('aiAssistant') : 'AI Assistant'}</span>
             </div>
             {selectedObservations && selectedObservations.size > 0 && (
               <Button
@@ -310,7 +334,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                 disabled={isLoading}
                 size="sm"
                 variant="outline"
-                className="text-xs border-gray-300 text-gray-700 hover:bg-gray-100"
+                className={homeClaudeTheme.outlineButtonSm}
               >
                 {mounted ? `${t('analyze')} (${selectedObservations.size})` : `Analyze (${selectedObservations.size})`}
               </Button>
@@ -318,11 +342,11 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-white">
+          <div className={homeClaudeTheme.messagesArea}>
             {messages.length === 0 && mounted && (
               <div className="space-y-4">
-                <div className="text-center text-gray-500 text-sm py-4">
-                  <div className="w-8 h-8 mx-auto mb-2 bg-black text-white flex items-center justify-center text-xs font-semibold">
+                <div className={homeClaudeTheme.emptyState}>
+                  <div className="w-8 h-8 mx-auto mb-2 bg-foreground text-background flex items-center justify-center text-xs font-semibold rounded-sm">
                     AI
                   </div>
                   <p>{t('aiAssistantIntro')}</p>
@@ -336,7 +360,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                     disabled={isLoading}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-left border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className={homeClaudeTheme.quickActionButton}
                   >
                     {t('summarizeToday')}
                   </Button>
@@ -345,7 +369,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                     disabled={isLoading}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-left border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className={homeClaudeTheme.quickActionButton}
                   >
                     {t('lastSevenDaysSummary')}
                   </Button>
@@ -354,7 +378,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                     disabled={isLoading}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-left border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className={homeClaudeTheme.quickActionButton}
                   >
                     {t('lastFourteenDaysSummary')}
                   </Button>
@@ -367,22 +391,22 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                 key={index}
                 className={`flex gap-2 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className={`flex-shrink-0 w-6 h-6 flex items-center justify-center text-xs font-semibold ${
-                  message.role === 'user' ? 'bg-white border border-gray-300 text-gray-600' : 'bg-black text-white'
-                }`}>
+                <div className={cn(
+                  "flex-shrink-0 w-6 h-6 flex items-center justify-center text-xs font-semibold rounded-sm",
+                  message.role === 'user' ? homeClaudeTheme.userAvatar : homeClaudeTheme.assistantAvatar,
+                )}>
                   {message.role === 'user' ? <User className="h-3 w-3" /> : 'AI'}
                 </div>
                 <div
-                  className={`max-w-[80%] p-2 text-sm ${
-                    message.role === 'user'
-                      ? 'bg-white text-black border border-gray-300'
-                      : 'bg-black text-white'
-                  }`}
+                  className={message.role === "user" ? homeClaudeTheme.userBubble : homeClaudeTheme.assistantBubble}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
-                  <p className={`text-xs mt-1 opacity-70 ${
-                    message.role === 'user' ? 'text-gray-500' : 'text-gray-400'
-                  }`}>
+                  <p
+                    className={cn(
+                      "text-xs mt-1 opacity-70",
+                      message.role === "user" ? "text-muted-foreground" : "text-background/80",
+                    )}
+                  >
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -391,10 +415,10 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
             
             {isLoading && (
               <div className="flex gap-2">
-                <div className="flex-shrink-0 w-6 h-6 bg-black text-white flex items-center justify-center text-xs font-semibold">
+                <div className={cn("flex-shrink-0 w-6 h-6 flex items-center justify-center text-xs font-semibold rounded-sm", homeClaudeTheme.assistantAvatar)}>
                   AI
                 </div>
-                <div className="bg-black text-white p-2 text-sm">
+                <div className={homeClaudeTheme.assistantBubble}>
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span>{mounted ? t('thinking') : 'Thinking...'}</span>
@@ -406,7 +430,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200 p-3 bg-white">
+          <div className={homeClaudeTheme.inputBar}>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -414,7 +438,7 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={mounted ? t('askAiAboutObservations') : 'Ask AI about your observations...'}
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 bg-white text-black placeholder-gray-400 focus:outline-none focus:border-gray-500 h-10"
+                className={homeClaudeTheme.input}
                 disabled={isLoading}
               />
               <Button
@@ -422,11 +446,10 @@ ${index + 1}. Time: ${resolveObservationDateTime(obs).toLocaleTimeString('en-GB'
                 disabled={!inputValue.trim() || isLoading}
                 size="sm"
                 variant={(!inputValue.trim() || isLoading) ? "outline" : "default"}
-                className={`px-3 h-10 ${
-                  (!inputValue.trim() || isLoading) 
-                    ? "border-gray-300 text-gray-400 bg-white hover:bg-gray-50" 
-                    : "bg-black text-white hover:bg-gray-800 border-black"
-                }`}
+                className={cn(
+                  "px-3 h-10",
+                  (!inputValue.trim() || isLoading) && "text-muted-foreground",
+                )}
               >
                 <Send className="h-3 w-3" />
               </Button>

@@ -37,14 +37,23 @@ export const LAYOUT_CONSTANTS = {
   }
 } as const;
 
+type NavbarBackground = "transparent" | "surface" | "custom";
+
 /**
- * Helper function to get complete navbar classes
+ * Helper function to get complete navbar classes.
+ * Use `background: "surface"` for an opaque bar (main app); default stays transparent for hero pages.
  */
-export const getNavbarClasses = () => {
+export const getNavbarClasses = (opts?: { background?: NavbarBackground; customBackgroundClass?: string }) => {
   const { navbar } = LAYOUT_CONSTANTS;
+  const bg =
+    opts?.background === "surface"
+      ? "bg-background shadow-sm"
+      : opts?.background === "custom" && opts.customBackgroundClass
+        ? opts.customBackgroundClass
+        : navbar.background;
   return {
-    container: `sticky top-0 z-50 w-full flex justify-center ${navbar.height} ${navbar.background} ${navbar.border}`,
-    content: `w-full ${navbar.maxWidth} flex justify-between items-center ${navbar.padding} text-sm`
+    container: `sticky top-0 z-50 w-full flex justify-center ${navbar.height} ${bg} ${navbar.border}`.trim(),
+    content: `w-full ${navbar.maxWidth} flex justify-between items-center ${navbar.padding} text-sm`,
   };
 };
 

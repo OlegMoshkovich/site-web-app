@@ -5,7 +5,7 @@ export default [
     "description": "How clone:it successfully completed a Proof-of-Concept phase, bringing BIM models directly to the construction site.",
     "published": "2025-02-12T12:00:00.000Z",
     "category": "Construction Tech",
-    "author": "Asse-Boerties",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/100_days_one.jpg\"\n  alt=\"clone:it Proof-of-Concept with DB Bahnbau Gruppe\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 100 Days of Developing, Testing, and Innovating 🚀\n\nAfter an intense **Proof-of-Concept (PoC)** phase with **REIF Bauunternehmung GmbH & Co. KG, DB Bahnbau Gruppe GmbH, and DB mindbox**, we have successfully demonstrated how **bringing BIM models directly to the construction site** delivers real value.\n\nThese past months have been dedicated to **refining, improving, and expanding** the core functions of our app—ensuring that it meets the **demands of real-world construction environments**.\n\n<img\n  src=\"/example-data/blog/100_days_two.jpg\"\n  alt=\"Construction site using clone:it app\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Real-World Impact\n\nThrough hands-on testing and collaboration, we have seen first-hand how BIM adoption can drive **efficiency, accuracy, and smarter decision-making** in railway construction projects. Key achievements from this PoC include:\n\n- **Seamless BIM model integration** into ongoing construction workflows\n- **Faster execution** with immediate access to real-time model data\n- **Improved on-site coordination** between project stakeholders\n\nAnd this is just the beginning! We are committed to working alongside **Deutsche Bahn stakeholders** to further **push BIM adoption** and develop **even more impactful features** for the field.\n\n<img\n  src=\"/example-data/blog/100_days_three.jpg\"\n  alt=\"clone:it app in action at construction site\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## What’s Next?\n\n🚀 **Stay tuned**—more exciting developments are on the way!\n\nWe are continuously evolving, improving, and collaborating to make **BIM in construction** as seamless and effective as possible.\n\nFollow us for more updates! 🔜\n\n---\n\n**#BIM #ConstructionTech #DigitalTransformation #DBmindbox #Innovation #cloneit**",
     "_meta": {
       "filePath": "100_Days_of_Innovation_with_REIF_Bauunternehmung_DB_Bahnbau_Gruppe.mdx",
@@ -24,7 +24,7 @@ export default [
     "description": "Celebrating our success at the AEC Hackathon Munich, where our challenge led to an award-winning AR-BIM solution.",
     "published": "2024-11-27T12:00:00.000Z",
     "category": "Events",
-    "author": "Asse-Boerties",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/aec_hackathon_munich_four.jpg\"\n  alt=\"clone:it presenting at AEC Hackathon Munich\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Exciting News from clone:it at AEC Hackathon Munich!\n\nLast weekend, we had the incredible opportunity to present a **challenge** at the **AEC Hackathon in Munich**.\n\nA diverse and talented team, including experts in **game development**, took on the challenge we proposed:\n\n1️⃣ **Displaying large BIM models spanning several kilometers** on construction sites using **AR**.  \n2️⃣ **Automatically detecting and aligning BIM models** with real-world edges based on preselected reference points.\n\n<img\n  src=\"/example-data/blog/aec_hackathon_munich_one.jpg\"\n  alt=\"Hackathon participants working on AR-BIM solution\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 36 Hours of Innovation & Collaboration\n\nIn just **36 hours**, the team developed an **innovative app and simulator** to tackle both tasks. Their solution impressed the jury and showcased the immense **potential of AR in the AEC industry**.\n\nWe are thrilled to announce that the team **won \"Best Startup Potential\" at the hackathon!** 🏆\n\n<img\n  src=\"/example-data/blog/aec_hackathon_munich_three.jpg\"\n  alt=\"Hackathon team presenting final project\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## A Big Thank You!\n\nThis achievement highlights the **incredible power of collaboration, creativity, and dedication**. A huge thank you to everyone involved, and **congratulations** to the winning team for an **outstanding performance**! 🎉\n\n<img\n  src=\"/example-data/blog/aec_hackathon_munich_two.jpg\"\n  alt=\"Winning team receiving award\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n---\n\n**#hackathon #AR #innovation #BIM #construction #startup**",
     "_meta": {
       "filePath": "AEC_hackathon_munich.mdx",
@@ -43,7 +43,7 @@ export default [
     "description": "clone:it steht als einziges Startup aus der Bauindustrie im Finale des Austrian Startup Worldcup.",
     "published": "2024-06-25T12:00:00.000Z",
     "category": "Events",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/austrian_startup_worldcup_one.jpg\"\n  alt=\"clone:it auf der Bühne des Austrian Startup Worldcup\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 clone:it erreicht das Finale des Austrian Startup Worldcup! 🚀\n\nWir sind stolz, bekannt zu geben, dass **clone:it** zu den **Finalisten des @Austrian Startup Worldcup** gehört! 🌟\n\nVor einem riesigen Publikum auf der **Bühne der WKO in Wien** standen wir als eines der **12 herausragenden Startups in Österreich**. Nach mehreren spannenden Vorrunden haben wir es als **einziges Startup aus der Bauindustrie** ins Finale geschafft. 🏆\n\n<img\n  src=\"/example-data/blog/austrian_startup_worldcup_three.jpg\"\n  alt=\"Finalisten des Austrian Startup Worldcup auf der Bühne\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Glückwunsch an die Gewinner 🎉\n\nEin herzlicher **Glückwunsch** geht an **Klemens Wassermann und Terje Wimberger von Cellectric Biosciences**. Alles Gute für das **Grand Finale in San Francisco!** 🎉👏\n\nEin großes **Dankeschön** an alle, die uns auf diesem Weg begleitet und unterstützt haben.\n\nWir blicken gespannt auf die nächsten Schritte und zukünftigen Herausforderungen! 🚀\n\n<img\n  src=\"/example-data/blog/austrian_startup_worldcup_two.jpg\"\n  alt=\"clone:it Team feiert den Finaleinzug\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n---\n\n**#StartupWorldcup #Innovation #Entrepreneurship #Bauindustrie #cloneit #WKO #Finalisten**",
     "_meta": {
       "filePath": "austrian_startuo_worldcup.mdx",
@@ -62,7 +62,7 @@ export default [
     "description": "Einblick in unseren Fachvortrag zur Optimierung der Bewehrungskontrolle durch interaktive BIM-Modelle.",
     "published": "2024-09-27T12:00:00.000Z",
     "category": "Events",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/betonkolloquium_one.jpg\"\n  alt=\"Fachvortrag auf dem Betonkolloquium der TU Graz\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Das Betonkolloquium der Technische Universität Graz 🏗\n\n**Paul Wegerer** und **Thomas Markus Laggner**, die Geschäftsführer der **clone:it GmbH** und der **convex ZT GmbH**, hielten im Rahmen der **Tagung** einen **Fachvortrag über die Optimierung der Bewehrungskontrolle auf Baustellen** durch die interaktive Nutzung von **BIM-Modellen**.\n\nZusätzlich durften wir einen **Fachbeitrag im Tagungsband** veröffentlichen, der unsere Methoden und technologischen Ansätze näher erläutert.\n\n<img\n  src=\"/example-data/blog/betonkolloquium_three.jpg\"\n  alt=\"Fachpublikation im Tagungsband\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Begeisterung und Austausch 💡\n\nEs war besonders bereichernd, das **Interesse und die positiven Rückmeldungen** von **Studierenden, Professoren und Führungskräften der Bauindustrie** zu erleben. Diese Resonanz bestärkt uns in unserem Ansatz, durch **innovative Technologien zur Qualitätssicherung** im Bauwesen beizutragen.\n\n<img\n  src=\"/example-data/blog/betonkolloquium_two.jpg\"\n  alt=\"Austausch mit Experten der Bauindustrie\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n📄 **Unser Beitrag im Tagungsband:** [Hier lesen](https://lnkd.in/dSne4UCP)\n\n---\n\n**#BIM #Bewehrungskontrolle #Innovation #Bauindustrie #Qualitätssicherung #Digitalisierung**",
     "_meta": {
       "filePath": "Betonkolloquium_TUgraz.mdx",
@@ -81,7 +81,7 @@ export default [
     "description": "Reflecting on our exciting pitch at the BIM World MUNICH semifinals and the future of digital construction.",
     "published": "2024-11-29T12:00:00.000Z",
     "category": "Events",
-    "author": "Asse-Boerties",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/bimworld_semifinals_one.jpg\"\n  alt=\"clone:it at BIM World Munich Innovation World Cup\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Semifinals at the BIM World MUNICH - Innovation World Cup! 🚀\n\nWhat an **exciting journey** so far! Our **pitch** was packed with **action, energy, and new connections** that continue to inspire us to keep pushing boundaries.\n\nThe **future of construction is digital**—and it’s definitely not built on outdated **2D paper drawings**.\n\n<img\n  src=\"/example-data/blog/bimworld_semifinals_two.jpg\"\n  alt=\"clone:it team at BIM World Munich\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Let's Shape the Industry Together! 🔧\n\nInnovation and technology are driving **the future of construction**, and we are excited to be a part of this transformation.\n\nStay tuned for what’s next! 🚀\n\n---\n\n**#BIMWorld #InnovationWorldCup #DigitalConstruction #AR #FutureOfConstruction**",
     "_meta": {
       "filePath": "bimworld_semifinals.mdx",
@@ -100,7 +100,7 @@ export default [
     "description": "Erste Tests der compare:rebar App auf dem Apple Vision Pro bei Holo-Light in München.",
     "published": "2024-02-08T12:00:00.000Z",
     "category": "Technology",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2024.02.08_cloneit-und-Apple-Vision-Pro-400x400.jpeg\"\n  alt=\"clone:it testet Apple Vision Pro\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it testet Apple Vision Pro 🚀\n\nWir bei **clone:it** sind immer **am Puls der Zeit**! Bei unserem **Lösungspartner Holo-Light** in **München** konnten wir den **brandneuen räumlichen Computer, Apple Vision Pro**, ausprobieren und unsere **compare:rebar App** darauf laufen lassen.\n\n## 💡 Faszinierende Möglichkeiten\n\nDas Ergebnis? **Es funktioniert phänomenal!** Die leistungsfähige **Mixed Reality-Technologie** des Apple Vision Pro eröffnet völlig **neue Wege für die Bauindustrie**, insbesondere bei der **digitalen Bewehrungskontrolle** mit **compare:rebar**.\n\nWir sind gespannt auf die zukünftigen Möglichkeiten, die dieses **revolutionäre Gerät** für unsere Anwendungen bietet! 🔥\n\n---\n\n**#AppleVisionPro #AugmentedReality #BIM #ConstructionTech #Innovation #cloneit**",
     "_meta": {
       "filePath": "cloneit_apple_vision_pro.mdx",
@@ -119,7 +119,7 @@ export default [
     "description": "clone:it sichert sich den BIM-LÖWEN 2023 bei den BIM-TAGEN Deutschland.",
     "published": "2023-10-11T12:00:00.000Z",
     "category": "Awards",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2023.10.11_cloneit-in-Berlin-DE_6-400x400.jpg\"\n  alt=\"clone:it gewinnt den BIM-LÖWEN 2023\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🏆 clone:it gewinnt BIM-LÖWEN 2023!\n\n**clone:it** hat seine **ultimative Baustellen App** mit dem **Modul compare:rebar** auf den **BIM-TAGEN Deutschland 2023** vorgestellt – und den **BIM-LÖWEN 2023 gewonnen!** 🚀🎉\n\n## 🚀 Ein weiterer großer Erfolg\n\nNach dem **ersten Platz** in der **Founders Fight Night** bei der **digitalBAU München 2023** bestätigt uns dieser **Preis**, dass wir auf dem **richtigen Weg** sind!\n\nWir freuen uns über die **Anerkennung unserer Innovationen** und werden weiterhin **die Digitalisierung der Bauindustrie vorantreiben**! 🏗️✨\n\n---\n\n**#BIMLöwen #BIMTageDeutschland #Innovation #ConstructionTech #AugmentedReality #cloneit**",
     "_meta": {
       "filePath": "cloneit_bim_loewen_2023.mdx",
@@ -138,7 +138,7 @@ export default [
     "description": "Exploring BIM and AR technology with students at Johann-Jakob-Widmann-Schule Heilbronn.",
     "published": "2025-01-08T12:00:00.000Z",
     "category": "Education & Construction Tech",
-    "author": "Asse-Boerties",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/jjw_schule_one.jpg\"\n  alt=\"clone:it presentation at Johann-Jakob-Widmann-Schule\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it x Johann-Jakob-Widmann-Schule 📚🏗\n\nA few weeks ago, we had the privilege of presenting our **clone:it app** to the students and teachers of **Johann-Jakob-Widmann-Schule Heilbronn** in **Baden-Württemberg**. It was an inspiring session where we explored the exciting possibilities of **digitalization in the construction industry** and showcased how **BIM models** can unlock even greater potential when combined with **AR technology**—accessible through a smartphone or tablet! 📱✨\n\n<img\n  src=\"/example-data/blog/jjw_schule_three.jpg\"\n  alt=\"Students engaging with AR and BIM technology\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Engaging with Future Construction Professionals\n\nWe had a great time **engaging with students** and sparking curiosity about how digital tools are shaping the future of construction. The interactive nature of **BIM and AR technology** made a strong impression, showing students how **real-world projects** can be enhanced through **digital transformation**.\n\n## Looking Ahead\n\nWe’re looking forward to staying connected with **Johann-Jakob-Widmann-Schule Heilbronn** and other schools to further explore and share the exciting opportunities **AR and BIM** bring to both **education and the construction industry**.\n\n<img\n  src=\"/example-data/blog/jjw_schule_two.jpg\"\n  alt=\"AR and BIM technology presentation\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Interested in a Session?\n\nIf you know of any **vocational schools** focusing on **digital transformation** in the construction industry—or schools interested in an **interactive session** where students and teachers can experience **BIM and AR in action**—feel free to reach out!\n\nLet’s shape the future together. 🌍🏗\n\n---\n\n**#AugmentedReality #BIM #DigitalConstruction #Education #Innovation**",
     "_meta": {
       "filePath": "cloneit_jjw_schule.mdx",
@@ -157,7 +157,7 @@ export default [
     "description": "Workshop zur Integration von BIM in die Ausbildung von Lehrberufen im Bauwesen.",
     "published": "2024-04-18T12:00:00.000Z",
     "category": "Education",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2024.04.25_cloneit_Landesberufsschulen-Baden-Wuerttemberg-400x400.jpeg\"\n  alt=\"clone:it Workshop an den Landesberufsschulen Baden-Württemberg\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it bei den Landesberufsschulen 🏗️\n\n**clone:it** wurde eingeladen, am **Zentrum für Schulqualität und Lehrerbildung** des deutschen Bundeslandes **Baden-Württemberg** einen **Workshop** abzuhalten. Ziel war es, zu erörtern, wie **BIM in der Ausbildung von Lehrberufen im Bauwesen besser angewendet werden kann**.\n\n## BIM für die Ausbildung der Zukunft 📲\n\nDie **Applikationen von clone:it** bieten hier viele Möglichkeiten. Mit den **Apps von clone:it** können Auszubildende das **3D-Modell des zu Bauenden** direkt auf der Baustelle oder im Büro in ihr **Sichtfeld holen** – oder sogar **direkt in die Realität projizieren**.\n\nDiese innovative Methode ermöglicht es **zukünftigen Fachkräften**, digitale **BIM-Modelle** interaktiv zu erleben und die **Praxis mit der Theorie** nahtlos zu verbinden.\n\n---\n\n**#BIM #Ausbildung #Landesberufsschulen #Bauindustrie #Innovation #cloneit**",
     "_meta": {
       "filePath": "cloneit_landesberufscchulen_2024.mdx",
@@ -176,7 +176,7 @@ export default [
     "description": "Neue Partnerschaft zur Integration von Augmented Reality in die Stahlbetonbauweise.",
     "published": "2024-01-29T12:00:00.000Z",
     "category": "Partnerships",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/cloneit_ns-drafter-400x400.jpeg\"\n  alt=\"clone:it und NS Drafter Partnerschaft\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it und NS Drafter 🤝\n\nMit Anfang **2024** sind **clone:it** und **NS Drafter** eine **Partnerschaft** eingegangen. Ziel dieser Zusammenarbeit ist es, die **Konstruktion in Stahlbetonbauweise** durch **Augmented Reality Visualisierung** direkt auf der Baustelle zu optimieren.\n\n## 🚀 Integration von Augmented Reality in den Bauprozess\n\nBei **NS Drafter** wird die **Bewehrungsplanung** auf die **AR-Darstellung der Bewehrung** durch die **clone:it App** abgestimmt. Somit kann der **Nutzen der 3D-Darstellung** nicht nur in der **Planung**, sondern auch **nahtlos in der Bauausführung und Bauaufsicht** fortgeführt werden.\n\nDiese Partnerschaft bringt die **digitale Transformation der Bauindustrie** einen Schritt weiter! 🏗️✨\n\n---\n\n**#AugmentedReality #Stahlbetonbau #BIM #ConstructionTech #Innovation #cloneit #NSDrafter**",
     "_meta": {
       "filePath": "cloneit_ns_drafter.mdx",
@@ -195,7 +195,7 @@ export default [
     "description": "Transforming our AR-BIM solution through field testing with REIF Bauunternehmung and DB Mindbox.",
     "published": "2024-12-09T12:00:00.000Z",
     "category": "Construction Tech",
-    "author": "Asse-Boerties",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/cloneit_poc_dbmindbox_one.jpg\"\n  alt=\"clone:it Proof of Concept at DB Mindbox\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚧 Innovative Progress with Our PoC at DB Mindbox! 🚧\n\nSince kicking off our **Proof of Concept (PoC)** with **DB Mindbox**, our team has been hard at work **transforming our solution from an MVP into a more robust, practical product**.\n\nLast week, we conducted our first **site visit** with **REIF Bauunternehmung GmbH & Co. KG**, focusing on refining our **AR-BIM solution** to handle **large-scale models** such as **train stations and line constructions** more effectively.\n\n<img\n  src=\"/example-data/blog/cloneit_poc_dbmindbox_three.jpg\"\n  alt=\"Field testing AR-BIM integration\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Valuable Field Feedback\n\nThe feedback from the field has been **invaluable**, and we’re excited to implement **improvements** and test the **next iteration** directly with construction site workers during upcoming site visits.\n\nOur focus remains on enhancing:\n\n- **Scalability** of BIM models for large infrastructure projects\n- **Usability** of AR applications on-site\n- **Seamless integration** into existing workflows\n\n<img\n  src=\"/example-data/blog/cloneit_poc_dbmindbox_two.jpg\"\n  alt=\"clone:it application in use on-site\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Curious About BIM on Your Construction Sites?\n\nWhether for **construction, documentation, or inspection**, our app could help **streamline your processes**.\n\n📩 **Reach out to us** to become an **early adopter** and explore **pilot opportunities**!\n\nLet’s shape the future of construction together. 🏗️\n\n---\n\n**#AR #BIM #ConstructionInnovation #Digitalization #DBMindbox**",
     "_meta": {
       "filePath": "cloneit_poc_dbmindbox.mdx",
@@ -214,7 +214,7 @@ export default [
     "description": "Paul Wegerer und Liebhard Mattuschka informieren sich über aktuelle Entwicklungen im Tunnelbau.",
     "published": "2023-11-09T12:00:00.000Z",
     "category": "Events",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/IMG_3800-1024x768.jpg\"\n  alt=\"clone:it auf der STUVA 2023\"\n  width=\"1024\"\n  height=\"768\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it war bei der STUVA 2023 🚆\n\n**Paul Wegerer** und **Liebhard Mattuschka** waren auf der **STUVA 2023 in München** und informierten sich über die aktuellen **Entwicklungen im Tunnelbau**.\n\n## 🤝 Austausch mit der Branche\n\nBei dieser Gelegenheit haben sie **renommierte Bauunternehmen und Ingenieurbüros** an ihren Ständen besucht, die **clone:it GmbH** und deren **Software vorgestellt** sowie den **Einsatz von AI und AR auf Tunnelbaustellen** diskutiert.\n\nDie STUVA bot eine **hervorragende Plattform**, um neue Kontakte zu knüpfen und sich mit **Branchenführern über digitale Innovationen** im Tunnelbau auszutauschen. 🏗️🚀\n\n---\n\n**#STUVA2023 #Tunnelbau #AI #AR #Innovation #cloneit**",
     "_meta": {
       "filePath": "cloneit_stuva_2023.mdx",
@@ -233,7 +233,7 @@ export default [
     "description": "clone:it wird in das renommierte TUM Venture Labs aufgenommen und erhält Zugang zu einem starken Netzwerk.",
     "published": "2024-01-28T12:00:00.000Z",
     "category": "Partnerships",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/TUM_Venture-Labs.jpg\"\n  alt=\"clone:it bei TUM Venture Labs\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it und TUM Venture Labs 🚀\n\nNach einem **gelungenen Pitch** von **Paul Wegerer** und **Liebhard Mattuschka** wurde **clone:it** in das renommierte **TUM Venture Labs** aufgenommen. Das **TUM Venture Labs** ist eine gemeinsame Unternehmung der **Technischen Universität München** und der **UnternehmerTUM GmbH**.\n\n## 💡 Zugang zu einem starken Netzwerk\n\nDie Aufnahme in das **TUM Venture Labs** eröffnet uns beeindruckende Möglichkeiten:\n\n- **Zugang zu einem starken Investorennetzwerk**\n- **Teilnahme an Fachmessen**\n- **Talent Pool und Start-Up Matching**\n\nDiese Ressourcen geben uns großartige Perspektiven, um die **Software von clone:it weiterzuentwickeln und bekannt zu machen**. Wir freuen uns auf die Zusammenarbeit und spannende neue Chancen! 🏗️✨\n\n---\n\n**#TUMVentureLabs #Innovation #Startup #Entrepreneurship #BIM #AugmentedReality #cloneit**",
     "_meta": {
       "filePath": "cloneit_tum_venturelabs.mdx",
@@ -252,7 +252,7 @@ export default [
     "description": "clone:it erhält EU-Förderung für Forschungsarbeiten zur KI-unterstützten digitalen Rekonstruktion.",
     "published": "2024-01-22T12:00:00.000Z",
     "category": "Research",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/digital_europe-400x400.jpg\"\n  alt=\"EU-Förderung für clone:it Forschung\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Forschen am Puls der Zeit 🚀\n\nWir freuen uns, dass **clone:it** in Zusammenarbeit mit **VRVis** eine weitere **EU-Förderung** für seine **Forschungsarbeiten im Jahr 2024** gewonnen hat. 🎉\n\nMit Unterstützung des **DIGITAL Europe Programme** der **Europäischen Kommission** setzen wir unsere **Forschung an der KI-unterstützten, digitalen Rekonstruktion** von **fotografisch aufgenommenen Bewehrungsstäben** fort.\n\nDiese Förderung ermöglicht es uns, an der Spitze der **digitalen Bauinnovation** zu bleiben und neue Technologien für die **Bauindustrie** zu entwickeln. 🏗️✨\n\n---\n\n**#DigitalEurope #Forschung #Innovation #KI #BIM #AugmentedReality #cloneit**",
     "_meta": {
       "filePath": "eu_foerderung_forschung_cloneit.mdx",
@@ -271,7 +271,7 @@ export default [
     "description": "Vortrag über die Entwicklung von clone:it und digitale Innovationen in der Bauwirtschaft.",
     "published": "2023-11-12T12:00:00.000Z",
     "category": "Education",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/a67e755d-f333-45bc-b1b1-7cd687580fb8-311x233.jpg\"\n  alt=\"Vortrag an der FH Campus Wien\"\n  width=\"311\"\n  height=\"233\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it beim FH Campus Wien 🎤\n\n**Liebhard Mattuschka** und **Paul Wegerer** hatten die tolle Gelegenheit, auf Einladung von **Walter Haberfellner** an der **FH Campus Wien** einen **Vortrag** zu halten.\n\nIn ihrem Vortrag gewährten sie **Einblicke in die Entwicklung der clone:it GmbH** – von der **ersten Idee über die bewältigten Herausforderungen**, bis hin zu den **Proof of Concepts** und den ersten Umsätzen. 💡\n\n<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/IMG_0273-311x233.jpg\"\n  alt=\"Live-Demonstration der clone:it Software\"\n  width=\"311\"\n  height=\"233\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Praxisnahe Einblicke für Studierende\n\nDie **Studierenden im Masterstudium Bauingenieurwesen-Baumanagement** hatten nicht nur die Möglichkeit, die **Software live zu erleben**, sondern konnten diese auch **aktiv ausprobieren**.\n\nDie Diskussionen und der **Austausch über die Digitalisierung in der Bauwirtschaft** waren inspirierend – und werden hoffentlich dazu beitragen, die eine oder andere **Masterarbeit** zu inspirieren! 📚🏗️\n\n<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/IMG_3872-311x233.jpg\"\n  alt=\"Inspirierender Austausch mit Studierenden\"\n  width=\"311\"\n  height=\"233\"\n  className=\"w-full rounded-lg\"\n/>\n\n---\n\n**#ThinkingOutsideTheBox #AI #AR #Fachvortrag #Bauingenieure #Zukunft #cloneit**",
     "_meta": {
       "filePath": "fh_campus_wien_cloneit.mdx",
@@ -290,7 +290,7 @@ export default [
     "description": "Paul Wegerer, Co-Founder der clone:it GmbH, wurde in die Forbes 30 Under 30 Liste aufgenommen.",
     "published": "2025-12-05T12:00:00.000Z",
     "category": "Recognition",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/paul_forbes.png\"\n  alt=\"Forbes 30 Under 30 – Paul Wegerer\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Forbes 30 Under 30 – Paul Wegerer\n\nPaul Wegerer, Co-Founder und Geschäftsführer der clone:it GmbH, wurde aufgrund der erfolgreichen Pilotprojekte und Auszeichnungen seines Unternehmens in die *Forbes 30 Under 30* Liste aufgenommen.\n\nSein Ziel ist es, die Baubranche mit praxisnahen, innovativen Tools zu unterstützen und die Baustelle transparenter und effizienter zu gestalten. Mit der von clone:it entwickelten Software werden Bauprojekte digital begleitet und die Zusammenarbeit zwischen Ausführung, Planung und Bauherr deutlich verbessert.\n\n---\n\n**#Forbes #30Under30 #cloneit #Baubranche #Digitalisierung #Startup**",
     "_meta": {
       "filePath": "forbes_30_under_30_paul_wegerer.mdx",
@@ -309,7 +309,7 @@ export default [
     "description": "clone:it joins Deutsche Bahn's 100-day innovation program at DB mindbox.",
     "published": "2024-09-07T12:00:00.000Z",
     "category": "Events",
-    "author": "Liebhard-Mattuschka",
+    "author": "Liebhard Mattuschka",
     "content": "<img\n  src=\"/example-data/blog/future_railroad_db_four.jpg\"\n  alt=\"clone:it at DB mindbox Future of Railroad Construction Industry 2024\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚆 Exciting News from the Future of Railroad Construction Industry 2024 Program! 🚀\n\nWe are thrilled to announce that last Thursday, we had the **privilege of pitching our AR-based BIM software** at the **DB mindbox Future of Railroad Construction Industry 2024 program**. Amongst a dynamic group of **international startups**, we were selected to join **Deutsche Bahn's 100-day innovation program**! 🎉\n\n<img\n  src=\"/example-data/blog/future_railroad_db_one.jpg\"\n  alt=\"Networking at DB mindbox event\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## A Hub of Innovation 🌍\n\nIt was inspiring to **connect with various innovative startups** and explore the **cutting-edge solutions** they’re bringing to the **construction industry**.\n\nWe also had the opportunity to **gain valuable insights from industry experts** and discuss the future of **digitization and AR in railroad construction**.\n\n<img\n  src=\"/example-data/blog/future_railroad_db_three.jpg\"\n  alt=\"clone:it team discussing future innovations\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Looking Forward 🚀\n\nA huge **thank you** to **DB mindbox** for organizing such a fantastic event and to all the **participating companies** for the inspiring conversations!\n\nWe’re excited to **kick off the innovation program this October** and can't wait to share what’s next! Stay tuned!\n\n<img\n  src=\"/example-data/blog/future_railroad_db_two.jpg\"\n  alt=\"clone:it team at DB mindbox innovation program\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n---\n\n**#innovation #railroad #ARtech #BIM #construction #startups #DeutscheBahn #AugmentedReality #DBmindbox #StartupHub #Digitization**",
     "_meta": {
       "filePath": "future_railroad_dbmindbox.mdx",
@@ -324,11 +324,59 @@ export default [
     "coverImage": "/example-data/blog/future_railroad_db_four.jpg"
   },
   {
+    "title": "Heizkraftwerk Süd Baudienstleistung",
+    "description": "clone:it wurde für den Neubau und Zubau des Heizkraftwerks Süd in München beauftragt und übernahm die Generalplanung Bautechnik in den Leistungsphasen 6 bis 9.",
+    "published": "2025-09-15T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## Heizkraftwerk Süd Baudienstleistung\n\n**Leistungen:** Projektleitung Generalplanung - Bautechnik\n\n**Zeitraum:** 2025, 2026\n\n<img\n  src=\"/marketing/blog/Heizkraftwerk/gud1neu_munchen_002.jpg\"\n  alt=\"Heizkraftwerk Süd München – Baustelle\"\n  width=\"1200\"\n  height=\"800\"\n  className=\"mb-4 w-full rounded-lg\"\n/>\n\n<img\n  src=\"/marketing/blog/Heizkraftwerk/gud1neu_munchen_013.jpg\"\n  alt=\"Heizkraftwerk Süd München – Baustellenansicht\"\n  width=\"1200\"\n  height=\"800\"\n  className=\"mb-6 w-full rounded-lg\"\n/>\n\nclone:it wurde für die Jahre 2025 und 2026 für den Neubau und Zubau des Heizkraftwerks Süd in München beauftragt und übernahm Leistungen in den Leistungsphasen 6 bis 9.\n\nIn diesem Leistungsumfang wurde die Generalplanung Bautechnik abgewickelt. In diesem Zuge erfolgte die Mitarbeit in Ausschreibung, Vergabe, Ausführungsplanung, Bauüberwachung und Kostenrechnung für Um- und Neubaumaßnahmen vor Ort für die Stadtwerke München (SWM).\n\nZahlreiche Baumaßnahmen wurden in diesem Projektverlauf zu Ende gebracht, sodass ein Betriebsbeginn des Kraftwerkes durchgeführt werden kann.\n\n[Mehr zum Heizkraftwerk München Süd](https://www.swm.de/unternehmen/magazin/energie/energiestandort-sued)\n\n---\n\n**#Projektleitung #Generalplanung #Bautechnik #München #SWM #Energieinfrastruktur**",
+    "tags": [
+      "Bauüberwachung",
+      "Projektleitung",
+      "München"
+    ],
+    "_meta": {
+      "filePath": "heizkraftwerk_sued_baudienstleistung.mdx",
+      "fileName": "heizkraftwerk_sued_baudienstleistung.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "heizkraftwerk_sued_baudienstleistung"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var a=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var o=Object.getOwnPropertyNames;var k=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var w=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),b=(n,e)=>{for(var t in e)a(n,t,{get:e[t],enumerable:!0})},s=(n,e,t,u)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of o(e))!f.call(n,i)&&i!==t&&a(n,i,{get:()=>e[i],enumerable:!(u=m(e,i))||u.enumerable});return n};var p=(n,e,t)=>(t=n!=null?c(k(n)):{},s(e||!n||!n.__esModule?a(t,\"default\",{value:n,enumerable:!0}):t,n)),M=n=>s(a({},\"__esModule\",{value:!0}),n);var h=w((j,d)=>{d.exports=_jsx_runtime});var z={};b(z,{default:()=>l});var r=p(h());function g(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(e.h2,{id:\"heizkraftwerk-s\\xFCd-baudienstleistung\",children:(0,r.jsx)(e.a,{href:\"#heizkraftwerk-s\\xFCd-baudienstleistung\",children:\"Heizkraftwerk S\\xFCd Baudienstleistung\"})}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Leistungen:\"}),\" Projektleitung Generalplanung - Bautechnik\"]}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2025, 2026\"]}),`\n`,(0,r.jsx)(\"img\",{src:\"/marketing/blog/Heizkraftwerk/gud1neu_munchen_002.jpg\",alt:\"Heizkraftwerk S\\xFCd M\\xFCnchen \\u2013 Baustelle\",width:\"1200\",height:\"800\",className:\"mb-4 w-full rounded-lg\"}),`\n`,(0,r.jsx)(\"img\",{src:\"/marketing/blog/Heizkraftwerk/gud1neu_munchen_013.jpg\",alt:\"Heizkraftwerk S\\xFCd M\\xFCnchen \\u2013 Baustellenansicht\",width:\"1200\",height:\"800\",className:\"mb-6 w-full rounded-lg\"}),`\n`,(0,r.jsx)(e.p,{children:\"clone:it wurde f\\xFCr die Jahre 2025 und 2026 f\\xFCr den Neubau und Zubau des Heizkraftwerks S\\xFCd in M\\xFCnchen beauftragt und \\xFCbernahm Leistungen in den Leistungsphasen 6 bis 9.\"}),`\n`,(0,r.jsx)(e.p,{children:\"In diesem Leistungsumfang wurde die Generalplanung Bautechnik abgewickelt. In diesem Zuge erfolgte die Mitarbeit in Ausschreibung, Vergabe, Ausf\\xFChrungsplanung, Bau\\xFCberwachung und Kostenrechnung f\\xFCr Um- und Neubauma\\xDFnahmen vor Ort f\\xFCr die Stadtwerke M\\xFCnchen (SWM).\"}),`\n`,(0,r.jsx)(e.p,{children:\"Zahlreiche Bauma\\xDFnahmen wurden in diesem Projektverlauf zu Ende gebracht, sodass ein Betriebsbeginn des Kraftwerkes durchgef\\xFChrt werden kann.\"}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.a,{href:\"https://www.swm.de/unternehmen/magazin/energie/energiestandort-sued\",children:\"Mehr zum Heizkraftwerk M\\xFCnchen S\\xFCd\"})}),`\n`,(0,r.jsx)(e.hr,{}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.strong,{children:\"#Projektleitung #Generalplanung #Bautechnik #M\\xFCnchen #SWM #Energieinfrastruktur\"})})]})}function l(n={}){let{wrapper:e}=n.components||{};return e?(0,r.jsx)(e,{...n,children:(0,r.jsx)(g,{...n})}):g(n)}return M(z);})();\n;return Component;",
+    "slug": "/blog/heizkraftwerk_sued_baudienstleistung",
+    "slugAsParams": "heizkraftwerk_sued_baudienstleistung",
+    "coverImage": "/marketing/blog/Heizkraftwerk/gud1neu_munchen_002.jpg"
+  },
+  {
+    "title": "Heizkraftwerk Süd – Simple Site",
+    "description": "Im Zuge der Generalplanung wurde die App Simple Site weiterentwickelt mit Funktionen, die ideal für den Industriehochbau geeignet sind.",
+    "published": "2025-08-14T12:00:00.000Z",
+    "category": "Softwareentwicklung",
+    "author": "Liebhard Mattuschka",
+    "content": "## Heizkraftwerk Süd – Simple Site\n\n**Leistungen:** Softwareentwicklung anhand von einem Industriehochbau\n\n**Zeitraum:** 2025, 2026\n\n<img\n  src=\"/marketing/blog/Heizkraftwerk_simple/Heizkraftwerk_Süd_3.jpeg\"\n  alt=\"Heizkraftwerk Süd – Simple Site, Luftaufnahme\"\n  width=\"1200\"\n  height=\"800\"\n  className=\"mb-6 w-full rounded-lg\"\n/>\n\nIm Zuge der Generalplanung, welche clone:it in den Jahren 2025 und 2026 durchgeführt hat, wurde ebenso die App Simple Site weiterentwickelt. Zahlreiche App-Funktionen, die ideal für den Industriehochbau geeignet sind, wurden im Zuge dieses Projektes weiterentwickelt.\n\nSimple Site konnte damit den Fortschritt im Bauablauf transparent darstellen – sowohl für Auftraggeber als auch für Auftragnehmer.\n\n---\n\n**#SimpleSite #Softwareentwicklung #Industriehochbau #Baudokumentation #Digitalisierung**",
+    "tags": [
+      "SimpleSite",
+      "Softwareentwicklung",
+      "Industriehochbau"
+    ],
+    "_meta": {
+      "filePath": "heizkraftwerk_sued_simple_site.mdx",
+      "fileName": "heizkraftwerk_sued_simple_site.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "heizkraftwerk_sued_simple_site"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var a=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var g=Object.getOwnPropertyNames;var p=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var k=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),w=(n,e)=>{for(var r in e)a(n,r,{get:e[r],enumerable:!0})},h=(n,e,r,d)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let i of g(e))!f.call(n,i)&&i!==r&&a(n,i,{get:()=>e[i],enumerable:!(d=m(e,i))||d.enumerable});return n};var S=(n,e,r)=>(r=n!=null?c(p(n)):{},h(e||!n||!n.__esModule?a(r,\"default\",{value:n,enumerable:!0}):r,n)),_=n=>h(a({},\"__esModule\",{value:!0}),n);var s=k((j,l)=>{l.exports=_jsx_runtime});var b={};w(b,{default:()=>u});var t=S(s());function o(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,t.jsxs)(t.Fragment,{children:[(0,t.jsx)(e.h2,{id:\"heizkraftwerk-s\\xFCd--simple-site\",children:(0,t.jsx)(e.a,{href:\"#heizkraftwerk-s\\xFCd--simple-site\",children:\"Heizkraftwerk S\\xFCd \\u2013 Simple Site\"})}),`\n`,(0,t.jsxs)(e.p,{children:[(0,t.jsx)(e.strong,{children:\"Leistungen:\"}),\" Softwareentwicklung anhand von einem Industriehochbau\"]}),`\n`,(0,t.jsxs)(e.p,{children:[(0,t.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2025, 2026\"]}),`\n`,(0,t.jsx)(\"img\",{src:\"/marketing/blog/Heizkraftwerk_simple/Heizkraftwerk_S\\xFCd_3.jpeg\",alt:\"Heizkraftwerk S\\xFCd \\u2013 Simple Site, Luftaufnahme\",width:\"1200\",height:\"800\",className:\"mb-6 w-full rounded-lg\"}),`\n`,(0,t.jsx)(e.p,{children:\"Im Zuge der Generalplanung, welche clone:it in den Jahren 2025 und 2026 durchgef\\xFChrt hat, wurde ebenso die App Simple Site weiterentwickelt. Zahlreiche App-Funktionen, die ideal f\\xFCr den Industriehochbau geeignet sind, wurden im Zuge dieses Projektes weiterentwickelt.\"}),`\n`,(0,t.jsx)(e.p,{children:\"Simple Site konnte damit den Fortschritt im Bauablauf transparent darstellen \\u2013 sowohl f\\xFCr Auftraggeber als auch f\\xFCr Auftragnehmer.\"}),`\n`,(0,t.jsx)(e.hr,{}),`\n`,(0,t.jsx)(e.p,{children:(0,t.jsx)(e.strong,{children:\"#SimpleSite #Softwareentwicklung #Industriehochbau #Baudokumentation #Digitalisierung\"})})]})}function u(n={}){let{wrapper:e}=n.components||{};return e?(0,t.jsx)(e,{...n,children:(0,t.jsx)(o,{...n})}):o(n)}return _(b);})();\n;return Component;",
+    "slug": "/blog/heizkraftwerk_sued_simple_site",
+    "slugAsParams": "heizkraftwerk_sued_simple_site",
+    "coverImage": "/marketing/blog/Heizkraftwerk_simple/Heizkraftwerk_Süd_3.jpeg"
+  },
+  {
     "title": "clone:it bei Workshop mit HOCHTIEF",
     "description": "Vertiefung der Digitalisierung auf der Baustelle mit compare:rebar in einem gemeinsamen Workshop mit HOCHTIEF.",
     "published": "2023-09-18T12:00:00.000Z",
     "category": "Events",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2023.09_Workshop-HOCHTIEF-1024x768.jpg\"\n  alt=\"clone:it Workshop mit HOCHTIEF\"\n  width=\"1024\"\n  height=\"768\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it bei Workshop mit HOCHTIEF 🏗️\n\nDie **App compare:rebar** bietet **ungeahnte Möglichkeiten** bei der **Digitalisierung der Baustelle**:\n\n- Der **3D-geplante Bewehrungskorb** kann direkt **in die Schalung hineinvisualisiert werden**.\n- Nach der Verlegung der **Bewehrung** kann diese **vollautomatisch erfasst und mit dem Geplanten abgeglichen werden**.\n\n## 🚀 Zusammenarbeit mit HOCHTIEF\n\nDiese **innovativen Anwendungen** waren auch für **HOCHTIEF AG** von großem Interesse. In einem **gemeinsamen Workshop** mit den **Geschäftsführern Paul Wegerer und Liebhard Mattuschka** von **clone:it** in **Essen** wurde das Potenzial der Technologie weiter vertieft.\n\n## 🔜 Nächstes Pilotprojekt in Planung\n\nDie **Anwendung der App in einem Pilotprojekt** wird demnächst umgesetzt. Wir freuen uns darauf, die **Baustelle der Zukunft** weiter zu optimieren! 🚀\n\n---\n\n**#HOCHTIEF #BIM #Digitalisierung #Bewehrung #ConstructionTech #cloneit**",
     "_meta": {
       "filePath": "hochtief_workshop_cloneit.mdx",
@@ -343,11 +391,35 @@ export default [
     "coverImage": "https://www.cloneit.at/3zw5u3/wp-content/uploads/2023.09_Workshop-HOCHTIEF-1024x768.jpg"
   },
   {
+    "title": "Neubau Mobility Innovation Campus",
+    "description": "Projektleitung der Bauüberwachung für ein einzigartiges Projekt mit Parkgarage und Außenanlagen als Generalunternehmerleistung bei der BERNARD Gruppe ZT GmbH.",
+    "published": "2024-12-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## Neubau Mobility Innovation Campus\n\n**Leistungen:** Projektleitung Generalplanung und Bauüberwachung, Terminsteuerung\n\n**Zeitraum:** 2023, 2024\n\n<img\n  src=\"/marketing/blog/mobility/image.webp\"\n  alt=\"Neubau Mobility Innovation Campus\"\n  width=\"1200\"\n  height=\"675\"\n  className=\"mb-6 w-full rounded-lg\"\n/>\n\nUnser Bauingenieur Liebhard Mattuschka hat bei einem einzigartigen Projekt mitgewirkt, bei dem eine Parkgarage inklusive Außenanlagen als Generalunternehmerleistung umgesetzt wurde.\n\nIm Zuge seiner Tätigkeit bei der BERNARD Gruppe ZT GmbH hat er als Projektleiter der Bauüberwachung dieses Projekt von Anfang bis zum Abschluss maßgeblich begleitet.\n\n[Hier mehr über das Projekt](https://www.iabg.de/branchen/automotive/mobility-innovation-campus)\n\n---\n\n**#MobilityInnovationCampus #Projektleitung #Bauüberwachung #BERNARD #IABG**",
+    "tags": [
+      "Projektleitung",
+      "Bauüberwachung",
+      "IABG"
+    ],
+    "_meta": {
+      "filePath": "mobility_innovation_campus.mdx",
+      "fileName": "mobility_innovation_campus.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "mobility_innovation_campus"
+    },
+    "body": "var Component=(()=>{var m=Object.create;var a=Object.defineProperty;var c=Object.getOwnPropertyDescriptor;var b=Object.getOwnPropertyNames;var d=Object.getPrototypeOf,p=Object.prototype.hasOwnProperty;var k=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),w=(n,e)=>{for(var t in e)a(n,t,{get:e[t],enumerable:!0})},o=(n,e,t,u)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let r of b(e))!p.call(n,r)&&r!==t&&a(n,r,{get:()=>e[r],enumerable:!(u=c(e,r))||u.enumerable});return n};var j=(n,e,t)=>(t=n!=null?m(d(n)):{},o(e||!n||!n.__esModule?a(t,\"default\",{value:n,enumerable:!0}):t,n)),v=n=>o(a({},\"__esModule\",{value:!0}),n);var l=k((y,s)=>{s.exports=_jsx_runtime});var f={};w(f,{default:()=>g});var i=j(l());function h(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,i.jsxs)(i.Fragment,{children:[(0,i.jsx)(e.h2,{id:\"neubau-mobility-innovation-campus\",children:(0,i.jsx)(e.a,{href:\"#neubau-mobility-innovation-campus\",children:\"Neubau Mobility Innovation Campus\"})}),`\n`,(0,i.jsxs)(e.p,{children:[(0,i.jsx)(e.strong,{children:\"Leistungen:\"}),\" Projektleitung Generalplanung und Bau\\xFCberwachung, Terminsteuerung\"]}),`\n`,(0,i.jsxs)(e.p,{children:[(0,i.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2023, 2024\"]}),`\n`,(0,i.jsx)(\"img\",{src:\"/marketing/blog/mobility/image.webp\",alt:\"Neubau Mobility Innovation Campus\",width:\"1200\",height:\"675\",className:\"mb-6 w-full rounded-lg\"}),`\n`,(0,i.jsx)(e.p,{children:\"Unser Bauingenieur Liebhard Mattuschka hat bei einem einzigartigen Projekt mitgewirkt, bei dem eine Parkgarage inklusive Au\\xDFenanlagen als Generalunternehmerleistung umgesetzt wurde.\"}),`\n`,(0,i.jsx)(e.p,{children:\"Im Zuge seiner T\\xE4tigkeit bei der BERNARD Gruppe ZT GmbH hat er als Projektleiter der Bau\\xFCberwachung dieses Projekt von Anfang bis zum Abschluss ma\\xDFgeblich begleitet.\"}),`\n`,(0,i.jsx)(e.p,{children:(0,i.jsx)(e.a,{href:\"https://www.iabg.de/branchen/automotive/mobility-innovation-campus\",children:\"Hier mehr \\xFCber das Projekt\"})}),`\n`,(0,i.jsx)(e.hr,{}),`\n`,(0,i.jsx)(e.p,{children:(0,i.jsx)(e.strong,{children:\"#MobilityInnovationCampus #Projektleitung #Bau\\xFCberwachung #BERNARD #IABG\"})})]})}function g(n={}){let{wrapper:e}=n.components||{};return e?(0,i.jsx)(e,{...n,children:(0,i.jsx)(h,{...n})}):h(n)}return v(f);})();\n;return Component;",
+    "slug": "/blog/mobility_innovation_campus",
+    "slugAsParams": "mobility_innovation_campus",
+    "coverImage": "/marketing/blog/mobility/image.webp"
+  },
+  {
     "title": "clone:it Proof of Concept in Salzgitter, Deutschland",
     "description": "clone:it demonstriert mit HOCHTIEF die App compare:rebar im Rahmen eines PoC für effiziente Bewehrungskontrolle.",
     "published": "2024-03-09T12:00:00.000Z",
     "category": "Case Study",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2024.03.08_PoC_Salzgitter-DE-scaled-400x400.jpg\"\n  alt=\"clone:it Proof of Concept in Salzgitter, Deutschland\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it Proof of Concept in Salzgitter, Deutschland 🏗️\n\n**clone:it** demonstrierte gemeinsam mit **HOCHTIEF** im Rahmen eines **Proof of Concept (PoC)** die **App compare:rebar** sowie die dazugehörige **webbasierte Plattform**.\n\n## 🚀 Innovation auf der Baustelle\n\nIn **Salzgitter, Deutschland**, entsteht aktuell das **größte Batteriewerk Europas**. Bei diesem **Großprojekt** konnten Bauleiter erstmals unsere **App compare:rebar** nutzen, um die **Bewehrung schnell und effizient zu überprüfen**, anstatt auf herkömmliche Papierpläne zurückzugreifen.\n\n## 🔍 Präzise Überprüfung durch Augmented Reality\n\nDas **3D-Modell der geplanten Bewehrung** wurde direkt in die **Realität projiziert** und präzise mit der tatsächlich verlegten Bewehrung überlagert. Die **sofortige Überprüfbarkeit** aller wesentlichen **Parameter** überzeugte das Team von **HOCHTIEF** von dem **Mehrwert**, den die App **compare:rebar von clone:it** bietet.\n\n---\n\n**#BIM #AugmentedReality #ConstructionTech #Innovation #Salzgitter #cloneit**",
     "_meta": {
       "filePath": "poc_salzgitter_cloneit.mdx",
@@ -366,7 +438,7 @@ export default [
     "description": "Die clone:it GmbH wurde mit der Ausführungsplanung, der Ausschreibung und Vergabe sowie mit den Leistungen der örtlichen Bauaufsicht für das Projekt „Schaukäserei Melk\" beauftragt.",
     "published": "2026-03-30T12:00:00.000Z",
     "category": "Projekt",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/Kasehutte Melk Huf-Haus.png\"\n  alt=\"Schaukäserei Melk – Käsehütte Maria Taferl\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Schaukäserei Melk – Planung, Ausschreibung und ÖBA\n\nDie clone:it GmbH wurde mit der Ausführungsplanung, der Ausschreibung und Vergabe sowie mit den Leistungen der örtlichen Bauaufsicht für das Projekt „Schaukäserei Melk\" beauftragt.\n\nDie Käsehütte Maria Taferl der Familie Stix realisiert in Melk ein innovatives Projekt rund um die Käseproduktion. Neben einer Produktionsstätte entstehen ein Shop, ein Kommissionierbereich und ein Verkostungsraum. Zusätzlich werden eine Autowerkstätte, eine Kinderbetreuungseinrichtung sowie ein Fitnessclub errichtet.\n\nIm Fokus des Projekts stehen Nachhaltigkeit, Regionalität sowie innovative Produktions- und Betriebsabläufe. Mit diesem Projekt begleiten wir das Vorhaben von der Planung über die Ausschreibung bis zur Umsetzung auf der Baustelle.\n\n---\n\n**#SchaukäsereiMelk #Planung #Ausschreibung #ÖBA #Bauprojekt #Nachhaltigkeit**",
     "tags": [
       "Bauprojekt"
@@ -388,7 +460,7 @@ export default [
     "description": "Die Software clone:it Simple Site wird aktuell auf zwei Projekten der Austrian Power Grid (APG) für die tägliche Baufortschrittsdokumentation eingesetzt.",
     "published": "2026-01-20T12:00:00.000Z",
     "category": "Projekt",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/2026-04-01_APG_VYF_EBU_802b05bb.jpg\"\n  alt=\"Simple Site auf zwei APG-Projekten im Einsatz\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Simple Site auf zwei APG-Projekten im Einsatz\n\nDie Software clone:it Simple Site wird aktuell auf zwei Projekten der Austrian Power Grid (APG) für die tägliche Baufortschrittsdokumentation eingesetzt.\n\nDurch laufende Weiterentwicklungen bietet die Software einen großen Mehrwert für die cloudbasierte Baustellendokumentation, die sowohl am Desktop als auch direkt über die App auf der Baustelle genutzt werden kann. Dadurch wird die Zusammenarbeit zwischen Projektbeteiligten deutlich erleichtert und Informationen stehen jederzeit zentral zur Verfügung.\n\nUnser Ziel ist es, die Software täglich weiter zu verbessern und langfristig neue Standards in der Fotodokumentation und Baudokumentation von Energieinfrastrukturprojekten zu setzen.\n\n---\n\n**#SimpleSite #APG #Energieinfrastruktur #Fotodokumentation #Digitalisierung #Baustelle**",
     "tags": [
       "SimpleSite",
@@ -411,7 +483,7 @@ export default [
     "description": "Erstmaliger Testeinsatz der Simple Site App auf einem ÖBB Infrastrukturprojekt – mit großen Vorteilen für Dokumentation und Abrechnung.",
     "published": "2025-10-06T12:00:00.000Z",
     "category": "Projekt",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/obb_blog.jpg\"\n  alt=\"Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Simple Site auf ÖBB Projekt – 4-gleisiger Ausbau Linz–Wels getestet\n\nAb dem Projekt „4-gleisiger Ausbau Linz–Wels\" wurde die Simple Site App erstmals testweise eingesetzt. Die hohen Anforderungen an die Dokumentation von Infrastrukturprojekten der ÖBB gaben den entscheidenden Anstoß für die Weiterentwicklung der App.\n\nGerade bei Baustellen, die über mehrere Jahre laufen und bei denen die Fotodokumentation von mehreren Arbeitsgruppen mit bis zu acht Personen durchgeführt wird, ist cloudbasiertes Arbeiten mit standardisierten Labels und Plan-Mapping mit sehr großen Vorteilen verbunden.\n\nSowohl für die Abrechnung als auch für die Bearbeitung von Mehrkostenforderungen konnte durch die strukturierten und durchsuchbaren Daten bereits viel Zeit eingespart werden.\n\n---\n\n**#SimpleSite #ÖBB #Infrastruktur #Fotodokumentation #Digitalisierung #Baustelle**",
     "tags": [
       "SimpleSite",
@@ -430,12 +502,60 @@ export default [
     "coverImage": "/example-data/blog/obb_blog.jpg"
   },
   {
+    "title": "TRAM Westtangente München",
+    "description": "Koordination der Projektleitung und Bauüberwachung für eines der größten Verkehrsprojekte in München mit Fokus auf Verkehrsplanung und Terminsteuerung.",
+    "published": "2025-05-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## TRAM Westtangente\n\n**Leistungen:** Verkehrsplanung, Bauüberwachung, Terminsteuerung\n\n**Zeitraum:** 2024, 2025\n\n<img\n  src=\"/marketing/blog/tram/image.png\"\n  alt=\"TRAM Westtangente München – Verkehrsprojekt\"\n  width=\"1200\"\n  height=\"675\"\n  className=\"mb-6 w-full rounded-lg\"\n/>\n\nBei einem der größten Verkehrsprojekte durfte unser Bauingenieur Liebhard Mattuschka aktiv mitwirken und für das Tram-Verkehrsprojekt in München die Koordination von Projektleitung der Bauüberwachung über die Gesamtkoordination von Termin- und Planungsleistungen der Verkehrsplanung übernehmen.\n\n[Hier mehr über das Projekt](https://westtangente.mvg.de/projekt.html)\n\n---\n\n**#Verkehrsplanung #Tram #München #MVG #Bauüberwachung #Terminsteuerung**",
+    "tags": [
+      "Verkehrsplanung",
+      "Bauüberwachung",
+      "München"
+    ],
+    "_meta": {
+      "filePath": "tram_westtangente_muenchen.mdx",
+      "fileName": "tram_westtangente_muenchen.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "tram_westtangente_muenchen"
+    },
+    "body": "var Component=(()=>{var c=Object.create;var i=Object.defineProperty;var m=Object.getOwnPropertyDescriptor;var l=Object.getOwnPropertyNames;var p=Object.getPrototypeOf,k=Object.prototype.hasOwnProperty;var j=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),w=(n,e)=>{for(var t in e)i(n,t,{get:e[t],enumerable:!0})},h=(n,e,t,s)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let a of l(e))!k.call(n,a)&&a!==t&&i(n,a,{get:()=>e[a],enumerable:!(s=m(e,a))||s.enumerable});return n};var M=(n,e,t)=>(t=n!=null?c(p(n)):{},h(e||!n||!n.__esModule?i(t,\"default\",{value:n,enumerable:!0}):t,n)),b=n=>h(i({},\"__esModule\",{value:!0}),n);var g=j((T,o)=>{o.exports=_jsx_runtime});var f={};w(f,{default:()=>d});var r=M(g());function u(n){let e={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...n.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(e.h2,{id:\"tram-westtangente\",children:(0,r.jsx)(e.a,{href:\"#tram-westtangente\",children:\"TRAM Westtangente\"})}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Leistungen:\"}),\" Verkehrsplanung, Bau\\xFCberwachung, Terminsteuerung\"]}),`\n`,(0,r.jsxs)(e.p,{children:[(0,r.jsx)(e.strong,{children:\"Zeitraum:\"}),\" 2024, 2025\"]}),`\n`,(0,r.jsx)(\"img\",{src:\"/marketing/blog/tram/image.png\",alt:\"TRAM Westtangente M\\xFCnchen \\u2013 Verkehrsprojekt\",width:\"1200\",height:\"675\",className:\"mb-6 w-full rounded-lg\"}),`\n`,(0,r.jsx)(e.p,{children:\"Bei einem der gr\\xF6\\xDFten Verkehrsprojekte durfte unser Bauingenieur Liebhard Mattuschka aktiv mitwirken und f\\xFCr das Tram-Verkehrsprojekt in M\\xFCnchen die Koordination von Projektleitung der Bau\\xFCberwachung \\xFCber die Gesamtkoordination von Termin- und Planungsleistungen der Verkehrsplanung \\xFCbernehmen.\"}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.a,{href:\"https://westtangente.mvg.de/projekt.html\",children:\"Hier mehr \\xFCber das Projekt\"})}),`\n`,(0,r.jsx)(e.hr,{}),`\n`,(0,r.jsx)(e.p,{children:(0,r.jsx)(e.strong,{children:\"#Verkehrsplanung #Tram #M\\xFCnchen #MVG #Bau\\xFCberwachung #Terminsteuerung\"})})]})}function d(n={}){let{wrapper:e}=n.components||{};return e?(0,r.jsx)(e,{...n,children:(0,r.jsx)(u,{...n})}):u(n)}return b(f);})();\n;return Component;",
+    "slug": "/blog/tram_westtangente_muenchen",
+    "slugAsParams": "tram_westtangente_muenchen",
+    "coverImage": "/marketing/blog/tram/image.png"
+  },
+  {
+    "title": "Tübbingkontrolle Brenner-Basistunnel",
+    "description": "Qualitätskontrolle von 54.000 Tübbing-Segmenten bei Max Bögl für den Brenner-Basistunnel mit Fokus auf termingerechte Produktion und Qualitätssicherung.",
+    "published": "2025-06-01T12:00:00.000Z",
+    "category": "Projekt",
+    "author": "Liebhard Mattuschka",
+    "content": "## Tübbingkontrolle Brenner-Basistunnel\n\n**Leistungen:** Projektleitung Bauüberwachung\n\n**Zeitraum:** 2024, 2025\n\n<img\n  src=\"/marketing/blog/Tübbingkontrolle/Tübbingkontrolle.png\"\n  alt=\"Tübbingkontrolle Brenner-Basistunnel – Tunnelstrecke\"\n  width=\"1200\"\n  height=\"675\"\n  className=\"mb-6 w-full rounded-lg\"\n/>\n\nIm Jahr 2024 und 2025 hat unser Bauingenieur Liebhard Mattuschka die Qualitätskontrolle der Tübbing-Segmente bei der Firma Max Bögl in Sengenthal durchgeführt.\n\nDabei war es besonders wichtig, die Qualitätskontrolle direkt vor Ort während der Produktion von insgesamt 54.000 Stück Tübbing-Segmenten sicherzustellen.\n\nDie Gesamtkoordination erfolgte mit dem Ziel, dass die termingerechte Produktionsleistung sowie die Qualität für den späteren Einbau vor Ort am Brenner (AT) übereinstimmen.\n\n---\n\n**#Tunnelbau #Qualitätskontrolle #BrennerBasistunnel #MaxBögl #Bauüberwachung**",
+    "tags": [
+      "Qualitätskontrolle",
+      "Tunnelbau",
+      "Bauüberwachung"
+    ],
+    "_meta": {
+      "filePath": "tuebbingkontrolle_brenner_basistunnel.mdx",
+      "fileName": "tuebbingkontrolle_brenner_basistunnel.mdx",
+      "directory": ".",
+      "extension": "mdx",
+      "path": "tuebbingkontrolle_brenner_basistunnel"
+    },
+    "body": "var Component=(()=>{var h=Object.create;var l=Object.defineProperty;var c=Object.getOwnPropertyDescriptor;var b=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,k=Object.prototype.hasOwnProperty;var p=(e,n)=>()=>(n||e((n={exports:{}}).exports,n),n.exports),B=(e,n)=>{for(var t in n)l(e,t,{get:n[t],enumerable:!0})},s=(e,n,t,o)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let i of b(n))!k.call(e,i)&&i!==t&&l(e,i,{get:()=>n[i],enumerable:!(o=c(n,i))||o.enumerable});return e};var x=(e,n,t)=>(t=e!=null?h(m(e)):{},s(n||!e||!e.__esModule?l(t,\"default\",{value:e,enumerable:!0}):t,e)),f=e=>s(l({},\"__esModule\",{value:!0}),e);var u=p((_,a)=>{a.exports=_jsx_runtime});var w={};B(w,{default:()=>g});var r=x(u());function d(e){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...e.components};return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(n.h2,{id:\"t\\xFCbbingkontrolle-brenner-basistunnel\",children:(0,r.jsx)(n.a,{href:\"#t\\xFCbbingkontrolle-brenner-basistunnel\",children:\"T\\xFCbbingkontrolle Brenner-Basistunnel\"})}),`\n`,(0,r.jsxs)(n.p,{children:[(0,r.jsx)(n.strong,{children:\"Leistungen:\"}),\" Projektleitung Bau\\xFCberwachung\"]}),`\n`,(0,r.jsxs)(n.p,{children:[(0,r.jsx)(n.strong,{children:\"Zeitraum:\"}),\" 2024, 2025\"]}),`\n`,(0,r.jsx)(\"img\",{src:\"/marketing/blog/T\\xFCbbingkontrolle/T\\xFCbbingkontrolle.png\",alt:\"T\\xFCbbingkontrolle Brenner-Basistunnel \\u2013 Tunnelstrecke\",width:\"1200\",height:\"675\",className:\"mb-6 w-full rounded-lg\"}),`\n`,(0,r.jsx)(n.p,{children:\"Im Jahr 2024 und 2025 hat unser Bauingenieur Liebhard Mattuschka die Qualit\\xE4tskontrolle der T\\xFCbbing-Segmente bei der Firma Max B\\xF6gl in Sengenthal durchgef\\xFChrt.\"}),`\n`,(0,r.jsx)(n.p,{children:\"Dabei war es besonders wichtig, die Qualit\\xE4tskontrolle direkt vor Ort w\\xE4hrend der Produktion von insgesamt 54.000 St\\xFCck T\\xFCbbing-Segmenten sicherzustellen.\"}),`\n`,(0,r.jsx)(n.p,{children:\"Die Gesamtkoordination erfolgte mit dem Ziel, dass die termingerechte Produktionsleistung sowie die Qualit\\xE4t f\\xFCr den sp\\xE4teren Einbau vor Ort am Brenner (AT) \\xFCbereinstimmen.\"}),`\n`,(0,r.jsx)(n.hr,{}),`\n`,(0,r.jsx)(n.p,{children:(0,r.jsx)(n.strong,{children:\"#Tunnelbau #Qualit\\xE4tskontrolle #BrennerBasistunnel #MaxB\\xF6gl #Bau\\xFCberwachung\"})})]})}function g(e={}){let{wrapper:n}=e.components||{};return n?(0,r.jsx)(n,{...e,children:(0,r.jsx)(d,{...e})}):d(e)}return f(w);})();\n;return Component;",
+    "slug": "/blog/tuebbingkontrolle_brenner_basistunnel",
+    "slugAsParams": "tuebbingkontrolle_brenner_basistunnel",
+    "coverImage": "/marketing/blog/Tübbingkontrolle/Tübbingkontrolle.png"
+  },
+  {
     "title": "clone:it at TUM Venture Labs Design Thinking Workshop",
-    "description": "Liebhard Mattuschka and Asse Boerties collaborate with international MBA students on creative solutions.",
+    "description": "Liebhard Mattuschka collaborates with international MBA students on creative solutions.",
     "published": "2024-05-31T12:00:00.000Z",
     "category": "Events",
-    "author": "Liebhard-Mattuschka",
-    "content": "<img\n  src=\"/example-data/blog/tum_vl_workshop_one.jpg\"\n  alt=\"clone:it Team at TUM Venture Labs Design Thinking Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🌟 clone:it at TUM Venture Labs Design Thinking Workshop\n\nNot long ago, **clone:it** participated in an **inspiring design thinking workshop** organized by **TUM Venture Labs**.\n\nOur team members, **Liebhard Mattuschka** and **Asse Boerties**, had the opportunity to **introduce clone:it** and collaborate with **international MBA students and business professionals** to develop creative solutions for our challenges.\n\n<img\n  src=\"/example-data/blog/tum_vl_workshop_two.jpg\"\n  alt=\"Collaboration at TUM Venture Labs Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Fresh Insights and Future Collaborations\n\nWe are thrilled with the **fresh insights and potential solutions** the participants provided and look forward to **incorporating them into our projects**.\n\nAdditionally, we **eagerly anticipate participating in more initiatives** by **TUM Venture Labs**. The **collaboration and exchange of ideas** with talented individuals have been truly **invaluable**.\n\n---\n\n**#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit**",
+    "author": "Liebhard Mattuschka",
+    "content": "<img\n  src=\"/example-data/blog/tum_vl_workshop_one.jpg\"\n  alt=\"clone:it Team at TUM Venture Labs Design Thinking Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🌟 clone:it at TUM Venture Labs Design Thinking Workshop\n\nNot long ago, **clone:it** participated in an **inspiring design thinking workshop** organized by **TUM Venture Labs**.\n\nOur team member **Liebhard Mattuschka** had the opportunity to **introduce clone:it** and collaborate with **international MBA students and business professionals** to develop creative solutions for our challenges.\n\n<img\n  src=\"/example-data/blog/tum_vl_workshop_two.jpg\"\n  alt=\"Collaboration at TUM Venture Labs Workshop\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## 🚀 Fresh Insights and Future Collaborations\n\nWe are thrilled with the **fresh insights and potential solutions** the participants provided and look forward to **incorporating them into our projects**.\n\nAdditionally, we **eagerly anticipate participating in more initiatives** by **TUM Venture Labs**. The **collaboration and exchange of ideas** with talented individuals have been truly **invaluable**.\n\n---\n\n**#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit**",
     "_meta": {
       "filePath": "TUM_Venture_Labs_Workshop.mdx",
       "fileName": "TUM_Venture_Labs_Workshop.mdx",
@@ -443,7 +563,7 @@ export default [
       "extension": "mdx",
       "path": "TUM_Venture_Labs_Workshop"
     },
-    "body": "var Component=(()=>{var g=Object.create;var o=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var p=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,b=Object.prototype.hasOwnProperty;var f=(t,n)=>()=>(n||t((n={exports:{}}).exports,n),n.exports),w=(t,n)=>{for(var i in n)o(t,i,{get:n[i],enumerable:!0})},s=(t,n,i,a)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let r of p(n))!b.call(t,r)&&r!==i&&o(t,r,{get:()=>n[r],enumerable:!(a=u(n,r))||a.enumerable});return t};var k=(t,n,i)=>(i=t!=null?g(m(t)):{},s(n||!t||!t.__esModule?o(i,\"default\",{value:t,enumerable:!0}):i,t)),v=t=>s(o({},\"__esModule\",{value:!0}),t);var h=f((M,l)=>{l.exports=_jsx_runtime});var _={};w(_,{default:()=>c});var e=k(h());function d(t){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...t.components};return(0,e.jsxs)(e.Fragment,{children:[(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_one.jpg\",alt:\"clone:it Team at TUM Venture Labs Design Thinking Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:(0,e.jsx)(n.a,{href:\"#-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:\"\\u{1F31F} clone:it at TUM Venture Labs Design Thinking Workshop\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"Not long ago, \",(0,e.jsx)(n.strong,{children:\"clone:it\"}),\" participated in an \",(0,e.jsx)(n.strong,{children:\"inspiring design thinking workshop\"}),\" organized by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Our team members, \",(0,e.jsx)(n.strong,{children:\"Liebhard Mattuschka\"}),\" and \",(0,e.jsx)(n.strong,{children:\"Asse Boerties\"}),\", had the opportunity to \",(0,e.jsx)(n.strong,{children:\"introduce clone:it\"}),\" and collaborate with \",(0,e.jsx)(n.strong,{children:\"international MBA students and business professionals\"}),\" to develop creative solutions for our challenges.\"]}),`\n`,(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_two.jpg\",alt:\"Collaboration at TUM Venture Labs Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-fresh-insights-and-future-collaborations\",children:(0,e.jsx)(n.a,{href:\"#-fresh-insights-and-future-collaborations\",children:\"\\u{1F680} Fresh Insights and Future Collaborations\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"We are thrilled with the \",(0,e.jsx)(n.strong,{children:\"fresh insights and potential solutions\"}),\" the participants provided and look forward to \",(0,e.jsx)(n.strong,{children:\"incorporating them into our projects\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Additionally, we \",(0,e.jsx)(n.strong,{children:\"eagerly anticipate participating in more initiatives\"}),\" by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\". The \",(0,e.jsx)(n.strong,{children:\"collaboration and exchange of ideas\"}),\" with talented individuals have been truly \",(0,e.jsx)(n.strong,{children:\"invaluable\"}),\".\"]}),`\n`,(0,e.jsx)(n.hr,{}),`\n`,(0,e.jsx)(n.p,{children:(0,e.jsx)(n.strong,{children:\"#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit\"})})]})}function c(t={}){let{wrapper:n}=t.components||{};return n?(0,e.jsx)(n,{...t,children:(0,e.jsx)(d,{...t})}):d(t)}return v(_);})();\n;return Component;",
+    "body": "var Component=(()=>{var g=Object.create;var o=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var p=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,b=Object.prototype.hasOwnProperty;var f=(t,n)=>()=>(n||t((n={exports:{}}).exports,n),n.exports),w=(t,n)=>{for(var i in n)o(t,i,{get:n[i],enumerable:!0})},s=(t,n,i,a)=>{if(n&&typeof n==\"object\"||typeof n==\"function\")for(let r of p(n))!b.call(t,r)&&r!==i&&o(t,r,{get:()=>n[r],enumerable:!(a=u(n,r))||a.enumerable});return t};var k=(t,n,i)=>(i=t!=null?g(m(t)):{},s(n||!t||!t.__esModule?o(i,\"default\",{value:t,enumerable:!0}):i,t)),v=t=>s(o({},\"__esModule\",{value:!0}),t);var h=f((M,l)=>{l.exports=_jsx_runtime});var _={};w(_,{default:()=>c});var e=k(h());function d(t){let n={a:\"a\",h2:\"h2\",hr:\"hr\",p:\"p\",strong:\"strong\",...t.components};return(0,e.jsxs)(e.Fragment,{children:[(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_one.jpg\",alt:\"clone:it Team at TUM Venture Labs Design Thinking Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:(0,e.jsx)(n.a,{href:\"#-cloneit-at-tum-venture-labs-design-thinking-workshop\",children:\"\\u{1F31F} clone:it at TUM Venture Labs Design Thinking Workshop\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"Not long ago, \",(0,e.jsx)(n.strong,{children:\"clone:it\"}),\" participated in an \",(0,e.jsx)(n.strong,{children:\"inspiring design thinking workshop\"}),\" organized by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Our team member \",(0,e.jsx)(n.strong,{children:\"Liebhard Mattuschka\"}),\" had the opportunity to \",(0,e.jsx)(n.strong,{children:\"introduce clone:it\"}),\" and collaborate with \",(0,e.jsx)(n.strong,{children:\"international MBA students and business professionals\"}),\" to develop creative solutions for our challenges.\"]}),`\n`,(0,e.jsx)(\"img\",{src:\"/example-data/blog/tum_vl_workshop_two.jpg\",alt:\"Collaboration at TUM Venture Labs Workshop\",width:\"768\",height:\"432\",className:\"w-full rounded-lg\"}),`\n`,(0,e.jsx)(n.h2,{id:\"-fresh-insights-and-future-collaborations\",children:(0,e.jsx)(n.a,{href:\"#-fresh-insights-and-future-collaborations\",children:\"\\u{1F680} Fresh Insights and Future Collaborations\"})}),`\n`,(0,e.jsxs)(n.p,{children:[\"We are thrilled with the \",(0,e.jsx)(n.strong,{children:\"fresh insights and potential solutions\"}),\" the participants provided and look forward to \",(0,e.jsx)(n.strong,{children:\"incorporating them into our projects\"}),\".\"]}),`\n`,(0,e.jsxs)(n.p,{children:[\"Additionally, we \",(0,e.jsx)(n.strong,{children:\"eagerly anticipate participating in more initiatives\"}),\" by \",(0,e.jsx)(n.strong,{children:\"TUM Venture Labs\"}),\". The \",(0,e.jsx)(n.strong,{children:\"collaboration and exchange of ideas\"}),\" with talented individuals have been truly \",(0,e.jsx)(n.strong,{children:\"invaluable\"}),\".\"]}),`\n`,(0,e.jsx)(n.hr,{}),`\n`,(0,e.jsx)(n.p,{children:(0,e.jsx)(n.strong,{children:\"#tumventurelabs #builtenvironment #innovators #augmentedreality #constructiontechnology #cloneit\"})})]})}function c(t={}){let{wrapper:n}=t.components||{};return n?(0,e.jsx)(n,{...t,children:(0,e.jsx)(d,{...t})}):d(t)}return v(_);})();\n;return Component;",
     "slug": "/blog/TUM_Venture_Labs_Workshop",
     "slugAsParams": "TUM_Venture_Labs_Workshop",
     "coverImage": "/example-data/blog/tum_vl_workshop_one.jpg"
@@ -453,7 +573,7 @@ export default [
     "description": "Paul Wegerer wurde als einer der Top 30 Jungunternehmer der Steiermark ausgezeichnet.",
     "published": "2024-06-20T12:00:00.000Z",
     "category": "Recognition",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"/example-data/blog/wko_steiermark_one.jpg\"\n  alt=\"Paul Wegerer wird von der WKO Steiermark geehrt\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Unser Co-Founder wurde von der WKO Steiermark geehrt! 🎉\n\n**Was für eine Ehre!** Ich freue mich unglaublich, unter den **Top 30 Jungunternehmern der Steiermark** von der **WKO ausgezeichnet** worden zu sein. Diese Anerkennung ist nicht nur ein persönlicher Meilenstein, sondern auch eine **Bestätigung dafür, dass sich harte Arbeit und Durchhaltevermögen auszahlen**. 🚀\n\n<img\n  src=\"/example-data/blog/wko_steiermark_three.jpg\"\n  alt=\"Top 30 Jungunternehmer Steiermark - Ehrung durch die WKO\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Dank an das Team 💪\n\nEin großer **Dank** geht an meinen **Co-Founder Liebhard Mattuschka**. Denn nur **gemeinsam** war all dies möglich. Der Weg, ein **Startup aufzubauen**, ist voller **Herausforderungen und Hürden**. Doch **jeden Tag an der eigenen Vision zu arbeiten** und nicht aufzugeben, macht diesen Weg lohnenswert.\n\n<img\n  src=\"/example-data/blog/wko_steiermark_two.jpg\"\n  alt=\"Paul Wegerer mit Auszeichnung der WKO Steiermark\"\n  width=\"768\"\n  height=\"432\"\n  className=\"w-full rounded-lg\"\n/>\n\n## Stay Tuned! 🚀\n\nWir sind gespannt auf die **nächsten Schritte** und zukünftigen **Herausforderungen**. Vielen Dank an alle, die uns auf diesem Weg begleiten und unterstützen!\n\n---\n\n**#Entrepreneurship #Startup #WKO #Top30 #Steiermark #Vision #HardWork #Motivation #Teamwork**",
     "_meta": {
       "filePath": "wko_steiermark_award.mdx",
@@ -472,7 +592,7 @@ export default [
     "description": "Ganztägiger Workshop zur digitalen Bewehrungsabnahme mit der Deutsche Bahn AG.",
     "published": "2023-09-22T12:00:00.000Z",
     "category": "Events",
-    "author": "Paul-Wegerer",
+    "author": "Paul Wegerer",
     "content": "<img\n  src=\"https://www.cloneit.at/3zw5u3/wp-content/uploads/2023.09_Workshop-DB_2-400x400.jpeg\"\n  alt=\"clone:it Workshop mit Deutsche Bahn\"\n  width=\"400\"\n  height=\"400\"\n  className=\"w-full rounded-lg\"\n/>\n\n## clone:it bei Workshop mit DEUTSCHE BAHN 🚆\n\nDas **Führungsteam von clone:it**, **Paul Wegerer** und **Liebhard Mattuschka**, nahm an einem **ganztägigen Workshop** mit der **Bauabteilung der Deutsche Bahn AG** in **Frankfurt** teil.\n\n## 📍 Volldigitale Bewehrungsabnahme mit compare:rebar\n\nDabei wurde der **Einsatz der volldigitalen Bewehrungsabnahme** mittels **compare:rebar von clone:it** im Detail erörtert. Insbesondere der **digital durchgeführte und dokumentierte Abgleich zwischen dem Geplanten und dem Gebauten** bietet dem Bauherrn **enorme Vorteile** für die weitere **Wartung und Bewirtschaftung des Bauwerks**.\n\n## 🔜 Pilotprojekt in Planung\n\nDieser **volldigitale Soll-Ist-Vergleich** soll demnächst in einem **Pilotprojekt** umgesetzt werden. Wir freuen uns auf die nächsten Schritte! 🚀\n\n---\n\n**#DeutscheBahn #BIM #Digitalisierung #Bewehrung #ConstructionTech #cloneit**",
     "_meta": {
       "filePath": "workshop_cloneit_deutsche_bahn.mdx",

@@ -57,21 +57,31 @@ export function SelectionActions({
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-        <Button onClick={onClearSelection} variant="secondary" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          {t("clearSelection")}
-        </Button>
-        <Button onClick={onOpenMultiLabelEdit} variant="outline" size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          <Pencil className="h-4 w-4 mr-2" />
-          {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
-        </Button>
-        <Button onClick={onOpenPhotoQuality} variant="outline" size="lg" className="hidden md:flex shadow-lg hover:shadow-xl transition-all">
-          <Download className="h-4 w-4 mr-2" />
-          {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
-        </Button>
-        <Button onClick={onOpenSaveReport} size="lg" className="shadow-lg hover:shadow-xl transition-all">
-          {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
-        </Button>
+      {/* Horizontal bar above footer — only buttons have pointer-events to not block grid selection */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-[3.5rem] z-50 sm:bottom-16">
+        <div className="bg-background/95 backdrop-blur-sm border-t border-border shadow-lg">
+          <div className="flex w-full max-w-6xl mx-auto px-3 sm:px-8 py-2 gap-2 items-center flex-wrap">
+            <Button onClick={onClearSelection} variant="secondary" size="sm" className="shrink-0 pointer-events-auto">
+              {t("clearSelection")}
+            </Button>
+            <Button onClick={onOpenMultiLabelEdit} variant="outline" size="sm" className="shrink-0 pointer-events-auto">
+              <Pencil className="h-4 w-4 mr-1.5 shrink-0" />
+              {language === "de" ? "Labels bearbeiten" : "Edit Labels"} ({selectedObservations.size})
+            </Button>
+            <Button
+              onClick={onOpenPhotoQuality}
+              variant="outline"
+              size="sm"
+              className="hidden md:inline-flex shrink-0 pointer-events-auto"
+            >
+              <Download className="h-4 w-4 mr-1.5 shrink-0" />
+              {language === "de" ? "Fotos herunterladen" : "Download Photos"} ({selectedObservations.size})
+            </Button>
+            <Button onClick={onOpenSaveReport} size="sm" className="shrink-0 ml-auto pointer-events-auto">
+              {t("generateReportSelected").replace("{count}", selectedObservations.size.toString())}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {showMultiLabelEdit && (

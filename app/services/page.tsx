@@ -9,7 +9,9 @@ import { useLanguage } from "@/lib/translations";
 
 const sectionClass =
   "flex items-center w-full";
-const innerClass = "w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 py-24";
+/** Same horizontal padding as `Footer` (`px-3 sm:px-8`) so the Kontakt block and Impressum align. */
+const innerClass =
+  "w-[90%] sm:w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 py-24";
 const labelClass = "text-xs text-gray-600 uppercase tracking-widest mb-4";
 const titleClass =
   "text-3xl sm:text-7xl font-semibold text-white leading-tight mb-6";
@@ -94,6 +96,7 @@ const pageContent = {
       project1: {
         name: "Heizkraftwerk Süd – Munich",
         type: "Large-scale industrial construction",
+        link: "/blog/heizkraftwerk_sued_baudienstleistung",
         items: ["Construction site supervision – civil works", "Trade coordination", "Schedule and quality control"],
       },
       project2: {
@@ -114,18 +117,22 @@ const pageContent = {
             {
               name: "Heizkraftwerk Süd Munich",
               desc: "Tendering, procurement, execution planning, construction supervision and cost accounting for numerous conversion and new construction measures at HKW-Süd (service phases 6–9).",
+              link: "/blog/heizkraftwerk_sued_baudienstleistung",
             },
             {
               name: "TRAM – Westtangente Munich",
               desc: "Construction supervision of scheduling and planning services for traffic planning.",
+              link: "/blog/tram_westtangente_muenchen",
             },
             {
               name: "Tübbing Production – Brenner Base Tunnel",
               desc: "On-site quality control at Max Bögl in Sengenthal for the production of approximately 45,000 tübbing segments. Coordination to align production schedule and quality for installation at the Brenner site.",
+              link: "/blog/tuebbingkontrolle_brenner_basistunnel",
             },
             {
               name: "Mobility Innovation Campus",
               desc: "New construction of a test site for autonomous driving including parking garage. Project management of construction supervision on behalf of the general planner (service phases 6–9).",
+              link: "/blog/mobility_innovation_campus",
             },
             {
               name: "Rehabilitation of A9 Pyhrnautobahn – 10 km",
@@ -141,26 +148,23 @@ const pageContent = {
           name: "DI Paul Wegerer",
           projects: [
             {
-              name: "Heizkraftwerk Süd Munich",
-              desc: "Construction supervision, trade coordination, schedule and quality control on a major industrial construction project.",
+              name: "APG – Ybbsfeld substation – construction supervision (ÖBA)",
+              desc: "Construction supervision (ÖBA) for the APG substation project in Ybbsfeld.",
+              link: "/blog/simple_site_apg",
             },
             {
-              name: "Munich Main Line (Stammstrecke)",
-              desc: "Construction supervision and project management on one of Germany's most complex infrastructure projects.",
-            },
-            {
-              name: "Schaukäserei Melk",
-              desc: "Construction supervision, tendering and project support for commercial construction.",
-            },
-            {
-              name: "ÖBB – 4-Track Expansion Linz–Wels",
-              desc: "First test deployment of Simple Site on an ÖBB infrastructure project. The high documentation requirements drove key improvements to the app.",
+              name: "ÖBB – 4-track expansion Linz–Wels – ÖBA",
+              desc: "Construction supervision on the ÖBB four-track expansion between Linz and Wels. First test deployment of Simple Site on this project — documentation needs drove key app improvements.",
               link: "/blog/simple_site_oebb_linz_wels",
+            },
+            {
+              name: "GVU Purgstall office building – construction planning",
+              desc: "Construction planning for the GVU office building in Purgstall.",
             },
           ],
         },
         {
-          name: "Oleg Moshkovich M.Eng",
+          name: "Oleg Moshkovich M.Eng.",
           projects: [
             {
               name: "East Side Access – MTA New York",
@@ -199,25 +203,25 @@ const pageContent = {
           name: "DI Paul Wegerer",
           role: "Master Builder | Project Management | Digitalisation",
           bio: "Paul Wegerer studied Construction Management and Civil Engineering at FH Joanneum. After several years of experience in planning, construction supervision and claim management, he passed the master builder examination.",
-          image: "/images/Paul.webp",
+          image: "/images/Paul.jpg",
         },
         {
           name: "DI Liebhard Mattuschka",
-          role: "Project Control | Construction Supervision",
-          bio: "Graduate of FH Joanneum in Construction Management. Experience in construction supervision and project control on major projects such as the Heizkraftwerk Süd in Munich and the Munich main line.",
-          image: "/images/Liebhard.webp",
+          role: "Site Management | Project Management | Project Control",
+          bio: "Liebhard studied Civil Engineering (Bachelor) in Graz and completed a Master’s in Construction Management and Civil Engineering in cooperation between Graz and a university in the USA, including a semester abroad. He has extensive experience from numerous projects in Austria and Germany.",
+          image: "/images/liebhard.jpg",
         },
         {
           name: "Dr. Timur Uzunoglu",
           role: "Civil Engineer | Construction Expert",
-          bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Supports clone:it as an expert and consultant for complex technical topics.",
-          image: "/images/Timur.webp",
+          bio: "Lecturer at FH Joanneum, Dr. techn. in civil engineering and court-certified civil engineer. Advises on complex technical topics as an external expert.",
+          image: "/images/timur.jpg",
         },
         {
-          name: "Oleg Moshkovich M.Eng",
+          name: "Oleg Moshkovich M.Eng.",
           role: "Product Engineer | Software Development",
           bio: "Specialist in digital solutions for the construction industry. Experience in international large-scale projects such as the Burj Khalifa and infrastructure projects in New York. Focus on developing smart tools for construction sites.",
-          image: "/images/Oleg.webp",
+          image: "/images/oleg.png",
         },
       ],
     },
@@ -309,6 +313,7 @@ const pageContent = {
       project1: {
         name: "Heizkraftwerk Süd – München",
         type: "Großprojekt Industriebau",
+        link: "/blog/heizkraftwerk_sued_baudienstleistung",
         items: ["Örtliche Bauaufsicht Hochbau", "Koordination Gewerke", "Termin- und Qualitätskontrolle"],
       },
       project2: {
@@ -329,18 +334,22 @@ const pageContent = {
             {
               name: "Heizkraftwerk Süd München",
               desc: "Ausschreibung, Vergabe, Ausführungsplanung, Bauüberwachung und Kostenrechnung für zahlreiche Um- und Neubaumaßnahmen am HKW-Süd (Leistungsphasen 6 bis 9).",
+              link: "/blog/heizkraftwerk_sued_baudienstleistung",
             },
             {
               name: "TRAM – Westtangente München",
               desc: "Bauüberwachung von Termin- und Planungsleistungen der Verkehrsplanung.",
+              link: "/blog/tram_westtangente_muenchen",
             },
             {
               name: "Tübbing Produktion – Brenner Basistunnel",
               desc: "Qualitätskontrolle vor Ort bei der Firma Max Bögl in Sengenthal für die Produktion von insgesamt etwa 45.000 Tübbing-Segmenten. Gesamtabstimmung, sodass die terminliche Produktionsleistung sowie die Qualität für den späteren Einbau vor Ort am Brenner übereinstimmen.",
+              link: "/blog/tuebbingkontrolle_brenner_basistunnel",
             },
             {
               name: "Neubau Mobility Innovation Campus",
               desc: "Testfeld für autonomes Fahren inklusive Parkgarage. Projektleitung Bauüberwachung im Namen des Generalplaners (Leistungsphasen 6 bis 9).",
+              link: "/blog/mobility_innovation_campus",
             },
             {
               name: "Generalsanierung A9 Pyhrnautobahn – 10 km",
@@ -356,26 +365,23 @@ const pageContent = {
           name: "DI Paul Wegerer",
           projects: [
             {
-              name: "Heizkraftwerk Süd München",
-              desc: "Bauüberwachung, Koordination Gewerke, Termin- und Qualitätskontrolle bei einem Großprojekt im Industriebau.",
+              name: "APG – Umspannwerk Ybbsfeld – Leitung ÖBA",
+              desc: "Leitung der örtlichen Bauaufsicht (ÖBA) für das Umspannwerk Ybbsfeld.",
+              link: "/blog/simple_site_apg",
             },
             {
-              name: "Münchner Stammstrecke",
-              desc: "Bauüberwachung und Projektsteuerung bei einem der komplexesten Infrastrukturprojekte Deutschlands.",
-            },
-            {
-              name: "Schaukäserei Melk",
-              desc: "Örtliche Bauaufsicht, Ausschreibung und Projektbegleitung im Gewerbebau.",
-            },
-            {
-              name: "ÖBB – 4-gleisiger Ausbau Linz–Wels",
-              desc: "Erster Testeinsatz von Simple Site auf einem ÖBB-Infrastrukturprojekt. Die hohen Dokumentationsanforderungen gaben den entscheidenden Anstoß für die Weiterentwicklung der App.",
+              name: "ÖBB – 4-gleisiger Ausbau Linz–Wels – ÖBA",
+              desc: "ÖBA beim Infrastrukturprojekt 4-gleisiger Ausbau Linz–Wels. Erster Testeinsatz von Simple Site auf diesem ÖBB-Projekt — die Dokumentationsanforderungen trieben die Weiterentwicklung der App voran.",
               link: "/blog/simple_site_oebb_linz_wels",
+            },
+            {
+              name: "GVU Purgstall Bürogebäude – Bauplanung",
+              desc: "Bauplanung für das Bürogebäude der GVU in Purgstall.",
             },
           ],
         },
         {
-          name: "Oleg Moshkovich M.Eng",
+          name: "Oleg Moshkovich M.Eng.",
           projects: [
             {
               name: "East Side Access – MTA New York",
@@ -414,25 +420,25 @@ const pageContent = {
           name: "DI Paul Wegerer",
           role: "Baumeister | Projektleitung | Digitalisierung",
           bio: "Paul Wegerer studierte Baumanagement und Ingenieurbau an der FH Joanneum. Nach mehrjähriger Erfahrung in Planung, Bauüberwachung und Claim Management absolvierte er die Baumeisterprüfung.",
-          image: "/images/Paul.webp",
+          image: "/images/Paul.jpg",
         },
         {
           name: "DI Liebhard Mattuschka",
-          role: "Projektsteuerung | Bauüberwachung",
-          bio: "Absolvent der FH Joanneum im Bereich Baumanagement. Erfahrung in der Bauüberwachung und Projektsteuerung bei Großprojekten wie dem Heizkraftwerk Süd in München und der Münchner Stammstrecke.",
-          image: "/images/Liebhard.webp",
+          role: "Bauleitung | Projektleitung | Projektsteuerung",
+          bio: "Liebhard studierte in Graz Bauingenieurwesen im Bachelor und absolvierte anschließend einen Master in Baumanagement und Ingenieurbau, den er in Kooperation zwischen Graz und einer Universität in den USA mit einem Auslandssemester erfolgreich abschloss. Er verfügt über umfangreiche Erfahrung aus zahlreichen Projekten in Österreich und Deutschland.",
+          image: "/images/liebhard.jpg",
         },
         {
           name: "Dr. Timur Uzunoglu",
           role: "Ziviltechniker | Experte Bauwesen",
-          bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Unterstützt clone:it als Experte und Berater für komplexe Fachthemen.",
-          image: "/images/Timur.webp",
+          bio: "Lehrender an der FH Joanneum, Dr. techn. im Bauingenieurwesen und gerichtlich beeideter Ziviltechniker. Begleitet das Team als Experte und Berater für komplexe Fachthemen.",
+          image: "/images/timur.jpg",
         },
         {
-          name: "M.Eng. Oleg Moshkovich",
+          name: "Oleg Moshkovich M.Eng.",
           role: "Product Engineer | Softwareentwicklung",
           bio: "Spezialist für digitale Lösungen im Bauwesen. Erfahrung in internationalen Großprojekten wie dem Burj Khalifa und Infrastrukturprojekten in New York. Fokus auf Entwicklung smarter Tools für die Baustelle.",
-          image: "/images/Oleg.webp",
+          image: "/images/oleg.png",
         },
       ],
     },
@@ -609,7 +615,7 @@ export default function ServicesPage() {
 
       {/* Blog scroll */}
       <section className="w-full">
-        <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 pt-16 pb-8">
+        <div className="w-[90%] sm:w-full max-w-6xl mx-auto px-3 sm:px-8 border-t border-gray-800 pt-16 pb-8">
           <div className="flex items-center justify-between mb-8">
             <p className={labelClass}>{c.blog.heading}</p>
             <Link href="/blog" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
@@ -730,6 +736,54 @@ export default function ServicesPage() {
               <li key={item} className={listItemClass}><Dot />{item}</li>
             ))}
           </ul>
+
+          {/* Software product links */}
+          <div className="flex gap-6 mt-12">
+            <Link href="/software" className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+              Simple Site →
+            </Link>
+            <Link href="/ar" className="text-sm text-gray-400 border border-gray-700 px-4 py-2 hover:border-gray-400 hover:text-white transition-colors">
+              AR BIM Inspection →
+            </Link>
+          </div>
+
+          {/* Blog scroll – SimpleSite posts */}
+          {(() => {
+            const softwarePosts = allPosts
+              .filter((p) => p.tags?.includes("SimpleSite"))
+              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
+            return softwarePosts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-2 mt-10" style={{ scrollbarWidth: "none" }}>
+                {softwarePosts.map((post) => (
+                  <Link
+                    key={post.slugAsParams}
+                    href={post.slug}
+                    className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
+                  >
+                    {post.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-36 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      {post.category && (
+                        <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
+                      )}
+                      <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <time className="text-xs text-gray-700">
+                        {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </section>
 
@@ -740,7 +794,15 @@ export default function ServicesPage() {
           <h2 className={titleClass}>{c.referenzen.title}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
             <div>
-              <p className="text-base font-semibold text-white mb-2">{c.referenzen.project1.name}</p>
+              <p className="text-base font-semibold text-white mb-2">
+                {"link" in c.referenzen.project1 && c.referenzen.project1.link ? (
+                  <Link href={c.referenzen.project1.link} className="underline underline-offset-2 hover:text-gray-300 transition-colors">
+                    {c.referenzen.project1.name}
+                  </Link>
+                ) : (
+                  c.referenzen.project1.name
+                )}
+              </p>
               <p className="text-xs text-gray-600 mb-4">{c.referenzen.project1.type}</p>
               <ul className="space-y-3">
                 {c.referenzen.project1.items.map((item) => (
@@ -815,7 +877,23 @@ export default function ServicesPage() {
                     <p key={project.name} className="text-sm text-gray-400 flex items-start gap-2">
                       <Dot />
                       {"link" in project && project.link ? (
-                        <a href={project.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-gray-200 transition-colors">{project.name}</a>
+                        project.link.startsWith("http") ? (
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2 hover:text-gray-200 transition-colors"
+                          >
+                            {project.name}
+                          </a>
+                        ) : (
+                          <Link
+                            href={project.link}
+                            className="underline underline-offset-2 hover:text-gray-200 transition-colors"
+                          >
+                            {project.name}
+                          </Link>
+                        )
                       ) : (
                         <span>{project.name}</span>
                       )}
@@ -937,16 +1015,20 @@ export default function ServicesPage() {
         <div className={innerClass}>
           <p className={labelClass}>{c.team.label}</p>
           <h2 className={titleClass}>{c.team.title}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4 sm:gap-x-8 sm:gap-y-5">
             {c.team.members.map((person) => (
-              <div key={person.name}>
-                <div className="w-16 h-16 rounded-full overflow-hidden mb-4 bg-gray-800">
+              <div
+                key={person.name}
+                className="flex flex-col rounded-2xl border border-gray-800 bg-black px-4 py-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
+              >
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
                   <Image
                     src={person.image}
                     alt={person.name}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover object-top"
+                    fill
+                    sizes="64px"
+                    unoptimized
+                    className="object-cover object-[center_20%]"
                   />
                 </div>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
@@ -994,7 +1076,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <div className="w-[90%] sm:w-full max-w-6xl mx-auto sm:px-8 border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
+      <div className="w-[90%] sm:w-full max-w-6xl mx-auto border-t border-gray-800 [&>footer]:mt-0 [&>footer]:mb-0 [&>footer]:pt-6 [&>footer]:pb-6">
         <Footer textColor="text-gray-300" />
       </div>
       {showScrollTop && (

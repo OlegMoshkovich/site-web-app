@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { Search, Filter, Tag, FileText, Settings } from "lucide-react";
 import { getNavbarClasses } from "@/lib/layout-constants";
+import { homeTheme } from "@/lib/app-theme";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { translations } from "@/lib/translations";
@@ -42,10 +43,11 @@ export function HomeNavbar({
   t,
 }: HomeNavbarProps) {
   const router = useRouter();
+  const nav = getNavbarClasses({ background: user ? "surface" : "transparent" });
 
   return (
-    <nav className={`${getNavbarClasses().container} ${user ? 'bg-white' : ''}`}>
-      <div className={getNavbarClasses().content}>
+    <nav className={nav.container}>
+      <div className={nav.content}>
         <div className="flex items-center gap-2">
           {!user && (
             <div className="h-8 px-2 sm:px-3 bg-transparent flex items-center justify-center rounded">
@@ -57,7 +59,7 @@ export function HomeNavbar({
               <Button
                 onClick={onToggleSearch}
                 variant="outline" size="sm"
-                className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showSearchSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
+                className={`${homeTheme.outlineIconButton} ${showSearchSelector ? homeTheme.outlineIconButtonActive : ""}`}
                 title={t("toggleSearch")}
               >
                 <Search className="h-4 w-4" />
@@ -66,26 +68,26 @@ export function HomeNavbar({
                 <Button
                   onClick={onToggleLabelSelector}
                   variant="outline" size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showLabelSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
+                  className={`${homeTheme.outlineIconButton} ${showLabelSelector ? homeTheme.outlineIconButtonActive : ""}`}
                   title={t("toggleLabelFilter")}
                 >
                   <Tag className="h-4 w-4" />
                 </Button>
                 {selectedLabels.length > 0 && (
-                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
+                  <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ${homeTheme.filterIndicator}`} />
                 )}
               </div>
               <div className="relative">
                 <Button
                   onClick={onToggleDateSelector}
                   variant="outline" size="sm"
-                  className={`h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center ${showDateSelector ? "bg-gray-200 text-gray-700" : "bg-white"}`}
+                  className={`${homeTheme.outlineIconButton} ${showDateSelector ? homeTheme.outlineIconButtonActive : ""}`}
                   title={t("toggleDateFilter")}
                 >
                   <Filter className="h-4 w-4" />
                 </Button>
                 {hasActiveFilters && (
-                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border border-white" />
+                  <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ${homeTheme.filterIndicator}`} />
                 )}
               </div>
             </>
@@ -117,13 +119,13 @@ export function HomeNavbar({
           )}
           {user && (
             <Button onClick={() => router.push('/reports')} variant="outline" size="sm"
-              className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100" title={t("reports")}>
+              className={homeTheme.outlineIconButton} title={t("reports")}>
               <FileText className="h-4 w-4" />
             </Button>
           )}
           {user && (
             <Button onClick={() => router.push('/settings')} variant="outline" size="sm"
-              className="h-8 w-8 px-0 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100" title={t("settings")}>
+              className={homeTheme.outlineIconButton} title={t("settings")}>
               <Settings className="h-4 w-4" />
             </Button>
           )}

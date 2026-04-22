@@ -17,12 +17,14 @@ import { CampaignModal } from "@/components/campaign-modal";
 import { HomeNavbar } from "@/components/home-navbar";
 import { ObservationsFeed } from "@/components/observations-feed";
 import { SelectionActions } from "@/components/selection-actions";
-import { HomeBottomBar } from "@/components/home-bottom-bar";
+import { HomeAppFooter } from "@/components/home-app-footer";
+import { ObservationsMapModal } from "@/components/observations-map-modal";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { translations, useLanguage } from "@/lib/translations";
 import { getContentClasses } from "@/lib/layout-constants";
-import { FolderUp } from "lucide-react";
+import { homeTheme } from "@/lib/app-theme";
+import { FolderUp, Images, Camera } from "lucide-react";
 import { useObservationsStore } from "@/lib/store/observations-store";
 import { usePhotoDownload } from "@/lib/hooks/use-photo-download";
 import { useSelectionBox } from "@/lib/hooks/use-selection-box";
@@ -63,9 +65,10 @@ export default function Home() {
   const [showPhotoQualityDialog, setShowPhotoQualityDialog] = useState(false);
   const [showMultiLabelEdit, setShowMultiLabelEdit] = useState(false);
   const [areAccordionsExpanded, setAreAccordionsExpanded] = useState<boolean>(false);
-  const [showModelMenu, setShowModelMenu] = useState<boolean>(false);
+  const [claudeOpen, setClaudeOpen] = useState(false);
   const [hasToggledAccordions, setHasToggledAccordions] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoObservation, setSelectedPhotoObservation] = useState<ObservationWithUrl | null>(null);
@@ -113,6 +116,18 @@ export default function Home() {
     setSelectedPhotoObservation(null);
     setCurrentPhotoIndex(0);
   }, []);
+
+  const openPhotoFromMap = useCallback(
+    (observation: ObservationWithUrl) => {
+      const all = filters.getFilteredObservations().filter((o) => o.signedUrl || o.note);
+      const idx = all.findIndex((o) => o.id === observation.id);
+      if (idx < 0) return;
+      setCurrentPhotoIndex(idx);
+      setSelectedPhotoObservation(observation);
+      setPhotoModalOpen(true);
+    },
+    [filters.getFilteredObservations],
+  );
 
   const handlePreviousPhoto = useCallback(() => {
     const all = filters.getFilteredObservations().filter(o => o.signedUrl || o.note);
@@ -196,6 +211,17 @@ export default function Home() {
   }, [supabase, observations, setObservations]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+
+  const handleUploadButtonClick = useCallback(() => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      setShowPhotoMenu(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   const handleFolderDrop = useCallback((files: File[]) => {
     if (!user?.id) { alert('Please log in before uploading files.'); return; }
@@ -281,9 +307,43 @@ export default function Home() {
     return visibleIds.length > 0 && visibleIds.every(id => selectedObservations.has(id));
   })();
 
+  const mapModalFilterPanelProps = {
+    showDateSelector: filters.showDateSelector,
+    showSearchSelector: filters.showSearchSelector,
+    showLabelSelector: filters.showLabelSelector,
+    startDate: filters.startDate,
+    endDate: filters.endDate,
+    onStartDateChange: filters.setStartDate,
+    onEndDateChange: filters.setEndDate,
+    selectedUserId: filters.selectedUserId,
+    onUserChange: filters.setSelectedUserId,
+    availableUsers: filters.availableUsers,
+    selectedSiteId: filters.selectedSiteId,
+    onSiteChange: filters.setSelectedSiteId,
+    availableSites: filters.availableSites,
+    hasActiveFilters: filters.hasActiveFilters,
+    onClearFilters: filters.handleClearDateRange,
+    onSelectAll: handleSelectAll,
+    allSelected,
+    onLoadMore: handleLoadMore,
+    isLoadingMore,
+    searchQuery: filters.searchQuery,
+    onSearchChange: filters.setSearchQuery,
+    isSearching,
+    searchResultsCount: searchResults.length,
+    availableLabels: storeAvailableLabels,
+    siteLabels: filters.filterPanelSiteLabels,
+    selectedLabels: filters.selectedLabels,
+    onToggleLabel: (label: string) => filters.setSelectedLabels((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    ),
+    onClearLabels: () => filters.setSelectedLabels([]),
+    t,
+  };
+
   return (
     <main
-      className={`min-h-screen flex flex-col items-center relative ${user ? 'pb-10' : ''} ${selectionBox ? 'select-none' : ''}`}
+      className={`min-h-screen flex flex-col items-center relative ${user ? homeTheme.main : ''} ${user ? 'pb-24 sm:pb-28' : ''} ${selectionBox ? 'select-none' : ''}`}
       style={selectionBox ? { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties : undefined}
       onMouseDown={handleSelectionStart}
     >
@@ -308,28 +368,72 @@ export default function Home() {
         />
 
         {user && (
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileInputChange}
-          />
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+          </>
         )}
 
         {user && (
-          <div className="sm:hidden sticky top-16 z-40 w-full bg-white pb-[10px]">
+          <div className={homeTheme.mobileUploadStrip}>
             <div className="w-full max-w-6xl mx-auto px-3">
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleUploadButtonClick}
                 variant="outline"
                 size="sm"
-                className="w-full h-8 text-sm border-gray-300 flex items-center justify-center bg-white hover:bg-gray-100"
+                className={homeTheme.mobileUploadButton}
                 title={t("uploadPhotos")}
               >
                 <FolderUp className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+        )}
+
+        {showPhotoMenu && (
+          <div
+            className="fixed inset-0 z-50 flex items-end"
+            onClick={() => setShowPhotoMenu(false)}
+          >
+            <div
+              className="w-full bg-background border-t border-border rounded-t-2xl pb-8 pt-2 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+              <button
+                className="flex items-center gap-4 w-full px-6 py-4 text-left hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => { setShowPhotoMenu(false); setTimeout(() => fileInputRef.current?.click(), 50); }}
+              >
+                <Images className="h-6 w-6 text-foreground/70" />
+                <span className="text-base font-medium">{language === 'de' ? 'Fotomediathek' : 'Photo Library'}</span>
+              </button>
+              <button
+                className="flex items-center gap-4 w-full px-6 py-4 text-left hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => { setShowPhotoMenu(false); setTimeout(() => cameraInputRef.current?.click(), 50); }}
+              >
+                <Camera className="h-6 w-6 text-foreground/70" />
+                <span className="text-base font-medium">{language === 'de' ? 'Foto aufnehmen' : 'Take Photo'}</span>
+              </button>
+              <button
+                className="flex items-center justify-center w-full px-6 py-4 mt-1 text-muted-foreground hover:bg-accent active:bg-accent/70 transition-colors"
+                onClick={() => setShowPhotoMenu(false)}
+              >
+                <span className="text-base">{language === 'de' ? 'Abbrechen' : 'Cancel'}</span>
+              </button>
             </div>
           </div>
         )}
@@ -344,7 +448,7 @@ export default function Home() {
                 </h1>
                 <div className="mt-8">
                   <div className="flex justify-center">
-                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-gray-200 animate-pulse rounded-lg" />}>
+                    <Suspense fallback={<div className="w-[600px] h-[300px] sm:h-[400px] bg-muted animate-pulse rounded-lg" />}>
                       <UserManualCarousel width={600} mobileHeight={300} desktopHeight={400} />
                     </Suspense>
                   </div>
@@ -404,13 +508,14 @@ export default function Home() {
                 hasMore={hasMore}
                 language={language}
                 t={t}
+                renderFilterPanel={!showMapModal}
               />
             ) : (
               <div className="text-center py-12">
                 <div className="space-y-6">
                   <p className="text-muted-foreground text-lg">{t('noObservationsPastTwoDays')}</p>
                   <div className="space-y-4">
-                    <p className="text-sm text-gray-600">{t('loadObservationsLongerPeriod')}</p>
+                    <p className="text-sm text-muted-foreground">{t('loadObservationsLongerPeriod')}</p>
                     <div className="flex flex-wrap justify-center gap-3">
                       {(['week', 'month'] as const).map((type) => (
                         <Button key={type} onClick={() => handleLoadMore(type)} disabled={isLoadingMore} variant="outline" size="sm" className="shadow-md hover:shadow-lg transition-all">
@@ -423,7 +528,18 @@ export default function Home() {
               </div>
             )}
 
-            {!isLoading && <Footer user={user} textColor={user ? "text-black" : "text-white"} />}
+            {!isLoading &&
+              (user ? (
+                <HomeAppFooter
+                  onUploadClick={() => fileInputRef.current?.click()}
+                  onMapClick={() => setShowMapModal(true)}
+                  claudeOpen={claudeOpen}
+                  onClaudeToggle={() => setClaudeOpen((o) => !o)}
+                  t={t}
+                />
+              ) : (
+                <Footer />
+              ))}
           </div>
         </div>
       </div>
@@ -497,21 +613,16 @@ export default function Home() {
       />
 
       {user && (
-        <HomeBottomBar
-          onUploadClick={() => fileInputRef.current?.click()}
-          showModelMenu={showModelMenu}
-          onToggleModelMenu={() => setShowModelMenu(!showModelMenu)}
-          t={t}
+        <ClaudeChat
+          selectedObservations={selectedObservations}
+          allObservations={observations.filter(obs => obs.taken_at !== null || obs.photo_date !== null).map(obs => ({
+            ...obs, taken_at: obs.taken_at || obs.photo_date || obs.created_at,
+          }))}
+          onLoadMoreData={async (period: 'week' | 'month') => { await loadMoreObservations(user.id, period); }}
+          isOpen={claudeOpen}
+          onOpenChange={setClaudeOpen}
         />
       )}
-
-      {user && <ClaudeChat
-        selectedObservations={selectedObservations}
-        allObservations={observations.filter(obs => obs.taken_at !== null || obs.photo_date !== null).map(obs => ({
-          ...obs, taken_at: obs.taken_at || obs.photo_date || obs.created_at,
-        }))}
-        onLoadMoreData={async (period: 'week' | 'month') => { await loadMoreObservations(user.id, period); }}
-      />}
 
       {selectionBox && (() => {
         const left = Math.min(selectionBox.startX, selectionBox.currentX);
@@ -519,11 +630,37 @@ export default function Home() {
         const width = Math.abs(selectionBox.currentX - selectionBox.startX);
         const height = Math.abs(selectionBox.currentY - selectionBox.startY);
         return (
-          <div className="fixed pointer-events-none z-[5]" style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, border: '2px solid #3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)' }} />
+          <div
+            className={`fixed pointer-events-none z-[5] ${homeTheme.selectionOverlay}`}
+            style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` }}
+          />
         );
       })()}
 
       <CampaignModal isOpen={showCampaignModal} onClose={() => setShowCampaignModal(false)} />
+
+      {user && (
+        <ObservationsMapModal
+          open={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          observations={filteredObservations}
+          language={language}
+          t={t}
+          onOpenObservation={openPhotoFromMap}
+          filterPanelProps={mapModalFilterPanelProps}
+          showSearchSelector={filters.showSearchSelector}
+          onToggleSearch={() => filters.setShowSearchSelector(!filters.showSearchSelector)}
+          showLabelSelector={filters.showLabelSelector}
+          onToggleLabelSelector={() => filters.setShowLabelSelector(!filters.showLabelSelector)}
+          selectedLabels={filters.selectedLabels}
+          showDateSelector={filters.showDateSelector}
+          onToggleDateSelector={() => filters.setShowDateSelector(!filters.showDateSelector)}
+          hasActiveFilters={filters.hasActiveFilters}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={handleLoadMore}
+        />
+      )}
 
       {user && <FolderUploadDropZone onFilesDropped={handleFolderDrop} />}
       <FolderUploadModal
