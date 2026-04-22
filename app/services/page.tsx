@@ -1028,8 +1028,7 @@ export default function ServicesPage() {
                     fill
                     sizes="64px"
                     unoptimized
-                    className="object-cover object-top"
-                    /* fill + object-cover: avoids preflight `height: auto` on <img> breaking circular crop */
+                    className="object-cover object-[center_20%]"
                   />
                 </div>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
