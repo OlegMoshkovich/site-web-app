@@ -36,9 +36,22 @@ export default async function PostPage({ params }: PostPageProps) {
     <main className="bg-black min-h-screen">
       <BlogPostNavbar />
 
+      {post.coverImage && (
+        <div className="w-full pt-16 sm:pt-20">
+          <div className="mx-auto w-full max-w-5xl px-0 sm:px-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImage}
+              alt={post.title}
+              className="max-h-[min(70vh,520px)] w-full object-cover sm:rounded-lg"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Post header */}
-      <section className="pt-40 w-full">
-        <div className="w-full max-w-3xl mx-auto px-3 sm:px-8 border-b border-gray-800 pb-12">
+      <section className={post.coverImage ? "w-full pt-8" : "w-full pt-40"}>
+        <div className="mx-auto w-full max-w-3xl border-b border-gray-800 px-3 pb-12 sm:px-8">
           <Link
             href="/blog"
             className="text-xs text-gray-600 uppercase tracking-widest hover:text-gray-400 transition-colors mb-8 inline-block"

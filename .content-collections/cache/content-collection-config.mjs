@@ -16,6 +16,8 @@ var posts = defineCollection({
     published: z.string(),
     category: z.string().optional(),
     author: z.string().optional(),
+    /** Optional hero / card image; overrides first <img> in body when set */
+    coverImage: z.string().optional(),
     content: z.string(),
     tags: z.array(z.string()).optional()
   }),
@@ -37,7 +39,7 @@ var posts = defineCollection({
     const slug = `/blog/${document._meta.path}`;
     const slugAsParams = document._meta.path;
     const coverMatch = document.content.match(/src=["']([^"']+)["']/);
-    const coverImage = coverMatch ? coverMatch[1] : null;
+    const coverImage = document.coverImage ?? (coverMatch ? coverMatch[1] : null);
     return {
       ...document,
       body,
