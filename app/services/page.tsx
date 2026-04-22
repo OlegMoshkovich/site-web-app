@@ -1021,15 +1021,15 @@ export default function ServicesPage() {
                 key={person.name}
                 className="flex flex-col rounded-2xl border border-gray-800 bg-black px-4 py-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"
               >
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-800 mb-4">
                   <Image
                     src={person.image}
                     alt={person.name}
-                    width={64}
-                    height={64}
+                    fill
                     sizes="64px"
                     unoptimized
-                    className="size-full object-cover object-center"
+                    className="object-cover object-top"
+                    /* fill + object-cover: avoids preflight `height: auto` on <img> breaking circular crop */
                   />
                 </div>
                 <p className="text-base font-semibold text-white mb-1">{person.name}</p>
