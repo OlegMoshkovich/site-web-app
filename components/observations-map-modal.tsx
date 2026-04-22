@@ -507,9 +507,9 @@ export function ObservationsMapModal({
           </div>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-8 shrink-0 px-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground sm:px-3"
+            className="h-8 shrink-0 border-border bg-background px-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground sm:px-3"
             onClick={onClose}
           >
             {t("mapClose")}
@@ -636,7 +636,7 @@ export function ObservationsMapModal({
                     ? t("mapObservationDate")
                     : t("mapObservationWeek")}
               </span>
-              <p className="w-full text-center text-base font-semibold tabular-nums leading-snug text-foreground sm:text-sm sm:text-right sm:leading-tight">
+              <p className="w-full text-center text-base font-semibold tabular-nums leading-snug text-foreground sm:ml-6 sm:text-md sm:text-left sm:leading-tight">
                 {timelineStep === "all" &&
                 firstDayInSpectrum &&
                 lastDayInSpectrum ? (
