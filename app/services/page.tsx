@@ -828,6 +828,63 @@ export default function ServicesPage() {
               </ul>
             </div>
           </div>
+
+          {/* Blog scroll – only the two reference projects (same as the columns above) */}
+          {(() => {
+            const referenceSlugs = [
+              "heizkraftwerk_sued_baudienstleistung",
+              "schaukaserei_melk",
+            ] as const;
+            const bySlug = new Map(
+              allPosts.map((p) => [p.slugAsParams, p] as const),
+            );
+            const referencePosts = referenceSlugs
+              .map((slug) => bySlug.get(slug))
+              .filter((p): p is NonNullable<typeof p> => p != null);
+            return referencePosts.length > 0 ? (
+              <div
+                className="mt-14 flex gap-4 overflow-x-auto pb-2"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {referencePosts.map((post) => (
+                  <Link
+                    key={post.slugAsParams}
+                    href={post.slug}
+                    className="group w-64 flex-none overflow-hidden border border-gray-800 transition-colors hover:border-gray-600"
+                  >
+                    {post.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="h-36 w-full object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      {post.category && (
+                        <p className="mb-2 text-xs uppercase tracking-widest text-gray-600">
+                          {post.category}
+                        </p>
+                      )}
+                      <h3 className="mb-3 line-clamp-2 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-gray-200">
+                        {post.title}
+                      </h3>
+                      <time className="text-xs text-gray-700">
+                        {new Date(post.published).toLocaleDateString(
+                          language === "en" ? "en-US" : "de-AT",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </section>
 
@@ -903,44 +960,6 @@ export default function ServicesPage() {
               </div>
             ))}
           </div>
-
-          {/* Blog scroll – Bauprojekt posts */}
-          {(() => {
-            const bauprojektPosts = allPosts
-              .filter((p) => p.tags?.includes("Bauprojekt") || p.tags?.includes("Baustelle"))
-              .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
-            return bauprojektPosts.length > 0 ? (
-              <div className="flex gap-4 overflow-x-auto pb-2 mt-14" style={{ scrollbarWidth: "none" }}>
-                {bauprojektPosts.map((post) => (
-                  <Link
-                    key={post.slugAsParams}
-                    href={post.slug}
-                    className="group flex-none w-64 border border-gray-800 hover:border-gray-600 transition-colors overflow-hidden"
-                  >
-                    {post.coverImage && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="w-full h-36 object-cover"
-                      />
-                    )}
-                    <div className="p-4">
-                      {post.category && (
-                        <p className="text-xs text-gray-600 uppercase tracking-widest mb-2">{post.category}</p>
-                      )}
-                      <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-gray-200 transition-colors line-clamp-2">
-                        {post.title}
-                      </h3>
-                      <time className="text-xs text-gray-700">
-                        {new Date(post.published).toLocaleDateString(language === "en" ? "en-US" : "de-AT", { year: "numeric", month: "short", day: "numeric" })}
-                      </time>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : null;
-          })()}
         </div>
       </section>
 
