@@ -194,6 +194,12 @@ export const translations = {
     mapTimelineStepShowAll: "Show all",
     mapNoObservationsOnDate: "No observations on this date",
     mapNoObservationsInWeek: "No observations in this week",
+    mapModalTabMap: "Map",
+    mapModalTabPlan: "Plan",
+    mapPlanNoPositions: "No plan positions for the current period.",
+    mapPlanLoading: "Loading plan…",
+    mapPlanError: "Could not load the plan.",
+    mapPlanSelectLabel: "Plan",
 
     // Plan upload
     uploadPlans: "Upload Plans",
@@ -545,6 +551,12 @@ export const translations = {
     mapTimelineStepShowAll: "Alle",
     mapNoObservationsOnDate: "Keine Beobachtungen an diesem Tag",
     mapNoObservationsInWeek: "Keine Beobachtungen in dieser Woche",
+    mapModalTabMap: "Karte",
+    mapModalTabPlan: "Plan",
+    mapPlanNoPositions: "Keine Planpositionen für den gewählten Zeitraum.",
+    mapPlanLoading: "Plan wird geladen…",
+    mapPlanError: "Plan konnte nicht geladen werden.",
+    mapPlanSelectLabel: "Plan",
 
     // Plan upload
     uploadPlans: "Pläne hochladen",

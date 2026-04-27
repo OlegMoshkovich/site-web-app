@@ -19,7 +19,8 @@ import { Slider } from "@/components/ui/slider";
 import { homeTheme } from "@/lib/app-theme";
 import { LAYOUT_CONSTANTS } from "@/lib/layout-constants";
 import { cn } from "@/lib/utils";
-import { Filter, Search, Tag } from "lucide-react";
+import { Filter, Map, MapPinned, Search, Tag } from "lucide-react";
+import { ObservationsPlanView } from "@/components/observations-plan-view";
 import type { Language } from "@/lib/translations";
 import type { translations } from "@/lib/translations";
 
@@ -164,7 +165,7 @@ export function ObservationsMapModal({
   const dataSig = observations
     .map(
       (o) =>
-        `${o.id}:${o.gps_lat}:${o.gps_lng}:${(o.note ?? "").slice(0, 200)}:${o.signedUrl ?? ""}:${o.site_name ?? ""}:${o.plan ?? ""}`,
+        `${o.id}:${o.gps_lat}:${o.gps_lng}:${(o.note ?? "").slice(0, 200)}:${o.signedUrl ?? ""}:${o.site_name ?? ""}:${o.plan ?? ""}:${o.plan_url ?? ""}:${o.plan_anchor ? JSON.stringify(o.plan_anchor) : ""}`,
     )
     .join("|");
 
@@ -185,6 +186,7 @@ export function ObservationsMapModal({
 
   const [timelineStep, setTimelineStep] = useState<TimelineStep>("day");
   const [timelineIndex, setTimelineIndex] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"map" | "plan">("map");
 
   const keys = timelineStep === "day" ? dayKeys : weekKeys;
 
@@ -270,6 +272,14 @@ export function ObservationsMapModal({
 
   useEffect(() => {
     if (!open) {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      return;
+    }
+
+    if (viewMode !== "map") {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -371,7 +381,11 @@ export function ObservationsMapModal({
         mapRef.current = null;
       }
     };
-  }, [open, dataSig, mapFilterKey, timelineStep]);
+  }, [open, dataSig, mapFilterKey, timelineStep, viewMode]);
+
+  useEffect(() => {
+    if (open) setViewMode("map");
+  }, [open]);
 
   if (!open) return null;
 
@@ -448,6 +462,42 @@ export function ObservationsMapModal({
         >
           {t("mapViewTitle")}
         </h2>
+        {ptsWithGps.length > 0 ? (
+          <div
+            className="flex shrink-0 items-center rounded-md border border-border bg-muted/30 p-0.5"
+            role="group"
+            aria-label={t("mapViewTitle")}
+          >
+            <button
+              type="button"
+              onClick={() => setViewMode("map")}
+              className={cn(
+                "inline-flex h-7 items-center gap-1 rounded-sm px-2 text-[11px] font-medium sm:h-8 sm:px-2.5 sm:text-xs",
+                viewMode === "map"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-pressed={viewMode === "map"}
+            >
+              <Map className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              {t("mapModalTabMap")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("plan")}
+              className={cn(
+                "inline-flex h-7 items-center gap-1 rounded-sm px-2 text-[11px] font-medium sm:h-8 sm:px-2.5 sm:text-xs",
+                viewMode === "plan"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-pressed={viewMode === "plan"}
+            >
+              <MapPinned className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              {t("mapModalTabPlan")}
+            </button>
+          </div>
+        ) : null}
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
           <Button
             type="button"
@@ -525,7 +575,7 @@ export function ObservationsMapModal({
             <div className="flex h-full items-center justify-center p-6 text-center text-muted-foreground text-sm sm:text-base">
               {t("mapNoObservationsWithLocation")}
             </div>
-          ) : (
+          ) : viewMode === "map" ? (
             <>
               <div
                 ref={containerRef}
@@ -539,6 +589,14 @@ export function ObservationsMapModal({
                 </div>
               )}
             </>
+          ) : (
+            <div className="absolute inset-0 z-0 min-h-0">
+              <ObservationsPlanView
+                observations={ptsFiltered}
+                onSelectObservation={(o) => onOpenObservation?.(o)}
+                t={t}
+              />
+            </div>
           )}
         </div>
       {(showTimeline || hasMore) && (
