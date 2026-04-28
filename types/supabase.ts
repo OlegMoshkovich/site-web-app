@@ -194,6 +194,7 @@ export interface Database {
           site_id: string
           plan_name: string
           plan_url: string
+          overlay_calibration: Json | null
           created_at: string
           updated_at: string
         }
@@ -203,6 +204,7 @@ export interface Database {
           site_id: string
           plan_name: string
           plan_url: string
+          overlay_calibration?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -212,6 +214,7 @@ export interface Database {
           site_id?: string
           plan_name?: string
           plan_url?: string
+          overlay_calibration?: Json | null
           created_at?: string
           updated_at?: string
         }

@@ -34,6 +34,18 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import {
+  isValidOverlayCalibration,
+  type PlanOverlayCalibration,
+} from "@/lib/plan-overlay";
+
+type SitePlanSettings = {
+  id: string;
+  plan_name: string;
+  plan_url: string;
+  site_id: string;
+  overlay_calibration: PlanOverlayCalibration | null;
+};
 
 /** Native `<select>` styling so dark mode gets readable text and surfaces (matches `Input`). */
 const NATIVE_SELECT_CLASS =
@@ -58,6 +70,27 @@ const NATIVE_SELECT_SMALL_STYLE: React.CSSProperties = {
 
 const NATIVE_SELECT_SM_CLASS =
   "rounded border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+function emptyOverlayCalibration(): PlanOverlayCalibration {
+  return {
+    points: [
+      { x: 0, y: 0, lat: 0, lng: 0 },
+      { x: 1, y: 0, lat: 0, lng: 0 },
+      { x: 0, y: 1, lat: 0, lng: 0 },
+    ],
+  };
+}
+
+function normalizeOverlayCalibration(
+  calibration: unknown,
+): PlanOverlayCalibration {
+  if (isValidOverlayCalibration(calibration)) {
+    return {
+      points: calibration.points.slice(0, 3).map((point) => ({ ...point })),
+    };
+  }
+  return emptyOverlayCalibration();
+}
 
 // Sortable Label Component
 interface SortableLabelProps {
@@ -269,7 +302,11 @@ export default function SettingsPage() {
 
   // Plan upload state
   const [selectedSiteForPlans, setSelectedSiteForPlans] = useState<string>("");
-  const [plans, setPlans] = useState<{id: string; plan_name: string; plan_url: string; site_id: string}[]>([]);
+  const [plans, setPlans] = useState<SitePlanSettings[]>([]);
+  const [planCalibrationDrafts, setPlanCalibrationDrafts] = useState<
+    Record<string, PlanOverlayCalibration>
+  >({});
+  const [savingCalibrationPlanId, setSavingCalibrationPlanId] = useState<string | null>(null);
   const [newPlanName, setNewPlanName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -470,7 +507,7 @@ export default function SettingsPage() {
     try {
       const query = supabase
         .from('site_plans')
-        .select('id, plan_name, plan_url, site_id')
+        .select('id, plan_name, plan_url, site_id, overlay_calibration')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
@@ -487,7 +524,7 @@ export default function SettingsPage() {
       
       // Generate fresh signed URLs for each plan
       const plansWithFreshUrls = await Promise.all(
-        (plansData || []).map(async (plan: {id: string; plan_name: string; plan_url: string; site_id: string}) => {
+        (plansData || []).map(async (plan: SitePlanSettings) => {
           try {
             // Extract file path from existing URL or construct it
             const fileName = plan.plan_url.split('/').pop()?.split('?')[0];
@@ -504,16 +541,32 @@ export default function SettingsPage() {
             
             return {
               ...plan,
-              plan_url: urlData.signedUrl
+              plan_url: urlData.signedUrl,
+              overlay_calibration: isValidOverlayCalibration(plan.overlay_calibration)
+                ? plan.overlay_calibration
+                : null,
             };
           } catch (error) {
             console.error('Error processing plan URL:', plan.id, error);
-            return plan;
+            return {
+              ...plan,
+              overlay_calibration: isValidOverlayCalibration(plan.overlay_calibration)
+                ? plan.overlay_calibration
+                : null,
+            };
           }
         })
       );
       
       setPlans(plansWithFreshUrls);
+      setPlanCalibrationDrafts(
+        Object.fromEntries(
+          plansWithFreshUrls.map((plan) => [
+            plan.id,
+            normalizeOverlayCalibration(plan.overlay_calibration),
+          ]),
+        ),
+      );
       console.log('Plans loaded for site:', siteId, plansWithFreshUrls);
     } catch (error) {
       console.error('Error loading plans:', error);
@@ -1149,7 +1202,7 @@ export default function SettingsPage() {
             plan_name: newPlanName.trim(),
             plan_url: urlData.signedUrl
           })
-          .select('id, plan_name, plan_url, site_id')
+          .select('id, plan_name, plan_url, site_id, overlay_calibration')
           .single();
 
         if (dbError) {
@@ -1160,7 +1213,17 @@ export default function SettingsPage() {
 
         // Add to local state
         if (planData) {
-          setPlans(prev => [planData, ...prev]);
+          const nextPlan = {
+            ...planData,
+            overlay_calibration: isValidOverlayCalibration(planData.overlay_calibration)
+              ? planData.overlay_calibration
+              : null,
+          };
+          setPlans(prev => [nextPlan, ...prev]);
+          setPlanCalibrationDrafts(prev => ({
+            ...prev,
+            [nextPlan.id]: emptyOverlayCalibration(),
+          }));
         }
 
         // Reset form
@@ -1190,7 +1253,7 @@ export default function SettingsPage() {
     }
 
     setIsUploading(true);
-    const newPlans: {id: string; plan_name: string; plan_url: string; site_id: string}[] = [];
+    const newPlans: SitePlanSettings[] = [];
 
     for (const file of selectedFiles) {
       try {
@@ -1244,7 +1307,7 @@ export default function SettingsPage() {
             plan_name: planName,
             plan_url: urlData.signedUrl
           })
-          .select('id, plan_name, plan_url, site_id')
+          .select('id, plan_name, plan_url, site_id, overlay_calibration')
           .single();
 
         if (dbError) {
@@ -1257,7 +1320,12 @@ export default function SettingsPage() {
         }
 
         if (planData) {
-          newPlans.push(planData);
+          newPlans.push({
+            ...planData,
+            overlay_calibration: isValidOverlayCalibration(planData.overlay_calibration)
+              ? planData.overlay_calibration
+              : null,
+          });
         }
 
         // Update progress to completed
@@ -1278,6 +1346,12 @@ export default function SettingsPage() {
     // Add all successfully uploaded plans to local state
     if (newPlans.length > 0) {
       setPlans(prev => [...newPlans, ...prev]);
+      setPlanCalibrationDrafts(prev => ({
+        ...prev,
+        ...Object.fromEntries(
+          newPlans.map((plan) => [plan.id, emptyOverlayCalibration()]),
+        ),
+      }));
     }
 
     // Reset bulk upload state
@@ -1322,11 +1396,114 @@ export default function SettingsPage() {
 
       // Remove from local state
       setPlans(prev => prev.filter(plan => plan.id !== planId));
+      setPlanCalibrationDrafts(prev => {
+        const next = { ...prev };
+        delete next[planId];
+        return next;
+      });
       
       alert(`Plan "${planName}" deleted successfully.`);
     } catch (error) {
       console.error('Error deleting plan:', error);
       alert('Failed to delete plan. Please try again.');
+    }
+  };
+
+  const updateCalibrationDraft = (
+    planId: string,
+    pointIndex: number,
+    field: keyof PlanOverlayCalibration["points"][number],
+    value: string,
+  ) => {
+    const numeric = Number(value);
+    setPlanCalibrationDrafts(prev => {
+      const draft = prev[planId] ?? emptyOverlayCalibration();
+      return {
+        ...prev,
+        [planId]: {
+          points: draft.points.map((point, index) =>
+            index === pointIndex
+              ? { ...point, [field]: Number.isFinite(numeric) ? numeric : 0 }
+              : point,
+          ),
+        },
+      };
+    });
+  };
+
+  const handleSavePlanCalibration = async (planId: string) => {
+    const calibration = planCalibrationDrafts[planId];
+    if (!isValidOverlayCalibration(calibration)) {
+      alert("Please enter three valid calibration points.");
+      return;
+    }
+
+    try {
+      setSavingCalibrationPlanId(planId);
+      const { error } = await supabase
+        .from("site_plans")
+        .update({
+          overlay_calibration: calibration,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", planId)
+        .eq("user_id", user?.id);
+
+      if (error) {
+        console.error("Error saving plan calibration:", error);
+        alert("Failed to save plan calibration. Please try again.");
+        return;
+      }
+
+      setPlans(prev =>
+        prev.map(plan =>
+          plan.id === planId
+            ? { ...plan, overlay_calibration: calibration }
+            : plan,
+        ),
+      );
+      alert("Plan calibration saved.");
+    } catch (error) {
+      console.error("Error saving plan calibration:", error);
+      alert("Failed to save plan calibration. Please try again.");
+    } finally {
+      setSavingCalibrationPlanId(null);
+    }
+  };
+
+  const handleClearPlanCalibration = async (planId: string) => {
+    try {
+      setSavingCalibrationPlanId(planId);
+      const { error } = await supabase
+        .from("site_plans")
+        .update({
+          overlay_calibration: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", planId)
+        .eq("user_id", user?.id);
+
+      if (error) {
+        console.error("Error clearing plan calibration:", error);
+        alert("Failed to clear plan calibration. Please try again.");
+        return;
+      }
+
+      setPlans(prev =>
+        prev.map(plan =>
+          plan.id === planId ? { ...plan, overlay_calibration: null } : plan,
+        ),
+      );
+      setPlanCalibrationDrafts(prev => ({
+        ...prev,
+        [planId]: emptyOverlayCalibration(),
+      }));
+      alert("Plan calibration cleared.");
+    } catch (error) {
+      console.error("Error clearing plan calibration:", error);
+      alert("Failed to clear plan calibration. Please try again.");
+    } finally {
+      setSavingCalibrationPlanId(null);
     }
   };
 
@@ -2085,34 +2262,117 @@ export default function SettingsPage() {
                     <div className="border-t pt-4">
                       <h3 className="text-lg font-medium mb-4">Existing Plans</h3>
                       <div className="space-y-3">
-                        {plans.map((plan) => (
-                          <div key={plan.id} className="flex items-center justify-between rounded-md border border-border p-3">
-                            <div className="flex items-center gap-3">
-                              <FileImage className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <span className="font-medium">{plan.plan_name}</span>
-                                <div className="text-sm text-muted-foreground">
-                                  <a 
-                                    href={plan.plan_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="hover:text-primary underline"
-                                  >
-                                    View Plan
-                                  </a>
+                        {plans.map((plan) => {
+                          const draft =
+                            planCalibrationDrafts[plan.id] ??
+                            normalizeOverlayCalibration(plan.overlay_calibration);
+                          const isCalibrated = isValidOverlayCalibration(plan.overlay_calibration);
+                          return (
+                            <div key={plan.id} className="space-y-3 rounded-md border border-border p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex min-w-0 items-center gap-3">
+                                  <FileImage className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                  <div className="min-w-0">
+                                    <span className="block truncate font-medium">{plan.plan_name}</span>
+                                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                      <a
+                                        href={plan.plan_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-primary underline"
+                                      >
+                                        View Plan
+                                      </a>
+                                      <span className={isCalibrated ? "text-green-600 dark:text-green-400" : ""}>
+                                        {isCalibrated ? "Overlay calibrated" : "Overlay not calibrated"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeletePlan(plan.id, plan.plan_name)}
+                                  disabled={isUploading}
+                                  title="Delete plan"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              <div className="space-y-2 rounded-md bg-muted/30 p-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div>
+                                    <h4 className="text-sm font-medium text-foreground">Overlay calibration</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                      Enter three matching plan points and GPS positions. Plan X/Y are normalized from 0 to 1.
+                                    </p>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleClearPlanCalibration(plan.id)}
+                                      disabled={savingCalibrationPlanId === plan.id}
+                                    >
+                                      Clear
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={() => handleSavePlanCalibration(plan.id)}
+                                      disabled={savingCalibrationPlanId === plan.id}
+                                    >
+                                      {savingCalibrationPlanId === plan.id ? "Saving..." : "Save"}
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-2">
+                                  {draft.points.slice(0, 3).map((point, pointIndex) => (
+                                    <div
+                                      key={pointIndex}
+                                      className="grid grid-cols-2 gap-2 md:grid-cols-[4rem_repeat(4,minmax(0,1fr))]"
+                                    >
+                                      <div className="col-span-2 self-center text-xs font-medium text-muted-foreground md:col-span-1">
+                                        Point {pointIndex + 1}
+                                      </div>
+                                      {(["x", "y", "lat", "lng"] as const).map((field) => (
+                                        <div key={field} className="space-y-1">
+                                          <Label
+                                            htmlFor={`${plan.id}-${pointIndex}-${field}`}
+                                            className="text-xs uppercase text-muted-foreground"
+                                          >
+                                            {field}
+                                          </Label>
+                                          <Input
+                                            id={`${plan.id}-${pointIndex}-${field}`}
+                                            type="number"
+                                            inputMode="decimal"
+                                            step={field === "lat" || field === "lng" ? "0.000001" : "0.001"}
+                                            min={field === "x" || field === "y" ? 0 : undefined}
+                                            max={field === "x" || field === "y" ? 1 : undefined}
+                                            value={point[field]}
+                                            onChange={(e) =>
+                                              updateCalibrationDraft(
+                                                plan.id,
+                                                pointIndex,
+                                                field,
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="h-8 text-xs"
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleDeletePlan(plan.id, plan.plan_name)}
-                              disabled={isUploading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

@@ -6,6 +6,7 @@ interface PdfPlanCanvasProps {
   url: string;
   width: number;
   height: number;
+  fit?: 'contain' | 'fill';
 }
 
 /**
@@ -17,7 +18,7 @@ interface PdfPlanCanvasProps {
  * that anchor coordinates (anchorX * width, anchorY * height) map directly to
  * CSS pixel positions regardless of the PDF page's natural aspect ratio.
  */
-export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
+export function PdfPlanCanvas({ url, width, height, fit = 'contain' }: PdfPlanCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -48,10 +49,20 @@ export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
         const physW = Math.round(width  * dpr);
         const physH = Math.round(height * dpr);
 
-        // Scale the PDF page to fill physW×physH (objectFit:contain)
+        // Scale the PDF page to fit the requested box.
         const viewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(physW / viewport.width, physH / viewport.height);
-        const scaledViewport = page.getViewport({ scale });
+        const scale =
+          fit === 'fill'
+            ? Math.max(physW / viewport.width, physH / viewport.height)
+            : Math.min(physW / viewport.width, physH / viewport.height);
+        const scaledViewport =
+          fit === 'fill'
+            ? page.getViewport({
+                scale,
+                // Keep default rotation; the destination canvas stretch below removes
+                // letterboxing so normalized calibration coordinates stay exact.
+              })
+            : page.getViewport({ scale });
 
         const offsetX = Math.floor((physW - scaledViewport.width)  / 2);
         const offsetY = Math.floor((physH - scaledViewport.height) / 2);
@@ -78,7 +89,11 @@ export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, physW, physH);
-        ctx.drawImage(offscreen, offsetX, offsetY);
+        if (fit === 'fill') {
+          ctx.drawImage(offscreen, 0, 0, physW, physH);
+        } else {
+          ctx.drawImage(offscreen, offsetX, offsetY);
+        }
 
         pdf.destroy();
       } catch (err) {
@@ -93,7 +108,7 @@ export function PdfPlanCanvas({ url, width, height }: PdfPlanCanvasProps) {
 
     render();
     return () => { cancelled = true; };
-  }, [url, width, height]);
+  }, [url, width, height, fit]);
 
   if (error) {
     return (

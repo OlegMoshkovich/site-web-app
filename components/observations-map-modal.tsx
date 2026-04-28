@@ -19,8 +19,9 @@ import { Slider } from "@/components/ui/slider";
 import { homeTheme } from "@/lib/app-theme";
 import { LAYOUT_CONSTANTS } from "@/lib/layout-constants";
 import { cn } from "@/lib/utils";
-import { Filter, Map, MapPinned, Search, Tag } from "lucide-react";
+import { Filter, Layers, Map, MapPinned, Search, Tag } from "lucide-react";
 import { ObservationsPlanView } from "@/components/observations-plan-view";
+import { ObservationsOverlayView } from "@/components/observations-overlay-view";
 import type { Language } from "@/lib/translations";
 import type { translations } from "@/lib/translations";
 
@@ -186,7 +187,7 @@ export function ObservationsMapModal({
 
   const [timelineStep, setTimelineStep] = useState<TimelineStep>("day");
   const [timelineIndex, setTimelineIndex] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"map" | "plan">("map");
+  const [viewMode, setViewMode] = useState<"map" | "plan" | "overlay">("map");
 
   const keys = timelineStep === "day" ? dayKeys : weekKeys;
 
@@ -496,6 +497,20 @@ export function ObservationsMapModal({
               <MapPinned className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
               {t("mapModalTabPlan")}
             </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("overlay")}
+              className={cn(
+                "inline-flex h-7 items-center gap-1 rounded-sm px-2 text-[11px] font-medium sm:h-8 sm:px-2.5 sm:text-xs",
+                viewMode === "overlay"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-pressed={viewMode === "overlay"}
+            >
+              <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+              {t("mapModalTabOverlay")}
+            </button>
           </div>
         ) : null}
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
@@ -589,9 +604,17 @@ export function ObservationsMapModal({
                 </div>
               )}
             </>
-          ) : (
+          ) : viewMode === "plan" ? (
             <div className="absolute inset-0 z-0 min-h-0">
               <ObservationsPlanView
+                observations={ptsFiltered}
+                onSelectObservation={(o) => onOpenObservation?.(o)}
+                t={t}
+              />
+            </div>
+          ) : (
+            <div className="absolute inset-0 z-0 min-h-0">
+              <ObservationsOverlayView
                 observations={ptsFiltered}
                 onSelectObservation={(o) => onOpenObservation?.(o)}
                 t={t}

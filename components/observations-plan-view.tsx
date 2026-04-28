@@ -1,65 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { ObservationWithUrl } from "@/lib/store/observations-store";
 import { PdfPlanCanvas } from "@/components/pdf-plan-canvas";
 import { cn } from "@/lib/utils";
 import type { translations } from "@/lib/translations";
+import {
+  hasValidPlanAnchor,
+  resolveObservationPlanUrl,
+} from "@/lib/plan-overlay";
 
 type TFn = (key: keyof typeof translations.en) => string;
-
-function hasValidPlanAnchor(o: ObservationWithUrl): boolean {
-  const a = o.plan_anchor;
-  if (!a || typeof a.x !== "number" || typeof a.y !== "number") return false;
-  if (a.x === 0 && a.y === 0) return false;
-  return true;
-}
-
-async function resolveObservationPlanUrl(
-  o: ObservationWithUrl,
-): Promise<{ url: string; isPdf: boolean; name: string } | null> {
-  const supabase = createClient();
-  let rawUrl = o.plan_url;
-  let name = "Plan";
-
-  if (!rawUrl && o.plan && o.site_id) {
-    const { data } = await supabase
-      .from("site_plans")
-      .select("plan_url, plan_name")
-      .eq("id", o.plan)
-      .maybeSingle();
-    if (data?.plan_url) rawUrl = data.plan_url;
-    if (data?.plan_name) name = data.plan_name;
-  }
-
-  if (!rawUrl) return null;
-
-  if (rawUrl.startsWith("http")) {
-    const lower = rawUrl.toLowerCase();
-    return {
-      url: rawUrl,
-      isPdf: lower.includes(".pdf") || lower.endsWith(".pdf"),
-      name,
-    };
-  }
-
-  if (!o.site_id) return null;
-
-  const fileName = rawUrl.split("/").pop()?.split("?")[0];
-  if (!fileName) return null;
-  const filePath = `${o.site_id}/${fileName}`;
-  const { data: signed, error } = await supabase.storage
-    .from("plans")
-    .createSignedUrl(filePath, 3600);
-  if (error || !signed?.signedUrl) return null;
-
-  return {
-    url: signed.signedUrl,
-    isPdf: fileName.toLowerCase().endsWith(".pdf"),
-    name,
-  };
-}
 
 export function ObservationsPlanView({
   observations,
